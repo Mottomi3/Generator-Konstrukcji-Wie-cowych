@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!--
+  ArteMadera – Generator Wieńcowy
+  Plik: html/okno.html
+  Zadanie: okno parametrów generatora – układ sekcji (formularz budowany przez okno.js z opisów pól z Ruby).
+  Tematy: okno, układ okna, sekcje formularza, przyciski
+  Zależy od: html/okno.css, html/okno.js
+  Używają: sketchup/okno.rb
+-->
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generator Wieńcowy</title>
+  <link rel="stylesheet" href="okno.css">
+</head>
+<body>
+  <header class="naglowek">
+    <div>
+      <h1>Generator Wieńcowy</h1>
+      <div id="info" class="info"></div>
+    </div>
+    <div class="przyciski">
+      <button type="button" id="btn-podglad">Podgląd</button>
+      <button type="button" id="btn-generuj" class="glowny">Generuj w modelu</button>
+      <button type="button" id="btn-zamknij">Zamknij</button>
+    </div>
+  </header>
+
+  <div id="komunikat" class="komunikat ukryty"></div>
+
+  <main class="uklad">
+    <section class="kolumna">
+      <details open>
+        <summary>Przekrój bala i zamek</summary>
+        <div id="pola-przekroj" class="pola"></div>
+        <div id="pola-zamek" class="pola"></div>
+      </details>
+      <details open>
+        <summary>Ściany</summary>
+        <div id="pola-sciany" class="pola"></div>
+        <div id="wysokosci" class="wysokosci"></div>
+      </details>
+      <details open>
+        <summary>Długości bali i styki</summary>
+        <div id="pola-styki" class="pola"></div>
+      </details>
+      <details>
+        <summary>Otwory – ustawienia</summary>
+        <div id="pola-otwory" class="pola"></div>
+      </details>
+      <details>
+        <summary>Rozpoznanie rysunku i waga</summary>
+        <div id="pola-rysunek" class="pola"></div>
+      </details>
+    </section>
+
+    <section class="kolumna">
+      <div class="karta">
+        <h2>Rzut</h2>
+        <div id="rzut" class="rzut"></div>
+        <p class="drobny">Kropka = punkt, od którego liczy się „od” otworu (ściana zewnętrzna: narożnik lica zewnętrznego).</p>
+      </div>
+      <div class="karta">
+        <h2>Okna i drzwi</h2>
+        <table class="tabela" id="tab-otwory">
+          <thead>
+            <tr><th>Ściana</th><th>Od [mm]</th><th>Szer.</th><th>Wys.</th><th>Parapet</th><th>Nazwa</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="przyciski-male">
+          <button type="button" id="btn-okno">+ okno</button>
+          <button type="button" id="btn-drzwi">+ drzwi</button>
+        </div>
+      </div>
+      <div class="karta">
+        <h2>Wynik</h2>
+        <div id="liczby" class="liczby"></div>
+        <div id="lista-bledow"></div>
+        <div id="lista-ostrzezen"></div>
+        <table class="tabela" id="tab-sciany">
+          <thead>
+            <tr><th>Ściana</th><th>Rodzaj</th><th>Długość</th><th>Wysokość</th><th>Wieńce</th><th>Bale</th><th>Styki</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <h3>Lista bali</h3>
+        <table class="tabela" id="tab-lista">
+          <thead>
+            <tr><th>Grupa</th><th>Pozycja</th><th>Przekrój</th><th>Długość</th><th>Ilość</th><th>m³</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="okno.js"></script>
+</body>
+</html>

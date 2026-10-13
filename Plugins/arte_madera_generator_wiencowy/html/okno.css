@@ -1,0 +1,105 @@
+/*
+  ArteMadera – Generator Wieńcowy
+  Plik: html/okno.css
+  Zadanie: wygląd okna parametrów.
+  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty
+  Zależy od: –
+  Używają: html/okno.html
+*/
+:root {
+  --tlo: #f6f4f0;
+  --karta: #ffffff;
+  --tekst: #2b2620;
+  --szary: #6f675d;
+  --linia: #ddd6cb;
+  --akcent: #8a5a2b;
+  --akcent-jasny: #f1e6d8;
+  --blad: #a32020;
+  --blad-tlo: #fbeaea;
+  --uwaga: #7a5a00;
+  --uwaga-tlo: #fff6d6;
+  --ok: #2f6b2f;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--tlo);
+  color: var(--tekst);
+  font: 13px/1.4 "Segoe UI", Arial, sans-serif;
+}
+.naglowek {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--karta);
+  border-bottom: 1px solid var(--linia);
+}
+h1 { margin: 0; font-size: 17px; }
+h2 { margin: 0 0 8px; font-size: 14px; }
+h3 { margin: 12px 0 6px; font-size: 13px; }
+.info { color: var(--szary); font-size: 12px; }
+.przyciski { display: flex; gap: 6px; flex-wrap: wrap; }
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--linia);
+  border-radius: 4px;
+  background: var(--karta);
+  color: var(--tekst);
+  cursor: pointer;
+}
+button:hover { border-color: var(--akcent); }
+button.glowny { background: var(--akcent); border-color: var(--akcent); color: #fff; }
+button:disabled { opacity: 0.5; cursor: default; }
+.uklad {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 12px;
+  padding: 12px 16px 24px;
+}
+@media (max-width: 760px) { .uklad { grid-template-columns: 1fr; } }
+.kolumna { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+details, .karta {
+  background: var(--karta);
+  border: 1px solid var(--linia);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
+.pola { display: grid; grid-template-columns: 1fr 120px; gap: 4px 8px; align-items: center; margin-top: 6px; }
+.pola label { color: var(--tekst); }
+.pola .jedn { color: var(--szary); font-size: 11px; margin-left: 3px; }
+.pola input, .pola select, .tabela input, .tabela select {
+  width: 100%;
+  font: inherit;
+  padding: 3px 5px;
+  border: 1px solid var(--linia);
+  border-radius: 3px;
+  background: #fff;
+}
+.pola select { grid-column: 1 / span 2; }
+.pola .pelny { grid-column: 1 / span 2; }
+.wysokosci { margin-top: 6px; color: var(--szary); font-size: 12px; }
+.rzut { width: 100%; min-height: 220px; }
+.rzut svg { width: 100%; height: auto; display: block; }
+.drobny { color: var(--szary); font-size: 11px; margin: 4px 0 0; }
+.tabela { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tabela th, .tabela td { border-bottom: 1px solid var(--linia); padding: 3px 4px; text-align: left; }
+.tabela th { color: var(--szary); font-weight: 600; }
+.tabela td.liczba { text-align: right; }
+.przyciski-male { display: flex; gap: 6px; margin-top: 6px; }
+.przyciski-male button { padding: 3px 8px; }
+.liczby { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 6px; }
+.liczby span b { color: var(--akcent); }
+.komunikat { margin: 10px 16px 0; padding: 8px 12px; border-radius: 6px; }
+.komunikat.ok { background: #e7f3e7; color: var(--ok); }
+.komunikat.blad { background: var(--blad-tlo); color: var(--blad); }
+.ukryty { display: none; }
+.lista-blad, .lista-uwaga { margin: 4px 0; padding: 6px 10px 6px 24px; border-radius: 4px; }
+.lista-blad { background: var(--blad-tlo); color: var(--blad); }
+.lista-uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
