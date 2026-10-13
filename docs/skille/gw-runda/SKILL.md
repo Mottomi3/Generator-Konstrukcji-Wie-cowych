@@ -11,7 +11,7 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 
 | Co | Gdzie |
 |---|---|
-| Repozytorium | `Mottomi3/ArteMadera-Generator-Wiencowy` (prywatne, gałąź `main`) – zakłada użytkownik |
+| Repozytorium | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (prywatne, gałąź `main`) |
 | Kontener | `/home/claude/gw` (testy liczą ścieżki względem siebie – katalog może być inny) |
 | Dysk użytkownika | `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` – `Plugins\`, `testy\`, `docs\` (z `docs\skille\`), `CLAUDE.md`, `README.md`, paczka `.rbz`, `repozytorium_rN.bundle` (historia git); obok `00_Analiza\`, `Pliki źródłowe\` (nie ruszać) |
 | Projekt claude.ai | `claude/stan_prac.md`, `claude/przekazanie_rN.md`, `claude/specyfikacja.md`, `claude/scenariusz_odbioru.md`, `claude/decyzje_projektowe.md`, `claude/analiza_plikow_zrodlowych.md` |
@@ -20,7 +20,7 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 ## A. Start
 
 1. Kontekst: `CLAUDE.md`, `docs/stan_prac.md`, najnowsze `docs/przekazanie_rN.md`; nowa runda N = ostatnia + 1.
-2. Kod: `add_repo` (push) i `git clone --depth 1 https://github.com/Mottomi3/ArteMadera-Generator-Wiencowy /home/claude/gw`.
+2. Kod: `add_repo` (push) i `git clone https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych` (pełna historia).
    Gdy repozytorium nie istnieje: `device_list_dir` na folderze z dysku, `device_stage_files` pliku `repozytorium_rN.bundle`
    (najnowszy) i `git clone repozytorium_rN.bundle /home/claude/gw` – pełna historia; brak paczki → pliki z `Plugins\`,
    `testy\`, `docs\`, `CLAUDE.md` i `git init -b main`.

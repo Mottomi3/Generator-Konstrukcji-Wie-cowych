@@ -2,11 +2,9 @@
 
 ## 0. Start następnej sesji
 
-1. Repozytorium: jeśli istnieje `Mottomi3/ArteMadera-Generator-Wiencowy` – `add_repo` (push) i sklonuj; jeśli nie –
-   z dysku `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\repozytorium_r2.bundle`
-   (`device_stage_files`, potem `git clone <plik.bundle> /home/claude/gw` – pełna historia rund 1 i 2). Gdy
-   repozytorium powstanie: `git remote add origin https://github.com/Mottomi3/ArteMadera-Generator-Wiencowy &&
-   git push -u origin main`.
+1. Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (prywatne, gałąź `main`) – `add_repo` (push) i
+   `git clone https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych`. Zapas: `repozytorium_r2.bundle` na dysku
+   (`C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\`).
 2. Przeczytaj `CLAUDE.md`, `docs/stan_prac.md`, ten plik; potem szukaj w `docs/SPIS_TRESCI.md`.
 3. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` przed jakąkolwiek zmianą.
 

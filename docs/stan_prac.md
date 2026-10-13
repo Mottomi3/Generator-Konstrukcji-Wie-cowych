@@ -1,8 +1,8 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
 Stan na: runda 2, kompilacja 2 (2026-10-13), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 11 zestawów, 424 sprawdzenia,
-FAILURES 0. Repozytorium: lokalne (git, gałąź `main`) + kopia `repozytorium_r2.bundle` na dysku; zdalne
-`Mottomi3/ArteMadera-Generator-Wiencowy` – patrz `docs/przekazanie_r2.md` §0.
+FAILURES 0. Repozytorium: prywatne `Mottomi3/Generator-Konstrukcji-Wie-cowych` na GitHubie (gałąź `main`, pełna
+historia rund 1 i 2) + kopia `repozytorium_r2.bundle` na dysku.
 
 ## 1. Co działa (kompilacja 2)
 
@@ -82,7 +82,7 @@ paczka .rbz, podgląd 3D. Wcześniejszy błędny opis 900 W-2 („styk 150 obok 
 | P2 | Legar a podwalina | legary między podwalinami, wierzch równo (900); wyższy legar – podpowiedź |
 | H20 | Grupy w Dokumentacji 2D | Bs, Kf, Sz, Pw, L, Pd, Pl, Kr – do dopisania w Dokumentacji 2D |
 | H21 | Producent / CNC: co dostaje, BVN czy BTLx | do ustalenia przy eksporcie |
-| I23 | Repozytorium GitHub | patrz `docs/przekazanie_r2.md` §0 |
+| I23 | Repozytorium GitHub | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (założone przez użytkownika 2026-10-13) |
 
 ## 7. Do sprawdzenia w SketchUpie
 
