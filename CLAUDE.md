@@ -9,7 +9,7 @@ Odpowiedzi dla użytkownika zawsze po polsku, krótko, bez opisu kroków pracy.
 1. Przeczytaj `docs/stan_prac.md` (stan, decyzje, otwarte pytania) i najnowsze `docs/przekazanie_rN.md`.
 2. **Szukaj w `docs/SPIS_TRESCI.md`**: tabela tematów → plik, potem lista metod z numerami wierszy. Nie przeszukuj
    wszystkich plików na ślepo.
-3. Zasady kodu i rundy: `.claude/skills/gw-zasady-kodu/SKILL.md`, `.claude/skills/gw-runda/SKILL.md`.
+3. Zasady kodu i rundy: `docs/skille/gw-zasady-kodu/SKILL.md`, `docs/skille/gw-runda/SKILL.md`.
 
 ## Najważniejsze zasady (wymóg użytkownika)
 

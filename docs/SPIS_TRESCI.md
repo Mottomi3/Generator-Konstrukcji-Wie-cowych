@@ -981,7 +981,7 @@ Używają: testy/t_sketchup.rb, testy/pomoc.rb
 paczka instalacyjna .rbz (zip rejestratora i folderu wtyczki) – do instalacji w Menedżerze rozszerzeń SketchUpa.
 
 Zależy od: polecenie zip
-Używają: zamknięcie rundy (.claude/skills/gw-runda/SKILL.md)
+Używają: zamknięcie rundy (docs/skille/gw-runda/SKILL.md)
 
 | Wiersz | Element | Opis |
 |---:|---|---|

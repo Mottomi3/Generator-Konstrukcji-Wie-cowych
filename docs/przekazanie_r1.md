@@ -3,9 +3,9 @@
 ## 0. Start następnej sesji
 
 1. Repozytorium: jeśli użytkownik założył `Mottomi3/ArteMadera-Generator-Wiencowy` – `add_repo` (push) i sklonuj;
-   jeśli nie – pliki z dysku: `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` (`Plugins\`,
-   `testy\`, `docs\`, `CLAUDE.md`, paczka .rbz) – skopiuj do kontenera i `git init` (historia rundy 1 jest w
-   `docs/stan_prac.md`).
+   jeśli nie – z dysku `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\repozytorium_r1.bundle`
+   (`device_stage_files`, potem `git clone <plik.bundle> /home/claude/gw` – pełna historia). Gdy repozytorium powstanie:
+   `git remote add origin https://github.com/Mottomi3/ArteMadera-Generator-Wiencowy && git push -u origin main`.
 2. Przeczytaj `CLAUDE.md`, `docs/stan_prac.md`, ten plik; potem szukaj w `docs/SPIS_TRESCI.md`.
 3. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` przed jakąkolwiek zmianą.
 
@@ -23,7 +23,7 @@ SketchUp (atrapa) 45, okno w Chromium 16, zasady i spis treści.
 
 ## 3. Zasady
 
-`CLAUDE.md` + `.claude/skills/gw-zasady-kodu/SKILL.md` (kod) + `.claude/skills/gw-runda/SKILL.md` (runda).
+`CLAUDE.md` + `docs/skille/gw-zasady-kodu/SKILL.md` (kod) + `docs/skille/gw-runda/SKILL.md` (runda).
 
 ## 4. Luki
 

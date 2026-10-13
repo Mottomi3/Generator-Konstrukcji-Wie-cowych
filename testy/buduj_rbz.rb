@@ -5,7 +5,7 @@
 # Zadanie: paczka instalacyjna .rbz (zip rejestratora i folderu wtyczki) – do instalacji w Menedżerze rozszerzeń SketchUpa.
 # Tematy: paczka rbz, instalacja, wydanie
 # Zależy od: polecenie zip
-# Używają: zamknięcie rundy (.claude/skills/gw-runda/SKILL.md)
+# Używają: zamknięcie rundy (docs/skille/gw-runda/SKILL.md)
 #
 # Użycie: ruby testy/buduj_rbz.rb – zapisuje arte_madera_generator_wiencowy_<wersja>.rbz w katalogu głównym repozytorium.
 
