@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/wience.rb
 # Zadanie: poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian.
-# Tematy: wieniec, poziom wieńca, półbal, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość
+# Tematy: wieniec, poziom wieńca, półbal, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość, wieńce szczytu
 # Zależy od: rdzen/parametry.rb
 # Używają: rdzen/bale.rb, rdzen/projekt.rb (wysokości do okna)
 #
@@ -20,7 +20,7 @@ module ArteMadera
 
       # Wieńce ściany od dołu: [{ nr:, z0:, h:, lvl:, polbal: }]; kontrfor dopasowany do wysokości gospodarza.
       def dla_sciany(w, p)
-        lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p)
+        lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, w[:szczyt] ? w[:szczyt][:z_max] : nil)
         return lista unless w[:rodzaj] == :kontrfor
         gosp = dla_sciany(w[:gospodarz], p)
         gora = gosp.last[:z0] + gosp.last[:h]
@@ -29,8 +29,9 @@ module ArteMadera
         wybrane
       end
 
-      # Wieńce według kierunku: A – półbal + n pełnych; B zewnętrzna – n + 1 (początek szczytu); B działowa i kontrfor – n.
-      def pelna_lista(kierunek, zewnetrzna, p)
+      # Wieńce według kierunku: A – półbal + n pełnych; B zewnętrzna – n + 1 (początek szczytu); B działowa i kontrfor – n;
+      # ściana ze szczytem – wieńce aż do wierzchu szczytu z_szczytu.
+      def pelna_lista(kierunek, zewnetrzna, p, z_szczytu = nil)
         h = Parametry.krycie(p)
         n = p['liczba_wiencow'].to_i
         lista = []
@@ -39,6 +40,7 @@ module ArteMadera
           (1..n).each { |j| lista << { nr: j + 1, z0: j * h - h / 2.0, h: h, lvl: 2 * j - 1, polbal: false } }
         else
           ile = zewnetrzna ? n + 1 : n
+          ile = [ile, (z_szczytu / h - 1e-9).ceil].max if z_szczytu
           (0...ile).each { |k| lista << { nr: k + 1, z0: k * h, h: h, lvl: 2 * k, polbal: false } }
         end
         lista

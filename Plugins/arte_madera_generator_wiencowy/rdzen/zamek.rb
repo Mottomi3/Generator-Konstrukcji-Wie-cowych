@@ -22,11 +22,15 @@ module ArteMadera
       # Kierunek (w układzie lokalnym domu), w którym podcięcie lica o mniejszej współrzędnej wychodzi za lico ściany
       # poprzecznej: ściany wzdłuż X – lico południowe (min y), ściany wzdłuż Y – lico zachodnie (min x).
       ORIENTACJA = { x: -1, y: 1 }.freeze unless const_defined?(:ORIENTACJA)
+      # Odbicie lustrzane labiryntu (parametr zamek_odbicie = 'lustro').
+      ORIENTACJA_LUSTRO = { x: 1, y: -1 }.freeze unless const_defined?(:ORIENTACJA_LUSTRO)
 
       module_function
 
       # Obróbki zamków dla wszystkich skrzyżowań (dopisuje cechy do bali); zwraca liczbę par bali w zamkach.
-      def nanies(sciany, p, orientacja = ORIENTACJA)
+      # Orientacja – z parametru zamek_odbicie, gdy nie podano.
+      def nanies(sciany, p, orientacja = nil)
+        orientacja ||= p['zamek_odbicie'] == 'lustro' ? ORIENTACJA_LUSTRO : ORIENTACJA
         z = p['zamek']
         t = z['grubosc'].to_f
         pary = 0

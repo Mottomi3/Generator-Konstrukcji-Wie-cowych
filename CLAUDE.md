@@ -18,21 +18,25 @@ Odpowiedzi dla użytkownika zawsze po polsku, krótko, bez opisu kroków pracy.
 - **Spis treści** `docs/SPIS_TRESCI.md` jest generowany ze źródeł: nagłówki plików (`Plik:`, `Zadanie:`, `Tematy:`,
   `Zależy od:`, `Używają:`) i komentarz nad każdą metodą / funkcją. Po każdej zmianie: `ruby testy/spis_tresci.rb`.
 - Rdzeń (`rdzen/`) to czysty Ruby bez API SketchUpa (mm, tablice) – testowany bez atrapy. API SketchUpa tylko w `sketchup/`.
+- **Co tylko można – parametr** (wymóg użytkownika): nowy parametr = jeden wpis w `rdzen/parametry_lista.rb` (okno,
+  zapis ustawień i szablony – same); lista dla użytkownika `docs/parametry.md` (`ruby testy/lista_parametrow.rb`).
+- Ustawienia użytkownika (ostatnie parametry, szablony) – `sketchup/ustawienia.rb`, plik JSON w AppData; testy
+  ustawiają `AM_GW_USTAWIENIA` na katalog tymczasowy (nie pisać do katalogu domowego).
 - Ruby 2.2 (bez `&.`, `Array#sum`, `<<~`, `rescue` w `do…end` bez `begin`…), JS w oknie ES5, komunikaty przez `Log`,
   zero placeholderów. Kontrola: `ruby testy/sprawdz_zasady.rb`.
 - Każda runda: numer kompilacji = numer rundy (rejestrator i `main.rb`), wersja 1.0.0.
 
 ## Testy
 
-`bash testy/uruchom.sh` → ostatnia linia `WSZYSTKIE ZESTAWY: FAILURES 0` (rdzeń, zamek, siatki, SketchUp na atrapie,
-okno w Chromium, zasady, aktualność spisu treści). Paczka: `ruby testy/buduj_rbz.rb`.
+`bash testy/uruchom.sh` → ostatnia linia `WSZYSTKIE ZESTAWY: FAILURES 0` (rdzeń, węgły, szczyty, podłoga, zamek,
+siatki, SketchUp na atrapie, okno w Chromium, zasady, aktualność spisu treści i listy parametrów). Paczka: `ruby testy/buduj_rbz.rb`.
 
 ## Mapa katalogów
 
 | Katalog | Co |
 |---|---|
 | `Plugins/arte_madera_generator_wiencowy.rb` | rejestrator rozszerzenia |
-| `Plugins/arte_madera_generator_wiencowy/rdzen/` | obliczenia: obrys → ściany → otwory → styki → bale → zamki → pozycje → siatki brył |
+| `Plugins/arte_madera_generator_wiencowy/rdzen/` | obliczenia: obrys → ściany → szczyty → otwory → styki → węgły → bale → zamki → pozycje → belki dachu i podłogi → siatki brył |
 | `Plugins/arte_madera_generator_wiencowy/sketchup/` | wejście z zaznaczenia, budowa modelu, atrybuty, okno, menu |
 | `Plugins/arte_madera_generator_wiencowy/html/` | okno parametrów (HTML, CSS, JS ES5) |
 | `testy/` | testy, atrapa API (`testy/atrapa/`), kontrola zasad, spis treści, paczka .rbz, podgląd 3D |

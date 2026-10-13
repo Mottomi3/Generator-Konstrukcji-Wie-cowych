@@ -14,6 +14,7 @@
 
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -51,9 +52,10 @@ module ArteMadera
         bale.sort_by { |b| [b[:sciana][:nr].to_i, b[:i], b[:s0].round(1)] }
       end
 
-      # Prefiks grupy w Dokumentacji 2D: bale ścienne (Bs) albo kontrfory (Kf).
+      # Prefiks grupy w Dokumentacji 2D: bale ścienne (Bs), kontrfory (Kf), bale szczytu (Sz).
       def prefiks_bala(b)
-        b[:sciana][:rodzaj] == :kontrfor ? 'Kf' : 'Bs'
+        return 'Kf' if b[:sciana][:rodzaj] == :kontrfor
+        Szczyty.bal_szczytu?(b) ? 'Sz' : 'Bs'
       end
 
       # Lista do zamówienia: [{ nazwa:, prefiks:, przekroj:, dl:, ilosc:, objetosc_m3: }] (przekrój jak w listach producenta).

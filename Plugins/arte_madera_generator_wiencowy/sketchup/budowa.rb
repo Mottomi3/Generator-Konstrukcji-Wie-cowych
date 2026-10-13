@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/budowa.rb
 # Zadanie: budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji.
-# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, przebudowa, usuwanie starych definicji, operacja cofnij
+# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, belki w modelu, przebudowa, usuwanie starych definicji, operacja cofnij
 # Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
 # Używają: sketchup/sterowanie.rb
 #
@@ -20,8 +20,13 @@ module ArteMadera
       TAGI = {
         zewnetrzna: 'Ściany zewnętrzne',
         dzialowa: 'Ściany działowe',
-        kontrfor: 'Kontrfory'
+        kontrfor: 'Kontrfory',
+        szczyt: 'Szczyty',
+        podloga: 'Podłoga',
+        dach: 'Dach'
       }.freeze unless const_defined?(:TAGI)
+      # Grupy belek w domu: tag => nazwa grupy.
+      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach' }.freeze unless const_defined?(:GRUPY_BELEK)
 
       module_function
 
@@ -44,6 +49,11 @@ module ArteMadera
             defs[poz[:nr]] = d
             bledy_scian += bledne
           end
+          (plan[:pozycje_elementow] || []).each do |poz|
+            d, bledne = definicja(model, poz, plan[:parametry], dom_id)
+            defs[poz[:nr]] = d
+            bledy_scian += bledne
+          end
           plan[:sciany].each do |w|
             next if w[:bale].empty?
             g = grupa.entities.add_group
@@ -51,10 +61,11 @@ module ArteMadera
             g.layer = tagi[w[:rodzaj]]
             w[:bale].each do |b|
               inst = g.entities.add_instance(defs[b[:pozycja][:nr]], Konwersja.transformacja_bala(b, plan[:parametry]))
-              inst.layer = tagi[w[:rodzaj]]
+              inst.layer = b[:pozycja][:prefiks] == 'Sz' ? tagi[:szczyt] : tagi[w[:rodzaj]]
               Atrybuty.oznacz_instancje(inst, b)
             end
           end
+          dodaj_belki(grupa, plan, defs, tagi)
           Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
           Atrybuty.zapisz_podpis(grupa)
           model.commit_operation
@@ -67,17 +78,38 @@ module ArteMadera
         wynik
       end
 
+      # Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów).
+      def dodaj_belki(grupa, plan, defs, tagi)
+        GRUPY_BELEK.each do |tag, nazwa|
+          lista = (plan[:elementy] || []).select { |e| e[:tag] == tag }
+          next if lista.empty?
+          g = grupa.entities.add_group
+          g.name = nazwa
+          g.layer = tagi[tag]
+          lista.each do |e|
+            inst = g.entities.add_instance(defs[e[:pozycja][:nr]], Konwersja.transformacja_elementu(e))
+            inst.layer = tagi[tag]
+            Atrybuty.oznacz_element(inst, e)
+          end
+        end
+      end
+
+      # Nazwa komponentu pozycji: rodzaj i nazwa pozycji.
+      def nazwa_definicji(poz)
+        return "#{poz[:rodzaj]} #{poz[:nazwa]}" if poz[:element]
+        { 'Kf' => 'Kontrfor ', 'Sz' => 'Bal szczytu ' }.fetch(poz[:prefiks], 'Bal ') + poz[:nazwa]
+      end
+
       # Definicja komponentu pozycji z siatki bryły; zwraca [definicja, liczba ścian, których nie udało się narysować].
       def definicja(model, poz, p, dom_id)
-        nazwa = (poz[:prefiks] == 'Kf' ? 'Kontrfor ' : 'Bal ') + poz[:nazwa]
+        nazwa = nazwa_definicji(poz)
         d = model.definitions.add(nazwa)
         siatka = Projekt.siatka_pozycji(poz)
         bledne = 0
         Siatka.uprosc(siatka[:sciany]).each do |s|
           bledne += 1 unless rysuj_sciane(d.entities, s)
         end
-        z = p['zamek']
-        Atrybuty.oznacz_definicje(d, poz, dom_id, format('%s × %s', Parametry.fmt(z['grubosc']), Parametry.fmt(poz[:h])))
+        Atrybuty.oznacz_definicje(d, poz, dom_id, format('%s × %s', Parametry.fmt(poz[:t]), Parametry.fmt(poz[:h])))
         Log.warn("Pozycja #{poz[:nazwa]}: #{bledne} ścian bryły nie narysowano – sprawdź bryłę w modelu.") if bledne > 0
         [d, bledne]
       end

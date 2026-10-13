@@ -10,6 +10,9 @@
 # Uruchomienie: ruby -I testy/atrapa testy/okno_dane.rb
 
 require 'json'
+require 'tmpdir'
+require 'fileutils'
+ENV['AM_GW_USTAWIENIA'] = File.join(Dir.tmpdir, "am_gw_okno_#{Process.pid}")
 require File.expand_path('atrapa/sketchup', File.dirname(__FILE__))
 require File.expand_path('pomoc', File.dirname(__FILE__))
 require File.join(KATALOG_WTYCZKI, 'main.rb')
@@ -25,4 +28,5 @@ Sterowanie.start
 init = Okno.dane_startowe
 wynik = Sterowanie.podglad('parametry' => { 'max_dlugosc' => '5000' },
                            'otwory' => [{ 'sciana' => 'W-1', 'od' => '800', 'szerokosc' => '1020', 'wysokosc' => '1010', 'parapet' => '900' }])
+FileUtils.rm_rf(ENV['AM_GW_USTAWIENIA'])
 puts JSON.generate('init' => init, 'wynik' => wynik)

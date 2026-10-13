@@ -3,14 +3,15 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/atrybuty.rb
 # Zadanie: atrybuty w modelu – zgodność z Dokumentacją 2D (słownik ArteMadera) i zapis wejścia generatora do przebudowy.
-# Tematy: atrybuty, słownik ArteMadera, rola timber, prefiks Bs/Kf, pozycja, zapis parametrów w modelu, przebudowa, podpis zawartości, ręczne poprawki
+# Tematy: atrybuty, słownik ArteMadera, rola timber, prefiks Bs/Kf/Sz/Pw/L/Pd/Pl/Kr, pozycja, zapis parametrów w modelu, przebudowa, podpis zawartości, ręczne poprawki
 # Zależy od: log.rb
 # Używają: sketchup/budowa.rb, sketchup/wejscie.rb, sketchup/sterowanie.rb
 #
-# Słownik 'ArteMadera' (czyta Dokumentacja 2D): rola = 'timber', prefiks = 'Bs' | 'Kf', pozycja, nazwa – tylko na
-# definicjach bali. Grupy domu i ścian nie dostają roli: 'skip' na grupie nadrzędnej wyłączyłby w Dokumentacji 2D
-# wszystkie bale (dziedziczenie w ProjectBuilder#walk_entity). Prefiksy Bs/Kf trzeba dopisać w Dokumentacji 2D
-# (element_roles.rb, PREFIX_GROUPS) – do tego czasu Dokumentacja 2D ich nie rozpozna.
+# Słownik 'ArteMadera' (czyta Dokumentacja 2D): rola = 'timber', prefiks = 'Bs' | 'Kf' | 'Sz' (bale) albo 'Pw' | 'L' |
+# 'Pd' | 'Pl' | 'Kr' (belki podłogi i dachu), pozycja, nazwa – tylko na definicjach. Grupy domu i ścian nie dostają
+# roli: 'skip' na grupie nadrzędnej wyłączyłby w Dokumentacji 2D wszystkie bale (dziedziczenie w
+# ProjectBuilder#walk_entity). Prefiksy trzeba dopisać w Dokumentacji 2D (element_roles.rb, PREFIX_GROUPS) – do tego
+# czasu Dokumentacja 2D ich nie rozpozna.
 # Słownik 'ArteMadera_GW' (generator): na grupie domu – wejscie (JSON), dom (identyfikator), podpis, kompilacja;
 # na definicji – dom, nazwa; na instancji – sciana, wieniec, pozycja.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -70,6 +71,13 @@ module ArteMadera
         inst.set_attribute(DICT_GW, 'sciana', b[:sciana][:id])
         inst.set_attribute(DICT_GW, 'wieniec', b[:wieniec][:nr])
         inst.set_attribute(DICT_GW, 'pozycja', b[:pozycja][:nazwa])
+        nil
+      end
+
+      # Oznaczenie instancji belki podłogi lub dachu (rodzaj, pozycja).
+      def oznacz_element(inst, e)
+        inst.set_attribute(DICT_GW, 'element', e[:rodzaj])
+        inst.set_attribute(DICT_GW, 'pozycja', e[:pozycja][:nazwa])
         nil
       end
 

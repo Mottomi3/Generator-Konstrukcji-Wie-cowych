@@ -36,12 +36,13 @@ Testy.rowne(pl[:pozycje].map { |p| p[:nazwa] }, %w[1-4200 2-4200 3-3200 4-3200],
 Testy.rowne(pl[:pary_zamkow], 4 * 33, 'pary bali w 4 narożnikach')
 bez_kolizji(pl, 'dom 4000 × 3000')
 
-Testy.grupa('Dom 4000 × 3000, maks. bal 4000 – styki jak 900 W-2')
-pl = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000)
+Testy.grupa('Dom 4000 × 3000, maks. bal 4000 – układ para (jak 900 W-2)')
+pl = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000, 'styk_uklad' => 'para')
 w1 = sciana(pl, 'W-1')
-Testy.rowne(w1[:styki][:regiony].length, 1, 'jedno miejsce łączenia')
-Testy.rowne(w1[:styki][:regiony][0][:a] - w1[:s_od], 1900.0, 'styk w osi 1. kontrforu – 1900 od końca bala')
-Testy.rowne(w1[:styki][:regiony][0][:b] - w1[:s_od], 2300.0, 'styk w osi 2. kontrforu – 2300 od końca bala')
+st = w1[:styki]
+Testy.rowne(st[:parzyste].length, 1, 'jedno miejsce łączenia')
+Testy.rowne(st[:parzyste][0] - w1[:s_od], 1900.0, 'styk w osi 1. kontrforu – 1900 od końca bala')
+Testy.rowne(st[:nieparzyste][0] - w1[:s_od], 2300.0, 'styk w osi 2. kontrforu – 2300 od końca bala')
 dl = w1[:bale].map { |b| b[:dl].round }.uniq.sort
 Testy.rowne(dl, [1900, 2300], 'bale 1900 i 2300')
 Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor }, 4, '4 nowe kontrfory (po 2 na ścianę)')
@@ -51,26 +52,27 @@ Testy.rowne(kf[:bale].length, 16, 'kontrfor: 16 bali (do wysokości ściany)')
 Testy.rowne(kf[:bale].map { |b| b[:dl].round }.uniq, [244], 'kontrfor z odcinków 244')
 Testy.rowne(pl[:pozycje].count { |p| p[:prefiks] == 'Kf' }, 1, 'jedna pozycja kontrforu')
 w1[:bale].group_by { |b| b[:i] }.each do |i, lista|
-  st = lista.select { |b| b[:konce][1] == :styk }.map { |b| b[:s1] }
-  oczekiwany = i.even? ? w1[:styki][:regiony][0][:a] : w1[:styki][:regiony][0][:b]
-  Testy.rowne(st, [oczekiwany], "wieniec #{i + 1}: styk na przemian")
+  koncowki = lista.select { |b| b[:konce][1] == :styk }.map { |b| b[:s1] }
+  oczekiwany = i.even? ? st[:parzyste][0] : st[:nieparzyste][0]
+  Testy.rowne(koncowki, [oczekiwany], "wieniec #{i + 1}: styk na przemian")
 end
 bez_kolizji(pl, 'styki w zamkach kontrforów')
 
-Testy.grupa('Wariant jeden kontrfor (styki ± 200)')
+Testy.grupa('Układ jeden węgieł (styki ± 200), stara nazwa jeden_kontrfor')
 pl = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000, 'styk_uklad' => 'jeden_kontrfor')
+Testy.rowne(pl[:parametry]['styk_uklad'], 'jeden_wegiel', 'stara wartość zamieniona na jeden_wegiel')
 w1 = sciana(pl, 'W-1')
-r = w1[:styki][:regiony][0]
-Testy.rowne(r[:b] - r[:a], 400.0, 'odstęp styków 400')
+st = w1[:styki]
+Testy.rowne(st[:nieparzyste][0] - st[:parzyste][0], 400.0, 'odstęp styków 400')
 Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor }, 2, 'po jednym kontrforze na ścianę')
 bez_kolizji(pl, 'jeden kontrfor')
 
 Testy.grupa('Mijanka poniżej 300 – poprawiona do 300')
-pl = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000, 'mijanka' => 200)
+pl = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000, 'mijanka' => 200, 'styk_uklad' => 'para')
 Testy.rowne(pl[:parametry]['mijanka'], 300.0, 'mijanka podniesiona do 300')
 Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('Mijanka') }, 'ostrzeżenie o mijance')
-r = sciana(pl, 'W-1')[:styki][:regiony][0]
-Testy.rowne(r[:b] - r[:a], 300.0, 'odstęp kontrforów 300')
+st = sciana(pl, 'W-1')[:styki]
+Testy.rowne(st[:nieparzyste][0] - st[:parzyste][0], 300.0, 'odstęp kontrforów 300')
 bez_kolizji(pl, 'mijanka 300')
 
 Testy.grupa('Ściana działowa T–T i skrzyżowanie X')
@@ -97,7 +99,7 @@ bez_kolizji(pl, 'wolny koniec')
 Testy.grupa('Kontrfor narysowany linią')
 seg = prostokat(0, 0, 6000, 4000) + [[[2500, -150], [2500, 150]], [[-150, 1800], [150, 1800]]]
 pl = plan(seg, 'max_dlugosc' => 7000)
-kf = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor }
+kf = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek }
 Testy.rowne(kf.length, 2, 'dwa kontrfory z rysunku')
 Testy.rowne(kf.map { |w| w[:gospodarz][:id] }.sort, %w[W-1 W-4], 'gospodarze W-1 i W-4')
 Testy.rowne(kf[0][:a][0].round(1), 2500.0, 'kontrfor na W-1 w osi x = 2500')
@@ -137,21 +139,27 @@ Testy.grupa('Brak zamkniętego obrysu – błąd')
 pl = plan(prostokat(0, 0, 6000, 4000)[0..2])
 Testy.sprawdz(!pl[:bledy].empty? && pl[:bledy][0].include?('zamkniętego obrysu'), 'błąd o otwartym obrysie')
 
-Testy.grupa('Długa ściana 12 m, maks. 5000')
+Testy.grupa('Długa ściana 12 m, maks. 5100 – na przemian')
 pl = plan(prostokat(0, 0, 12_000, 4000))
 w1 = sciana(pl, 'W-1')
-Testy.rowne(w1[:styki][:regiony].length, 2, 'dwa miejsca łączenia (3 bale)')
-Testy.sprawdz(w1[:bale].all? { |b| b[:dl] <= 5000.01 }, 'bale ≤ 5000')
-Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor }, 8, '8 nowych kontrforów (2 ściany × 2 miejsca × 2)')
+Testy.rowne(w1[:styki][:kotwy].length, 4, 'cztery kotwice (3 bale w wieńcu, styki na przemian)')
+Testy.rowne([w1[:styki][:parzyste].length, w1[:styki][:nieparzyste].length], [2, 2], 'po 2 styki w wieńcu')
+Testy.sprawdz(w1[:bale].all? { |b| b[:dl] <= 5100.01 }, 'bale ≤ 5100')
+Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor }, 8, '8 nowych węgłów (2 ściany × 4)')
+Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :usztywnienie }, 0, 'węgły styków wystarczają jako usztywnienie')
 bez_kolizji(pl, 'ściana 12 m')
 
 Testy.grupa('Długa ściana z działowymi – styki przy działowych')
 seg = prostokat(0, 0, 9000, 4000) + [[[4400, 0], [4400, 4000]], [[4800, 0], [4800, 4000]]]
 pl = plan(seg)
 w1 = sciana(pl, 'W-1')
-r = w1[:styki][:regiony][0]
-Testy.rowne(r[:nowe], [], 'bez nowych kontrforów – styki w osiach działowych')
-Testy.rowne([r[:a].round, r[:b].round], [4378, 4778], 'styki w osiach działowych')
+st = w1[:styki]
+Testy.rowne(st[:nowe], [], 'bez nowych węgłów – styki w osiach działowych')
+Testy.rowne(st[:kotwy].map { |s| s.round }, [4378, 4778], 'styki w osiach działowych')
+pl = plan(seg, 'styk_uklad' => 'para')
+r = sciana(pl, 'W-1')[:styki]
+Testy.rowne([r[:parzyste][0].round, r[:nieparzyste][0].round], [4378, 4778], 'układ para – też w osiach działowych')
+Testy.rowne(r[:nowe], [], 'układ para – bez nowych węgłów')
 bez_kolizji(pl, 'styki przy działowych')
 
 Testy.grupa('Otwory')
@@ -180,12 +188,12 @@ kf = pl[:sciany].find { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek }
 Testy.sprawdz(kf[:bale].length < kf[:wience].length, 'kontrfor bez bali na wysokości okna')
 Testy.sprawdz(kf[:bale].none? { |b| b[:z0] < 2000 && b[:z0] + b[:h] > 1000 }, 'żaden bal kontrforu nie wchodzi w okno')
 
-Testy.grupa('Dom 6000 × 4000, maks. 5000 – styk przy działowej + nowy kontrfor')
+Testy.grupa('Dom 6000 × 4000, maks. 5100 – styk przy działowej + nowy węgieł')
 seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]]
 pl = plan(seg)
-r = sciana(pl, 'W-1')[:styki][:regiony][0]
-Testy.rowne(r[:nowe].length, 1, 'jeden nowy kontrfor do pary z działową')
-Testy.sprawdz([r[:a], r[:b]].any? { |x| (x - 2978.0).abs < 0.01 }, 'jedna kotwica w osi działowej')
+r = sciana(pl, 'W-1')[:styki]
+Testy.rowne(r[:nowe].length, 1, 'jeden nowy węgieł do pary z działową')
+Testy.sprawdz(r[:kotwy].any? { |x| (x - 2978.0).abs < 0.01 }, 'jedna kotwica w osi działowej')
 bez_kolizji(pl, 'działowa + kontrfor')
 bez_kolizji(pl, 'kontrfor przerwany')
 

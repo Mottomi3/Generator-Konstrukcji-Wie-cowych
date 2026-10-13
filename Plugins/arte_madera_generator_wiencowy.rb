@@ -19,7 +19,7 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – ten sam co w arte_madera_generator_wiencowy/main.rb.
-    PLUGIN_BUILD      = '1'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD      = '2'.freeze unless const_defined?(:PLUGIN_BUILD)
     PLUGIN_BUILD_DATE = '2026-10-13'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     plik_rejestratora = __FILE__.dup
@@ -29,8 +29,9 @@ module ArteMadera
       begin
         rozszerzenie = SketchupExtension.new(PLUGIN_NAME, File.join(PLUGIN_ID, 'main'))
         rozszerzenie.description = 'Generator domów z bali (konstrukcja wieńcowa): z narysowanego obrysu i osi ścian ' \
-                                   'działowych tworzy ściany z bali z zamkami narożnymi, kontrforami i stykami na mijankę; ' \
-                                   'każdy bal to komponent z atrybutami dla Dokumentacji 2D. ' \
+                                   'działowych tworzy ściany z bali z zamkami narożnymi, węgłami i łączeniem na mijankę, ' \
+                                   'szczyty z gniazdami płatwi, płatwie, krokwie i podłogę; każdy bal i belka to komponent ' \
+                                   'z atrybutami dla Dokumentacji 2D. Ustawienia zapamiętywane, szablony. ' \
                                    'Menu: Rozszerzenia → ArteMadera Generator Wieńcowy. ' \
                                    "Kompilacja #{PLUGIN_BUILD} (#{PLUGIN_BUILD_DATE})."
         rozszerzenie.version = PLUGIN_VERSION

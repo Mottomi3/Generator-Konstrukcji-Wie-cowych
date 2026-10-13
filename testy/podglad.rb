@@ -18,13 +18,17 @@ DOMY = {
   'domL' => [wielokat([[0, 0], [7000, 0], [7000, 4000], [4000, 4000], [4000, 6500], [0, 6500]]) + [[[0, 3000], [4000, 3000]]],
              { 'liczba_wiencow' => 10 },
              [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 600 },
-              { 'sciana' => 'W-1', 'od' => 4300, 'szerokosc' => 930, 'wysokosc' => 1350, 'parapet' => 0 }]]
+              { 'sciana' => 'W-1', 'od' => 4300, 'szerokosc' => 930, 'wysokosc' => 1350, 'parapet' => 0 }]],
+  'pelny900' => [prostokat(0, 0, 4000, 3000), {},
+                 [{ 'sciana' => 'W-2', 'od' => 1000, 'szerokosc' => 900, 'wysokosc' => 2100, 'parapet' => 0 }], true],
+  'krokwie' => [prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]],
+                { 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => 'wewnatrz' }, [], true]
 }.freeze
 
 plik = ARGV[0] || 'dom.obj'
 nazwa = ARGV[1] || 'dom900'
-seg, par, otw = DOMY[nazwa]
-pl = plan(seg, par, otw)
+seg, par, otw, pelny = DOMY[nazwa]
+pl = pelny ? plan_pelny(seg, par, otw) : plan(seg, par, otw)
 raise pl[:bledy].join("\n") unless pl[:bledy].empty?
 siatki = {}
 wierzcholki = []
@@ -42,7 +46,7 @@ pl[:bale].each do |b|
     x = [-x[0], -x[1], 0.0]
     y = [-y[0], -y[1], 0.0]
   end
-  grupy << "g #{b[:sciana][:id]}_#{b[:nr]}_#{b[:sciana][:rodzaj]}"
+  grupy << "g #{b[:sciana][:id]}_#{b[:nr]}_#{poz[:prefiks] == 'Sz' ? 'szczyt' : b[:sciana][:rodzaj]}"
   start = wierzcholki.length
   lista = []
   siatki[poz[:nr]].each do |f|
@@ -54,6 +58,20 @@ pl[:bale].each do |b|
     lista << ind
   end
   sciany << [grupy.last, lista, start]
+end
+pl[:elementy].each_with_index do |e, i|
+  poz = e[:pozycja]
+  siatki["e#{poz[:nr]}"] ||= Siatka.uprosc(Projekt.siatka_pozycji(poz)[:sciany])
+  pol = Elementy.polozenie_instancji(e)
+  o = pol[:poczatek]
+  grupy << "g #{e[:prefiks]}#{i}_#{e[:nr]}_#{e[:tag]}"
+  lista = siatki["e#{poz[:nr]}"].map do |f|
+    f[:petle][0].map do |pt|
+      wierzcholki << (0..2).map { |k| o[k] + pol[:x][k] * pt[0] + pol[:y][k] * pt[1] + pol[:z][k] * pt[2] }
+      wierzcholki.length
+    end
+  end
+  sciany << [grupy.last, lista, 0]
 end
 File.open(plik, 'w') do |f|
   f.puts "# ArteMadera Generator Wieńcowy – #{nazwa}: #{pl[:bale].length} bali, #{pl[:pozycje].length} pozycji"

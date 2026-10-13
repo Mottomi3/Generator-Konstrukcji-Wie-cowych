@@ -2,92 +2,25 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry.rb
-# Zadanie: wartości domyślne, presety przekroju bala z wymiarami zamka, opisy pól okna i sprawdzenie parametrów.
-# Tematy: parametry, presety, przekrój bala, wymiary zamka, wartości domyślne, mijanka 300, długość bala, ostatek, kalenica
-# Zależy od: log.rb
-# Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), sketchup/okno.rb (opisy pól)
+# Zadanie: sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy.
+# Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów, wymiary zamka, mijanka 300, tak/nie
+# Zależy od: rdzen/parametry_lista.rb, log.rb
+# Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), sketchup/okno.rb, sketchup/ustawienia.rb
 #
-# Nowy parametr: dopisz go w DOMYSLNE i OPISY (okno buduje formularz z OPISY), a odczytuj tylko przez p['klucz'].
-# Nowy przekrój bala: dopisz preset w PRESETY (pełny komplet wymiarów zamka).
+# Definicje parametrów (domyślne, opisy, sekcje) są w rdzen/parametry_lista.rb – tu tylko sprawdzanie i odczyt.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(File.dirname(__FILE__)), 'log') unless defined?(ArteMadera::GeneratorWiencowy::Log)
+require File.join(File.dirname(__FILE__), 'parametry_lista') unless defined?(ArteMadera::GeneratorWiencowy::ParametryLista)
 
 module ArteMadera
   module GeneratorWiencowy
     module Parametry
       # Wymóg użytkownika: styki w sąsiednich wieńcach przesunięte co najmniej o tyle [mm].
       MIJANKA_MIN = 300.0 unless const_defined?(:MIJANKA_MIN)
-
-      # Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb.
-      PRESETY = {
-        '44x146' => {
-          'nazwa' => 'Bal 44 × 146 (krycie 139, pióro 7)',
-          'grubosc' => 44.0,        # grubość ściany
-          'wysokosc' => 146.0,      # wysokość bala z piórem (do list zamówień)
-          'krycie' => 139.0,        # rozstaw wieńców = wysokość bryły bala prostego
-          'pioro' => 7.0,           # wysokość pióra (pełny profil – późniejsza runda)
-          'gniazdo_szer' => 40.0,   # szerokość gniazda górnego i dolnego w zamku
-          'gniazdo_gleb' => 36.0,   # głębokość gniazda od wierzchu i od spodu bryły
-          'podciecie_gleb' => 2.5,  # głębokość podcięcia bocznego (każde lico)
-          'polbal_lista' => 70.0    # wysokość półbala w listach producenta
-        }
-      }.freeze unless const_defined?(:PRESETY)
-
-      DOMYSLNE = {
-        'preset' => '44x146',
-        'liczba_wiencow' => 16,            # pełne wieńce ścian okapowych (szczytowe mają o jeden więcej)
-        'ostatek' => 100.0,                # wypust bala za licem ściany poprzecznej
-        'kalenica' => 'dluzszy',           # kierunek kalenicy: dluzszy | krotszy | x | y
-        'max_dlugosc' => 5000.0,           # najdłuższy bal
-        'min_odcinek' => 200.0,            # najkrótszy kawałek bala (ostrzeżenie)
-        'styk_uklad' => 'dwa_skrzyzowania', # dwa_skrzyzowania (styk w osi zamka, jak 900 W-2) | jeden_kontrfor
-        'mijanka' => 400.0,                # odstęp styków w sąsiednich wieńcach (≥ MIJANKA_MIN)
-        'szczelina_styku' => 0.0,          # szczelina między czołami bali na styku
-        'kontrfor_max_linia' => 600.0,     # krótsza linia przecinająca ścianę = kontrfor
-        'min_odstep_skrzyzowan' => 300.0,  # najmniejszy odstęp osi skrzyżowań (nowe kontrfory)
-        'odstep_od_otworu' => 150.0,       # najmniejszy odstęp osi nowego kontrforu od krawędzi otworu
-        'min_kawalek_przy_otworze' => 70.0, # najkrótszy kawałek bala między licem ściany poprzecznej a otworem
-        'luz_nad_otworem' => 0.0,          # luz osiadania nad otworem
-        'tolerancja_rysunku' => 5.0,       # tolerancja dopasowania linii obrysu [mm]
-        'gestosc' => 450.0                 # gęstość drewna do wagi [kg/m³] (świerk)
-      }.freeze unless const_defined?(:DOMYSLNE)
-
-      # Opisy pól okna: klucz => [etykieta, jednostka, min, max, rodzaj]; rodzaj: :liczba | :calkowita | :wybor.
-      OPISY = [
-        ['preset', 'Przekrój bala', '', nil, nil, :wybor],
-        ['liczba_wiencow', 'Liczba wieńców (ściany okapowe)', 'szt.', 3, 60, :calkowita],
-        ['ostatek', 'Ostatek za licem', 'mm', 40.0, 600.0, :liczba],
-        ['kalenica', 'Kalenica (półbal na ścianach wzdłuż kalenicy)', '', nil, nil, :wybor],
-        ['max_dlugosc', 'Maksymalna długość bala', 'mm', 1000.0, 13000.0, :liczba],
-        ['min_odcinek', 'Najkrótszy kawałek bala', 'mm', 50.0, 2000.0, :liczba],
-        ['styk_uklad', 'Układ styków na długości', '', nil, nil, :wybor],
-        ['mijanka', 'Mijanka styków w sąsiednich wieńcach', 'mm', 300.0, 3000.0, :liczba],
-        ['szczelina_styku', 'Szczelina na styku', 'mm', 0.0, 30.0, :liczba],
-        ['kontrfor_max_linia', 'Linia kontrforu – najdłuższa', 'mm', 100.0, 3000.0, :liczba],
-        ['min_odstep_skrzyzowan', 'Najmniejszy odstęp skrzyżowań', 'mm', 150.0, 3000.0, :liczba],
-        ['odstep_od_otworu', 'Odstęp nowego kontrforu od otworu', 'mm', 0.0, 2000.0, :liczba],
-        ['min_kawalek_przy_otworze', 'Kawałek bala przy otworze – najkrótszy', 'mm', 0.0, 1000.0, :liczba],
-        ['luz_nad_otworem', 'Luz osiadania nad otworem', 'mm', 0.0, 200.0, :liczba],
-        ['tolerancja_rysunku', 'Tolerancja rysunku obrysu', 'mm', 0.5, 50.0, :liczba],
-        ['gestosc', 'Gęstość drewna (waga)', 'kg/m³', 300.0, 900.0, :liczba]
-      ].freeze unless const_defined?(:OPISY)
-
-      # Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka].
-      OPISY_ZAMKA = [
-        ['grubosc', 'Grubość bala', 'mm'], ['krycie', 'Krycie (rozstaw wieńców)', 'mm'],
-        ['wysokosc', 'Wysokość z piórem (listy)', 'mm'], ['pioro', 'Pióro', 'mm'],
-        ['gniazdo_szer', 'Gniazdo – szerokość', 'mm'], ['gniazdo_gleb', 'Gniazdo – głębokość', 'mm'],
-        ['podciecie_gleb', 'Podcięcie boczne – głębokość', 'mm'], ['polbal_lista', 'Półbal – wysokość w listach', 'mm']
-      ].freeze unless const_defined?(:OPISY_ZAMKA)
-
-      # Wartości pól wyboru: klucz => [[wartość, opis], ...].
-      WYBORY = {
-        'kalenica' => [['dluzszy', 'wzdłuż dłuższego boku'], ['krotszy', 'wzdłuż krótszego boku'],
-                       ['x', 'wzdłuż osi X obrysu'], ['y', 'wzdłuż osi Y obrysu']],
-        'styk_uklad' => [['dwa_skrzyzowania', 'styk w osi zamka, dwa skrzyżowania na przemian (jak 900 W-2)'],
-                         ['jeden_kontrfor', 'styki obok jednego kontrforu, ± połowa mijanki']]
-      }.freeze unless const_defined?(:WYBORY)
+      L = ParametryLista unless const_defined?(:L)
+      PRESETY = ParametryLista::PRESETY unless const_defined?(:PRESETY)
+      DOMYSLNE = ParametryLista.domyslne.freeze unless const_defined?(:DOMYSLNE)
 
       module_function
 
@@ -96,34 +29,53 @@ module ArteMadera
         wej = wejscie.is_a?(Hash) ? wejscie : {}
         p = {}
         uwagi = []
-        DOMYSLNE.each { |k, v| p[k] = wej.key?(k) ? wej[k] : v }
-        p['preset'] = DOMYSLNE['preset'] unless PRESETY.key?(p['preset'].to_s)
-        OPISY.each do |kl, etykieta, _jedn, min, max, rodzaj|
-          next if rodzaj == :wybor
-          v = liczba(p[kl])
-          if v.nil?
-            uwagi << "#{etykieta}: niepoprawna wartość „#{p[kl]}” – przyjęto #{DOMYSLNE[kl]}"
-            v = DOMYSLNE[kl].to_f
-          end
-          if min && v < min
-            uwagi << "#{etykieta}: #{fmt(v)} poniżej najmniejszej wartości #{fmt(min)} – przyjęto #{fmt(min)}"
-            v = min.to_f
-          end
-          if max && v > max
-            uwagi << "#{etykieta}: #{fmt(v)} powyżej największej wartości #{fmt(max)} – przyjęto #{fmt(max)}"
-            v = max.to_f
-          end
-          p[kl] = rodzaj == :calkowita ? v.round : v.to_f
+        L::LISTA.each do |w|
+          k = w[:klucz]
+          v = wej.key?(k) && !wej[k].nil? && wej[k].to_s.strip != '' ? wej[k] : w[:domyslna]
+          p[k] = sprawdz(w, v, uwagi)
         end
-        WYBORY.each do |kl, lista|
-          next if lista.any? { |w| w[0] == p[kl].to_s }
-          uwagi << "#{kl}: nieznana wartość „#{p[kl]}” – przyjęto #{DOMYSLNE[kl]}"
-          p[kl] = DOMYSLNE[kl]
-        end
-        p['kalenica'] = p['kalenica'].to_s
-        p['styk_uklad'] = p['styk_uklad'].to_s
         p['zamek'] = zamek_z(wej['zamek'], p['preset'], uwagi)
         [p, uwagi]
+      end
+
+      # Jedna wartość według rodzaju pola; wartość spoza zakresu – granica zakresu i ostrzeżenie.
+      def sprawdz(w, v, uwagi)
+        case w[:rodzaj]
+        when :wybor then wybor(w, v, uwagi)
+        when :przekroj
+          return tekst_przekroju(przekroj_z(v)) if przekroj_z(v)
+          uwagi << "#{w[:etykieta]}: niepoprawny przekrój „#{v}” (wpisz np. 50x150) – przyjęto #{w[:domyslna]}"
+          w[:domyslna]
+        when :tekst then v.to_s
+        else liczba_w_zakresie(w, v, uwagi)
+        end
+      end
+
+      # Wartość pola wyboru (stare wartości z wcześniejszych kompilacji zamieniane na obecne).
+      def wybor(w, v, uwagi)
+        t = v.to_s
+        t = L::STARE_WARTOSCI[w[:klucz]][t] if L::STARE_WARTOSCI[w[:klucz]] && L::STARE_WARTOSCI[w[:klucz]][t]
+        return t if L.wybory(w).any? { |x| x[0] == t }
+        uwagi << "#{w[:etykieta]}: nieznana wartość „#{v}” – przyjęto #{w[:domyslna]}"
+        w[:domyslna]
+      end
+
+      # Liczba w zakresie min…max (całkowita dla :calkowita).
+      def liczba_w_zakresie(w, v, uwagi)
+        n = liczba(v)
+        if n.nil?
+          uwagi << "#{w[:etykieta]}: niepoprawna wartość „#{v}” – przyjęto #{fmt(w[:domyslna])}"
+          n = w[:domyslna].to_f
+        end
+        if w[:min] && n < w[:min]
+          uwagi << "#{w[:etykieta]}: #{fmt(n)} poniżej najmniejszej wartości #{fmt(w[:min])} – przyjęto #{fmt(w[:min])}"
+          n = w[:min].to_f
+        end
+        if w[:max] && n > w[:max]
+          uwagi << "#{w[:etykieta]}: #{fmt(n)} powyżej największej wartości #{fmt(w[:max])} – przyjęto #{fmt(w[:max])}"
+          n = w[:max].to_f
+        end
+        w[:rodzaj] == :calkowita ? n.round : n.to_f
       end
 
       # Wymiary zamka: preset uzupełniony wartościami użytkownika (sprawdzone, czy zamek się mieści).
@@ -155,6 +107,35 @@ module ArteMadera
       # Rozstaw wieńców = wysokość bryły bala prostego [mm].
       def krycie(p)
         p['zamek']['krycie'].to_f
+      end
+
+      # Czy parametr tak/nie jest włączony.
+      def tak?(p, klucz)
+        p[klucz].to_s == 'tak'
+      end
+
+      # Przekrój parametru jako [szerokość, wysokość] w mm.
+      def przekroj(p, klucz)
+        przekroj_z(p[klucz]) || przekroj_z(DOMYSLNE[klucz])
+      end
+
+      # Przekrój z tekstu „50x150” / „50×150” / „50*150” → [50.0, 150.0]; nil gdy niepoprawny.
+      def przekroj_z(v)
+        m = v.to_s.strip.tr(',', '.').match(/\A(\d+(?:\.\d+)?)\s*[x×X*]\s*(\d+(?:\.\d+)?)\z/)
+        return nil if m.nil?
+        b = m[1].to_f
+        h = m[2].to_f
+        b > 0 && h > 0 ? [b, h] : nil
+      end
+
+      # Przekrój jako tekst „50x150”.
+      def tekst_przekroju(bh)
+        "#{fmt(bh[0])}x#{fmt(bh[1])}"
+      end
+
+      # Katalog przekrojów (lista „szer×wys” po przecinku) → [[b, h], …] bez niepoprawnych wpisów.
+      def katalog(p, klucz = 'przekroje_katalog')
+        p[klucz].to_s.split(/[;,\n]/).map { |t| przekroj_z(t) }.compact.uniq
       end
 
       # Liczba z tekstu lub liczby (przecinek dziesiętny dozwolony); nil gdy się nie da.

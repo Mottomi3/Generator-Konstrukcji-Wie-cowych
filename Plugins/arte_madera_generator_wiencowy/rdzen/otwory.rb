@@ -67,10 +67,11 @@ module ArteMadera
         uwagi
       end
 
-      # Cięcia w wieńcu [z0, z0 + h]: { pelne: [[s0, s1]] – bal przerwany, wyciecia: [{ s0:, s1:, strona:, gleb: }], uwagi: [] }.
+      # Cięcia w wieńcu [z0, z0 + h]: { pelne: [[s0, s1]] – bal przerwany, gniazda: [[s0, s1]] – te z pelnych, które są
+      # gniazdami płatwi, wyciecia: [{ s0:, s1:, strona:, gleb: }], uwagi: [] }.
       def dla_wienca(w, z0, h)
         z1 = z0 + h
-        wynik = { pelne: [], wyciecia: [], uwagi: [] }
+        wynik = { pelne: [], gniazda: [], wyciecia: [], uwagi: [] }
         (w[:otwory] || []).each do |o|
           dol = [z0, o[:z0]].max
           gora = [z1, o[:z1]].min
@@ -79,6 +80,7 @@ module ArteMadera
           do_gory = o[:z1] >= z1 - TOL_Z
           if od_dolu && do_gory
             wynik[:pelne] << [o[:s0], o[:s1]]
+            wynik[:gniazda] << [o[:s0], o[:s1]] if o[:gniazdo]
           elsif od_dolu
             wynik[:wyciecia] << { s0: o[:s0], s1: o[:s1], strona: :dol, gleb: o[:z1] - z0 }
           elsif do_gory
@@ -98,9 +100,9 @@ module ArteMadera
         end
       end
 
-      # Przedziały s zajęte przez otwory poszerzone o zapas (do wyboru miejsc styków i kontrforów).
+      # Przedziały s zajęte przez otwory poszerzone o zapas (do wyboru miejsc styków i kontrforów; bez gniazd płatwi).
       def strefy_zakazane(w, zapas)
-        (w[:otwory] || []).map { |o| [o[:s0] - zapas, o[:s1] + zapas] }
+        (w[:otwory] || []).reject { |o| o[:gniazdo] }.map { |o| [o[:s0] - zapas, o[:s1] + zapas] }
       end
     end
   end

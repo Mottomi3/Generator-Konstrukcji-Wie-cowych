@@ -26,6 +26,9 @@ uruchom() {
 
 echo "Testy rdzenia i SketchUpa (atrapa):"
 uruchom t_rdzen ruby -I testy/atrapa testy/t_rdzen.rb
+uruchom t_wegly ruby -I testy/atrapa testy/t_wegly.rb
+uruchom t_szczyty ruby -I testy/atrapa testy/t_szczyty.rb
+uruchom t_podloga ruby -I testy/atrapa testy/t_podloga.rb
 uruchom t_zamek ruby -I testy/atrapa testy/t_zamek.rb
 uruchom t_siatka ruby -I testy/atrapa testy/t_siatka.rb
 uruchom t_sketchup ruby -I testy/atrapa testy/t_sketchup.rb
@@ -42,6 +45,7 @@ fi
 echo "Kontrole:"
 uruchom zasady ruby testy/sprawdz_zasady.rb
 uruchom spis ruby testy/spis_tresci.rb --sprawdz
+uruchom parametry ruby testy/lista_parametrow.rb --sprawdz
 
 echo "WSZYSTKIE ZESTAWY: FAILURES ${SUMA}"
 [ "$SUMA" -eq 0 ]

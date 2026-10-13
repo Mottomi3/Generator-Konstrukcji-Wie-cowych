@@ -1,6 +1,7 @@
 # Specyfikacja – ArteMadera Generator Wieńcowy
 
-Stan: kompilacja 1 (2026-10-13). Wszystkie wymiary w mm. Decyzje użytkownika: `decyzje_projektowe.md` (Projekt claude.ai
+Stan: kompilacja 2 (2026-10-13). Wszystkie wymiary w mm. Pełna lista parametrów z wartościami domyślnymi:
+`docs/parametry.md` (generowana). Decyzje użytkownika: `decyzje_projektowe.md` (Projekt claude.ai
 i `00_Analiza\` na dysku).
 
 ## 1. Wejście – rysunek w SketchUpie
@@ -34,7 +35,8 @@ i `00_Analiza\` na dysku).
   zaczynają się **półbalem** H/2 = 69,5 (w listach 70), ściany szczytowe (B) pełnym balem.
 - `liczba_wiencow` n = pełne wieńce ścian okapowych: okapowa = półbal + n → wysokość n·H + H/2; szczytowa zewnętrzna
   n + 1 wieńców → (n + 1)·H (górny bal = pierwszy bal szczytu, zamyka zamek z górnym balem okapowej); działowa
-  szczytowa n wieńców; kontrfor – do wysokości swojej ściany.
+  szczytowa n wieńców; kontrfor – do wysokości swojej ściany (przy szczycie – tylko pod linią dachu).
+- Ściana ze szczytem (§8) ma wieńce aż do kalenicy; bale ścięte skosem dachu.
 - Kierunek kalenicy: dłuższy bok (domyślnie), krótszy bok, oś X, oś Y.
 
 ## 4. Zamek (preset 44 × 146, rysunek IMG-20250930-WA0005)
@@ -52,21 +54,32 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 - Które lico ma które podcięcie: `Zamek::ORIENTACJA` (x: −1, y: +1) – test kolizji pokazał, że tylko dwa lustrzane
   ułożenia składają się bez nachodzenia („labirynt”; bal poprzeczny odwrócony licem).
 - Odcinek kontrforu = 100 + 44 + 100 = 244, obróbki dokładnie jak na rysunku (gniazda 102…142, podcięcia 100…142 i 102…144).
-- Inne przekroje: tabela presetów w `rdzen/parametry.rb`, wymiary edytowalne w oknie.
+- Inne przekroje: tabela presetów w `rdzen/parametry_lista.rb`, wymiary edytowalne w oknie; `zamek_odbicie` = lustro
+  odwraca labirynt (oba ułożenia bez kolizji).
 
-## 5. Długości bali i styki (mijanka ≥ 300 – wymóg użytkownika)
+## 5. Długości bali i łączenia (mijanka ≥ 300 – wymóg użytkownika)
 
-- Bal dłuższy niż `max_dlugosc` (5000) → ściana dzielona. Liczba bali m – najmniejsza, przy której każdy kawałek
-  mieści się w maksymalnej długości.
-- **Układ domyślny „dwa skrzyżowania” (jak 900 W-2):** miejsce łączenia = dwa skrzyżowania a < b w odstępie
-  `mijanka` (400, nie mniej niż 300). W wieńcach parzystych (licząc od dołu od 0) bale stykają się w osi a, w
-  nieparzystych w osi b – czoła bali w połowie zamka, styk trzymają bale kontrforu nad i pod nim. Najpierw używane są
-  istniejące skrzyżowania (działowe, narysowane kontrfory), brakujące – nowe kontrfory. Dom 4000 × 3000 przy
-  maks. 4000 daje bale 1900 / 2300 z kontrforami jak w 900.
-- Układ „jeden kontrfor”: styki c − 200 i c + 200 obok jednego kontrforu (poza zamkiem).
-- Nowy kontrfor nie stanie bliżej niż 300 od innego skrzyżowania, przy otworze (150 + zapas), przy narożniku.
-- `szczelina_styku` (0) – szczelina między czołami bali.
+- Bal dłuższy niż `max_dlugosc` (5100 – najdłuższe bale producenta 5044 / 5090) → ściana łączona. Styk zawsze w osi
+  zamka (węgieł 244 albo ściana działowa), czoła bali w połowie zamka.
+- **Układ domyślny „na przemian” (jak 1200):** kotwice a0 < a1 < … co najmniej `mijanka` (400, nie mniej niż 300);
+  wieńce parzyste (od dołu, od 0) łączą się w a0, a2, …, nieparzyste w a1, a3, … – kawałek bala sięga od kotwicy do
+  kotwicy co drugiej. Kotwic co najmniej 2 × (bale w wieńcu − 1). Najpierw istniejące działowe i narysowane węgły,
+  nowe węgły tylko, gdy trzeba (najmniej nowych, potem najbliżej równego podziału).
+- Układ „para” (jak 900 W-2): na każde miejsce łączenia dwa skrzyżowania w odstępie mijanki; „jeden węgieł”: styki
+  c ± mijanka/2 obok jednego węgła (poza zamkiem).
+- Styk nie bliżej otworu niż `styk_odstep_od_otworu` (400 – kawałek bala przy otworze), węgieł nie bliżej innego
+  skrzyżowania niż 300 i otworu niż 150, nie przy narożniku. `szczelina_styku` (0) – szczelina między czołami.
 - Kontrola: `Kontrola.mijanka` – styki w sąsiednich wieńcach co najmniej 300 od siebie.
+
+## 5a. Węgły usztywniające (244)
+
+- Światło ściany = odległość między licami podparć (narożnik, działowa, węgieł). Gdy przekracza
+  `wegly_max_swiatlo` (4800 – 1800 W-2: 4756 bez węgła), generator dostawia węgły; dla domu ze ścianami okapowymi
+  wyższymi niż `wegly_prog_wysokosci` (3000) limit `wegly_max_swiatlo_wysokie` (3700 – 1200: węgieł na ścianie 4 m).
+- Rozmieszczenie: równo (najmniej węgłów, światła ≤ limit), od narożników o `wegly_odstep_od_naroznika` (800,
+  symetrycznie, reszta równo), albo tylko narysowane (ostrzeżenie zamiast węgła). Działowe – przełącznik.
+- Kolejność: najpierw węgły pod styki (§5), potem usztywniające – węgły styków często wystarczają.
+- Dom 4 × 4 (lico): bale 4200 w całości, światło 3956 – bez łączeń i bez węgłów (jak 1000, 1100, 900 W-4).
 
 ## 6. Otwory
 
@@ -79,26 +92,73 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 
 ## 7. Bale, pozycje, model
 
-- Bryła bala prostego: 44 × 139 (półbal 69,5), obróbki: gniazda, podcięcia, wycięcia przy otworach (w przyszłości skosy
-  szczytów). Pióro i wpust (pełny profil) – późniejsza runda (przełącznik).
+- Bryła bala prostego: 44 × 139 (półbal 69,5), obróbki: gniazda, podcięcia, wycięcia przy otworach, gniazda płatwi,
+  skosy szczytów. Pióro i wpust (pełny profil) – późniejsza runda (przełącznik).
 - Identyczne bale (ta sama bryła, także po obrocie o 180° wokół pionu) = jedna pozycja „nr-długość” (np. `2-4200`)
   i jeden komponent. Numery: W-1, W-2…, w ścianie wieńce od dołu, w wieńcu wzdłuż ściany.
 - Model: grupa „Dom wieńcowy” (obrót układu lokalnego, poziom ±0) > grupy W-n > instancje komponentów „Bal 2-4200”,
-  „Kontrfor 9-244”. Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory.
-- Atrybuty dla Dokumentacji 2D (słownik `ArteMadera` na definicji): `rola` = timber, `prefiks` = Bs / Kf, `pozycja`,
-  `nazwa`. **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
-  Prefiksy Bs i Kf trzeba jeszcze dopisać w Dokumentacji 2D (`element_roles.rb`, `PREFIX_GROUPS`).
+  „Bal szczytu 7-2747”, „Kontrfor 9-244”; grupy „Podłoga” i „Dach” z belkami („Legar 15-2800”, „Płatew 16-5000”…).
+  Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory, Szczyty, Podłoga, Dach.
+- Atrybuty dla Dokumentacji 2D (słownik `ArteMadera` na definicji): `rola` = timber, `prefiks` = Bs (bale ścienne) /
+  Kf (węgły) / Sz (bale szczytu) / Pw (podwaliny) / L (legary) / Pd (podpory legarów) / Pl (płatwie) / Kr (krokwie),
+  `pozycja`, `nazwa`. **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
+  Prefiksy trzeba jeszcze dopisać w Dokumentacji 2D (`element_roles.rb`, `PREFIX_GROUPS`).
+- Pozycje belek numerowane po balach (te same zasady: identyczna belka = jedna pozycja).
 - Wejście (linie, poziom, parametry, otwory) zapisane w grupie domu (`ArteMadera_GW`/`wejscie`): zaznacz dom →
   to samo polecenie → okno z parametrami → „Zastąp dom w modelu”. Ręczne zmiany w domu wykrywa podpis zawartości –
   przed nadpisaniem pytanie.
 
-## 8. Okno
+## 8. Szczyty i dach
 
-Formularz budowany z `Parametry::OPISY` (nowy parametr = jeden wpis w `rdzen/parametry.rb`), wymiary zamka,
-rzut z numerami ścian i punktami odniesienia, tabela okien i drzwi, wynik (liczby, wysokości, ściany ze stykami,
-lista bali do zamówienia). Każda zmiana pola → podgląd (bez zmian w modelu).
+- Szczyt dostają ściany zewnętrzne szczytowe od narożnika do narożnika (i działowe szczytowe – przełącznik, jak 1800 W-2).
+- Linia podparcia (wierzch płatwi) w przekroju poprzecznym: na licu wewnętrznym ściany okapowej `dach_podniesienie`
+  nad jej wierzchem (69,5 = wierzch najwyższego bala szczytowej, jak 900), w stronę kalenicy rośnie pod kątem
+  `dach_kat` (20°). Płatew stojąca na ścianie (`platwa_scienna_polozenie` = na_scianie) wyznacza linię swoim wierzchem.
+- Płatwie: ścienne (60 × 200, przy licu wewnętrznym albo na ścianie), pośrednie (80 × 180, co ≤ `platwie_rozstaw_max`
+  990–1000 w poziomie), kalenicowa (80 × 180). Płatew stoi wierzchem na linii przy krawędzi od strony okapu – nic nie
+  wystaje nad dach. Długość = dom + 2 × `dach_okap_szczyt` (500).
+- Gniazdo płatwi = otwór od spodu płatwi w górę (z luzem `gniazdo_luz` 5 na stronę): bal przy spodzie płatwi ma
+  wycięcie od góry, bale wyżej są przecięte (jak 900: kawałki 66-147, 68-372). Gniazda dostają też działowe i węgły,
+  pod którymi przechodzi płatew ścienna.
+- Krokwie (`dach_uklad` = krokwie / płatwie i krokwie): leżą na linii podparcia, od okapu (`dach_okap` 500 za
+  licem) do kalenicy, rozstaw ≤ `krokwie_rozstaw` (900). Przy szczycie (`krokwie_przy_szczycie`): z obu stron
+  szczytu, tylko od wewnątrz, tylko od zewnątrz – szczyt dochodzi do wierzchu krokwi; albo krokiew na szczycie –
+  szczyt kończy się pod krokwią.
+- Bale szczytu: skos wg linii szczytu, kliny niższe niż `szczyt_min_wysokosc` (30) pomijane; prefiks Sz.
+- Belki dachu tylko dla obrysu prostokątnego (inny obrys – szczyty liczone dla każdej ściany osobno, ostrzeżenie).
 
-## 9. Etapy dalej
+## 9. Podłoga
 
-Szczyty z gniazdami pod płatwie/krokwie, taras (wysunięte górne bale + słupy, balustrada), podwaliny/legary/ocieplenie
-(opcje), pełny profil bala, okno ściany z podglądem elewacji, Dokumentacja 2D – grupy Bs/Kf/Sz, dach (etap 2).
+- Poziom 0 = spód pierwszego bala = wierzch podwalin i legarów (legary między podwalinami, wierzchem równo – jak 900).
+- Podwaliny (100 × 100) pod ścianami zewnętrznymi licem równo z licem ściany, w narożnikach na zakład (pół wysokości);
+  pod działowymi w osi (przełącznik), dosunięte do innych podwalin.
+- Legary wzdłuż krótszego boku (albo dłuższego, X, Y), rozstaw ≤ `legary_rozstaw` (600), równo między podwalinami
+  bocznymi i działowymi wzdłuż legarów; dzielone na podwalinach poprzecznych. Przęsła – między podwalinami
+  poprzecznymi na całą szerokość.
+- Dobór (`rdzen/statyka.rb`, uproszczony PN-EN 1995: k_mod 0,8, k_def 0,6, ψ2 0,3, γM 1,3, 1,35 G + 1,5 Q): przekroje
+  z katalogu `przekroje_katalog`, nie niższe niż `izolacja_podlogi`; warunek nośności i ugięcia L/`ugiecie_zalecane`
+  (400, tryb zalecany) albo L/`ugiecie_minimalne` (250, tryb minimalny); tryb ręczny – sprawdzenie podanego przekroju.
+  Podpory legarów (belki pod legarami) dodawane, gdy przęsło za długie (`podpory_rozstaw_max` 0 = automatycznie –
+  wybór wariantu z najmniejszą objętością drewna; > 0 – podpory co najwyżej tyle).
+- Podpowiedzi w oknie: ocena legara (nośność %, ugięcie L/x, „spełnia zalecane / tylko dopuszczalne / za słaby”),
+  najmniejszy i zalecany przekrój bez podpór, izolacja (mieści się / za niski legar), legar wyższy niż podwalina,
+  liczba podpór. To podpowiedź – nie zastępuje projektu konstruktora.
+- Tylko dla obrysu prostokątnego (inny – podpowiedź, bez podłogi).
+
+## 10. Okno, ustawienia, szablony
+
+- Formularz budowany z `rdzen/parametry_lista.rb` (SEKCJE, LISTA): sekcje rozwijane, pod polem podpowiedź (skąd
+  wartość). Nowy parametr = jeden wpis w LISTA – pole pojawia się samo w swojej sekcji.
+- Ostatnio użyte parametry zapisują się przy każdym podglądzie i generowaniu w pliku ustawień na komputerze
+  (Windows: `%APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json`) – nowy dom startuje z nimi po ponownym
+  uruchomieniu SketchUpa. Dom w modelu ma swoje parametry (edycja).
+- Szablony: wbudowane (jak 900, jak 1800, 1,5 kondygnacji, bez łączenia, podłoga 150) i własne (zapisz / wczytaj /
+  usuń); „Przywróć fabryczne”.
+- Rzut z numerami ścian i punktami odniesienia, tabela okien i drzwi (nowe okno / drzwi z wymiarów w ustawieniach),
+  wynik: liczby (bale, węgły, szczyty, belki), ostrzeżenia, podpowiedzi, ściany ze stykami, lista bali i belek.
+
+## 11. Etapy dalej
+
+Taras (wysunięte górne bale + słupy, balustrada), okno ściany z podglądem elewacji (węgły i otwory na rysunku),
+ostatek 200 na wybranych narożnikach, pełny profil bala, Dokumentacja 2D – grupy Bs/Kf/Sz/Pw/L/Pd/Pl/Kr, deski
+dachu i podłogi, dach dla obrysów L / U.

@@ -21,7 +21,7 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '1'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD      = '2'.freeze unless const_defined?(:PLUGIN_BUILD)
     PLUGIN_BUILD_DATE = '2026-10-13'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
@@ -39,9 +39,11 @@ module ArteMadera
 
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
-      rdzen/geometria rdzen/parametry rdzen/obrys rdzen/sciany rdzen/wience rdzen/otwory rdzen/styki rdzen/bale
-      rdzen/zamek rdzen/bryla rdzen/siatka rdzen/pozycje rdzen/projekt rdzen/kontrola
-      sketchup/konwersja sketchup/atrybuty sketchup/wejscie sketchup/budowa sketchup/okno sketchup/sterowanie sketchup/menu
+      rdzen/geometria rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/wience rdzen/otwory
+      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/elementy rdzen/dach rdzen/szczyty rdzen/bale rdzen/zamek
+      rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/podloga rdzen/projekt rdzen/kontrola
+      sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/okno
+      sketchup/sterowanie sketchup/menu
     ].freeze unless const_defined?(:MODULE_FILES)
 
     MODULE_FILES.each do |plik|

@@ -2,9 +2,9 @@
 <!--
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.html
-  Zadanie: okno parametrów generatora – układ sekcji (formularz budowany przez okno.js z opisów pól z Ruby).
-  Tematy: okno, układ okna, sekcje formularza, przyciski
-  Zależy od: html/okno.css, html/okno.js
+  Zadanie: okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby).
+  Tematy: okno, układ okna, sekcje formularza, przyciski, szablony, podpowiedzi
+  Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/wyniki.js, html/okno.js
   Używają: sketchup/okno.rb
 -->
 <html lang="pl">
@@ -31,28 +31,24 @@
 
   <main class="uklad">
     <section class="kolumna">
-      <details open>
-        <summary>Przekrój bala i zamek</summary>
-        <div id="pola-przekroj" class="pola"></div>
-        <div id="pola-zamek" class="pola"></div>
-      </details>
-      <details open>
-        <summary>Ściany</summary>
-        <div id="pola-sciany" class="pola"></div>
-        <div id="wysokosci" class="wysokosci"></div>
-      </details>
-      <details open>
-        <summary>Długości bali i styki</summary>
-        <div id="pola-styki" class="pola"></div>
-      </details>
-      <details>
-        <summary>Otwory – ustawienia</summary>
-        <div id="pola-otwory" class="pola"></div>
-      </details>
-      <details>
-        <summary>Rozpoznanie rysunku i waga</summary>
-        <div id="pola-rysunek" class="pola"></div>
-      </details>
+      <div class="karta szablony">
+        <h2>Szablony i zapamiętane ustawienia</h2>
+        <div class="wiersz">
+          <select id="szablon" title="Szablony wbudowane i własne"></select>
+          <button type="button" id="btn-szablon-wczytaj">Wczytaj</button>
+          <button type="button" id="btn-szablon-usun">Usuń</button>
+        </div>
+        <div class="wiersz">
+          <input type="text" id="szablon-nazwa" placeholder="Nazwa nowego szablonu">
+          <button type="button" id="btn-szablon-zapisz">Zapisz jako szablon</button>
+        </div>
+        <div class="wiersz">
+          <button type="button" id="btn-domyslne">Przywróć fabryczne</button>
+          <span id="szablon-komunikat" class="drobny"></span>
+        </div>
+        <p id="plik-ustawien" class="drobny"></p>
+      </div>
+      <div id="sekcje" class="kolumna"></div>
     </section>
 
     <section class="kolumna">
@@ -79,13 +75,14 @@
         <div id="liczby" class="liczby"></div>
         <div id="lista-bledow"></div>
         <div id="lista-ostrzezen"></div>
+        <div id="lista-podpowiedzi"></div>
         <table class="tabela" id="tab-sciany">
           <thead>
-            <tr><th>Ściana</th><th>Rodzaj</th><th>Długość</th><th>Wysokość</th><th>Wieńce</th><th>Bale</th><th>Styki</th></tr>
+            <tr><th>Ściana</th><th>Rodzaj</th><th>Długość</th><th>Wysokość</th><th>Wieńce</th><th>Bale</th><th>Styki (wieńce parz. / nieparz.)</th></tr>
           </thead>
           <tbody></tbody>
         </table>
-        <h3>Lista bali</h3>
+        <h3>Lista bali i belek</h3>
         <table class="tabela" id="tab-lista">
           <thead>
             <tr><th>Grupa</th><th>Pozycja</th><th>Przekrój</th><th>Długość</th><th>Ilość</th><th>m³</th></tr>
@@ -96,6 +93,9 @@
     </section>
   </main>
 
+  <script src="wspolne.js"></script>
+  <script src="rzut.js"></script>
+  <script src="wyniki.js"></script>
   <script src="okno.js"></script>
 </body>
 </html>

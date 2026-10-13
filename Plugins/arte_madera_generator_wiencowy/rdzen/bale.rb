@@ -2,14 +2,14 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/bale.rb
-# Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, położenie w układzie domu.
-# Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb
+# Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
+# Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
 # dl, z0, h, lvl, cechy (obróbki w układzie bala: x od czoła s0 wzdłuż ściany, y od lica prawego (−nor) do lewego,
-# z od spodu), konce ([:ostatek | :styk | :otwor | :wolny] na s0 i s1).
+# z od spodu), konce ([:ostatek | :styk | :otwor | :gniazdo | :wolny | :skos] na s0 i s1).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
@@ -17,6 +17,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
 require File.join(File.dirname(__FILE__), 'styki') unless defined?(ArteMadera::GeneratorWiencowy::Styki)
+require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -48,32 +49,39 @@ module ArteMadera
         wynik
       end
 
-      # Kawałki bala w wieńcu: zasięg ściany minus otwory przelotowe, podzielony w miejscach styków.
+      # Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu) minus otwory przelotowe, podzielony w miejscach styków.
       def kawalki_wienca(w, wn, i, p, uwagi)
+        zas = w[:rodzaj] == :kontrfor ? [w[:s_od], w[:s_do]] : Szczyty.zasieg(w, wn[:z0], p)
+        return [] if zas.nil?
         ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h])
         ciecia[:uwagi].each { |u| uwagi << u unless uwagi.include?(u) }
-        przedzialy = G.odejmij_przedzialy(w[:s_od], w[:s_do], ciecia[:pelne], 0.5)
+        przedzialy = G.odejmij_przedzialy(zas[0], zas[1], ciecia[:pelne], 0.5)
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)
         g = p['szczelina_styku'].to_f / 2.0
         wynik = []
         przedzialy.each do |a, b|
-          punkty = [[a, koniec_typ(w, a, ciecia[:pelne])]]
+          punkty = [[a, koniec_typ(w, a, ciecia, zas)]]
           styki.sort.each do |st|
             next unless st - g > a + 1.0 && st + g < b - 1.0
             punkty << [st - g, :styk] << [st + g, :styk]
           end
-          punkty << [b, koniec_typ(w, b, ciecia[:pelne])]
+          punkty << [b, koniec_typ(w, b, ciecia, zas)]
           punkty.each_slice(2) do |(s0, t0), (s1, t1)|
-            wynik << nowy_bal(w, wn, i, s0, s1, [t0, t1], ciecia[:wyciecia])
+            bal = nowy_bal(w, wn, i, s0, s1, [t0, t1], ciecia[:wyciecia])
+            bal[:cechy].concat(Szczyty.skosy(w, s0, s1, wn[:z0], wn[:h], p)) unless w[:rodzaj] == :kontrfor
+            wynik << bal
           end
         end
         wynik
       end
 
-      # Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, wolny koniec ściany.
-      def koniec_typ(w, s, pelne)
-        return :otwor if pelne.any? { |o| (o[0] - s).abs < 0.6 || (o[1] - s).abs < 0.6 }
+      # Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, gniazdo płatwi, skos szczytu, wolny koniec.
+      def koniec_typ(w, s, ciecia, zas)
+        przy = lambda { |o| (o[0] - s).abs < 0.6 || (o[1] - s).abs < 0.6 }
+        return :gniazdo if ciecia[:gniazda].any? { |o| przy.call(o) }
+        return :otwor if ciecia[:pelne].any? { |o| przy.call(o) }
         return :ostatek if w[:rodzaj] == :kontrfor
+        return :skos if ((s - zas[0]).abs < 0.01 && zas[0] > w[:s_od] + 0.01) || ((s - zas[1]).abs < 0.01 && zas[1] < w[:s_do] - 0.01)
         if (s - w[:s_od]).abs < 0.01
           return w[:s_od] < -0.01 ? :ostatek : :wolny
         end
@@ -93,10 +101,13 @@ module ArteMadera
           polbal: wn[:polbal], cechy: cechy, konce: konce }
       end
 
-      # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu) w osi kontrforu.
+      # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu, pod linią szczytu)
+      # w osi kontrforu.
       def kontrfor_obecny?(kf, wn, p)
         gosp = kf[:gospodarz]
         s = G.dot(G.sub(kf[:a], gosp[:a]), gosp[:kier])
+        t = Parametry.grubosc(p)
+        return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_linia?(gosp, x, wn[:z0] + wn[:h], p) }
         sasiedzi = Wience.dla_sciany(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
         sasiedzi.none? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
@@ -112,6 +123,7 @@ module ArteMadera
           next if b[:sciana][:rodzaj] == :kontrfor
           id = b[:sciana][:id]
           (za_dlugie[id] ||= []) << b[:dl] if b[:dl] > lmax + 0.5
+          next if b[:konce].include?(:gniazdo) || b[:konce].include?(:skos)
           (za_krotkie[id] ||= []) << b[:dl] if b[:dl] < lmin - 0.5
         end
         za_dlugie.each do |id, l|

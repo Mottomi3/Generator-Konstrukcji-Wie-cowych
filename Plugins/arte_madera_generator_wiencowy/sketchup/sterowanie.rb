@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/sterowanie.rb
 # Zadanie: przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
-# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie
-# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, log.rb
+# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie
+# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
 # Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 #
 # Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory.
@@ -31,8 +31,10 @@ module ArteMadera
             tryb = 'edycja'
           else
             @dom = nil
-            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => {}, 'otwory' => [] }
+            ostatnie = Ustawienia.ostatnie
+            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [] }
             info = format('Zaznaczono %d linii na wysokości %.0f mm.', z[:segmenty].length, z[:z0])
+            info += ' Parametry z ostatniego użycia.' unless ostatnie.empty?
             tryb = 'nowy'
           end
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
@@ -43,16 +45,18 @@ module ArteMadera
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
         end
 
-        # Podgląd z okna: obliczenia bez zmian w modelu.
+        # Podgląd z okna: obliczenia bez zmian w modelu; parametry zapamiętane na komputerze.
         def podglad(dane)
           wej = scal(dane)
+          Ustawienia.zapamietaj(wej['parametry'])
           dla_okna(Log.time('podgląd') { Projekt.oblicz(wej) })
         end
 
-        # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom).
+        # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom); parametry zapamiętane na komputerze.
         def generuj(dane)
           model = Sketchup.active_model
           wej = scal(dane)
+          Ustawienia.zapamietaj(wej['parametry'])
           plan = Log.time('obliczenia') { Projekt.oblicz(wej) }
           wynik = dla_okna(plan)
           return wynik unless plan[:bledy].empty?
@@ -98,16 +102,20 @@ module ArteMadera
             'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [] }
         end
 
-        # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, ściany, lista bali, rzut.
+        # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut.
         def dla_okna(plan)
-          wynik = { 'bledy' => plan[:bledy], 'ostrzezenia' => plan[:ostrzezenia], 'rzut' => rzut(plan) }
+          wynik = { 'bledy' => plan[:bledy], 'ostrzezenia' => plan[:ostrzezenia], 'rzut' => rzut(plan),
+                    'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) } }
           s = plan[:podsumowanie]
           return wynik if s.nil?
           wynik.merge(
             'sciany' => s[:sciany].map { |w| klucze_tekstowe(w) },
             'lista' => s[:lista].map { |l| klucze_tekstowe(l) },
             'liczby' => { 'bale' => s[:liczba_bali], 'pozycje' => s[:liczba_pozycji], 'objetosc_m3' => s[:objetosc_m3],
-                          'waga_kg' => s[:waga_kg], 'pary_zamkow' => s[:pary_zamkow], 'kontrfory_nowe' => s[:kontrfory_nowe] },
+                          'waga_kg' => s[:waga_kg], 'pary_zamkow' => s[:pary_zamkow], 'kontrfory_nowe' => s[:kontrfory_nowe],
+                          'wegly_usztywniajace' => s[:wegly_usztywniajace], 'wegly_narysowane' => s[:wegly_narysowane],
+                          'limit_swiatla' => s[:limit_swiatla], 'szczyty' => s[:szczyty], 'bale_szczytu' => s[:bale_szczytu],
+                          'belki' => s[:liczba_belek], 'objetosc_belek_m3' => s[:objetosc_belek_m3] },
             'wysokosci' => klucze_tekstowe(s[:wysokosci]), 'przekroj' => s[:przekroj]
           )
         end
@@ -118,7 +126,7 @@ module ArteMadera
             'sciany' => plan[:sciany].map do |w|
               { 'id' => w[:id], 'rodzaj' => w[:rodzaj].to_s, 'od' => Sciany.punkt(w, w[:s_od]), 'do' => Sciany.punkt(w, w[:s_do]),
                 'ref' => Sciany.punkt(w, w[:ref] || 0.0),
-                'otwory' => (w[:otwory] || []).map { |o| [Sciany.punkt(w, o[:s0]), Sciany.punkt(w, o[:s1])] } }
+                'otwory' => (w[:otwory] || []).reject { |o| o[:gniazdo] }.map { |o| [Sciany.punkt(w, o[:s0]), Sciany.punkt(w, o[:s1])] } }
             end }
         end
 

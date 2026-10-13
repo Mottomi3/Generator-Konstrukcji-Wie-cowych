@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.css
   Zadanie: wygląd okna parametrów.
-  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty
+  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony
   Zależy od: –
   Używają: html/okno.html
 */
@@ -103,3 +103,11 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .lista-blad, .lista-uwaga { margin: 4px 0; padding: 6px 10px 6px 24px; border-radius: 4px; }
 .lista-blad { background: var(--blad-tlo); color: var(--blad); }
 .lista-uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
+.pola .podp { grid-column: 1 / span 2; color: var(--szary); font-size: 11px; margin: -2px 0 4px; }
+.pola input.pelny { grid-column: 1 / span 2; }
+.szablony .wiersz { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.szablony select, .szablony input { flex: 1; min-width: 0; font: inherit; padding: 3px 5px; border: 1px solid var(--linia); border-radius: 3px; }
+.lista-podp { margin: 4px 0; padding: 6px 10px 6px 24px; border-radius: 4px; background: #eef4ee; }
+.lista-podp li.ok { color: var(--ok); }
+.lista-podp li.uwaga { color: var(--uwaga); }
+.lista-podp li.blad { color: var(--blad); font-weight: 600; }

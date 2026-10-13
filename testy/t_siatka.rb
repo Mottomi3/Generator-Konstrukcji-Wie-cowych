@@ -13,7 +13,7 @@ include ArteMadera::GeneratorWiencowy
 def sprawdz_pozycje(pl, opis)
   bledne = 0
   zbedne = 0
-  pl[:pozycje].each do |poz|
+  (pl[:pozycje] + (pl[:pozycje_elementow] || [])).each do |poz|
     prof = Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
     s = Projekt.siatka_pozycji(poz)
     k = Siatka.sprawdz(s[:sciany])
@@ -48,6 +48,12 @@ sprawdz_pozycje(pl, 'dom 9000 × 6000')
 Testy.grupa('Siatki – jeden kontrfor, szczelina, ostatek 200')
 sprawdz_pozycje(plan(prostokat(0, 0, 12_000, 5000), 'styk_uklad' => 'jeden_kontrfor', 'szczelina_styku' => 3, 'ostatek' => 200),
                 'dom 12 m')
+
+Testy.grupa('Siatki – dom ze szczytami, gniazdami płatwi, krokwiami i podłogą')
+otw = [{ 'sciana' => 'W-2', 'od' => 1100, 'szerokosc' => 800, 'wysokosc' => 500, 'parapet' => 2450 }]
+sprawdz_pozycje(plan_pelny(prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]], {}, otw), 'dom ze szczytami')
+sprawdz_pozycje(plan_pelny(prostokat(0, 0, 5000, 4000), 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 35,
+                           'szczyty_na_dzialowych' => 'tak'), 'krokwie, kąt 35°')
 
 Testy.grupa('Siatka – bryła ze skosem i otworem w czole')
 cechy = [{ typ: 'skos_gora', x0: 0.0, x1: 600.0, z0: 20.0, z1: 139.0 },

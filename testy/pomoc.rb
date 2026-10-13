@@ -78,8 +78,13 @@ def podziel(odcinek, *t)
   punkty.each_cons(2).to_a
 end
 
-# Plan domu z wejścia (skrót).
+# Plan samych ścian (bez szczytów i podłogi – testy ścian z kompilacji 1); parametry nadpisują.
 def plan(segmenty, parametry = {}, otwory = [])
+  plan_pelny(segmenty, { 'szczyty' => 'nie', 'podloga' => 'nie' }.merge(parametry), otwory)
+end
+
+# Plan domu z parametrami domyślnymi (ze szczytami, dachem i podłogą).
+def plan_pelny(segmenty, parametry = {}, otwory = [])
   ArteMadera::GeneratorWiencowy::Projekt.oblicz('segmenty' => segmenty, 'parametry' => parametry, 'otwory' => otwory)
 end
 

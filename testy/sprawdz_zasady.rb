@@ -150,6 +150,11 @@ Dir.glob(File.join(DIR, 'html', '*')).sort.each do |f|
 end
 js_files.each do |f|
   linie = File.read(f, encoding: 'UTF-8').lines
+  if linie.length > BLAD_WIERSZY
+    fails << "#{rel(f)}: #{linie.length} wierszy (> #{BLAD_WIERSZY}) – podziel plik według tematów"
+  elsif linie.length > UWAGA_WIERSZY
+    warns << "#{rel(f)}: #{linie.length} wierszy (> #{UWAGA_WIERSZY}) – rozważ podział"
+  end
   linie.each_with_index do |l, i|
     next unless l =~ /\A\s*function\s+\w+\s*\(/
     next if i > 0 && linie[i - 1].strip.start_with?('//')
