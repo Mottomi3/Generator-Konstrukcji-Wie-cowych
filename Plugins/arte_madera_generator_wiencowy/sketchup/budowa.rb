@@ -3,14 +3,15 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/budowa.rb
 # Zadanie: budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji.
-# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, belki w modelu, przebudowa, usuwanie starych definicji, operacja cofnij
-# Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
+# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, belki w modelu, przebudowa, położenie domu przy przebudowie, przesunięty dom zostaje na miejscu, usuwanie starych definicji, operacja cofnij
+# Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, rdzen/obrys.rb (kąt układu), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
 # Używają: sketchup/sterowanie.rb
 #
 # Jedna definicja komponentu na pozycję (identyczne bale = jeden komponent). Bryła definicji w ułożeniu kanonicznym,
 # ściany z siatki uproszczonej (Siatka.uprosc – krawędzie sąsiednich ścian pokrywają się, SketchUp nie musi ich dzielić),
 # bal obrócony dostaje transformację z obrotem o 180° (Konwersja.transformacja_bala).
-# Całość w jednej operacji (jedno „Cofnij”).
+# Całość w jednej operacji (jedno „Cofnij”). Przebudowa zachowuje położenie domu: przesunięcie i obrót poprzedniej
+# wersji (np. dom ustawiony na planie działki) przechodzą na nową.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 module ArteMadera
@@ -49,11 +50,12 @@ module ArteMadera
       # Budowa domu bez własnej operacji (wołający otwiera i zamyka operację – np. test działania, który ją cofa).
       def zbuduj_w_operacji(model, plan, wejscie, istniejaca = nil)
         rodzic = istniejaca ? istniejaca.parent.entities : model.active_entities
+        polozenie = polozenie_domu(plan, wejscie, istniejaca)
         usun_dom(model, istniejaca) if istniejaca
         dom_id = "GW-#{Time.now.strftime('%Y%m%d%H%M%S')}-#{rand(100_000)}"
         grupa = rodzic.add_group
         grupa.name = 'Dom wieńcowy'
-        grupa.transformation = Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
+        grupa.transformation = polozenie
         tagi = przygotuj_tagi(model)
         defs = {}
         bledy_scian = 0
@@ -77,6 +79,21 @@ module ArteMadera
         Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
         Atrybuty.zapisz_podpis(grupa)
         { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian, defs: defs }
+      end
+
+      # Położenie grupy domu: z linii (obrót układu lokalnego, poziom z0); przy przebudowie – z przesunięciem i obrotem,
+      # które użytkownik nadał poprzedniej wersji (przesunięcie = położenie poprzedniej grupy × odwrotność położenia z jej linii).
+      def polozenie_domu(plan, wejscie, istniejaca)
+        nowe = Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
+        return nowe if istniejaca.nil?
+        stare_wej = Atrybuty.czytaj_wejscie(istniejaca) || wejscie
+        odc = (stare_wej['segmenty'] || []).map { |s| [[s[0][0].to_f, s[0][1].to_f], [s[1][0].to_f, s[1][1].to_f]] }
+        return nowe if odc.empty?
+        stare = Konwersja.transformacja_domu(Obrys.kat_ukladu(odc), stare_wej['z0'].to_f)
+        istniejaca.transformation * stare.inverse * nowe
+      rescue => e
+        Log.error('Budowa.polozenie_domu', e)
+        Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
       end
 
       # Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów).

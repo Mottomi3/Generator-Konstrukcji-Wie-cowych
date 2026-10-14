@@ -103,7 +103,8 @@ var AMGW_RZUT = (function () {
     return hit;
   }
 
-  // Miejsce opisu na rzucie: [x, y, wyrównanie]; ściana – obok środka po stronie od środka obrysu, kontrfor – za końcem.
+  // Miejsce opisu na rzucie: [x, y, wyrównanie]; ściana – obok środka po stronie od środka obrysu, kontrfor – za końcem
+  // bliższym środka obrysu (w środku domu – opis nie wchodzi na opis ściany zewnętrznej).
   function miejsceOpisu(s, kf, srodek, gr) {
     var a = s.od;
     var b = s['do'];
@@ -116,9 +117,9 @@ var AMGW_RZUT = (function () {
     if (kf) {
       var da = Math.pow(a[0] - srodek[0], 2) + Math.pow(a[1] - srodek[1], 2);
       var db = Math.pow(b[0] - srodek[0], 2) + Math.pow(b[1] - srodek[1], 2);
-      var dalej = da > db ? a : b;
-      var kier = [(dalej[0] - m[0]) / (d / 2), (dalej[1] - m[1]) / (d / 2)];
-      m = [dalej[0] + kier[0] * gr * 4, dalej[1] + kier[1] * gr * 4];
+      var blizej = da > db ? b : a;
+      var kier = [(blizej[0] - m[0]) / (d / 2), (blizej[1] - m[1]) / (d / 2)];
+      m = [blizej[0] + kier[0] * gr * 4, blizej[1] + kier[1] * gr * 4];
       return [m[0], m[1], Math.abs(kier[0]) > 0.5 ? (kier[0] > 0 ? 'start' : 'end') : 'middle'];
     }
     if ((m[0] - srodek[0]) * n[0] + (m[1] - srodek[1]) * n[1] < 0) { n = [-n[0], -n[1]]; }

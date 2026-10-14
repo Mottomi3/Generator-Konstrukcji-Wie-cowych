@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '2', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '3', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -187,6 +187,11 @@ d = JSON.parse(dlg.skrypty.find { |s| s.start_with?('AMGW.init(') }.sub(/\AAMGW\
 Testy.rowne(d['tryb'], 'edycja', 'tryb edycja')
 Testy.rowne(d['otwory'].length, 1, 'otwory wczytane z modelu')
 Testy.rowne(d['parametry']['liczba_wiencow'], '12', 'parametry wczytane z modelu')
+# Dom przesunięty po generowaniu (np. na planie działki) – przebudowa zostawia go na nowym miejscu.
+przes = Geom::Transformation.axes(Geom::Point3d.new(1000 / CAL, 500 / CAL, 0), Geom::Vector3d.new(1, 0, 0), Geom::Vector3d.new(0, 1, 0),
+                                  Geom::Vector3d.new(0, 0, 1))
+dom.transformation = przes * dom.transformation
+cel = dom.transformation.to_a
 dlg.wywolaj('generuj', JSON.generate('parametry' => d['parametry'].merge('liczba_wiencow' => '10'), 'otwory' => d['otwory']))
 nowe = m.entities.grep(Sketchup::Group).select { |g| g.name == 'Dom wieńcowy' }
 Testy.rowne(nowe.length, 1, 'jeden dom po przebudowie')
@@ -194,6 +199,8 @@ Testy.sprawdz(!dom.valid?, 'stara grupa usunięta')
 Testy.rowne(m.definitions.to_a.count { |x| x.get_attribute('ArteMadera_GW', 'dom') == stary_id }, 0, 'stare definicje usunięte')
 dom = nowe[0]
 Testy.rowne(Atrybuty.czytaj_wejscie(dom)['parametry']['liczba_wiencow'], '10', 'nowe parametry zapisane')
+Testy.sprawdz(dom.transformation.to_a.zip(cel).all? { |a, b| (a - b).abs < 1e-6 }, 'przesunięty dom zostaje na miejscu po przebudowie')
+Testy.sprawdz(!Atrybuty.zmieniony_recznie?(dom), 'przesunięcie całego domu to nie ręczna zmiana')
 
 Testy.grupa('Ręczna zmiana – pytanie przed nadpisaniem')
 inst = instancje(dom).first

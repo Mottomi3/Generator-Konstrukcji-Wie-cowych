@@ -246,7 +246,11 @@ var AMGW = (function () {
   // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany.
   function pokazWynik(d) {
     AMGW_WYNIKI.pokaz(d, wybierzSciane);
-    if (!d.sciany) { return; }
+    if (!d.sciany) {
+      AMGW_SCIANA.lista($('widok-sciana'), [], '');
+      AMGW_SCIANA.rysuj($('widok'), null, $('widok-opis'));
+      return;
+    }
     stan.sciany = d.sciany;
     odswiezScianyOtworow();
     if (d.widoki) {

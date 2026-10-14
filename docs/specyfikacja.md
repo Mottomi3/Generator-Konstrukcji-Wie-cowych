@@ -1,6 +1,6 @@
 # Specyfikacja – ArteMadera Generator Wieńcowy
 
-Stan: kompilacja 2 (2026-10-13). Wszystkie wymiary w mm. Pełna lista parametrów z wartościami domyślnymi:
+Stan: kompilacja 3 (2026-10-14). Wszystkie wymiary w mm. Pełna lista parametrów z wartościami domyślnymi:
 `docs/parametry.md` (generowana). Decyzje użytkownika: `decyzje_projektowe.md` (Projekt claude.ai
 i `00_Analiza\` na dysku).
 
@@ -13,6 +13,8 @@ i `00_Analiza\` na dysku).
 | Krótka linia (≤ 600) przecinająca jedną ścianę | **kontrfor** w miejscu przecięcia |
 
 - Linie mogą być luzem albo w grupie; wszystkie na jednej wysokości – to spód pierwszego bala (poziom ±0).
+- Zaznaczona ściana (np. prostokąt kliknięty raz) też wystarcza – generator bierze jej krawędzie (powtórzone krawędzie
+  liczone raz).
 - Ściany pod kątem prostym (układ lokalny obrócony wg najdłuższej linii – dom może stać pod dowolnym kątem w modelu).
 - SketchUp dzieli krawędzie w punktach styku – generator scala linie współliniowe; końce bliżej niż tolerancja
   (domyślnie 5 mm) są dociągane.
@@ -69,7 +71,13 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   c ± mijanka/2 obok jednego węgła (poza zamkiem).
 - Styk nie bliżej otworu niż `styk_odstep_od_otworu` (400 – kawałek bala przy otworze), węgieł nie bliżej innego
   skrzyżowania niż 300 i otworu niż 150, nie przy narożniku. `szczelina_styku` (0) – szczelina między czołami.
-- Kontrola: `Kontrola.mijanka` – styki w sąsiednich wieńcach co najmniej 300 od siebie.
+- Styk tylko w kawałku dłuższym niż `max_dlugosc` – kawałek między otworami, który się mieści, zostaje w całości.
+- Mijanka pilnowana także między miejscami łączenia (styki wieńców parzystych i nieparzystych różnych miejsc).
+- Ściana ze szczytem łączy się tylko na węgłach (działowa kończy się pod okapem, więc w wieńcach szczytu nie trzyma
+  styku). Gdy styk wypada nad węgłem, który kończy się pod połacią – ostrzeżenie „styk bez zamka” (zwiększ maksymalną
+  długość bala albo dorysuj węgieł bliżej kalenicy).
+- Kontrola: `Kontrola.mijanka` – styki w sąsiednich wieńcach co najmniej 300 od siebie; `Kontrola.styki_bez_zamka` –
+  styk w osi skrzyżowania, w którym ściana poprzeczna ma bal wieniec wyżej lub niżej.
 
 ## 5a. Węgły usztywniające (244)
 
@@ -94,6 +102,8 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 
 - Bryła bala prostego: 44 × 139 (półbal 69,5), obróbki: gniazda, podcięcia, wycięcia przy otworach, gniazda płatwi,
   skosy szczytów. Pióro i wpust (pełny profil) – późniejsza runda (przełącznik).
+- Punkty podziału bryły bliższe niż 0,2 mm są scalane – SketchUp nie tworzy krawędzi krótszych niż 0,0254 mm, a tak
+  bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły.
 - Identyczne bale (ta sama bryła, także po obrocie o 180° wokół pionu) = jedna pozycja „nr-długość” (np. `2-4200`)
   i jeden komponent. Numery: W-1, W-2…, w ścianie wieńce od dołu, w wieńcu wzdłuż ściany.
 - Model: grupa „Dom wieńcowy” (obrót układu lokalnego, poziom ±0) > grupy W-n > instancje komponentów „Bal 2-4200”,
@@ -101,13 +111,14 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory, Szczyty, Podłoga, Dach.
 - Atrybuty dla Dokumentacji 2D (słownik `ArteMadera` na definicji): `rola` = timber, `prefiks` = Bs (bale ścienne) /
   Kf (węgły) / Sz (bale szczytu) / Pw (podwaliny) / L (legary) / Pd (podciągi pod legarami) / P (płatwie) / K (krokwie)
-  – kody belek to grupy Dokumentacji 2D (rozpoznaje je od razu); Bs, Kf, Sz trzeba w niej dopisać,
-  `pozycja`, `nazwa`. **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
-  Prefiksy trzeba jeszcze dopisać w Dokumentacji 2D (`element_roles.rb`, `PREFIX_GROUPS`).
+  – kody belek to grupy Dokumentacji 2D (rozpoznaje je od razu); Bs, Kf, Sz trzeba w niej dopisać
+  (`element_roles.rb`, `PREFIX_GROUPS`) – do tego czasu bale trafią do grupy E. Dalej `pozycja`, `nazwa`.
+  **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
 - Pozycje belek numerowane po balach (te same zasady: identyczna belka = jedna pozycja).
 - Wejście (linie, poziom, parametry, otwory) zapisane w grupie domu (`ArteMadera_GW`/`wejscie`): zaznacz dom →
   to samo polecenie → okno z parametrami → „Zastąp dom w modelu”. Ręczne zmiany w domu wykrywa podpis zawartości –
-  przed nadpisaniem pytanie.
+  przed nadpisaniem pytanie. Przesunięcie lub obrót całego domu (np. ustawienie na planie działki) to nie ręczna
+  zmiana – nowa wersja powstaje w tym samym miejscu (`Budowa.polozenie_domu`).
 
 ## 8. Szczyty i dach
 
@@ -125,7 +136,14 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   licem) do kalenicy, rozstaw ≤ `krokwie_rozstaw` (900). Przy szczycie (`krokwie_przy_szczycie`): z obu stron
   szczytu, tylko od wewnątrz, tylko od zewnątrz – szczyt dochodzi do wierzchu krokwi; albo krokiew na szczycie –
   szczyt kończy się pod krokwią.
-- Bale szczytu: skos wg linii szczytu, kliny niższe niż `szczyt_min_wysokosc` (30) pomijane; prefiks Sz.
+- Bale szczytu: skos wg linii szczytu, kliny niższe niż `szczyt_min_wysokosc` (30) pomijane, okruchy krótsze niż
+  `szczyt_min_kawalek` (50) między skosem a gniazdem płatwi pomijane; prefiks Sz.
+- Szczyt na działowej (`szczyty_na_dzialowych`): krokwie z obu stron takiego szczytu (albo na nim – opcja „na
+  szczycie”), pozostałe krokwie równo między krokwiami przy szczytach.
+- Bale pod połacią (`rdzen/pod_dachem.rb`): ściany w poprzek kalenicy bez własnego szczytu (działowe niższe od dachu,
+  węgły na ścianach okapowych) ścinane linią podparcia (spód krokwi / desek) – przy stromym dachu ostatki węgłów nie
+  wchodzą w połać. Ostrzeżenie, gdy przy licu zewnętrznym ściany okapowej spód krokwi wypada niżej niż jej wierzch.
+- Węgły przy szczycie wchodzą w szczyt (do linii dachu), żeby trzymać styki bali szczytu.
 - Belki dachu tylko dla obrysu prostokątnego (inny obrys – szczyty liczone dla każdej ściany osobno, ostrzeżenie).
 
 ## 9. Podłoga
@@ -139,11 +157,11 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 - Dobór (`rdzen/statyka.rb`, uproszczony PN-EN 1995: k_mod 0,8, k_def 0,6, ψ2 0,3, γM 1,3, 1,35 G + 1,5 Q): przekroje
   z katalogu `przekroje_katalog`, nie niższe niż `izolacja_podlogi`; warunek nośności i ugięcia L/`ugiecie_zalecane`
   (400, tryb zalecany) albo L/`ugiecie_minimalne` (250, tryb minimalny); tryb ręczny – sprawdzenie podanego przekroju.
-  Podpory legarów (belki pod legarami) dodawane, gdy przęsło za długie (`podpory_rozstaw_max` 0 = automatycznie –
-  wybór wariantu z najmniejszą objętością drewna; > 0 – podpory co najwyżej tyle).
+  Podciągi pod legarami (prefiks Pd) dodawane, gdy przęsło za długie (`podpory_rozstaw_max` 0 = automatycznie –
+  wybór wariantu z najmniejszą objętością drewna; > 0 – podciągi co najwyżej tyle).
 - Podpowiedzi w oknie: ocena legara (nośność %, ugięcie L/x, „spełnia zalecane / tylko dopuszczalne / za słaby”),
-  najmniejszy i zalecany przekrój bez podpór, izolacja (mieści się / za niski legar), legar wyższy niż podwalina,
-  liczba podpór. To podpowiedź – nie zastępuje projektu konstruktora.
+  najmniejszy i zalecany przekrój bez podciągów, izolacja (mieści się / za niski legar), legar wyższy niż podwalina,
+  liczba podciągów. To podpowiedź – nie zastępuje projektu konstruktora.
 - Tylko dla obrysu prostokątnego (inny – podpowiedź, bez podłogi).
 
 ## 10. Okno, ustawienia, szablony
@@ -155,11 +173,31 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   uruchomieniu SketchUpa. Dom w modelu ma swoje parametry (edycja).
 - Szablony: wbudowane (jak 900, jak 1800, 1,5 kondygnacji, bez łączenia, podłoga 150) i własne (zapisz / wczytaj /
   usuń); „Przywróć fabryczne”.
+- Pola zmienione względem ustawień fabrycznych – wyróżniona etykieta (w dymku wartość fabryczna), w nagłówku sekcji
+  liczba zmian.
 - Rzut z numerami ścian i punktami odniesienia, tabela okien i drzwi (nowe okno / drzwi z wymiarów w ustawieniach),
   wynik: liczby (bale, węgły, szczyty, belki), ostrzeżenia, podpowiedzi, ściany ze stykami, lista bali i belek.
+- **Widok ściany** (`rdzen/widok.rb`, `html/sciana.js`): wybór z listy albo kliknięcie ściany na rzucie; widok od lica
+  jak rozkład ściany producenta – bale z gniazdami zamków i skosem dachu, numery pozycji na balach, numery wieńców,
+  styki (czerwone), skrzyżowania ze ścianami i węgłami (przerywane), otwory, linia dachu. Odświeża się po podglądzie.
+  Cała ściana w szerokości okna (długa i niska – przewijanie w poziomie); na rzucie opisy węgłów w środku domu.
+- **Zestawienie CSV** (przycisk przy liście; `rdzen/zestawienie.rb`, `sketchup/eksport.rb`): grupa, pozycja, rodzaj,
+  przekrój, długość, ilość, objętość; sumy grup i całości; średnik i przecinek dziesiętny, BOM – otwiera się w Excelu.
+
+## 10a. Test działania i raport (menu)
+
+„Rozszerzenia → ArteMadera Generator Wieńcowy → Test działania i raport do wysłania…” (`sketchup/raport.rb`):
+- buduje 6 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
+  i węgłem, 10 × 8 z łączeniami i węgłami usztywniającymi, obrys L, krokwie z obu stron szczytu i podłoga 150) w jednej
+  operacji, którą na końcu cofa – model zostaje bez zmian;
+- dla każdego domu: liczby z planu i z modelu (instancje według prefiksu), bryły niezamknięte (`manifold?`), bryły
+  o objętości innej niż z profilu (> 0,2 %), ściany, których nie narysowano, kontrola zamków i styków, czasy;
+- zaznaczony dom: kompilacja, ręczne zmiany, zgodność modelu z parametrami;
+- środowisko (SketchUp, Ruby, jednostki modelu, plik ustawień) i dziennik (błędy, ostrzeżenia, czasy);
+- zapis do pliku JSON (okno zapisu) i okienko z podsumowaniem – plik do wysłania przy zgłoszeniu problemu.
 
 ## 11. Etapy dalej
 
-Taras (wysunięte górne bale + słupy, balustrada), okno ściany z podglądem elewacji (węgły i otwory na rysunku),
-ostatek 200 na wybranych narożnikach, pełny profil bala, Dokumentacja 2D – grupy Bs/Kf/Sz/Pw/L/Pd/Pl/Kr, deski
-dachu i podłogi, dach dla obrysów L / U.
+Taras (wysunięte górne bale + słupy, balustrada), edycja w widoku ściany (klik – dodaj / usuń węgieł, ostatek 200 na
+wybranych narożnikach), pełny profil bala, Dokumentacja 2D – grupy Bs/Kf/Sz (belki mają już jej kody), deski dachu
+i podłogi, dach dla obrysów L / U, połacie dla wtyczki dachów (KROK 2).

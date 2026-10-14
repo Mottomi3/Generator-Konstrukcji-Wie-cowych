@@ -104,6 +104,22 @@ module Geom
       end
     end
 
+    # Odwrotność przekształcenia afinicznego (macierz 3 × 3 i przesunięcie), jak Geom::Transformation#inverse.
+    def inverse
+      a = @m
+      det = a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1]) - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0]) +
+            a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0])
+      raise ArgumentError, 'przekształcenie nieodwracalne' if det.abs < 1e-12
+      r = [[(a[1][1] * a[2][2] - a[1][2] * a[2][1]) / det, (a[0][2] * a[2][1] - a[0][1] * a[2][2]) / det,
+            (a[0][1] * a[1][2] - a[0][2] * a[1][1]) / det],
+           [(a[1][2] * a[2][0] - a[1][0] * a[2][2]) / det, (a[0][0] * a[2][2] - a[0][2] * a[2][0]) / det,
+            (a[0][2] * a[1][0] - a[0][0] * a[1][2]) / det],
+           [(a[1][0] * a[2][1] - a[1][1] * a[2][0]) / det, (a[0][1] * a[2][0] - a[0][0] * a[2][1]) / det,
+            (a[0][0] * a[1][1] - a[0][1] * a[1][0]) / det]]
+      t = (0..2).map { |i| -(r[i][0] * a[0][3] + r[i][1] * a[1][3] + r[i][2] * a[2][3]) }
+      Transformation.new([r[0] + [t[0]], r[1] + [t[1]], r[2] + [t[2]], [0.0, 0.0, 0.0, 1.0]])
+    end
+
     def zastosuj(p)
       Point3d.new(@m[0][0] * p.x + @m[0][1] * p.y + @m[0][2] * p.z + @m[0][3],
                   @m[1][0] * p.x + @m[1][1] * p.y + @m[1][2] * p.z + @m[1][3],

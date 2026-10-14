@@ -190,6 +190,10 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.evaluate(function () { AMGW.wynik({ bledy: ['Nie znaleziono zamkniętego obrysu'], ostrzezenia: [], rzut: null }); });
   var kom = await page.evaluate(function () { return document.getElementById('komunikat').className; });
   sprawdz(kom.indexOf('blad') >= 0, 'komunikat o błędzie');
+  var pusty = await page.evaluate(function () {
+    return [document.querySelectorAll('#widok polygon').length, document.querySelectorAll('#widok-sciana option').length];
+  });
+  sprawdz(pusty[0] === 0 && pusty[1] === 0, 'po błędzie widok ściany wyczyszczony (' + pusty.join(',') + ')');
 
   await page.evaluate(function (d) { var x = JSON.parse(JSON.stringify(d)); x.zbudowano = true; AMGW.wynik(x); }, dane.wynik);
   kom = await page.evaluate(function () { return [document.getElementById('komunikat').className, document.getElementById('btn-generuj').textContent]; });

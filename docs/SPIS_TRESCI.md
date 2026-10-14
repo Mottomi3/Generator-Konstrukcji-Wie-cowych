@@ -251,6 +251,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | pozycje menu | `sketchup/menu.rb` |
 | położenie bala | `rdzen/bale.rb` |
 | położenie belki | `rdzen/elementy.rb` |
+| położenie domu przy przebudowie | `sketchup/budowa.rb` |
 | połączenie t | `rdzen/sciany.rb` |
 | prefiks bs / kf | `rdzen/pozycje.rb` |
 | prefiks bs/kf/sz/pw/l/pd/p/k | `sketchup/atrybuty.rb` |
@@ -268,6 +269,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | przekrój bala | `rdzen/parametry_lista.rb` |
 | przekrój szer×wys | `rdzen/parametry.rb` |
 | przesunięcie o pół wieńca | `rdzen/wience.rb` |
+| przesunięty dom zostaje na miejscu | `sketchup/budowa.rb` |
 | prześwit pod połacią | `rdzen/pod_dachem.rb` |
 | przycisk generuj | `sketchup/okno.rb` |
 | przyciski | `html/okno.html` |
@@ -455,7 +457,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 
 | Plik | Wierszy | Zadanie |
 |---|---:|---|
-| `Plugins/arte_madera_generator_wiencowy.rb` | 48 | rejestracja rozszerzenia w SketchUpie – jedyny plik ładowany automatycznie z folderu Plugins. |
+| `Plugins/arte_madera_generator_wiencowy.rb` | 49 | rejestracja rozszerzenia w SketchUpie – jedyny plik ładowany automatycznie z folderu Plugins. |
 | `main.rb` | 66 | stałe wtyczki (wersja, numer kompilacji, katalogi) i ładowanie modułów w kolejności zależności. |
 | `log.rb` | 135 | dziennik wtyczki – jedno miejsce na błędy, ostrzeżenia, informacje i czasy etapów. |
 | `rdzen/bale.rb` | 166 | bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu. |
@@ -484,25 +486,25 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/zamek.rb` | 115 | obróbki zamka na każdym skrzyżowaniu – gniazda górne/dolne i podcięcia boczne bali (zamek 44 × 146 z rysunku IMG-20250930-WA0005). |
 | `rdzen/zestawienie.rb` | 74 | zestawienie bali i belek do pliku CSV (Excel) – pozycje z długością, ilością i objętością, sumy grup i całości. |
 | `sketchup/atrybuty.rb` | 114 | atrybuty w modelu – zgodność z Dokumentacją 2D (słownik ArteMadera) i zapis wejścia generatora do przebudowy. |
-| `sketchup/budowa.rb` | 178 | budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji. |
+| `sketchup/budowa.rb` | 195 | budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji. |
 | `sketchup/eksport.rb` | 60 | zapis plików z wtyczki – wybór miejsca (okno zapisu SketchUpa), zestawienie CSV z ostatniego podglądu, plik tekstowy UTF-8. |
 | `sketchup/konwersja.rb` | 71 | przeliczenia między rdzeniem (mm, tablice) a SketchUpem (cale, Geom::Point3d, Geom::Transformation). |
 | `sketchup/menu.rb` | 42 | menu Rozszerzenia → ArteMadera Generator Wieńcowy (generuj / edytuj, kontrola, test działania, o wtyczce). |
 | `sketchup/okno.rb` | 206 | okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna. |
 | `sketchup/raport.rb` | 187 | test działania w prawdziwym SketchUpie i raport do wysłania – przykładowe domy budowane w operacji cofanej na końcu (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, środowisko, dziennik. |
-| `sketchup/sterowanie.rb` | 152 | przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna. |
+| `sketchup/sterowanie.rb` | 154 | przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna. |
 | `sketchup/ustawienia.rb` | 114 | zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony. |
 | `sketchup/wejscie.rb` | 65 | odczyt zaznaczenia – narysowane linie (obrys, osie działowych, kontrfory) albo istniejący dom z generatora. |
 | `html/okno.css` | 127 | wygląd okna parametrów. |
 | `html/okno.html` | 117 | okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby). |
-| `html/okno.js` | 384 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby. |
-| `html/rzut.js` | 133 | rzut domu w oknie (SVG) – obrys, ściany i węgły, otwory, punkty odniesienia otworów, opisy W-n. |
-| `html/sciana.js` | 196 | widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany. |
+| `html/okno.js` | 388 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby. |
+| `html/rzut.js` | 134 | rzut domu w oknie (SVG) – obrys, ściany i węgły, otwory, punkty odniesienia otworów, opisy W-n. |
+| `html/sciana.js` | 201 | widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany. |
 | `html/wspolne.js` | 48 | wspólne funkcje okna – element po identyfikatorze, nowy element, czyszczenie, liczby do wyświetlenia. |
 | `html/wyniki.js` | 99 | wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, rzut. |
 | `html/zmiany.js` | 60 | pola zmienione względem ustawień fabrycznych – wyróżnienie etykiety, wartość fabryczna w dymku, liczba zmian w nagłówku sekcji. |
 | `testy/atrapa/extensions.rb` | 3 | – |
-| `testy/atrapa/sketchup.rb` | 722 | atrapa API SketchUpa (Geom, Sketchup::Model/Entities/Group/ComponentDefinition/Face/Edge, UI) do testów bez SketchUpa. |
+| `testy/atrapa/sketchup.rb` | 738 | atrapa API SketchUpa (Geom, Sketchup::Model/Entities/Group/ComponentDefinition/Face/Edge, UI) do testów bez SketchUpa. |
 | `testy/buduj_rbz.rb` | 28 | paczka instalacyjna .rbz (zip rejestratora i folderu wtyczki) – do instalacji w Menedżerze rozszerzeń SketchUpa. |
 | `testy/kolizje_belek.rb` | 69 | wspólne sprawdzenia przestrzenne testów – kolizje belek dachu z balami (punkty próbne), bale ponad linią szczytu. |
 | `testy/lista_parametrow.rb` | 73 | generator docs/parametry.md – wszystkie parametry okna (sekcja, etykieta, wartość domyślna, zakres, wybory, podpowiedź) i szablony wbudowane. |
@@ -515,12 +517,12 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/spis_tresci.rb` | 151 | generator spisu treści kodu docs/SPIS_TRESCI.md – tematy → pliki, lista plików, metody i stałe z numerami wierszy. |
 | `testy/sprawdz_zasady.rb` | 168 | kontrola zasad kodu – Ruby 2.2, ES5, rdzeń bez API SketchUpa, nagłówki plików, komentarze nad metodami, długość plików, kompilacja, MODULE_FILES. |
 | `testy/t_losowe.rb` | 32 | stały zestaw losowych domów (ziarna, które kiedyś ujawniły błąd, i kilka zwykłych) – każdy bez problemów. |
-| `testy/t_okno.js` | 211 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
+| `testy/t_okno.js` | 215 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
 | `testy/t_podloga.rb` | 118 | testy podłogi i statyki – wzory belki, dobór przekroju (minimalny / zalecany / ręczny), izolacja, podpory, układ podwalin i legarów. |
 | `testy/t_raport.rb` | 81 | test działania z menu (atrapa SketchUpa) – przykładowe domy bez błędów, budowa cofnięta (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, raport JSON. |
 | `testy/t_rdzen.rb` | 223 | testy rdzenia – obrys, ściany, wieńce, styki z mijanką, kontrfory, otwory, pozycje, kolizje w zamkach. |
 | `testy/t_siatka.rb` | 81 | siatka brył wszystkich pozycji z kilku domów – zamknięta (każda krawędź raz w każdą stronę), objętość równa profilowi. |
-| `testy/t_sketchup.rb` | 279 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
+| `testy/t_sketchup.rb` | 286 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
 | `testy/t_szczyty.rb` | 121 | testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji. |
 | `testy/t_wegly.rb` | 140 | testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory. |
 | `testy/t_widok.rb` | 71 | widok ściany do okna – obrysy bali zgodne z profilem, gniazda zamków na skrzyżowaniach, styki, linia dachu, lista ścian. |
@@ -530,7 +532,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 
 ## 3. Zawartość plików
 
-### Plugins/arte_madera_generator_wiencowy.rb (48 wierszy)
+### Plugins/arte_madera_generator_wiencowy.rb (49 wierszy)
 
 rejestracja rozszerzenia w SketchUpie – jedyny plik ładowany automatycznie z folderu Plugins.
 
@@ -1173,28 +1175,29 @@ Używają: sketchup/budowa.rb, sketchup/wejscie.rb, sketchup/sterowanie.rb
 | 103 | `zapisz_podpis(grupa)` | Zapis podpisu po budowie. |
 | 108 | `zmieniony_recznie?(grupa)` | Czy dom zmieniono ręcznie od ostatniego generowania. |
 
-### sketchup/budowa.rb (178 wierszy)
+### sketchup/budowa.rb (195 wierszy)
 
 budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji.
 
-Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
+Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, rdzen/obrys.rb (kąt układu), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
 Używają: sketchup/sterowanie.rb
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 18 | `module Budowa` |  |
-| 20 | `TAGI` | Tagi (dawniej warstwy) według rodzaju ściany. |
-| 29 | `GRUPY_BELEK` | Grupy belek w domu: tag => nazwa grupy. |
-| 35 | `zbuduj(model, plan, wejscie, istniejaca = nil)` | Budowa domu z planu w jednej operacji (jedno „Cofnij”); istniejąca – grupa poprzedniej wersji do zastąpienia. Zwraca { grupa:, definicje:, bledne_sciany:, defs: }. |
-| 50 | `zbuduj_w_operacji(model, plan, wejscie, istniejaca = nil)` | Budowa domu bez własnej operacji (wołający otwiera i zamyka operację – np. test działania, który ją cofa). |
-| 83 | `dodaj_belki(grupa, plan, defs, tagi)` | Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów). |
-| 99 | `nazwa_definicji(poz)` | Nazwa komponentu pozycji: rodzaj i nazwa pozycji. |
-| 105 | `definicja(model, poz, p, dom_id)` | Definicja komponentu pozycji z siatki bryły; zwraca [definicja, liczba ścian, których nie udało się narysować]. |
-| 120 | `rysuj_sciane(ents, s)` | Ściana bryły: pętla zewnętrzna, otwory (dorysowane i usunięte), zwrot zgodny z normalną siatki; false – ściany albo otworu w niej nie udało się narysować. |
-| 143 | `na_scianie?(f, pt)` | Czy punkt leży na ścianie SketchUpa (w środku, na krawędzi albo w wierzchołku – nie obok i nie poza płaszczyzną). |
-| 149 | `rownolegla?(f, n)` | Czy ściana SketchUpa leży równolegle do normalnej siatki (po podziale ściany przy otworze). |
-| 155 | `przygotuj_tagi(model)` | Tagi według rodzaju ściany (zakładane, gdy ich nie ma). |
-| 164 | `usun_dom(model, grupa)` | Usunięcie poprzedniej wersji domu i jej nieużywanych definicji bali. |
+| 19 | `module Budowa` |  |
+| 21 | `TAGI` | Tagi (dawniej warstwy) według rodzaju ściany. |
+| 30 | `GRUPY_BELEK` | Grupy belek w domu: tag => nazwa grupy. |
+| 36 | `zbuduj(model, plan, wejscie, istniejaca = nil)` | Budowa domu z planu w jednej operacji (jedno „Cofnij”); istniejąca – grupa poprzedniej wersji do zastąpienia. Zwraca { grupa:, definicje:, bledne_sciany:, defs: }. |
+| 51 | `zbuduj_w_operacji(model, plan, wejscie, istniejaca = nil)` | Budowa domu bez własnej operacji (wołający otwiera i zamyka operację – np. test działania, który ją cofa). |
+| 86 | `polozenie_domu(plan, wejscie, istniejaca)` | Położenie grupy domu: z linii (obrót układu lokalnego, poziom z0); przy przebudowie – z przesunięciem i obrotem, które użytkownik nadał poprzedniej wersji (przesunięcie = położenie poprzedniej grupy × odwrotność położenia z jej linii). |
+| 100 | `dodaj_belki(grupa, plan, defs, tagi)` | Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów). |
+| 116 | `nazwa_definicji(poz)` | Nazwa komponentu pozycji: rodzaj i nazwa pozycji. |
+| 122 | `definicja(model, poz, p, dom_id)` | Definicja komponentu pozycji z siatki bryły; zwraca [definicja, liczba ścian, których nie udało się narysować]. |
+| 137 | `rysuj_sciane(ents, s)` | Ściana bryły: pętla zewnętrzna, otwory (dorysowane i usunięte), zwrot zgodny z normalną siatki; false – ściany albo otworu w niej nie udało się narysować. |
+| 160 | `na_scianie?(f, pt)` | Czy punkt leży na ścianie SketchUpa (w środku, na krawędzi albo w wierzchołku – nie obok i nie poza płaszczyzną). |
+| 166 | `rownolegla?(f, n)` | Czy ściana SketchUpa leży równolegle do normalnej siatki (po podziale ściany przy otworze). |
+| 172 | `przygotuj_tagi(model)` | Tagi według rodzaju ściany (zakładane, gdy ich nie ma). |
+| 181 | `usun_dom(model, grupa)` | Usunięcie poprzedniej wersji domu i jej nieużywanych definicji bali. |
 
 ### sketchup/eksport.rb (60 wierszy)
 
@@ -1292,7 +1295,7 @@ Używają: sketchup/menu.rb („Test działania i raport…”)
 | 157 | `sprawdz_dom(dom)` | Zaznaczony dom: parametry, kompilacja, ręczne zmiany, liczby z planu i z modelu. |
 | 168 | `podsumowanie(r)` | Tekst okienka po teście. |
 
-### sketchup/sterowanie.rb (152 wierszy)
+### sketchup/sterowanie.rb (154 wierszy)
 
 przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
 
@@ -1307,10 +1310,10 @@ Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 | 58 | `widok(id)` | Widok ściany z ostatniego planu (podgląd lub generowanie) dla okna; { 'blad' => tekst }, gdy nie ma ściany. |
 | 64 | `generuj(dane)` | Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom); parametry zapamiętane na komputerze. |
 | 89 | `kontrola` | Menu „Kontrola”: kolizje w zamkach, mijanka, długości dla zaznaczonego domu. |
-| 109 | `scal(dane)` | Wejście domu: zapamiętane linie i poziom + parametry i otwory z okna. |
-| 116 | `dla_okna(plan)` | Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut. |
-| 134 | `rzut(plan)` | Rzut do okna: obrys i ściany (bale od końca do końca) w mm układu lokalnego. |
-| 144 | `klucze_tekstowe(h)` | Hash z kluczami symbolami → kluczami tekstowymi (do JSON). |
+| 111 | `scal(dane)` | Wejście domu: zapamiętane linie i poziom + parametry i otwory z okna. |
+| 118 | `dla_okna(plan)` | Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut. |
+| 136 | `rzut(plan)` | Rzut do okna: obrys i ściany (bale od końca do końca) w mm układu lokalnego. |
+| 146 | `klucze_tekstowe(h)` | Hash z kluczami symbolami → kluczami tekstowymi (do JSON). |
 
 ### sketchup/ustawienia.rb (114 wierszy)
 
@@ -1363,7 +1366,7 @@ okno parametrów generatora – układ okna (sekcje formularza budowane przez ok
 Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/wyniki.js, html/okno.js
 Używają: sketchup/okno.rb
 
-### html/okno.js (384 wierszy)
+### html/okno.js (388 wierszy)
 
 logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
 
@@ -1390,18 +1393,18 @@ Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, A
 | 237 | `pokazKomunikat(tekst, rodzaj)` | Komunikat nad formularzem (ok / blad). |
 | 244 | `ukryjKomunikat()` | Ukrycie komunikatu. |
 | 247 | `pokazWynik(d)` | Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany. |
-| 259 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
-| 273 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana. |
-| 281 | `dane()` | Dane formularza jako JSON (parametry i otwory). |
-| 284 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie). |
-| 290 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
-| 306 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
-| 313 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
-| 319 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
-| 336 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
-| 381 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
+| 263 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
+| 277 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana. |
+| 285 | `dane()` | Dane formularza jako JSON (parametry i otwory). |
+| 288 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie). |
+| 294 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
+| 310 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
+| 317 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
+| 323 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
+| 340 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
+| 385 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
 
-### html/rzut.js (133 wierszy)
+### html/rzut.js (134 wierszy)
 
 rzut domu w oknie (SVG) – obrys, ściany i węgły, otwory, punkty odniesienia otworów, opisy W-n.
 
@@ -1413,9 +1416,9 @@ Używają: html/wyniki.js (AMGW_RZUT.rysuj)
 | 11 | `AMGW_RZUT` |  |
 | 18 | `rysuj(box, rzut, naKlik)` | Rzut SVG: obrys, ściany, kontrfory, otwory, punkty odniesienia i opisy W-n; naKlik(id) – kliknięcie ściany. |
 | 94 | `polePrzycisku(ns, s, sx, sy, gr, naKlik)` | Szeroka, niewidoczna linia nad ścianą – łatwiej ją kliknąć (wybór ściany do widoku). |
-| 107 | `miejsceOpisu(s, kf, srodek, gr)` | Miejsce opisu na rzucie: [x, y, wyrównanie]; ściana – obok środka po stronie od środka obrysu, kontrfor – za końcem. |
+| 108 | `miejsceOpisu(s, kf, srodek, gr)` | Miejsce opisu na rzucie: [x, y, wyrównanie]; ściana – obok środka po stronie od środka obrysu, kontrfor – za końcem bliższym środka obrysu (w środku domu – opis nie wchodzi na opis ściany zewnętrznej). |
 
-### html/sciana.js (196 wierszy)
+### html/sciana.js (201 wierszy)
 
 widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany.
 
@@ -1430,16 +1433,17 @@ Używają: html/okno.js (AMGW.widok, lista ścian po podglądzie)
 | 20 | `RODZAJE` |  |
 | 22 | `WYS_MIN` | Wysokość rysunku w oknie [px]: najmniejsza i największa. |
 | 23 | `WYS_MAX` |  |
-| 26 | `svgEl(tag, atr)` | Element SVG z atrybutami. |
-| 36 | `lista(sel, widoki, wybrana)` | Lista ścian w polu wyboru (po podglądzie); zachowuje wybraną, gdy nadal istnieje. Zwraca wybraną ścianę albo ''. |
-| 50 | `zakres(d)` | Zakres rysunku: [smin, smax, zmin, zmax] z bali, otworów i linii dachu. |
-| 65 | `rysuj(box, d, opis)` | Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany). |
-| 98 | `skrzyzowania(svg, d, z, X, Y, px)` | Skrzyżowania z innymi ścianami i węgłami: linia przerywana i opis nad ścianą. |
-| 114 | `bale(svg, d, X, Y, px, k)` | Bale: obrys z gniazdami zamków i skosem, kolor wg grupy, numer pozycji (gdy się mieści) i opis po najechaniu. |
-| 137 | `otwory(svg, d, X, Y, px)` | Otwory: prostokąt z nazwą. |
-| 154 | `styki(svg, d, X, Y)` | Styki bali: czerwona kreska na końcu bala oznaczonym jako styk. |
-| 169 | `dach(svg, d, X, Y)` | Linia dachu (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi). |
-| 179 | `wience(svg, d, z, m, X, Y, px, k)` | Numery wieńców z lewej (co który się mieści). |
+| 25 | `SPLASZCZENIE` | Najniższy rysunek (część WYS_MIN), przy którym cała ściana mieści się jeszcze w szerokości okna. |
+| 28 | `svgEl(tag, atr)` | Element SVG z atrybutami. |
+| 38 | `lista(sel, widoki, wybrana)` | Lista ścian w polu wyboru (po podglądzie); zachowuje wybraną, gdy nadal istnieje. Zwraca wybraną ścianę albo ''. |
+| 52 | `zakres(d)` | Zakres rysunku: [smin, smax, zmin, zmax] z bali, otworów i linii dachu. |
+| 67 | `rysuj(box, d, opis)` | Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany). |
+| 103 | `skrzyzowania(svg, d, z, X, Y, px)` | Skrzyżowania z innymi ścianami i węgłami: linia przerywana i opis nad ścianą. |
+| 119 | `bale(svg, d, X, Y, px, k)` | Bale: obrys z gniazdami zamków i skosem, kolor wg grupy, numer pozycji (gdy się mieści) i opis po najechaniu. |
+| 142 | `otwory(svg, d, X, Y, px)` | Otwory: prostokąt z nazwą. |
+| 159 | `styki(svg, d, X, Y)` | Styki bali: czerwona kreska na końcu bala oznaczonym jako styk. |
+| 174 | `dach(svg, d, X, Y)` | Linia dachu (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi). |
+| 184 | `wience(svg, d, z, m, X, Y, px, k)` | Numery wieńców z lewej (co który się mieści). |
 
 ### html/wspolne.js (48 wierszy)
 
@@ -1490,7 +1494,7 @@ Używają: html/okno.js (po zbudowaniu formularza i po zmianie pola)
 –
 
 
-### testy/atrapa/sketchup.rb (722 wierszy)
+### testy/atrapa/sketchup.rb (738 wierszy)
 
 atrapa API SketchUpa (Geom, Sketchup::Model/Entities/Group/ComponentDefinition/Face/Edge, UI) do testów bez SketchUpa.
 
@@ -1515,128 +1519,129 @@ Używają: testy/t_sketchup.rb, testy/pomoc.rb
 | 85 | `class Transformation` |  |
 | 89 | `initialize(m = nil)` | Macierz 4 × 4 wierszami: [xaxis, yaxis, zaxis] w kolumnach, origin w ostatniej kolumnie. |
 | 93 | `axes(origin, xa, ya, za)` |  |
-| 107 | `zastosuj(p)` |  |
-| 113 | `origin` |  |
-| 117 | `xaxis` |  |
-| 121 | `yaxis` |  |
-| 125 | `zaxis` |  |
-| 129 | `to_a` |  |
-| 135 | `module Sketchup` |  |
-| 136 | `class Atrybutowy` |  |
-| 137 | `atrybuty` |  |
-| 142 | `entityID` | Numer encji (jak Entity#entityID – stały dla obiektu w sesji). |
-| 146 | `set_attribute(dict, key, value)` |  |
-| 150 | `get_attribute(dict, key, domyslna = nil)` |  |
-| 155 | `delete_attribute(dict, key = nil)` |  |
-| 160 | `class Vertex` |  |
-| 163 | `initialize(pt)` |  |
-| 168 | `class Edge` |  |
-| 172 | `initialize(a, b)` |  |
-| 177 | `valid?` |  |
-| 182 | `class Face` |  |
-| 194 | `initialize(punkty, entities)` |  |
-| 201 | `vertices` |  |
-| 206 | `edges` | Krawędzie pętli zewnętrznej (jak Face#edges w SketchUpie – te same obiekty przy kolejnych wywołaniach). |
-| 211 | `normal` | Normalna z punktów (metoda Newella). |
-| 224 | `reverse!` |  |
-| 229 | `erase!` |  |
-| 234 | `valid?` |  |
-| 238 | `classify_point(_pt)` |  |
-| 243 | `class Entities` |  |
-| 246 | `initialize(parent)` |  |
-| 251 | `each(&blk)` |  |
-| 255 | `to_a` |  |
-| 259 | `length` |  |
-| 263 | `grep(klasa)` |  |
-| 267 | `add_group(*_args)` |  |
-| 273 | `add_instance(defn, tr)` |  |
-| 282 | `add_face(*pts)` | Ściana: jeśli w tej samej płaszczyźnie jest już ściana, która zawiera nową w całości – nowa jest „otworem”. |
-| 291 | `add_line(a, b)` |  |
-| 298 | `usun(e)` |  |
-| 306 | `erase_entities(lista)` |  |
-| 311 | `przywroc(lista)` | Atrapa: przywrócenie listy po abort_operation. |
-| 316 | `class ComponentDefinition` |  |
-| 320 | `initialize(name)` |  |
-| 326 | `instances` |  |
-| 330 | `count_instances` |  |
-| 334 | `group?` |  |
-| 339 | `class Group` |  |
-| 343 | `initialize(rodzic)` |  |
-| 352 | `parent` |  |
-| 356 | `definition` |  |
-| 360 | `erase!` |  |
-| 366 | `valid?` |  |
-| 373 | `module AtrapaBryly` | Bryła z ścian (atrapa Group/ComponentInstance#manifold? i #volume): każda krawędź pętli ścian (z otworami) użyta dokładnie dwa razy; objętość z twierdzenia o dywergencji (ściany skierowane na zewnątrz), cale³. |
-| 376 | `sciany(ents)` |  |
-| 380 | `klucz(p)` |  |
-| 384 | `manifold?(ents)` |  |
-| 394 | `wektor_pola(pts)` |  |
-| 405 | `dlugosc(w)` |  |
-| 409 | `volume(ents)` |  |
-| 424 | `class ComponentInstance` |  |
-| 428 | `manifold?` |  |
-| 432 | `volume` |  |
-| 436 | `initialize(defn, tr, rodzic)` |  |
-| 444 | `erase!` |  |
-| 449 | `valid?` |  |
-| 454 | `class DefinitionList` |  |
-| 455 | `initialize` |  |
-| 459 | `add(name)` |  |
-| 471 | `remove(d)` |  |
-| 477 | `przywroc(lista)` | Atrapa: przywrócenie listy po abort_operation. |
-| 485 | `to_a` |  |
-| 489 | `each(&blk)` |  |
-| 493 | `length` |  |
-| 498 | `class Layer` |  |
-| 501 | `initialize(name)` |  |
-| 506 | `class Layers` |  |
-| 507 | `initialize` |  |
-| 511 | `add(nazwa)` |  |
-| 519 | `length` |  |
-| 524 | `class Selection` |  |
-| 525 | `initialize` |  |
-| 529 | `to_a` |  |
-| 533 | `clear` |  |
-| 537 | `add(*e)` |  |
-| 542 | `class Model` |  |
-| 545 | `initialize` |  |
-| 553 | `active_entities` |  |
-| 557 | `start_operation(nazwa, *_reszta)` |  |
-| 563 | `commit_operation` |  |
-| 570 | `abort_operation` | Jak w SketchUpie: cofnięcie wszystkiego od start_operation (encje najwyższego poziomu i definicje). |
-| 580 | `options` |  |
-| 590 | `active_model` |  |
-| 594 | `require(sciezka)` |  |
-| 598 | `register_extension(_ext, _load)` |  |
-| 602 | `version` |  |
-| 606 | `is_pro?` |  |
-| 610 | `os_language` |  |
-| 616 | `class SketchupExtension` |  |
-| 619 | `initialize(nazwa, sciezka)` |  |
-| 625 | `module UI` |  |
-| 632 | `messagebox(tekst, _typ = nil)` |  |
-| 638 | `savepanel(_tytul, _katalog = nil, _nazwa = nil)` | Okno zapisu: test ustawia UI.plik_zapisu (nil – „Anuluj”). |
-| 642 | `menu(_nazwa)` |  |
-| 647 | `class Menu` |  |
-| 650 | `initialize` |  |
-| 654 | `add_submenu(_nazwa)` |  |
-| 658 | `add_item(nazwa, &blk)` |  |
-| 663 | `add_separator` |  |
-| 668 | `class HtmlDialog` |  |
-| 669 | `STYLE_DIALOG` |  |
-| 672 | `initialize(opcje = {})` |  |
-| 679 | `set_file(plik)` |  |
-| 683 | `add_action_callback(nazwa, &blk)` |  |
-| 687 | `execute_script(js)` |  |
-| 691 | `show` |  |
-| 695 | `close` |  |
-| 699 | `visible?` |  |
-| 704 | `wywolaj(nazwa, arg = '')` | Test: wywołanie jak z JavaScriptu. |
-| 710 | `MB_YESNO` |  |
-| 711 | `IDYES` |  |
-| 712 | `IDNO` |  |
-| 716 | `file_loaded?(nazwa)` |  |
-| 720 | `file_loaded(nazwa)` |  |
+| 108 | `inverse` | Odwrotność przekształcenia afinicznego (macierz 3 × 3 i przesunięcie), jak Geom::Transformation#inverse. |
+| 123 | `zastosuj(p)` |  |
+| 129 | `origin` |  |
+| 133 | `xaxis` |  |
+| 137 | `yaxis` |  |
+| 141 | `zaxis` |  |
+| 145 | `to_a` |  |
+| 151 | `module Sketchup` |  |
+| 152 | `class Atrybutowy` |  |
+| 153 | `atrybuty` |  |
+| 158 | `entityID` | Numer encji (jak Entity#entityID – stały dla obiektu w sesji). |
+| 162 | `set_attribute(dict, key, value)` |  |
+| 166 | `get_attribute(dict, key, domyslna = nil)` |  |
+| 171 | `delete_attribute(dict, key = nil)` |  |
+| 176 | `class Vertex` |  |
+| 179 | `initialize(pt)` |  |
+| 184 | `class Edge` |  |
+| 188 | `initialize(a, b)` |  |
+| 193 | `valid?` |  |
+| 198 | `class Face` |  |
+| 210 | `initialize(punkty, entities)` |  |
+| 217 | `vertices` |  |
+| 222 | `edges` | Krawędzie pętli zewnętrznej (jak Face#edges w SketchUpie – te same obiekty przy kolejnych wywołaniach). |
+| 227 | `normal` | Normalna z punktów (metoda Newella). |
+| 240 | `reverse!` |  |
+| 245 | `erase!` |  |
+| 250 | `valid?` |  |
+| 254 | `classify_point(_pt)` |  |
+| 259 | `class Entities` |  |
+| 262 | `initialize(parent)` |  |
+| 267 | `each(&blk)` |  |
+| 271 | `to_a` |  |
+| 275 | `length` |  |
+| 279 | `grep(klasa)` |  |
+| 283 | `add_group(*_args)` |  |
+| 289 | `add_instance(defn, tr)` |  |
+| 298 | `add_face(*pts)` | Ściana: jeśli w tej samej płaszczyźnie jest już ściana, która zawiera nową w całości – nowa jest „otworem”. |
+| 307 | `add_line(a, b)` |  |
+| 314 | `usun(e)` |  |
+| 322 | `erase_entities(lista)` |  |
+| 327 | `przywroc(lista)` | Atrapa: przywrócenie listy po abort_operation. |
+| 332 | `class ComponentDefinition` |  |
+| 336 | `initialize(name)` |  |
+| 342 | `instances` |  |
+| 346 | `count_instances` |  |
+| 350 | `group?` |  |
+| 355 | `class Group` |  |
+| 359 | `initialize(rodzic)` |  |
+| 368 | `parent` |  |
+| 372 | `definition` |  |
+| 376 | `erase!` |  |
+| 382 | `valid?` |  |
+| 389 | `module AtrapaBryly` | Bryła z ścian (atrapa Group/ComponentInstance#manifold? i #volume): każda krawędź pętli ścian (z otworami) użyta dokładnie dwa razy; objętość z twierdzenia o dywergencji (ściany skierowane na zewnątrz), cale³. |
+| 392 | `sciany(ents)` |  |
+| 396 | `klucz(p)` |  |
+| 400 | `manifold?(ents)` |  |
+| 410 | `wektor_pola(pts)` |  |
+| 421 | `dlugosc(w)` |  |
+| 425 | `volume(ents)` |  |
+| 440 | `class ComponentInstance` |  |
+| 444 | `manifold?` |  |
+| 448 | `volume` |  |
+| 452 | `initialize(defn, tr, rodzic)` |  |
+| 460 | `erase!` |  |
+| 465 | `valid?` |  |
+| 470 | `class DefinitionList` |  |
+| 471 | `initialize` |  |
+| 475 | `add(name)` |  |
+| 487 | `remove(d)` |  |
+| 493 | `przywroc(lista)` | Atrapa: przywrócenie listy po abort_operation. |
+| 501 | `to_a` |  |
+| 505 | `each(&blk)` |  |
+| 509 | `length` |  |
+| 514 | `class Layer` |  |
+| 517 | `initialize(name)` |  |
+| 522 | `class Layers` |  |
+| 523 | `initialize` |  |
+| 527 | `add(nazwa)` |  |
+| 535 | `length` |  |
+| 540 | `class Selection` |  |
+| 541 | `initialize` |  |
+| 545 | `to_a` |  |
+| 549 | `clear` |  |
+| 553 | `add(*e)` |  |
+| 558 | `class Model` |  |
+| 561 | `initialize` |  |
+| 569 | `active_entities` |  |
+| 573 | `start_operation(nazwa, *_reszta)` |  |
+| 579 | `commit_operation` |  |
+| 586 | `abort_operation` | Jak w SketchUpie: cofnięcie wszystkiego od start_operation (encje najwyższego poziomu i definicje). |
+| 596 | `options` |  |
+| 606 | `active_model` |  |
+| 610 | `require(sciezka)` |  |
+| 614 | `register_extension(_ext, _load)` |  |
+| 618 | `version` |  |
+| 622 | `is_pro?` |  |
+| 626 | `os_language` |  |
+| 632 | `class SketchupExtension` |  |
+| 635 | `initialize(nazwa, sciezka)` |  |
+| 641 | `module UI` |  |
+| 648 | `messagebox(tekst, _typ = nil)` |  |
+| 654 | `savepanel(_tytul, _katalog = nil, _nazwa = nil)` | Okno zapisu: test ustawia UI.plik_zapisu (nil – „Anuluj”). |
+| 658 | `menu(_nazwa)` |  |
+| 663 | `class Menu` |  |
+| 666 | `initialize` |  |
+| 670 | `add_submenu(_nazwa)` |  |
+| 674 | `add_item(nazwa, &blk)` |  |
+| 679 | `add_separator` |  |
+| 684 | `class HtmlDialog` |  |
+| 685 | `STYLE_DIALOG` |  |
+| 688 | `initialize(opcje = {})` |  |
+| 695 | `set_file(plik)` |  |
+| 699 | `add_action_callback(nazwa, &blk)` |  |
+| 703 | `execute_script(js)` |  |
+| 707 | `show` |  |
+| 711 | `close` |  |
+| 715 | `visible?` |  |
+| 720 | `wywolaj(nazwa, arg = '')` | Test: wywołanie jak z JavaScriptu. |
+| 726 | `MB_YESNO` |  |
+| 727 | `IDYES` |  |
+| 728 | `IDNO` |  |
+| 732 | `file_loaded?(nazwa)` |  |
+| 736 | `file_loaded(nazwa)` |  |
 
 ### testy/buduj_rbz.rb (28 wierszy)
 
@@ -1809,7 +1814,7 @@ Używają: testy/uruchom.sh
 |---:|---|---|
 | 15 | `ZIARNA` | Ziarno => co ujawniło (runda 3). |
 
-### testy/t_okno.js (211 wierszy)
+### testy/t_okno.js (215 wierszy)
 
 okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
 
@@ -1868,7 +1873,7 @@ Używają: testy/uruchom.sh
 |---:|---|---|
 | 13 | `sprawdz_pozycje(pl, opis)` |  |
 
-### testy/t_sketchup.rb (279 wierszy)
+### testy/t_sketchup.rb (286 wierszy)
 
 warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany.
 

@@ -21,6 +21,8 @@ var AMGW_SCIANA = (function () {
   // Wysokość rysunku w oknie [px]: najmniejsza i największa.
   var WYS_MIN = 240;
   var WYS_MAX = 520;
+  // Najniższy rysunek (część WYS_MIN), przy którym cała ściana mieści się jeszcze w szerokości okna.
+  var SPLASZCZENIE = 0.7;
 
   // Element SVG z atrybutami.
   function svgEl(tag, atr) {
@@ -74,7 +76,10 @@ var AMGW_SCIANA = (function () {
     var wz = Math.max(z[3] - z[2], 300);
     var m = Math.max(wz * 0.12, 180);
     var szer = Math.max(box.clientWidth || 600, 300);
-    var k = Math.max(szer / (sz + 2 * m), WYS_MIN / (wz + 2 * m));
+    var kSzer = szer / (sz + 2 * m);
+    var kWys = WYS_MIN / (wz + 2 * m);
+    // Cała ściana w szerokości okna, dopóki rysunek nie jest za niski; długa niska ściana – przewijanie w poziomie.
+    var k = kSzer >= kWys * SPLASZCZENIE ? kSzer : kWys;
     if ((wz + 2 * m) * k > WYS_MAX) { k = WYS_MAX / (wz + 2 * m); }
     var svg = svgEl('svg', { viewBox: '0 0 ' + (sz + 2 * m).toFixed(1) + ' ' + (wz + 2 * m).toFixed(1),
                             width: ((sz + 2 * m) * k).toFixed(0), height: ((wz + 2 * m) * k).toFixed(0) });

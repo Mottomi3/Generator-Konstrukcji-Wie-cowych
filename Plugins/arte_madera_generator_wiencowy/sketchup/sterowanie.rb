@@ -90,7 +90,9 @@ module ArteMadera
           model = Sketchup.active_model
           dom = model ? model.selection.to_a.find { |e| Atrybuty.dom?(e) } : nil
           return UI.messagebox('Zaznacz dom wygenerowany generatorem wieńcowym.') if dom.nil?
-          plan = Projekt.oblicz(Atrybuty.czytaj_wejscie(dom))
+          wej = Atrybuty.czytaj_wejscie(dom)
+          return UI.messagebox('Zaznaczony dom nie ma zapisanych parametrów – wygeneruj go ponownie z linii.') if wej.nil?
+          plan = Projekt.oblicz(wej)
           k = Log.time('kontrola') { Kontrola.wszystko(plan) }
           tekst = []
           tekst << (k[:kolizje].empty? ? 'Zamki: bez kolizji.' : "Zamki: #{k[:kolizje].length} miejsc kolizji (szczegóły w Konsoli Ruby).")
