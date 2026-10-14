@@ -59,10 +59,12 @@ module ArteMadera
         i.even? ? st[:parzyste] : st[:nieparzyste]
       end
 
-      # Istniejące skrzyżowania wewnątrz ściany, w których może wypaść styk (bez narożników i za blisko otworów).
+      # Istniejące skrzyżowania wewnątrz ściany, w których może wypaść styk (bez narożników i za blisko otworów). Ściana ze
+      # szczytem – tylko węgły: działowa kończy się pod okapem, a styki w wieńcach szczytu też muszą leżeć w zamku.
       def kotwice(w, p)
         t = Parametry.grubosc(p)
-        w[:skrzyzowania].map { |k| k[:s] }.select { |s| s > t && s < w[:dl_osi] - t && poza_otworami?(w, p, s) }
+        lista = w[:szczyt] ? w[:skrzyzowania].select { |k| k[:inna][:rodzaj] == :kontrfor } : w[:skrzyzowania]
+        lista.map { |k| k[:s] }.select { |s| s > t && s < w[:dl_osi] - t && poza_otworami?(w, p, s) }
       end
 
       # Czy styk w miejscu s jest dość daleko od otworów (styk_odstep_od_otworu, nie bliżej niż węgieł od otworu).
@@ -218,7 +220,7 @@ module ArteMadera
         regiony = []
         (1...m).each do |j|
           cel = w[:s_od] + j * dl / m
-          r = najlepszy_region(w, p, cel, okno, zajete)
+          r = najlepszy_region(w, p, cel, okno, zajete, regiony)
           return nil if r.nil?
           zajete.concat(r[:nowe])
           regiony << r
@@ -226,11 +228,19 @@ module ArteMadera
         regiony
       end
 
-      # Najlepszy region przy punkcie cel: najmniej nowych węgłów, potem najbliżej celu.
-      def najlepszy_region(w, p, cel, okno, zajete)
+      # Najlepszy region przy punkcie cel: najmniej nowych węgłów, potem najbliżej celu; z zachowaniem mijanki względem
+      # regionów już wybranych (styki wieńców parzystych i nieparzystych co najmniej mijanka od siebie).
+      def najlepszy_region(w, p, cel, okno, zajete, regiony = [])
         kandydaci = p['styk_uklad'] == 'jeden_wegiel' ? kandydaci_jeden(w, p, cel, okno, zajete) : kandydaci_para(w, p, cel, okno, zajete)
-        kandydaci = kandydaci.select { |k| ((k[:a] + k[:b]) / 2.0 - cel).abs <= okno + 0.01 }
+        kandydaci = kandydaci.select do |k|
+          ((k[:a] + k[:b]) / 2.0 - cel).abs <= okno + 0.01 && mijanka_ok?(regiony + [k], p['mijanka'].to_f)
+        end
         kandydaci.min_by { |k| [k[:nowe].length, ((k[:a] + k[:b]) / 2.0 - cel).abs] }
+      end
+
+      # Czy styki regionów (a – wieńce parzyste, b – nieparzyste) są w sąsiednich wieńcach co najmniej d od siebie.
+      def mijanka_ok?(regiony, d)
+        regiony.all? { |r1| regiony.all? { |r2| (r1[:a] - r2[:b]).abs >= d - 0.01 } }
       end
 
       # Kandydaci układu para: dwie istniejące kotwice, kotwica + nowy węgieł, dwa nowe węgły.

@@ -111,3 +111,5 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .lista-podp li.ok { color: var(--ok); }
 .lista-podp li.uwaga { color: var(--uwaga); }
 .lista-podp li.blad { color: var(--blad); font-weight: 600; }
+#tab-otwory select { min-width: 66px; }
+#tab-otwory td:last-child { width: 28px; }

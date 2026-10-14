@@ -15,8 +15,8 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany wience otwory usztywnienie styki elementy dach szczyty bale zamek bryla siatka
-     pozycje statyka podloga].each do |plik|
+  %w[geometria parametry obrys sciany wience otwory usztywnienie styki elementy dach szczyty pod_dachem bale zamek bryla
+     siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -53,11 +53,13 @@ module ArteMadera
         plan[:ostrzezenia].concat(Usztywnienie.planuj(sciany, p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
         Szczyty.gniazda(sciany, p, sz[:dom])
+        plan[:ostrzezenia].concat(PodDachem.przygotuj(sciany, p, sz[:dom]))
         bale = Bale.zbuduj(sciany, p)
         plan[:ostrzezenia].concat(bale[:ostrzezenia])
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
+        plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
         plan[:pozycje] = Pozycje.numeruj(bale[:bale], p)
         belki(plan, sz[:dom], p)
         plan[:podsumowanie] = podsumowanie(plan)
@@ -72,6 +74,14 @@ module ArteMadera
         plan[:podpowiedzi].concat(pod[:podpowiedzi])
         plan[:podloga] = { legar: pod[:legar], podpory: pod[:podpory] }
         plan[:pozycje_elementow] = Elementy.numeruj(plan[:elementy], plan[:pozycje].length + 1)
+      end
+
+      # Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią).
+      def uwagi_o_stykach(plan)
+        Kontrola.styki_bez_zamka(plan).group_by { |x| x[:sciana] }.map do |id, lista|
+          format('Ściana %s: styk bez zamka w wieńcach %s (węgieł kończy się niżej, pod połacią) – zwiększ maksymalną ' \
+                 'długość bala albo dorysuj węgieł bliżej kalenicy.', id, lista.map { |x| x[:wieniec] }.uniq.sort.join(', '))
+        end
       end
 
       # Podsumowanie do okna: ściany, liczby bali i pozycji, objętość i waga, wysokości.

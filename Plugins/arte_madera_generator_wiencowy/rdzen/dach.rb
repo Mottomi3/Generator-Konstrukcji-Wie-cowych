@@ -119,31 +119,44 @@ module ArteMadera
         { rodzaj: rodzaj, v: v, b: b, h: h, z_spod: krawedz - h }
       end
 
-      # Położenia krokwi wzdłuż kalenicy (u) między szczytami w u1 < u2 (osie ścian szczytowych).
-      def krokwie_u(u1, u2, p)
+      # Położenia krokwi wzdłuż kalenicy (u) między szczytami w u1 < u2 (osie ścian szczytowych); wewn – osie szczytów
+      # na działowych (krokwie z obu stron albo na szczycie). Pozostałe krokwie równo między krokwiami przy szczytach.
+      def krokwie_u(u1, u2, p, wewn = [])
         return [] unless krokwie?(p)
         t = Parametry.grubosc(p)
         bk = Parametry.przekroj(p, 'krokiew_przekroj')[0]
         zew = t / 2.0 + bk / 2.0
+        na_szczycie = p['krokwie_przy_szczycie'] == 'na_szczycie'
         wynik = []
-        lo = u1
-        hi = u2
+        granice = []
         case p['krokwie_przy_szczycie']
         when 'obie_strony'
           wynik.concat([u1 - zew, u1 + zew, u2 - zew, u2 + zew])
-          lo = u1 + zew
-          hi = u2 - zew
+          granice.concat([u1 + zew, u2 - zew])
         when 'wewnatrz'
           wynik.concat([u1 + zew, u2 - zew])
-          lo = u1 + zew
-          hi = u2 - zew
+          granice.concat([u1 + zew, u2 - zew])
         when 'zewnatrz'
           wynik.concat([u1 - zew, u2 + zew])
+          granice.concat([u1, u2])
         else
           wynik.concat([u1, u2])
+          granice.concat([u1, u2])
         end
-        n = ((hi - lo) / p['krokwie_rozstaw'].to_f - 1e-9).ceil
-        (1...n).each { |i| wynik << lo + i * (hi - lo) / n }
+        wewn.each do |u|
+          if na_szczycie
+            wynik << u
+            granice << u
+          else
+            wynik.concat([u - zew, u + zew])
+            granice.concat([u - zew, u + zew])
+          end
+        end
+        granice.sort.each_cons(2) do |lo, hi|
+          next if hi - lo < bk + 1.0
+          n = ((hi - lo) / p['krokwie_rozstaw'].to_f - 1e-9).ceil
+          (1...n).each { |i| wynik << lo + i * (hi - lo) / n }
+        end
         wynik.sort
       end
 
@@ -156,7 +169,7 @@ module ArteMadera
         u0 = dom[:u1] - wys
         u3 = dom[:u2] + wys
         wynik = platwie(geo, p).map do |pl|
-          Elementy.pozioma('Pl', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os)
+          Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os)
         end
         wynik.concat(krokwie(dom, geo, p))
         wynik
@@ -169,12 +182,12 @@ module ArteMadera
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
         a = kat(p)
         wynik = []
-        krokwie_u(dom[:u1], dom[:u2], p).each do |u|
+        krokwie_u(dom[:u1], dom[:u2], p, dom[:wewn] || []).each do |u|
           [[geo[:v_a] - t / 2.0 - p['dach_okap'].to_f, 1.0], [geo[:v_b] + t / 2.0 + p['dach_okap'].to_f, -1.0]].each do |v0, kier|
             dl = (vk - v0).abs / Math.cos(a)
             q = xy(dom, u, v0)
             d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
-            wynik << Elementy.ukosna('Kr', [q[0], q[1], linia_podparcia(geo, v0, p)], d, a, dl, bk, hk)
+            wynik << Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p)], d, a, dl, bk, hk)
           end
         end
         wynik

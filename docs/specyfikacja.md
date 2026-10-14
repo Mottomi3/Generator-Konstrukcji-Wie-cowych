@@ -100,7 +100,8 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   „Bal szczytu 7-2747”, „Kontrfor 9-244”; grupy „Podłoga” i „Dach” z belkami („Legar 15-2800”, „Płatew 16-5000”…).
   Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory, Szczyty, Podłoga, Dach.
 - Atrybuty dla Dokumentacji 2D (słownik `ArteMadera` na definicji): `rola` = timber, `prefiks` = Bs (bale ścienne) /
-  Kf (węgły) / Sz (bale szczytu) / Pw (podwaliny) / L (legary) / Pd (podpory legarów) / Pl (płatwie) / Kr (krokwie),
+  Kf (węgły) / Sz (bale szczytu) / Pw (podwaliny) / L (legary) / Pd (podciągi pod legarami) / P (płatwie) / K (krokwie)
+  – kody belek to grupy Dokumentacji 2D (rozpoznaje je od razu); Bs, Kf, Sz trzeba w niej dopisać,
   `pozycja`, `nazwa`. **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
   Prefiksy trzeba jeszcze dopisać w Dokumentacji 2D (`element_roles.rb`, `PREFIX_GROUPS`).
 - Pozycje belek numerowane po balach (te same zasady: identyczna belka = jedna pozycja).

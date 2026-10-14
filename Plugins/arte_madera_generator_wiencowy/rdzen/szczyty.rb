@@ -55,7 +55,8 @@ module ArteMadera
         konce.all? { |k| k && k[:inna][:rodzaj] == :zewnetrzna && k[:inna][:kierunek] == :A }
       end
 
-      # Opis dachu domu prostokątnego (4 ściany zewnętrzne, 2 szczyty): { os:, v_a:, v_b:, u1:, u2: }; nil w innym przypadku.
+      # Opis dachu domu prostokątnego (4 ściany zewnętrzne, 2 szczyty): { os:, v_a:, v_b:, u1:, u2:, wewn: [u szczytów
+      # na działowych] }; nil w innym przypadku.
       def dom_prostokatny(sciany, szczytowe, os)
         zewn = sciany.select { |w| w[:rodzaj] == :zewnetrzna }
         szcz = szczytowe.select { |w| w[:rodzaj] == :zewnetrzna }
@@ -63,7 +64,8 @@ module ArteMadera
         iu = os == :x ? 0 : 1
         u = szcz.map { |w| w[:a][iu] }.sort
         g = szcz[0][:szczyt]
-        { os: os, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1] }
+        wewn = szczytowe.select { |w| w[:rodzaj] == :dzialowa }.map { |w| w[:a][iu] }.sort
+        { os: os, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1], wewn: wewn }
       end
 
       # Współrzędna v punktu s ściany ze szczytem.
@@ -88,6 +90,13 @@ module ArteMadera
         l.nil? || z <= l + 0.01
       end
 
+      # Czy wysokość z w miejscu s ściany jest pod linią podparcia (spód krokwi / desek) – dla węgłów przy szczycie,
+      # które wystają z obu stron szczytu pod połać; ściana bez szczytu – zawsze.
+      def pod_podparciem?(w, s, z, p)
+        return true if w[:szczyt].nil?
+        z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) + 0.01
+      end
+
       # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek; nil – brak bala.
       def zasieg(w, z0, p)
         g = w[:szczyt]
@@ -107,12 +116,18 @@ module ArteMadera
       def skosy(w, s0, s1, z0, h, p)
         return [] if w[:szczyt].nil?
         sk = s_z_v(w, (w[:szczyt][:v_a] + w[:szczyt][:v_b]) / 2.0)
+        skosy_linii(s0, s1, z0, h, sk) { |s| linia(w, s, p) }
+      end
+
+      # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załom w sk): odcinki, na których linia
+      # schodzi poniżej wierzchu bala.
+      def skosy_linii(s0, s1, z0, h, sk)
         punkty = [s0, s1]
         punkty.insert(1, sk) if sk > s0 + 0.5 && sk < s1 - 0.5
         wynik = []
         punkty.each_cons(2) do |a, b|
-          za = linia(w, a, p) - z0
-          zb = linia(w, b, p) - z0
+          za = yield(a) - z0
+          zb = yield(b) - z0
           next if za >= h - 0.01 && zb >= h - 0.01
           wynik << { typ: 'skos_gora', x0: a - s0, x1: b - s0, z0: za, z1: zb }
         end

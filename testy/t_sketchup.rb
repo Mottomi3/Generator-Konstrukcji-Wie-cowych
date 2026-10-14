@@ -50,7 +50,7 @@ end
 Testy.grupa('Ładowanie wtyczki')
 Testy.rowne(PLUGIN_BUILD, '2', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
-Testy.rowne(MODULE_FILES.length, 29, 'liczba modułów')
+Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
 
 Testy.grupa('Start z zaznaczonych linii i okno')
@@ -100,7 +100,7 @@ Testy.rowne(defs.length, wszystkie_poz.length, 'definicja na każdą pozycję')
 Testy.sprawdz(defs.all? { |x| x.get_attribute('ArteMadera', 'rola') == 'timber' }, 'rola timber dla Dokumentacji 2D')
 Testy.rowne(defs.map { |x| x.get_attribute('ArteMadera', 'prefiks') }.uniq.sort, wszystkie_poz.map { |x| x[:prefiks] }.uniq.sort,
             'prefiksy definicji = prefiksy pozycji')
-Testy.sprawdz((%w[Bs Kf Sz Pw L Pl] - defs.map { |x| x.get_attribute('ArteMadera', 'prefiks') }).empty?, 'są bale Bs, Kf, Sz i belki Pw, L, Pl')
+Testy.sprawdz((%w[Bs Kf Sz Pw L P] - defs.map { |x| x.get_attribute('ArteMadera', 'prefiks') }).empty?, 'są bale Bs, Kf, Sz i belki Pw, L, P')
 Testy.sprawdz(%w[Szczyty Podłoga Dach].all? { |t| !m.layers[t].nil? }, 'tagi Szczyty, Podłoga, Dach')
 Testy.sprawdz(dom.get_attribute('ArteMadera', 'rola').nil?, 'grupa domu bez roli (nie wyłącza bali w Dokumentacji 2D)')
 Testy.rowne(m.layers['Ściany zewnętrzne'].nil?, false, 'tag Ściany zewnętrzne')
@@ -245,6 +245,16 @@ Testy.rowne(u['parametry'], ParametryLista.domyslne, 'przywrócenie fabrycznych'
 File.open(Ustawienia.sciezka, 'w') { |f| f.write('{uszkodzony') }
 Testy.rowne(Ustawienia.ostatnie, {}, 'uszkodzony plik – puste ustawienia, bez błędu')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
+
+Testy.grupa('Zaznaczona sama ściana prostokąta (kliknięta raz)')
+Sketchup.model = Sketchup::Model.new
+m = Sketchup.active_model
+sciana_prost = m.entities.add_face([[0, 0], [5000, 0], [5000, 4000], [0, 4000]].map { |x, y| Geom::Point3d.new(x / CAL, y / CAL, 0) })
+m.selection.add(sciana_prost)
+z = Wejscie.z_zaznaczenia(m)
+Testy.rowne(z[:segmenty] ? z[:segmenty].length : 0, 4, 'cztery boki z krawędzi ściany')
+m.selection.add(sciana_prost.edges[0])
+Testy.rowne(Wejscie.z_zaznaczenia(m)[:segmenty].length, 4, 'krawędź zaznaczona drugi raz nie dubluje boku')
 
 Testy.grupa('Błędy wejścia')
 model_z_liniami([[[0, 0], [1000, 0]], [[0, 0], [0, 1000]]])

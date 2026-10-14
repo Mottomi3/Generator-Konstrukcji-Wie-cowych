@@ -87,6 +87,7 @@ module ArteMadera
           tekst << (k[:kolizje].empty? ? 'Zamki: bez kolizji.' : "Zamki: #{k[:kolizje].length} miejsc kolizji (szczegóły w Konsoli Ruby).")
           tekst << (k[:mijanka].empty? ? 'Mijanka styków: w porządku (min. 300 mm).' : "Mijanka: #{k[:mijanka].length} naruszeń.")
           tekst << (k[:za_dlugie].empty? ? 'Długości bali: w porządku.' : "Za długie bale: #{k[:za_dlugie].length}.")
+          tekst << (k[:styki_bez_zamka].empty? ? 'Styki w zamkach: w porządku.' : "Styki bez zamka: #{k[:styki_bez_zamka].length}.")
           k[:kolizje].first(20).each { |c| Log.warn("Kolizja #{c[:sciany].join('/')} przy #{c[:punkt].inspect}, z #{c[:z].inspect}") }
           k[:mijanka].each { |m| Log.warn("Mijanka #{m[:sciana]} wieniec #{m[:wieniec]}: #{m[:odstep]} mm") }
           UI.messagebox(tekst.join("\n"))

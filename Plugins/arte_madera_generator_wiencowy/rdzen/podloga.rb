@@ -2,7 +2,7 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/podloga.rb
-# Zadanie: podłoga domu prostokątnego – podwaliny pod ścianami (zakład w narożnikach), legary między podwalinami, podpory legarów, dobór przekroju i podpowiedzi.
+# Zadanie: podłoga domu prostokątnego – podwaliny pod ścianami (zakład w narożnikach), legary między podwalinami, podciągi pod legarami, dobór przekroju i podpowiedzi.
 # Tematy: podłoga, podwalina, legar, podpora legarów, rozstaw legarów, kierunek legarów, dobór przekroju legara, izolacja podłogi, podpowiedzi podłogi, zakład podwalin
 # Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb
 # Używają: rdzen/projekt.rb
@@ -225,7 +225,7 @@ module ArteMadera
         lmax = przes.max + OPARCIE
         min = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_minimalne'].to_f)
         zal = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_zalecane'].to_f)
-        podp << { poziom: 'ok', tekst: format('Bez podpór (rozpiętość %s m): najmniejszy wystarczający przekrój %s, zalecany %s.',
+        podp << { poziom: 'ok', tekst: format('Bez podciągów (rozpiętość %s m): najmniejszy wystarczający przekrój %s, zalecany %s.',
                                               format('%.2f', lmax / 1000.0), min ? Parametry.tekst_przekroju(min) : 'brak w katalogu',
                                               zal ? Parametry.tekst_przekroju(zal) : 'brak w katalogu') }
         izol = p['izolacja_podlogi'].to_f
@@ -241,7 +241,7 @@ module ArteMadera
         end
         suma = n.inject(0) { |a, x| a + x }
         return if suma.zero?
-        podp << { poziom: 'ok', tekst: format('Podpory legarów %s: %d szt. (w przęsłach: %s) – oprzyj je na stopach fundamentowych.',
+        podp << { poziom: 'ok', tekst: format('Podciągi pod legarami %s: %d szt. (w przęsłach: %s) – oprzyj je na stopach fundamentowych.',
                                               Parametry.tekst_przekroju(Parametry.przekroj(p, 'podpora_przekroj')), suma, n.join(', ')) }
       end
 

@@ -19,6 +19,9 @@ module ArteMadera
       EPS = 1e-6 unless const_defined?(:EPS)
       # Dokładność podpisu bala [mm] – bale różniące się mniej są tą samą pozycją.
       DOKLADNOSC = 0.1 unless const_defined?(:DOKLADNOSC)
+      # Punkty podziału profilu bliższe niż tyle [mm] są scalane – krawędź krótsza niż tolerancja SketchUpa (0,0254 mm)
+      # psuje ścianę bryły, a różnica 0,2 mm jest poniżej dokładności obróbki.
+      SCAL = 0.2 unless const_defined?(:SCAL)
 
       module_function
 
@@ -39,8 +42,7 @@ module ArteMadera
         (gora + dol).each { |g| xs << g[0] << g[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
         xs.concat(przeciecia(gora)).concat(przeciecia(dol))
-        xs = xs.map { |x| [[x, 0.0].max, dl].min }.sort
-        xs = xs.each_with_object([]) { |x, acc| acc << x if acc.empty? || x - acc.last > EPS * 10 }
+        xs = punkty_podzialu(xs, dl)
         wynik = []
         xs.each_cons(2) do |xa, xb|
           xm = (xa + xb) / 2.0
@@ -56,6 +58,14 @@ module ArteMadera
           wynik << { xa: xa, xb: xb, y0: y0, y1: y1, zb_a: zb_a, zb_b: zb_b, zt_a: zt_a, zt_b: zt_b }
         end
         wynik
+      end
+
+      # Punkty podziału profilu: 0, dl i punkty wewnętrzne odległe od poprzedniego (i od końców) o więcej niż SCAL.
+      # Przedział między scalonymi punktami znika – sąsiednie przedziały biorą ograniczenia ze swojego środka.
+      def punkty_podzialu(xs, dl)
+        wynik = [0.0]
+        xs.select { |x| x > SCAL && x < dl - SCAL }.sort.each { |x| wynik << x if x - wynik.last > SCAL }
+        wynik << dl.to_f
       end
 
       # Punkty x, w których dwie proste ograniczenia przecinają się wewnątrz wspólnego zakresu.

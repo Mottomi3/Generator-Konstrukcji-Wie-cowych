@@ -8,7 +8,7 @@
 # Używają: sketchup/budowa.rb, sketchup/wejscie.rb, sketchup/sterowanie.rb
 #
 # Słownik 'ArteMadera' (czyta Dokumentacja 2D): rola = 'timber', prefiks = 'Bs' | 'Kf' | 'Sz' (bale) albo 'Pw' | 'L' |
-# 'Pd' | 'Pl' | 'Kr' (belki podłogi i dachu), pozycja, nazwa – tylko na definicjach. Grupy domu i ścian nie dostają
+# 'Pd' | 'P' | 'K' (belki podłogi i dachu – kody grup Dokumentacji 2D), pozycja, nazwa – tylko na definicjach. Grupy domu i ścian nie dostają
 # roli: 'skip' na grupie nadrzędnej wyłączyłby w Dokumentacji 2D wszystkie bale (dziedziczenie w
 # ProjectBuilder#walk_entity). Prefiksy trzeba dopisać w Dokumentacji 2D (element_roles.rb, PREFIX_GROUPS) – do tego
 # czasu Dokumentacja 2D ich nie rozpozna.

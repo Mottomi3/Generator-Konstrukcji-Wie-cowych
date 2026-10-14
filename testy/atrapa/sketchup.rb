@@ -189,6 +189,11 @@ module Sketchup
       @punkty.map { |p| Vertex.new(p) }
     end
 
+    # Krawędzie pętli zewnętrznej (jak Face#edges w SketchUpie – te same obiekty przy kolejnych wywołaniach).
+    def edges
+      @edges ||= @punkty.each_index.map { |i| Edge.new(@punkty[i], @punkty[(i + 1) % @punkty.length]) }
+    end
+
     # Normalna z punktów (metoda Newella).
     def normal
       n = [0.0, 0.0, 0.0]

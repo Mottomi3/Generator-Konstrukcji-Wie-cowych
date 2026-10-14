@@ -18,9 +18,12 @@ module ArteMadera
     module Wience
       module_function
 
-      # Wieńce ściany od dołu: [{ nr:, z0:, h:, lvl:, polbal: }]; kontrfor dopasowany do wysokości gospodarza.
+      # Wieńce ściany od dołu: [{ nr:, z0:, h:, lvl:, polbal: }]; kontrfor dopasowany do wysokości gospodarza (przy
+      # szczycie – także w szczyt, dalej ogranicza go linia dachu w rdzen/bale.rb).
       def dla_sciany(w, p)
-        lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, w[:szczyt] ? w[:szczyt][:z_max] : nil)
+        z_szczytu = w[:szczyt] ? w[:szczyt][:z_max] : nil
+        z_szczytu = w[:gospodarz][:szczyt][:z_max] if w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt]
+        lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, z_szczytu)
         return lista unless w[:rodzaj] == :kontrfor
         gosp = dla_sciany(w[:gospodarz], p)
         gora = gosp.last[:z0] + gosp.last[:h]
@@ -36,6 +39,7 @@ module ArteMadera
         n = p['liczba_wiencow'].to_i
         lista = []
         if kierunek == :A
+          n = [n, ((z_szczytu - h / 2.0) / h - 1e-9).ceil].max if z_szczytu
           lista << { nr: 1, z0: 0.0, h: h / 2.0, lvl: -1, polbal: true }
           (1..n).each { |j| lista << { nr: j + 1, z0: j * h - h / 2.0, h: h, lvl: 2 * j - 1, polbal: false } }
         else

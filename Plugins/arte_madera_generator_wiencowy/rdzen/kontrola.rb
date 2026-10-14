@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/kontrola.rb
-# Zadanie: kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, długości bali.
-# Tematy: kontrola, kolizje, nachodzenie bali, sprawdzenie zamka, mijanka – sprawdzenie, długość – sprawdzenie, luz pionowy
+# Zadanie: kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali.
+# Tematy: kontrola, kolizje, nachodzenie bali, sprawdzenie zamka, mijanka – sprawdzenie, styk bez zamka, długość – sprawdzenie, luz pionowy
 # Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb
 # Używają: testy, sketchup/sterowanie.rb (menu „Kontrola”)
 #
@@ -20,9 +20,9 @@ module ArteMadera
     module Kontrola
       module_function
 
-      # Wszystkie kontrole: { kolizje: [...], mijanka: [...], za_dlugie: [...] } (puste listy = w porządku).
+      # Wszystkie kontrole: { kolizje:, mijanka:, za_dlugie:, styki_bez_zamka: } (puste listy = w porządku).
       def wszystko(plan)
-        { kolizje: kolizje(plan), mijanka: mijanka(plan), za_dlugie: za_dlugie(plan) }
+        { kolizje: kolizje(plan), mijanka: mijanka(plan), za_dlugie: za_dlugie(plan), styki_bez_zamka: styki_bez_zamka(plan) }
       end
 
       # Kolizje w słupach zamków: [{ sciany: [id, id], punkt: [x, y], bale: [nr, nr], z: [z0, z1], objetosc: mm³ }].
@@ -119,6 +119,30 @@ module ArteMadera
                 wynik << { sciana: w[:id], wieniec: i + 1, odstep: odl.round(1) } if odl < Parametry::MIJANKA_MIN - 0.01
               end
             end
+          end
+        end
+        wynik
+      end
+
+      # Styki, których nie trzyma zamek (układy na przemian i para – styk w osi skrzyżowania, gdzie w wieńcu wyżej
+      # albo niżej leży bal ściany poprzecznej): [{ sciana:, wieniec:, s: }].
+      def styki_bez_zamka(plan)
+        p = plan[:parametry]
+        return [] if p['styk_uklad'] == 'jeden_wegiel'
+        t = Parametry.grubosc(p)
+        g = p['szczelina_styku'].to_f / 2.0
+        wynik = []
+        plan[:sciany].each do |w|
+          next if w[:rodzaj] == :kontrfor
+          w[:bale].each do |b|
+            next unless b[:konce][1] == :styk
+            s = b[:s1] + g
+            k = w[:skrzyzowania].find { |x| (x[:s] - s).abs < 1.0 }
+            ok = k && begin
+              k2 = k[:inna][:skrzyzowania].find { |x| x[:inna].equal?(w) && Zamek.odl2(x[:punkt], k[:punkt]) < 0.01 }
+              k2 && Zamek.bale_w_zamku(k[:inna], k2[:s], t).any? { |x| (x[:lvl] - b[:lvl]).abs == 1 }
+            end
+            wynik << { sciana: w[:id], wieniec: b[:i] + 1, s: s.round(1) } unless ok
           end
         end
         wynik

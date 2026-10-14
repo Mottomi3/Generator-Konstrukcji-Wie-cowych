@@ -7,7 +7,7 @@
 # Zależy od: rdzen/geometria.rb, rdzen/bryla.rb (podpis), rdzen/parametry.rb
 # Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/projekt.rb, sketchup/budowa.rb
 #
-# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwalina, L legar, Pd podpora, Pl płatew, Kr krokiew), rodzaj
+# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie), rodzaj
 # (tekst do nazwy komponentu), tag (:podloga | :dach), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
 # cechy (obróbki jak u bali), polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -21,10 +21,11 @@ module ArteMadera
     module Elementy
       G = Geometria unless const_defined?(:G)
 
-      # Nazwy rodzajów do komponentów i list: prefiks => [nazwa, tag].
+      # Nazwy rodzajów do komponentów i list: prefiks => [nazwa, tag]. Prefiksy = grupy Dokumentacji 2D (element_roles.rb,
+      # PREFIX_GROUPS), nazwy zawierają słowa, po których Dokumentacja 2D rozpoznaje grupę także bez atrybutu.
       RODZAJE = {
-        'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podpora legarów', :podloga],
-        'Pl' => ['Płatew', :dach], 'Kr' => ['Krokiew', :dach]
+        'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
+        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function
@@ -87,7 +88,7 @@ module ArteMadera
 
       # Kolejność numeracji: grupa (podłoga, potem dach), prefiks, długość malejąco.
       def posortowane(elementy)
-        kolej = %w[Pw Pd L Pl Kr]
+        kolej = %w[Pw Pd L P K]
         elementy.sort_by { |e| [kolej.index(e[:prefiks]) || 9, -e[:dl].round, e[:b].round, e[:h].round] }
       end
 

@@ -62,6 +62,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `platwa_scienna_przekroj` | Płatew na ścianie | 60x200 mm | szer. × wys. | Projekt 900: 60 × 200. |
 | `gniazdo_luz` | Luz w gnieździe płatwi (każda strona) | 5 mm | 0 … 30 |  |
 | `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 30 mm | 5 … 140 | Niższy klin bala przy skosie dachu jest pomijany. |
+| `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 50 mm | 0 … 500 | Krótsze okruchy między skosem dachu a gniazdem płatwi są pomijane (900: najkrótszy 104). |
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego. |
 | `dach_okap` | Okap – wysunięcie krokwi za ścianę | 500 mm | 0 … 1500 | W poziomie, od lica ściany okapowej. |
 | `dach_okap_szczyt` | Wysunięcie płatwi za szczyt | 500 mm | 0 … 1500 | Od lica szczytu (900: płatwie 6082). |
@@ -70,7 +71,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
-| `podloga` | Podłoga (podwaliny, legary, podpory) | tak | `tak` – tak; `nie` – nie |  |
+| `podloga` | Podłoga (podwaliny, legary, podciągi) | tak | `tak` – tak; `nie` – nie |  |
 | `podwalina_przekroj` | Podwalina pod ścianami | 100x100 mm | szer. × wys. | Projekt 900: 100 × 100. Niższa niż legar – podniesiona do wysokości legara. |
 | `podwaliny_pod_dzialowymi` | Podwaliny także pod działowymi | tak | `tak` – tak; `nie` – nie |  |
 | `legary_kierunek` | Legary wzdłuż | krotszy | `krotszy` – krótszego boku; `dluzszy` – dłuższego boku; `x` – osi X obrysu; `y` – osi Y obrysu |  |
@@ -78,8 +79,8 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `izolacja_podlogi` | Izolacja między legarami | 100 mm | 0 … 400 | Legar nie niższy niż izolacja (0 – bez izolacji). |
 | `legary_dobor` | Dobór przekroju legara | zalecany | `zalecany` – zalecany (ugięcie ≤ L/zalecane); `minimalny` – minimalny (ugięcie ≤ L/minimalne); `reczny` – ręczny – podany niżej (tylko sprawdzenie) |  |
 | `legar_przekroj` | Legar – przekrój ręczny | 50x100 mm | szer. × wys. | Projekt 900: 50 × 100. |
-| `podpory_rozstaw_max` | Rozstaw podpór legarów – największy | 0 mm | 0 … 8000 | 0 – automatycznie: podpory tak gęsto, jak wymaga przekrój legara. |
-| `podpora_przekroj` | Podpora legarów (podwalina pośrednia) | 100x100 mm | szer. × wys. |  |
+| `podpory_rozstaw_max` | Rozstaw podciągów pod legarami – największy | 0 mm | 0 … 8000 | 0 – automatycznie: podciągi tylko tam, gdzie wymaga ich przekrój legara (najmniej drewna). |
+| `podpora_przekroj` | Podciąg pod legarami (podpora pośrednia) | 100x100 mm | szer. × wys. |  |
 | `obciazenie_uzytkowe` | Obciążenie użytkowe | 2 kN/m² | 0,5 … 10 | Mieszkanie: 1,5–2,0 (PN-EN 1991-1-1, kat. A). |
 | `obciazenie_stale` | Obciążenie stałe (deski, izolacja) | 0,5 kN/m² | 0 … 5 | Bez ciężaru legarów (liczony osobno). |
 | `drewno_klasa` | Klasa drewna konstrukcyjnego | C24 | `C18` – C18; `C24` – C24; `C30` – C30; `GL24h` – GL24h (klejone) |  |
