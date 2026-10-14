@@ -30,52 +30,53 @@ module ArteMadera
 
       module_function
 
-      # Budowa domu z planu; istniejąca – grupa poprzedniej wersji do zastąpienia. Zwraca { grupa:, definicje:, sciany_bez_scian: }.
+      # Budowa domu z planu w jednej operacji (jedno „Cofnij”); istniejąca – grupa poprzedniej wersji do zastąpienia.
+      # Zwraca { grupa:, definicje:, bledne_sciany:, defs: }.
       def zbuduj(model, plan, wejscie, istniejaca = nil)
         wynik = nil
         model.start_operation('ArteMadera – dom wieńcowy', true)
         begin
-          rodzic = istniejaca ? istniejaca.parent.entities : model.active_entities
-          usun_dom(model, istniejaca) if istniejaca
-          dom_id = "GW-#{Time.now.strftime('%Y%m%d%H%M%S')}-#{rand(100_000)}"
-          grupa = rodzic.add_group
-          grupa.name = 'Dom wieńcowy'
-          grupa.transformation = Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
-          tagi = przygotuj_tagi(model)
-          defs = {}
-          bledy_scian = 0
-          plan[:pozycje].each do |poz|
-            d, bledne = definicja(model, poz, plan[:parametry], dom_id)
-            defs[poz[:nr]] = d
-            bledy_scian += bledne
-          end
-          (plan[:pozycje_elementow] || []).each do |poz|
-            d, bledne = definicja(model, poz, plan[:parametry], dom_id)
-            defs[poz[:nr]] = d
-            bledy_scian += bledne
-          end
-          plan[:sciany].each do |w|
-            next if w[:bale].empty?
-            g = grupa.entities.add_group
-            g.name = w[:id]
-            g.layer = tagi[w[:rodzaj]]
-            w[:bale].each do |b|
-              inst = g.entities.add_instance(defs[b[:pozycja][:nr]], Konwersja.transformacja_bala(b, plan[:parametry]))
-              inst.layer = b[:pozycja][:prefiks] == 'Sz' ? tagi[:szczyt] : tagi[w[:rodzaj]]
-              Atrybuty.oznacz_instancje(inst, b)
-            end
-          end
-          dodaj_belki(grupa, plan, defs, tagi)
-          Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
-          Atrybuty.zapisz_podpis(grupa)
+          wynik = zbuduj_w_operacji(model, plan, wejscie, istniejaca)
           model.commit_operation
-          wynik = { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian }
         rescue => e
           model.abort_operation
           Log.error('Budowa.zbuduj', e)
           raise
         end
         wynik
+      end
+
+      # Budowa domu bez własnej operacji (wołający otwiera i zamyka operację – np. test działania, który ją cofa).
+      def zbuduj_w_operacji(model, plan, wejscie, istniejaca = nil)
+        rodzic = istniejaca ? istniejaca.parent.entities : model.active_entities
+        usun_dom(model, istniejaca) if istniejaca
+        dom_id = "GW-#{Time.now.strftime('%Y%m%d%H%M%S')}-#{rand(100_000)}"
+        grupa = rodzic.add_group
+        grupa.name = 'Dom wieńcowy'
+        grupa.transformation = Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
+        tagi = przygotuj_tagi(model)
+        defs = {}
+        bledy_scian = 0
+        (plan[:pozycje] + (plan[:pozycje_elementow] || [])).each do |poz|
+          d, bledne = definicja(model, poz, plan[:parametry], dom_id)
+          defs[poz[:nr]] = d
+          bledy_scian += bledne
+        end
+        plan[:sciany].each do |w|
+          next if w[:bale].empty?
+          g = grupa.entities.add_group
+          g.name = w[:id]
+          g.layer = tagi[w[:rodzaj]]
+          w[:bale].each do |b|
+            inst = g.entities.add_instance(defs[b[:pozycja][:nr]], Konwersja.transformacja_bala(b, plan[:parametry]))
+            inst.layer = b[:pozycja][:prefiks] == 'Sz' ? tagi[:szczyt] : tagi[w[:rodzaj]]
+            Atrybuty.oznacz_instancje(inst, b)
+          end
+        end
+        dodaj_belki(grupa, plan, defs, tagi)
+        Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
+        Atrybuty.zapisz_podpis(grupa)
+        { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian, defs: defs }
       end
 
       # Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów).
@@ -114,25 +115,34 @@ module ArteMadera
         [d, bledne]
       end
 
-      # Ściana bryły: pętla zewnętrzna, otwory (dorysowane i usunięte), zwrot zgodny z normalną siatki.
+      # Ściana bryły: pętla zewnętrzna, otwory (dorysowane i usunięte), zwrot zgodny z normalną siatki; false – ściany
+      # albo otworu w niej nie udało się narysować.
       def rysuj_sciane(ents, s)
         zewn = s[:petle][0].map { |pt| Konwersja.punkt(pt) }
         face = ents.add_face(zewn)
         return false if face.nil?
+        cale = true
         s[:petle][1..-1].each do |otw|
           pts = otw.map { |pt| Konwersja.punkt(pt) }
           dziura = ents.add_face(pts)
+          cale = false if dziura.nil?
           dziura.erase! if dziura && dziura.valid?
         end
         n = s[:normalna]
-        face = ents.to_a.find { |f| f.is_a?(Sketchup::Face) && f.valid? && f.vertices.length >= 3 && f.classify_point(zewn[0]) != 0 && rownolegla?(f, n) } unless face.valid?
+        face = ents.to_a.find { |f| f.is_a?(Sketchup::Face) && f.valid? && na_scianie?(f, zewn[0]) && rownolegla?(f, n) } unless face.valid?
         return false if face.nil?
         fn = face.normal
         face.reverse! if fn.x * n[0] + fn.y * n[1] + fn.z * n[2] < 0
-        true
+        cale
       rescue => e
         Log.error('Budowa.rysuj_sciane', e)
         false
+      end
+
+      # Czy punkt leży na ścianie SketchUpa (w środku, na krawędzi albo w wierzchołku – nie obok i nie poza płaszczyzną).
+      def na_scianie?(f, pt)
+        k = f.classify_point(pt)
+        [Sketchup::Face::PointInside, Sketchup::Face::PointOnEdge, Sketchup::Face::PointOnVertex].include?(k)
       end
 
       # Czy ściana SketchUpa leży równolegle do normalnej siatki (po podziale ściany przy otworze).

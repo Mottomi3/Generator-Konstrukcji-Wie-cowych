@@ -26,7 +26,7 @@ module ArteMadera
         return { dom: dom } if dom
         krawedzie = []
         zbierz(zazn, Geom::Transformation.new, krawedzie, 0)
-        krawedzie = krawedzie.uniq { |e, tr| [e.object_id, tr.object_id] }
+        krawedzie = krawedzie.uniq { |e, tr| [e.respond_to?(:entityID) ? e.entityID : e.object_id, tr.to_a] }
         return { blad: 'Zaznacz narysowane linie obrysu domu (lico zewnętrzne), osie ścian działowych i linie kontrforów – ' \
                        'albo dom wygenerowany wcześniej, żeby go edytować.' } if krawedzie.empty?
         segmenty = []

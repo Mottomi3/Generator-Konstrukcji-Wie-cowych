@@ -2,9 +2,9 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
-  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz)
-  Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony)
+  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY)
+  Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
   Pole nowego parametru pojawia się samo w swojej sekcji (ParametryLista w Ruby: sekcja, wybory, podpowiedź).
@@ -12,7 +12,7 @@
 var AMGW = (function () {
   'use strict';
 
-  var stan = { opisy: [], sekcje: [], presety: {}, opisyZamka: [], sciany: [], timer: null, otwarte: {} };
+  var stan = { opisy: [], sekcje: [], presety: {}, opisyZamka: [], sciany: [], timer: null, otwarte: {}, widok: '' };
 
   var $ = AMGW_DOM.$;
   var el = AMGW_DOM.el;
@@ -39,7 +39,7 @@ var AMGW = (function () {
       var s = stan.sekcje[i];
       var det = el('details', { id: 'sekcja-' + s.klucz, 'data-sekcja': s.klucz });
       det.open = stan.otwarte[s.klucz] !== undefined ? stan.otwarte[s.klucz] : !!s.otwarta;
-      det.appendChild(el('summary', null, s.tytul));
+      det.appendChild(el('summary', { 'data-tytul': s.tytul }, s.tytul));
       det.appendChild(el('div', { id: 'pola-' + s.klucz, 'class': 'pola' }));
       if (s.klucz === 'przekroj') { det.appendChild(el('div', { id: 'pola-zamek', 'class': 'pola' })); }
       if (s.klucz === 'sciany') { det.appendChild(el('div', { id: 'wysokosci', 'class': 'wysokosci' })); }
@@ -55,13 +55,14 @@ var AMGW = (function () {
       dodajPole(stan.opisy[i], parametry);
     }
     zbudujZamek(parametry);
+    AMGW_ZMIANY.oznacz(stan.opisy);
   }
 
   // Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst) i podpowiedź pod nim.
   function dodajPole(opis, parametry) {
     var sekcja = $('pola-' + opis.sekcja) || $('pola-rysunek');
     var wartosc = parametry[opis.klucz] !== undefined && parametry[opis.klucz] !== null ? parametry[opis.klucz] : opis.domyslna;
-    var etykieta = el('label', { 'for': 'p-' + opis.klucz }, opis.etykieta);
+    var etykieta = el('label', { 'for': 'p-' + opis.klucz, id: 'l-' + opis.klucz }, opis.etykieta);
     var pole;
     var lista;
     var j;
@@ -95,7 +96,7 @@ var AMGW = (function () {
         if (opis.min !== null && opis.max !== null) { pole.title = 'od ' + fmt(opis.min) + ' do ' + fmt(opis.max); }
       }
     }
-    pole.addEventListener('change', zaplanujPodglad);
+    pole.addEventListener('change', function () { AMGW_ZMIANY.oznacz(stan.opisy); zaplanujPodglad(); });
     sekcja.appendChild(pole);
     if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp' }, opis.podpowiedz)); }
   }
@@ -242,12 +243,36 @@ var AMGW = (function () {
   // Ukrycie komunikatu.
   function ukryjKomunikat() { $('komunikat').className = 'komunikat ukryty'; }
 
-  // Wyniki do okna (html/wyniki.js) i lista ścian dla tabeli otworów.
+  // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany.
   function pokazWynik(d) {
-    AMGW_WYNIKI.pokaz(d);
+    AMGW_WYNIKI.pokaz(d, wybierzSciane);
     if (!d.sciany) { return; }
     stan.sciany = d.sciany;
     odswiezScianyOtworow();
+    if (d.widoki) {
+      stan.widok = AMGW_SCIANA.lista($('widok-sciana'), d.widoki, stan.widok);
+      if (stan.widok) { wywolaj('widok', stan.widok); }
+    }
+  }
+
+  // Wybór ściany do widoku (lista albo kliknięcie na rzucie).
+  function wybierzSciane(id) {
+    var sel = $('widok-sciana');
+    var i;
+    for (i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === id) {
+        sel.selectedIndex = i;
+        stan.widok = id;
+        wywolaj('widok', id);
+        return;
+      }
+    }
+  }
+
+  // Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana.
+  function widok(d) {
+    if (d && d.id && stan.widok && d.id !== stan.widok) { return; }
+    AMGW_SCIANA.rysuj($('widok'), d, $('widok-opis'));
   }
 
   // ---- wywołania ----
@@ -336,6 +361,8 @@ var AMGW = (function () {
       wywolaj('szablon_zapisz', JSON.stringify({ nazwa: $('szablon-nazwa').value, parametry: zbierzParametry() }));
     });
     $('btn-domyslne').addEventListener('click', function () { wywolaj('domyslne'); });
+    $('widok-sciana').addEventListener('change', function () { wybierzSciane(this.value); });
+    $('btn-zestawienie').addEventListener('click', function () { wywolaj('zapisz_liste'); });
     wywolaj('gotowe');
   }
 
@@ -350,5 +377,8 @@ var AMGW = (function () {
     start();
   }
 
-  return { init: init, wynik: wynik, ustaw: ustaw, szablony: szablony, _zbierz: dane };
+  // Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia.
+  function komunikat(d) { pokazKomunikat(d.tekst || '', d.rodzaj === 'ok' ? 'ok' : 'blad'); }
+
+  return { init: init, wynik: wynik, ustaw: ustaw, szablony: szablony, widok: widok, komunikat: komunikat, _zbierz: dane };
 }());

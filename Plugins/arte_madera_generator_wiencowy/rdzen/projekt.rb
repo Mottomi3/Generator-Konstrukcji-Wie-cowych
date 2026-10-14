@@ -63,6 +63,7 @@ module ArteMadera
         plan[:pozycje] = Pozycje.numeruj(bale[:bale], p)
         belki(plan, sz[:dom], p)
         plan[:podsumowanie] = podsumowanie(plan)
+        plan[:ostrzezenia].uniq!
         plan
       end
 

@@ -3,15 +3,15 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/atrybuty.rb
 # Zadanie: atrybuty w modelu – zgodność z Dokumentacją 2D (słownik ArteMadera) i zapis wejścia generatora do przebudowy.
-# Tematy: atrybuty, słownik ArteMadera, rola timber, prefiks Bs/Kf/Sz/Pw/L/Pd/Pl/Kr, pozycja, zapis parametrów w modelu, przebudowa, podpis zawartości, ręczne poprawki
+# Tematy: atrybuty, słownik ArteMadera, rola timber, prefiks Bs/Kf/Sz/Pw/L/Pd/P/K, pozycja, zapis parametrów w modelu, przebudowa, podpis zawartości, ręczne poprawki
 # Zależy od: log.rb
 # Używają: sketchup/budowa.rb, sketchup/wejscie.rb, sketchup/sterowanie.rb
 #
 # Słownik 'ArteMadera' (czyta Dokumentacja 2D): rola = 'timber', prefiks = 'Bs' | 'Kf' | 'Sz' (bale) albo 'Pw' | 'L' |
 # 'Pd' | 'P' | 'K' (belki podłogi i dachu – kody grup Dokumentacji 2D), pozycja, nazwa – tylko na definicjach. Grupy domu i ścian nie dostają
 # roli: 'skip' na grupie nadrzędnej wyłączyłby w Dokumentacji 2D wszystkie bale (dziedziczenie w
-# ProjectBuilder#walk_entity). Prefiksy trzeba dopisać w Dokumentacji 2D (element_roles.rb, PREFIX_GROUPS) – do tego
-# czasu Dokumentacja 2D ich nie rozpozna.
+# ProjectBuilder#walk_entity). Belki mają kody grup Dokumentacji 2D (PREFIX_GROUPS) – rozpozna je od razu; prefiksy bali
+# Bs, Kf, Sz trzeba w niej dopisać (element_roles.rb, PREFIX_GROUPS) – do tego czasu bale trafią do grupy E.
 # Słownik 'ArteMadera_GW' (generator): na grupie domu – wejscie (JSON), dom (identyfikator), podpis, kompilacja;
 # na definicji – dom, nazwa; na instancji – sciana, wieniec, pozycja.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).

@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.css
   Zadanie: wygląd okna parametrów.
-  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony
+  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany
   Zależy od: –
   Używają: html/okno.html
 */
@@ -73,6 +73,8 @@ details, .karta {
 summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .pola { display: grid; grid-template-columns: 1fr 120px; gap: 4px 8px; align-items: center; margin-top: 6px; }
 .pola label { color: var(--tekst); }
+.pola label.zmieniony { color: var(--akcent); font-weight: 600; }
+.pola label.zmieniony::before { content: '\25CF  '; font-size: 9px; vertical-align: 1px; }
 .pola .jedn { color: var(--szary); font-size: 11px; margin-left: 3px; }
 .pola input, .pola select, .tabela input, .tabela select {
   width: 100%;
@@ -105,6 +107,7 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .lista-uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
 .pola .podp { grid-column: 1 / span 2; color: var(--szary); font-size: 11px; margin: -2px 0 4px; }
 .pola input.pelny { grid-column: 1 / span 2; }
+.wiersz { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
 .szablony .wiersz { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
 .szablony select, .szablony input { flex: 1; min-width: 0; font: inherit; padding: 3px 5px; border: 1px solid var(--linia); border-radius: 3px; }
 .lista-podp { margin: 4px 0; padding: 6px 10px 6px 24px; border-radius: 4px; background: #eef4ee; }
@@ -113,3 +116,12 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .lista-podp li.blad { color: var(--blad); font-weight: 600; }
 #tab-otwory select { min-width: 66px; }
 #tab-otwory td:last-child { width: 28px; }
+
+/* Widok ściany */
+.widok { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--linia, #e2d6c6); border-radius: 6px; background: #fffdf9; min-height: 60px; }
+.widok svg { display: block; }
+.widok .bal:hover { fill: #f7c98b; }
+#widok-sciana { min-width: 150px; }
+#rzut .klik-sciana { cursor: pointer; }
+.naglowek-listy { justify-content: space-between; align-items: center; margin-top: 10px; }
+.naglowek-listy h3 { margin: 0; }

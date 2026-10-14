@@ -3,13 +3,14 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/okno.rb
 # Zadanie: okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
-# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie
-# Zależy od: rdzen/parametry_lista.rb, sketchup/ustawienia.rb, sketchup/sterowanie.rb, log.rb
+# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna
+# Zależy od: rdzen/parametry_lista.rb, sketchup/ustawienia.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
 # Używają: sketchup/sterowanie.rb (pokaz)
 #
 # Okno buduje formularz z ParametryLista (SEKCJE, LISTA – jedno źródło pól). Wywołania JS → Ruby: gotowe, podglad,
-# generuj, zamknij, blad_js, szablon_wczytaj, szablon_zapisz, szablon_usun, domyslne. Ruby → JS: AMGW.init(dane),
-# AMGW.wynik(dane), AMGW.ustaw({ parametry:, komunikat: }), AMGW.szablony({ lista:, komunikat: }).
+# generuj, zamknij, blad_js, szablon_wczytaj, szablon_zapisz, szablon_usun, domyslne, widok (id ściany), zapisz_liste.
+# Ruby → JS: AMGW.init(dane), AMGW.wynik(dane), AMGW.ustaw({ parametry:, komunikat: }), AMGW.szablony({ lista:,
+# komunikat: }), AMGW.widok(dane widoku ściany – rdzen/widok.rb), AMGW.komunikat({ tekst:, rodzaj: }).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require 'json'
@@ -19,6 +20,8 @@ module ArteMadera
     module Okno
       SZEROKOSC = 1060 unless const_defined?(:SZEROKOSC)
       WYSOKOSC = 860 unless const_defined?(:WYSOKOSC)
+
+      @dialog = nil unless instance_variable_defined?(:@dialog)
 
       class << self
         attr_reader :dialog
@@ -75,6 +78,22 @@ module ArteMadera
           Log.error('Okno.wyslij_szablony', e)
         end
 
+        # Komunikat w oknie (ok / blad): AMGW.komunikat.
+        def wyslij_komunikat(tekst, rodzaj)
+          return if @dialog.nil?
+          @dialog.execute_script("AMGW.komunikat(#{JSON.generate('tekst' => tekst, 'rodzaj' => rodzaj)})")
+        rescue => e
+          Log.error('Okno.wyslij_komunikat', e)
+        end
+
+        # Widok ściany do okna: AMGW.widok.
+        def wyslij_widok(dane)
+          return if @dialog.nil?
+          @dialog.execute_script("AMGW.widok(#{JSON.generate(dane)})")
+        rescue => e
+          Log.error('Okno.wyslij_widok', e)
+        end
+
         # Wynik obliczeń lub budowy do okna.
         def wyslij_wynik(dane)
           return if @dialog.nil?
@@ -115,6 +134,22 @@ module ArteMadera
               dlg.close
             rescue => e
               Log.error('Okno.zamknij', e)
+            end
+          end
+          dlg.add_action_callback('widok') do |_ctx, arg|
+            begin
+              wyslij_widok(Sterowanie.widok(arg.to_s))
+            rescue => e
+              Log.error('Okno.widok', e)
+              wyslij_widok('blad' => "#{e.class}: #{e.message}", 'id' => arg.to_s)
+            end
+          end
+          dlg.add_action_callback('zapisz_liste') do |_ctx, _arg|
+            begin
+              tekst, rodzaj = Eksport.zapisz_liste(Sterowanie.plan)
+              wyslij_komunikat(tekst, rodzaj)
+            rescue => e
+              Log.error('Okno.zapisz_liste', e)
             end
           end
           dlg.add_action_callback('blad_js') do |_ctx, arg|

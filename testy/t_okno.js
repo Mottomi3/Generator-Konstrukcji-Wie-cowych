@@ -33,7 +33,8 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.addInitScript(function () {
     window.__wywolania = [];
     window.sketchup = {};
-    ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'szablon_wczytaj', 'szablon_zapisz', 'szablon_usun', 'domyslne'].forEach(function (n) {
+    ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'szablon_wczytaj', 'szablon_zapisz', 'szablon_usun', 'domyslne',
+     'widok', 'zapisz_liste'].forEach(function (n) {
       window.sketchup[n] = function (arg) { window.__wywolania.push([n, arg]); };
     });
   });
@@ -103,6 +104,18 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
             document.getElementById('szablon-komunikat').textContent];
   });
   sprawdz(po[0] === '21' && po[1] === '30' && po[2] === 'Wczytano', 'AMGW.ustaw – nowe wartości w formularzu');
+  var zm = await page.evaluate(function () {
+    return [document.getElementById('l-liczba_wiencow').className, document.getElementById('l-max_dlugosc').className,
+            document.querySelector('#sekcja-sciany summary').textContent, document.getElementById('l-dach_kat').title];
+  });
+  sprawdz(zm[0].indexOf('zmieniony') >= 0 && zm[1].indexOf('zmieniony') < 0, 'zmienione pole wyróżnione, fabryczne nie (' + zm[0] + '|' + zm[1] + ')');
+  sprawdz(/zmienione: 1$/.test(zm[2]) && zm[3].indexOf('fabrycznie: 20') >= 0, 'liczba zmian w sekcji i wartość fabryczna w dymku (' + zm[2] + ' | ' + zm[3] + ')');
+  await page.fill('#p-liczba_wiencow', '16');
+  await page.dispatchEvent('#p-liczba_wiencow', 'change');
+  zm = await page.evaluate(function () {
+    return [document.getElementById('l-liczba_wiencow').className, document.querySelector('#sekcja-sciany summary').textContent];
+  });
+  sprawdz(zm[0].indexOf('zmieniony') < 0 && zm[1].indexOf('zmienione') < 0, 'powrót do fabrycznej – bez wyróżnienia (' + zm.join(' | ') + ')');
   await page.evaluate(function () { AMGW.szablony({ lista: ['A', 'B'], komunikat: 'Zapisano' }); });
   szab = await page.evaluate(function () { return document.querySelectorAll('#szablon option').length; });
   sprawdz(szab === 2, 'AMGW.szablony – nowa lista');
@@ -122,6 +135,57 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(lista === dane.wynik.lista.length, 'lista bali i belek');
   var lp = await page.evaluate(function () { return document.querySelectorAll('#lista-podpowiedzi li').length; });
   sprawdz(lp === dane.wynik.podpowiedzi.length && lp > 0, 'podpowiedzi w wynikach (' + lp + ')');
+
+  // Widok ściany: po wyniku okno prosi o widok pierwszej ściany, rysuje bale, styki i skrzyżowania; klik na rzucie.
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.evaluate(function (d) { AMGW.wynik(d); }, dane.wynik);
+  w = await page.evaluate(function () { return window.__wywolania; });
+  var wid = w.filter(function (x) { return x[0] === 'widok'; });
+  sprawdz(wid.length === 1 && wid[0][1] === 'W-1', 'po wyniku prośba o widok pierwszej ściany (' + JSON.stringify(wid) + ')');
+  var opcjeW = await page.evaluate(function () {
+    return Array.prototype.map.call(document.querySelectorAll('#widok-sciana option'), function (o) { return o.value; });
+  });
+  sprawdz(opcjeW.length === dane.wynik.widoki.length && opcjeW.indexOf('W-6') < 0, 'lista ścian widoku bez węgłów (' + opcjeW.join(',') + ')');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  var wv = await page.evaluate(function () {
+    return [document.querySelectorAll('#widok polygon.bal').length, document.querySelectorAll('#widok line.styk').length,
+            document.querySelectorAll('#widok line.skrzyzowanie').length, document.querySelectorAll('#widok text.nr-poz').length,
+            document.querySelectorAll('#widok rect.otwor').length, document.getElementById('widok-opis').textContent];
+  });
+  sprawdz(wv[0] === dane.widok.bale.length && wv[0] > 0, 'widok W-1: bal na każdy bal ściany (' + wv[0] + ')');
+  sprawdz(wv[1] > 0, 'widok W-1: styki zaznaczone (' + wv[1] + ')');
+  sprawdz(wv[2] === dane.widok.skrzyzowania.length && wv[2] > 0, 'widok W-1: skrzyżowania (' + wv[2] + ')');
+  sprawdz(wv[3] > 0, 'widok W-1: numery pozycji na balach (' + wv[3] + ')');
+  sprawdz(wv[4] === 1, 'widok W-1: okno (' + wv[4] + ')');
+  sprawdz(wv[5].indexOf('W-1') === 0, 'opis widoku (' + wv[5] + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#rzut line.klik-sciana[data-sciana="W-2"]', { force: true });
+  w = await page.evaluate(function () { return [window.__wywolania, document.getElementById('widok-sciana').value]; });
+  sprawdz(w[0].length === 1 && w[0][0][0] === 'widok' && w[0][0][1] === 'W-2' && w[1] === 'W-2', 'klik ściany na rzucie → jej widok');
+  var pominiety = await page.evaluate(function (d) {
+    document.getElementById('widok').appendChild(document.createElement('i')).id = 'znacznik';
+    AMGW.widok(d);
+    return !!document.getElementById('znacznik');
+  }, dane.widok);
+  sprawdz(pominiety, 'spóźniony widok innej ściany niż wybrana – pominięty');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok_szczytu);
+  var szcz = await page.evaluate(function () {
+    return [document.querySelectorAll('#widok polygon.bal').length, document.querySelectorAll('#widok polyline.linia-dachu').length];
+  });
+  sprawdz(szcz[0] === dane.widok_szczytu.bale.length && szcz[1] === 1, 'widok ściany szczytowej z linią dachu (' + szcz.join(',') + ')');
+  await page.screenshot({ path: path.join(KAT, 'testy', 'wyniki', 'okno_widok.png'), clip: await page.evaluate(function () {
+    var r = document.getElementById('widok').getBoundingClientRect();
+    return { x: r.left, y: r.top + window.scrollY, width: Math.max(r.width, 10), height: Math.max(r.height, 10) };
+  }) });
+
+  // Zestawienie CSV: przycisk woła Ruby, komunikat z wynikiem zapisu.
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#btn-zestawienie');
+  w = await page.evaluate(function () { return window.__wywolania; });
+  sprawdz(w.length === 1 && w[0][0] === 'zapisz_liste', 'przycisk zestawienia woła zapisz_liste');
+  await page.evaluate(function () { AMGW.komunikat({ tekst: 'Zapisano zestawienie: C:/x.csv', rodzaj: 'ok' }); });
+  kom = await page.evaluate(function () { var k = document.getElementById('komunikat'); return [k.className, k.textContent]; });
+  sprawdz(kom[0].indexOf('ok') >= 0 && kom[1].indexOf('Zapisano zestawienie') === 0, 'komunikat o zapisie zestawienia');
 
   await page.evaluate(function () { AMGW.wynik({ bledy: ['Nie znaleziono zamkniętego obrysu'], ostrzezenia: [], rzut: null }); });
   var kom = await page.evaluate(function () { return document.getElementById('komunikat').className; });

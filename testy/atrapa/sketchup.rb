@@ -138,6 +138,11 @@ module Sketchup
       @atrybuty ||= {}
     end
 
+    # Numer encji (jak Entity#entityID – stały dla obiektu w sesji).
+    def entityID
+      object_id
+    end
+
     def set_attribute(dict, key, value)
       (atrybuty[dict] ||= {})[key] = value
     end
@@ -175,6 +180,14 @@ module Sketchup
   end
 
   class Face < Atrybutowy
+    # Wynik classify_point – jak w SketchUpie.
+    PointUnknown = 0
+    PointInside = 1
+    PointOnVertex = 2
+    PointOnEdge = 4
+    PointOutside = 16
+    PointNotOnPlane = 32
+
     attr_reader :punkty, :otwory
     attr_accessor :entities
 
@@ -293,6 +306,11 @@ module Sketchup
     def erase_entities(lista)
       Array(lista).each { |e| e.respond_to?(:erase!) ? e.erase! : @lista.delete(e) }
     end
+
+    # Atrapa: przywrócenie listy po abort_operation.
+    def przywroc(lista)
+      @lista = lista.dup
+    end
   end
 
   class ComponentDefinition < Atrybutowy
@@ -350,9 +368,70 @@ module Sketchup
     end
   end
 
+  # Bryła z ścian (atrapa Group/ComponentInstance#manifold? i #volume): każda krawędź pętli ścian (z otworami) użyta
+  # dokładnie dwa razy; objętość z twierdzenia o dywergencji (ściany skierowane na zewnątrz), cale³.
+  module AtrapaBryly
+    module_function
+
+    def sciany(ents)
+      ents.to_a.select { |e| e.is_a?(Face) && e.valid? }
+    end
+
+    def klucz(p)
+      [p.x, p.y, p.z].map { |v| (v * 1e5).round }
+    end
+
+    def manifold?(ents)
+      licz = Hash.new(0)
+      sciany(ents).each do |f|
+        ([f.punkty] + f.otwory).each do |pts|
+          pts.each_with_index { |a, i| licz[[klucz(a), klucz(pts[(i + 1) % pts.length])].sort] += 1 }
+        end
+      end
+      !licz.empty? && licz.values.all? { |n| n == 2 }
+    end
+
+    def wektor_pola(pts)
+      w = [0.0, 0.0, 0.0]
+      pts.each_with_index do |a, i|
+        b = pts[(i + 1) % pts.length]
+        w[0] += (a.y * b.z - a.z * b.y) / 2.0
+        w[1] += (a.z * b.x - a.x * b.z) / 2.0
+        w[2] += (a.x * b.y - a.y * b.x) / 2.0
+      end
+      w
+    end
+
+    def dlugosc(w)
+      Math.sqrt(w[0] * w[0] + w[1] * w[1] + w[2] * w[2])
+    end
+
+    def volume(ents)
+      return -1.0 unless manifold?(ents)
+      v = 0.0
+      sciany(ents).each do |f|
+        a = wektor_pola(f.punkty)
+        n = dlugosc(a)
+        next if n < 1e-12
+        skala = (n - f.otwory.inject(0.0) { |s, pts| s + dlugosc(wektor_pola(pts)) }) / n
+        p0 = f.punkty[0]
+        v += (p0.x * a[0] + p0.y * a[1] + p0.z * a[2]) * skala
+      end
+      v / 3.0
+    end
+  end
+
   class ComponentInstance < Atrybutowy
     attr_accessor :transformation, :layer, :name
     attr_reader :definition
+
+    def manifold?
+      AtrapaBryly.manifold?(@definition.entities)
+    end
+
+    def volume
+      AtrapaBryly.volume(@definition.entities)
+    end
 
     def initialize(defn, tr, rodzic)
       @definition = defn
@@ -392,6 +471,11 @@ module Sketchup
     def remove(d)
       @lista.delete(d)
       true
+    end
+
+    # Atrapa: przywrócenie listy po abort_operation.
+    def przywroc(lista)
+      @lista = lista.dup
     end
 
     def [](nazwa)
@@ -472,17 +556,29 @@ module Sketchup
 
     def start_operation(nazwa, *_reszta)
       @operacje << [:start, nazwa]
+      @migawka = [@entities.to_a, @definitions.to_a]
       true
     end
 
     def commit_operation
       @operacje << [:commit]
+      @migawka = nil
       true
     end
 
+    # Jak w SketchUpie: cofnięcie wszystkiego od start_operation (encje najwyższego poziomu i definicje).
     def abort_operation
       @operacje << [:abort]
+      if @migawka
+        @entities.przywroc(@migawka[0])
+        @definitions.przywroc(@migawka[1])
+      end
+      @migawka = nil
       true
+    end
+
+    def options
+      { 'UnitsOptions' => { 'LengthUnit' => 2 } }
     end
   end
 
@@ -506,6 +602,14 @@ module Sketchup
     def version
       '23.0.0'
     end
+
+    def is_pro?
+      false
+    end
+
+    def os_language
+      'pl'
+    end
   end
 end
 
@@ -523,11 +627,16 @@ module UI
   @odpowiedz = 6
 
   class << self
-    attr_accessor :komunikaty, :odpowiedz
+    attr_accessor :komunikaty, :odpowiedz, :plik_zapisu
 
     def messagebox(tekst, _typ = nil)
       @komunikaty << tekst.to_s
       @odpowiedz
+    end
+
+    # Okno zapisu: test ustawia UI.plik_zapisu (nil – „Anuluj”).
+    def savepanel(_tytul, _katalog = nil, _nazwa = nil)
+      @plik_zapisu
     end
 
     def menu(_nazwa)

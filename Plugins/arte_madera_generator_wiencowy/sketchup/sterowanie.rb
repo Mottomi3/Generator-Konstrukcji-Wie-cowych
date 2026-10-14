@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/sterowanie.rb
 # Zadanie: przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
-# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie
-# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
+# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan
+# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
 # Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 #
 # Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory.
@@ -14,7 +14,7 @@ module ArteMadera
   module GeneratorWiencowy
     module Sterowanie
       class << self
-        attr_reader :wejscie, :dom
+        attr_reader :wejscie, :dom, :plan
 
         # Menu „Generuj / edytuj”: zaznaczone linie → nowy dom, zaznaczony dom → edycja parametrów.
         def start
@@ -38,6 +38,7 @@ module ArteMadera
             tryb = 'nowy'
           end
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
+          @plan = plan
           Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'],
                      'info' => info, 'podsumowanie' => dla_okna(plan))
         rescue => e
@@ -49,7 +50,14 @@ module ArteMadera
         def podglad(dane)
           wej = scal(dane)
           Ustawienia.zapamietaj(wej['parametry'])
-          dla_okna(Log.time('podgląd') { Projekt.oblicz(wej) })
+          @plan = Log.time('podgląd') { Projekt.oblicz(wej) }
+          dla_okna(@plan)
+        end
+
+        # Widok ściany z ostatniego planu (podgląd lub generowanie) dla okna; { 'blad' => tekst }, gdy nie ma ściany.
+        def widok(id)
+          w = Widok.sciana(@plan, id)
+          w || { 'blad' => "Brak ściany #{id} w ostatnim podglądzie.", 'id' => id.to_s }
         end
 
         # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom); parametry zapamiętane na komputerze.
@@ -58,6 +66,7 @@ module ArteMadera
           wej = scal(dane)
           Ustawienia.zapamietaj(wej['parametry'])
           plan = Log.time('obliczenia') { Projekt.oblicz(wej) }
+          @plan = plan
           wynik = dla_okna(plan)
           return wynik unless plan[:bledy].empty?
           stary = @dom && @dom.valid? ? @dom : nil
@@ -106,7 +115,7 @@ module ArteMadera
         # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut.
         def dla_okna(plan)
           wynik = { 'bledy' => plan[:bledy], 'ostrzezenia' => plan[:ostrzezenia], 'rzut' => rzut(plan),
-                    'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) } }
+                    'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) }, 'widoki' => Widok.lista(plan) }
           s = plan[:podsumowanie]
           return wynik if s.nil?
           wynik.merge(

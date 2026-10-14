@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/rzut.js
   Zadanie: rzut domu w oknie (SVG) – obrys, ściany i węgły, otwory, punkty odniesienia otworów, opisy W-n.
-  Tematy: rzut w oknie, rysunek SVG, opisy ścian na rzucie, punkt odniesienia otworu
+  Tematy: rzut w oknie, rysunek SVG, opisy ścian na rzucie, punkt odniesienia otworu, kliknięcie ściany na rzucie
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/wyniki.js (AMGW_RZUT.rysuj)
 
@@ -14,8 +14,8 @@ var AMGW_RZUT = (function () {
   var el = AMGW_DOM.el;
   var wyczysc = AMGW_DOM.wyczysc;
 
-  // Rzut SVG: obrys, ściany, kontrfory, otwory, punkty odniesienia i opisy W-n.
-  function rysuj(box, rzut) {
+  // Rzut SVG: obrys, ściany, kontrfory, otwory, punkty odniesienia i opisy W-n; naKlik(id) – kliknięcie ściany.
+  function rysuj(box, rzut, naKlik) {
     wyczysc(box);
     if (!rzut || !rzut.obrys || rzut.obrys.length < 3) {
       box.appendChild(el('p', { 'class': 'drobny' }, 'Brak rozpoznanego obrysu.'));
@@ -62,6 +62,7 @@ var AMGW_RZUT = (function () {
       ln.setAttribute('stroke', kf ? '#b07a3e' : '#5a3b1c');
       ln.setAttribute('stroke-width', gr * (kf ? 2.2 : 3.0));
       svg.appendChild(ln);
+      if (naKlik && !kf) { svg.appendChild(polePrzycisku(ns, s, sx, sy, gr, naKlik)); }
       for (j = 0; j < s.otwory.length; j++) {
         var ol = document.createElementNS(ns, 'line');
         ol.setAttribute('x1', sx(s.otwory[j][0])); ol.setAttribute('y1', sy(s.otwory[j][0]));
@@ -87,6 +88,19 @@ var AMGW_RZUT = (function () {
       svg.appendChild(t);
     }
     box.appendChild(svg);
+  }
+
+  // Szeroka, niewidoczna linia nad ścianą – łatwiej ją kliknąć (wybór ściany do widoku).
+  function polePrzycisku(ns, s, sx, sy, gr, naKlik) {
+    var hit = document.createElementNS(ns, 'line');
+    hit.setAttribute('x1', sx(s.od)); hit.setAttribute('y1', sy(s.od));
+    hit.setAttribute('x2', sx(s['do'])); hit.setAttribute('y2', sy(s['do']));
+    hit.setAttribute('stroke', 'transparent');
+    hit.setAttribute('stroke-width', gr * 9);
+    hit.setAttribute('class', 'klik-sciana');
+    hit.setAttribute('data-sciana', s.id);
+    hit.addEventListener('click', function () { naKlik(s.id); });
+    return hit;
   }
 
   // Miejsce opisu na rzucie: [x, y, wyrównanie]; ściana – obok środka po stronie od środka obrysu, kontrfor – za końcem.

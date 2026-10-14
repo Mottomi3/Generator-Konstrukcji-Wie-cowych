@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, mijanka, długości bali
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -14,6 +14,8 @@ require File.expand_path('kolizje_belek', File.dirname(__FILE__))
 
 module LosoweDomy
   G = ArteMadera::GeneratorWiencowy
+  # Najkrótsza dopuszczalna krawędź bryły [mm] – zapas ponad tolerancję SketchUpa (0,0254 mm).
+  MIN_KRAWEDZ = 0.1
 
   module_function
 
@@ -118,8 +120,14 @@ module LosoweDomy
     if !k[:za_dlugie].empty? && pl[:ostrzezenia].none? { |u| u.include?('dłuższe niż') }
       problemy << "za długie bale bez ostrzeżenia: #{k[:za_dlugie].first(3).inspect}"
     end
-    zle = (pl[:pozycje] + pl[:pozycje_elementow]).reject { |poz| siatka_ok?(poz) }
-    problemy << "bryły niezamknięte: #{zle.map { |x| "#{x[:prefiks]} #{x[:nazwa]}" }.first(5).join(', ')}" unless zle.empty?
+    siatki = (pl[:pozycje] + pl[:pozycje_elementow]).map { |poz| [poz, siatka(poz)] }
+    zle = siatki.reject { |_poz, k| k[:ok] }.map { |poz, _k| "#{poz[:prefiks]} #{poz[:nazwa]}" }
+    problemy << "bryły niezamknięte: #{zle.first(5).join(', ')}" unless zle.empty?
+    krotkie_kr = siatki.select { |_poz, k| k[:min_krawedz] < MIN_KRAWEDZ }
+    unless krotkie_kr.empty?
+      problemy << format('krawędzie brył krótsze niż %.1f mm: %s', MIN_KRAWEDZ,
+                         krotkie_kr.first(3).map { |poz, k| format('%s %s (%.3f)', poz[:prefiks], poz[:nazwa], k[:min_krawedz]) }.join(', '))
+    end
     pl[:sciany].select { |w| w[:szczyt] }.each do |w|
       nad = nad_linia(pl, w[:id])
       problemy << format('%s: bale ponad linią dachu o %.2f mm', w[:id], nad) if nad && nad > 0.01
@@ -137,12 +145,28 @@ module LosoweDomy
     [problemy, pl]
   end
 
-  # Czy siatka pozycji jest zamknięta i ma objętość profilu.
-  def siatka_ok?(poz)
+  # Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }.
+  def siatka(poz)
     prof = G::Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
-    k = G::Siatka.sprawdz(G::Siatka.uprosc(G::Projekt.siatka_pozycji(poz)[:sciany]))
+    sciany = G::Siatka.uprosc(G::Projekt.siatka_pozycji(poz)[:sciany])
+    k = G::Siatka.sprawdz(sciany)
     v = G::Bryla.objetosc(prof)
-    k[:zamknieta] && (k[:objetosc] - v).abs <= v * 1e-9 + 1e-3
+    { ok: k[:zamknieta] && (k[:objetosc] - v).abs <= v * 1e-9 + 1e-3, min_krawedz: min_krawedz(sciany) }
+  end
+
+  # Najkrótsza krawędź pętli ścian siatki [mm] (SketchUp scala punkty bliższe niż 0,0254 mm).
+  def min_krawedz(sciany)
+    m = Float::INFINITY
+    sciany.each do |s|
+      s[:petle].each do |pts|
+        pts.each_with_index do |a, i|
+          b = pts[(i + 1) % pts.length]
+          d = Math.sqrt((0..2).inject(0.0) { |acc, k| acc + (a[k] - b[k])**2 })
+          m = d if d < m
+        end
+      end
+    end
+    m
   end
 end
 

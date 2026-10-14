@@ -51,13 +51,14 @@ var AMGW_WYNIKI = (function () {
     box.appendChild(ul);
   }
 
-  // Wyniki: liczby, wysokości, tabela ścian, lista bali, rzut, błędy, ostrzeżenia i podpowiedzi.
-  function pokaz(d) {
+  // Wyniki: liczby, wysokości, tabela ścian, lista bali, rzut, błędy, ostrzeżenia i podpowiedzi; naKlik(id) – kliknięta
+  // ściana na rzucie.
+  function pokaz(d, naKlik) {
     var i;
     lista('lista-bledow', d.bledy, 'lista-blad');
     lista('lista-ostrzezen', d.ostrzezenia, 'lista-uwaga');
     podpowiedzi(d.podpowiedzi);
-    AMGW_RZUT.rysuj($('rzut'), d.rzut);
+    AMGW_RZUT.rysuj($('rzut'), d.rzut, naKlik);
     var liczby = $('liczby');
     wyczysc(liczby);
     var tbS = $('tab-sciany').getElementsByTagName('tbody')[0];
