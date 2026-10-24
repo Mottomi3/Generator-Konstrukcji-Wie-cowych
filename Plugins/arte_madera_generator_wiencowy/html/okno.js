@@ -2,8 +2,8 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
-  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY)
+  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -56,6 +56,7 @@ var AMGW = (function () {
     }
     zbudujZamek(parametry);
     AMGW_ZMIANY.oznacz(stan.opisy);
+    AMGW_TRYB.zastosuj(stan.opisy);
   }
 
   // Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst) i podpowiedź pod nim.
@@ -98,7 +99,7 @@ var AMGW = (function () {
     }
     pole.addEventListener('change', function () { AMGW_ZMIANY.oznacz(stan.opisy); zaplanujPodglad(); });
     sekcja.appendChild(pole);
-    if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp' }, opis.podpowiedz)); }
+    if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp', id: 'h-' + opis.klucz }, opis.podpowiedz)); }
   }
 
   // Wartość pola parametru z formularza (gdy brak pola – domyślna).
@@ -300,6 +301,7 @@ var AMGW = (function () {
     wypelnijSzablony(d.szablony);
     $('plik-ustawien').textContent = d.plik_ustawien ? 'Ostatnie ustawienia zapisują się w: ' + d.plik_ustawien : '';
     zbudujFormularz(d.parametry || {});
+    AMGW_TRYB.ustaw(d.tryb_pol, stan.opisy);
     var i;
     if (d.podsumowanie) { pokazWynik(d.podsumowanie); }
     for (i = 0; i < (d.otwory || []).length; i++) { dodajOtwor(d.otwory[i]); }
@@ -367,6 +369,8 @@ var AMGW = (function () {
     $('btn-domyslne').addEventListener('click', function () { wywolaj('domyslne'); });
     $('widok-sciana').addEventListener('change', function () { wybierzSciane(this.value); });
     $('btn-zestawienie').addEventListener('click', function () { wywolaj('zapisz_liste'); });
+    $('btn-tryb-podstawowe').addEventListener('click', function () { wywolaj('tryb_pol', AMGW_TRYB.ustaw('podstawowe', stan.opisy)); });
+    $('btn-tryb-wszystkie').addEventListener('click', function () { wywolaj('tryb_pol', AMGW_TRYB.ustaw('wszystkie', stan.opisy)); });
     wywolaj('gotowe');
   }
 

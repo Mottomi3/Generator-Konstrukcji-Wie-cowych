@@ -3,12 +3,13 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/okno.rb
 # Zadanie: okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
-# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna
+# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
 # Zależy od: rdzen/parametry_lista.rb, sketchup/ustawienia.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
 # Używają: sketchup/sterowanie.rb (pokaz)
 #
 # Okno buduje formularz z ParametryLista (SEKCJE, LISTA – jedno źródło pól). Wywołania JS → Ruby: gotowe, podglad,
-# generuj, zamknij, blad_js, szablon_wczytaj, szablon_zapisz, szablon_usun, domyslne, widok (id ściany), zapisz_liste.
+# generuj, zamknij, blad_js, szablon_wczytaj, szablon_zapisz, szablon_usun, domyslne, widok (id ściany), zapisz_liste,
+# tryb_pol ('podstawowe' | 'wszystkie').
 # Ruby → JS: AMGW.init(dane), AMGW.wynik(dane), AMGW.ustaw({ parametry:, komunikat: }), AMGW.szablony({ lista:,
 # komunikat: }), AMGW.widok(dane widoku ściany – rdzen/widok.rb), AMGW.komunikat({ tekst:, rodzaj: }).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -50,7 +51,8 @@ module ArteMadera
             'sekcje' => ParametryLista::SEKCJE.map { |k, tytul, otwarta| { 'klucz' => k, 'tytul' => tytul, 'otwarta' => otwarta } },
             'presety' => ParametryLista::PRESETY, 'opisy_zamka' => ParametryLista::OPISY_ZAMKA,
             'parametry' => d['parametry'] || {}, 'szablony' => Ustawienia.nazwy_szablonow, 'plik_ustawien' => Ustawienia.sciezka,
-            'otwory' => d['otwory'] || [], 'info' => d['info'].to_s, 'podsumowanie' => d['podsumowanie'] }
+            'otwory' => d['otwory'] || [], 'info' => d['info'].to_s, 'podsumowanie' => d['podsumowanie'],
+            'tryb_pol' => Ustawienia.tryb_pol }
         end
 
         # Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź).
@@ -58,7 +60,7 @@ module ArteMadera
           ParametryLista::LISTA.map do |w|
             { 'klucz' => w[:klucz], 'etykieta' => w[:etykieta], 'jednostka' => w[:jednostka].to_s, 'min' => w[:min],
               'max' => w[:max], 'rodzaj' => w[:rodzaj].to_s, 'domyslna' => w[:domyslna], 'sekcja' => w[:sekcja],
-              'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s }
+              'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false }
           end
         end
 
@@ -150,6 +152,13 @@ module ArteMadera
               wyslij_komunikat(tekst, rodzaj)
             rescue => e
               Log.error('Okno.zapisz_liste', e)
+            end
+          end
+          dlg.add_action_callback('tryb_pol') do |_ctx, arg|
+            begin
+              Ustawienia.zapamietaj_tryb_pol(arg.to_s)
+            rescue => e
+              Log.error('Okno.tryb_pol', e)
             end
           end
           dlg.add_action_callback('blad_js') do |_ctx, arg|

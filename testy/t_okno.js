@@ -34,7 +34,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     window.__wywolania = [];
     window.sketchup = {};
     ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'szablon_wczytaj', 'szablon_zapisz', 'szablon_usun', 'domyslne',
-     'widok', 'zapisz_liste'].forEach(function (n) {
+     'widok', 'zapisz_liste', 'tryb_pol', 'sciany'].forEach(function (n) {
       window.sketchup[n] = function (arg) { window.__wywolania.push([n, arg]); };
     });
   });
@@ -63,6 +63,30 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(etykiety.indexOf('W-1') >= 0 && etykiety.indexOf('W-5') >= 0, 'rzut z opisami ścian');
   var wiersze = await page.evaluate(function () { return document.querySelectorAll('#tab-sciany tbody tr').length; });
   sprawdz(wiersze === dane.init.podsumowanie.sciany.length, 'tabela ścian');
+
+  // Tryb pól: „Podstawowe” (z ustawień) – pola zaawansowane, sekcja rysunku i wymiary zamka ukryte; „Wszystkie” – wszystko.
+  var widoczne = function () {
+    return page.evaluate(function () {
+      var v = function (id) { var e = document.getElementById(id); return !!e && e.offsetParent !== null; };
+      return [v('p-liczba_wiencow'), v('p-mijanka'), v('h-mijanka'), v('sekcja-rysunek'), v('pola-zamek'),
+              document.getElementById('btn-tryb-podstawowe').className];
+    });
+  };
+  var tr = await widoczne();
+  sprawdz(dane.init.tryb_pol === 'podstawowe' && tr[0] && !tr[1] && !tr[2] && !tr[3] && !tr[4] && tr[5] === 'wybrany',
+          'tryb podstawowy: tylko pola podstawowe (' + tr.join(',') + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#btn-tryb-wszystkie');
+  tr = await widoczne();
+  w = await page.evaluate(function () { return window.__wywolania; });
+  sprawdz(tr[0] && tr[1] && tr[2] && tr[3] && tr[4], 'tryb wszystkie: wszystkie pola (' + tr.join(',') + ')');
+  sprawdz(w.length === 1 && w[0][0] === 'tryb_pol' && w[0][1] === 'wszystkie', 'przełącznik zapamiętuje tryb w Ruby');
+  await page.click('#btn-tryb-podstawowe');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: { mijanka: '500' }, komunikat: '' }); });
+  tr = await widoczne();
+  sprawdz(!tr[0] === false && tr[1] && tr[2], 'tryb podstawowy: pole zmienione względem fabrycznych widoczne (' + tr.join(',') + ')');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  await page.click('#btn-tryb-wszystkie');
 
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-okno');

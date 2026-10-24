@@ -50,6 +50,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | dom z działową | `rdzen/przyklady.rb` |
 | domy testowe | `testy/pomoc.rb` |
 | drzwi | `rdzen/otwory.rb` |
+| działowa niższa – parametry | `rdzen/parametry_lista.rb` |
 | dziennik | `log.rb` |
 | długie ściany | `testy/t_rdzen.rb` |
 | długości bali | `testy/losowe_domy.rb` |
@@ -240,6 +241,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | podwaliny na zakład | `testy/t_podloga.rb` |
 | podział wieńca | `rdzen/bale.rb` |
 | podłoga | `rdzen/podloga.rb` |
+| pola podstawowe | `rdzen/parametry_lista.rb`, `html/tryb.js` |
 | pola zmienione | `html/okno.css` |
 | pole obrysu | `testy/t_widok.rb` |
 | porównanie modelu z planem | `sketchup/raport.rb` |
@@ -259,6 +261,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | prefiks sz | `rdzen/szczyty.rb` |
 | presety | `rdzen/parametry_lista.rb` |
 | profil bala | `rdzen/bryla.rb` |
+| profil bala – parametry | `rdzen/parametry_lista.rb` |
 | prostopadłościan otaczający | `testy/kolizje_belek.rb` |
 | przebieg generowania | `rdzen/projekt.rb` |
 | przebudowa | `sketchup/atrybuty.rb`, `sketchup/budowa.rb`, `testy/t_sketchup.rb` |
@@ -270,6 +273,8 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | przekrój szer×wys | `rdzen/parametry.rb` |
 | przesunięcie o pół wieńca | `rdzen/wience.rb` |
 | przesunięty dom zostaje na miejscu | `sketchup/budowa.rb` |
+| przełącznik pól | `html/okno.css`, `html/okno.html`, `html/tryb.js` |
+| przełącznik pól podstawowe / wszystkie | `html/okno.js` |
 | prześwit pod połacią | `rdzen/pod_dachem.rb` |
 | przycisk generuj | `sketchup/okno.rb` |
 | przyciski | `html/okno.html` |
@@ -374,15 +379,19 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | transformacja belki | `sketchup/konwersja.rb` |
 | transformacja domu (obrót układu lokalnego) | `sketchup/konwersja.rb` |
 | tryb nowy / edycja | `sketchup/sterowanie.rb` |
+| tryb podstawowe / zaawansowane | `html/tryb.js` |
+| tryb pól okna | `sketchup/okno.rb`, `sketchup/ustawienia.rb` |
 | tworzenie elementów | `html/wspolne.js` |
 | tylko narysowane | `testy/t_wegly.rb` |
 | ugięcie | `rdzen/statyka.rb`, `testy/t_podloga.rb` |
+| ukrywanie pól | `html/tryb.js` |
 | układ dachu | `rdzen/dach.rb` |
 | układ lokalny (obrót) | `rdzen/obrys.rb` |
 | układ lokalny belki | `testy/kolizje_belek.rb` |
 | układ na przemian | `rdzen/styki.rb` |
 | układ okna | `html/okno.html` |
 | uruchamianie testów | `testy/uruchom.sh` |
+| ustawienia okna | `sketchup/ustawienia.rb` |
 | ustawienie bala licem | `rdzen/zamek.rb` |
 | usuwanie starych definicji | `sketchup/budowa.rb` |
 | wartości domyślne | `rdzen/parametry_lista.rb` |
@@ -423,6 +432,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | zamek | `rdzen/zamek.rb` |
 | zaokrąglenia | `rdzen/geometria.rb` |
 | zapamiętane ustawienia | `testy/t_sketchup.rb` |
+| zapamiętany tryb okna | `html/tryb.js` |
 | zapis parametrów w modelu | `sketchup/atrybuty.rb` |
 | zapis pliku | `sketchup/eksport.rb`, `testy/t_zestawienie.rb` |
 | zapis ustawień | `sketchup/ustawienia.rb` |
@@ -469,7 +479,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/obrys.rb` | 292 | rozpoznanie narysowanych linii – zamknięty obrys (lico zewnętrzne), osie ścian działowych, znaczniki kontrforów. |
 | `rdzen/otwory.rb` | 109 | otwory okienne i drzwiowe – położenie na ścianie, sprawdzenie, cięcia bali w każdym wieńcu. |
 | `rdzen/parametry.rb` | 156 | sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy. |
-| `rdzen/parametry_lista.rb` | 258 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
+| `rdzen/parametry_lista.rb` | 281 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
 | `rdzen/pod_dachem.rb` | 83 | bale wystające pod połać – węgły na ścianach okapowych i działowe w poprzek kalenicy ścięte linią dachu (spód krokwi / desek); ostrzeżenie o zbyt stromym dachu. |
 | `rdzen/podloga.rb` | 301 | podłoga domu prostokątnego – podwaliny pod ścianami (zakład w narożnikach), legary między podwalinami, podciągi pod legarami, dobór przekroju i podpowiedzi. |
 | `rdzen/pozycje.rb` | 73 | numeracja pozycji jak u producenta – identyczne bale (ta sama bryła, także po obrocie o 180°) dostają jedną pozycję „nr-długość”. |
@@ -490,16 +500,17 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `sketchup/eksport.rb` | 60 | zapis plików z wtyczki – wybór miejsca (okno zapisu SketchUpa), zestawienie CSV z ostatniego podglądu, plik tekstowy UTF-8. |
 | `sketchup/konwersja.rb` | 71 | przeliczenia między rdzeniem (mm, tablice) a SketchUpem (cale, Geom::Point3d, Geom::Transformation). |
 | `sketchup/menu.rb` | 42 | menu Rozszerzenia → ArteMadera Generator Wieńcowy (generuj / edytuj, kontrola, test działania, o wtyczce). |
-| `sketchup/okno.rb` | 206 | okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna. |
+| `sketchup/okno.rb` | 215 | okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna. |
 | `sketchup/raport.rb` | 187 | test działania w prawdziwym SketchUpie i raport do wysłania – przykładowe domy budowane w operacji cofanej na końcu (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, środowisko, dziennik. |
 | `sketchup/sterowanie.rb` | 154 | przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna. |
-| `sketchup/ustawienia.rb` | 114 | zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony. |
+| `sketchup/ustawienia.rb` | 128 | zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony. |
 | `sketchup/wejscie.rb` | 65 | odczyt zaznaczenia – narysowane linie (obrys, osie działowych, kontrfory) albo istniejący dom z generatora. |
-| `html/okno.css` | 127 | wygląd okna parametrów. |
-| `html/okno.html` | 117 | okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby). |
-| `html/okno.js` | 388 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby. |
+| `html/okno.css` | 135 | wygląd okna parametrów. |
+| `html/okno.html` | 123 | okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby). |
+| `html/okno.js` | 392 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby. |
 | `html/rzut.js` | 134 | rzut domu w oknie (SVG) – obrys, ściany i węgły, otwory, punkty odniesienia otworów, opisy W-n. |
 | `html/sciana.js` | 201 | widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany. |
+| `html/tryb.js` | 67 | tryb pól okna – „Podstawowe” (tylko najczęściej zmieniane parametry i te zmienione względem fabrycznych) albo „Wszystkie”. |
 | `html/wspolne.js` | 48 | wspólne funkcje okna – element po identyfikatorze, nowy element, czyszczenie, liczby do wyświetlenia. |
 | `html/wyniki.js` | 99 | wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, rzut. |
 | `html/zmiany.js` | 60 | pola zmienione względem ustawień fabrycznych – wyróżnienie etykiety, wartość fabryczna w dymku, liczba zmian w nagłówku sekcji. |
@@ -517,12 +528,12 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/spis_tresci.rb` | 151 | generator spisu treści kodu docs/SPIS_TRESCI.md – tematy → pliki, lista plików, metody i stałe z numerami wierszy. |
 | `testy/sprawdz_zasady.rb` | 168 | kontrola zasad kodu – Ruby 2.2, ES5, rdzeń bez API SketchUpa, nagłówki plików, komentarze nad metodami, długość plików, kompilacja, MODULE_FILES. |
 | `testy/t_losowe.rb` | 32 | stały zestaw losowych domów (ziarna, które kiedyś ujawniły błąd, i kilka zwykłych) – każdy bez problemów. |
-| `testy/t_okno.js` | 215 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
+| `testy/t_okno.js` | 239 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
 | `testy/t_podloga.rb` | 118 | testy podłogi i statyki – wzory belki, dobór przekroju (minimalny / zalecany / ręczny), izolacja, podpory, układ podwalin i legarów. |
 | `testy/t_raport.rb` | 81 | test działania z menu (atrapa SketchUpa) – przykładowe domy bez błędów, budowa cofnięta (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, raport JSON. |
 | `testy/t_rdzen.rb` | 223 | testy rdzenia – obrys, ściany, wieńce, styki z mijanką, kontrfory, otwory, pozycje, kolizje w zamkach. |
 | `testy/t_siatka.rb` | 81 | siatka brył wszystkich pozycji z kilku domów – zamknięta (każda krawędź raz w każdą stronę), objętość równa profilowi. |
-| `testy/t_sketchup.rb` | 286 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
+| `testy/t_sketchup.rb` | 292 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
 | `testy/t_szczyty.rb` | 121 | testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji. |
 | `testy/t_wegly.rb` | 140 | testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory. |
 | `testy/t_widok.rb` | 71 | widok ściany do okna – obrysy bali zgodne z profilem, gniazda zamków na skrzyżowaniach, styki, linia dachu, lista ścian. |
@@ -808,7 +819,7 @@ Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), ske
 | 142 | `liczba(v)` | Liczba z tekstu lub liczby (przecinek dziesiętny dozwolony); nil gdy się nie da. |
 | 150 | `fmt(v)` | Liczba do komunikatu (bez zbędnego ,0). |
 
-### rdzen/parametry_lista.rb (258 wierszy)
+### rdzen/parametry_lista.rb (281 wierszy)
 
 lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
 
@@ -817,17 +828,17 @@ Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketc
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 17 | `module ParametryLista` |  |
-| 19 | `SEKCJE` | Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie]. |
-| 30 | `TAK_NIE` |  |
-| 33 | `LISTA` | Wszystkie parametry (kolejność = kolejność w oknie w ramach sekcji). |
-| 201 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
-| 210 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
-| 215 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
-| 230 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
-| 240 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
-| 245 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
-| 252 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
+| 18 | `module ParametryLista` |  |
+| 20 | `SEKCJE` | Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie]. |
+| 31 | `TAK_NIE` |  |
+| 34 | `LISTA` | Wszystkie parametry (kolejność = kolejność w oknie w ramach sekcji). |
+| 224 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
+| 233 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
+| 238 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
+| 253 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
+| 263 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
+| 268 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
+| 275 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
 
 ### rdzen/pod_dachem.rb (83 wierszy)
 
@@ -1247,7 +1258,7 @@ Używają: main.rb (ładowanie)
 | 18 | `dodaj` | Dodanie menu (raz na sesję SketchUpa). |
 | 32 | `o_wtyczce` | Okno z wersją i numerem kompilacji. |
 
-### sketchup/okno.rb (206 wierszy)
+### sketchup/okno.rb (215 wierszy)
 
 okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
 
@@ -1256,20 +1267,20 @@ Używają: sketchup/sterowanie.rb (pokaz)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 20 | `module Okno` |  |
-| 21 | `SZEROKOSC` |  |
-| 22 | `WYSOKOSC` |  |
-| 30 | `pokaz(dane)` | Otwarcie okna z danymi startowymi (tryb: 'nowy' \| 'edycja'). |
-| 47 | `dane_startowe` | Dane startowe okna: sekcje i pola formularza, wartości, presety, szablony, informacja o liniach / domu. |
-| 57 | `opisy_pol` | Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź). |
-| 66 | `wyslij_parametry(parametry, komunikat)` | Szablon do okna (wczytanie albo domyślne): AMGW.ustaw. |
-| 74 | `wyslij_szablony(komunikat)` | Lista szablonów do okna po zapisie / usunięciu: AMGW.szablony. |
-| 82 | `wyslij_komunikat(tekst, rodzaj)` | Komunikat w oknie (ok / blad): AMGW.komunikat. |
-| 90 | `wyslij_widok(dane)` | Widok ściany do okna: AMGW.widok. |
-| 98 | `wyslij_wynik(dane)` | Wynik obliczeń lub budowy do okna. |
-| 108 | `podlacz(dlg)` | Wywołania z JavaScriptu. |
-| 162 | `podlacz_szablony(dlg)` | Wywołania szablonów: wczytaj (nazwa), zapisz ({ nazwa, parametry }), usuń (nazwa), domyślne. |
-| 198 | `zamknij_stare` | Zamknięcie poprzedniego okna generatora. |
+| 21 | `module Okno` |  |
+| 22 | `SZEROKOSC` |  |
+| 23 | `WYSOKOSC` |  |
+| 31 | `pokaz(dane)` | Otwarcie okna z danymi startowymi (tryb: 'nowy' \| 'edycja'). |
+| 48 | `dane_startowe` | Dane startowe okna: sekcje i pola formularza, wartości, presety, szablony, informacja o liniach / domu. |
+| 59 | `opisy_pol` | Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź). |
+| 68 | `wyslij_parametry(parametry, komunikat)` | Szablon do okna (wczytanie albo domyślne): AMGW.ustaw. |
+| 76 | `wyslij_szablony(komunikat)` | Lista szablonów do okna po zapisie / usunięciu: AMGW.szablony. |
+| 84 | `wyslij_komunikat(tekst, rodzaj)` | Komunikat w oknie (ok / blad): AMGW.komunikat. |
+| 92 | `wyslij_widok(dane)` | Widok ściany do okna: AMGW.widok. |
+| 100 | `wyslij_wynik(dane)` | Wynik obliczeń lub budowy do okna. |
+| 110 | `podlacz(dlg)` | Wywołania z JavaScriptu. |
+| 171 | `podlacz_szablony(dlg)` | Wywołania szablonów: wczytaj (nazwa), zapisz ({ nazwa, parametry }), usuń (nazwa), domyślne. |
+| 207 | `zamknij_stare` | Zamknięcie poprzedniego okna generatora. |
 
 ### sketchup/raport.rb (187 wierszy)
 
@@ -1315,7 +1326,7 @@ Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 | 136 | `rzut(plan)` | Rzut do okna: obrys i ściany (bale od końca do końca) w mm układu lokalnego. |
 | 146 | `klucze_tekstowe(h)` | Hash z kluczami symbolami → kluczami tekstowymi (do JSON). |
 
-### sketchup/ustawienia.rb (114 wierszy)
+### sketchup/ustawienia.rb (128 wierszy)
 
 zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony.
 
@@ -1324,19 +1335,21 @@ Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 20 | `module Ustawienia` |  |
-| 21 | `PLIK` |  |
-| 22 | `WERSJA` |  |
-| 27 | `katalog` | Katalog ustawień na tym komputerze. |
-| 39 | `sciezka` | Pełna ścieżka pliku ustawień. |
-| 44 | `wczytaj` | Zawartość pliku (pusty zestaw, gdy brak pliku albo plik uszkodzony – wtedy ostrzeżenie w Log). |
-| 57 | `zapisz(dane)` | Zapis całego pliku (najpierw plik tymczasowy, potem zamiana); true gdy się udało. |
-| 69 | `ostatnie` | Ostatnio użyte parametry (do nowego domu). |
-| 74 | `zapamietaj(parametry)` | Zapamiętanie parametrów jako ostatnio użytych. |
-| 82 | `nazwy_szablonow` | Nazwy szablonów: wbudowane (z dopiskiem) i własne, alfabetycznie. |
-| 87 | `szablon(nazwa)` | Parametry szablonu (wbudowany – wartości szablonu na tle domyślnych); nil gdy brak. |
-| 94 | `zapisz_szablon(nazwa, parametry)` | Zapis własnego szablonu; zwraca tekst błędu albo nil. |
-| 105 | `usun_szablon(nazwa)` | Usunięcie własnego szablonu; zwraca tekst błędu albo nil. |
+| 21 | `module Ustawienia` |  |
+| 22 | `PLIK` |  |
+| 23 | `WERSJA` |  |
+| 28 | `katalog` | Katalog ustawień na tym komputerze. |
+| 40 | `sciezka` | Pełna ścieżka pliku ustawień. |
+| 45 | `wczytaj` | Zawartość pliku (pusty zestaw, gdy brak pliku albo plik uszkodzony – wtedy ostrzeżenie w Log). |
+| 59 | `zapisz(dane)` | Zapis całego pliku (najpierw plik tymczasowy, potem zamiana); true gdy się udało. |
+| 71 | `ostatnie` | Ostatnio użyte parametry (do nowego domu). |
+| 76 | `zapamietaj(parametry)` | Zapamiętanie parametrów jako ostatnio użytych. |
+| 84 | `tryb_pol` | Tryb pól okna: 'podstawowe' (domyślnie) albo 'wszystkie'. |
+| 89 | `zapamietaj_tryb_pol(tryb)` | Zapamiętanie trybu pól okna. |
+| 96 | `nazwy_szablonow` | Nazwy szablonów: wbudowane (z dopiskiem) i własne, alfabetycznie. |
+| 101 | `szablon(nazwa)` | Parametry szablonu (wbudowany – wartości szablonu na tle domyślnych); nil gdy brak. |
+| 108 | `zapisz_szablon(nazwa, parametry)` | Zapis własnego szablonu; zwraca tekst błędu albo nil. |
+| 119 | `usun_szablon(nazwa)` | Usunięcie własnego szablonu; zwraca tekst błędu albo nil. |
 
 ### sketchup/wejscie.rb (65 wierszy)
 
@@ -1352,25 +1365,25 @@ Używają: sketchup/sterowanie.rb
 | 23 | `z_zaznaczenia(model)` | Wynik: { dom: grupa } \| { segmenty: [...], z0: mm } \| { blad: tekst }. |
 | 49 | `zbierz(lista, tr, wynik, glebokosc)` | Krawędzie z zaznaczenia (także krawędzie zaznaczonej ściany – prostokąt kliknięty raz – i wnętrza grup i komponentów, z ich przekształceniem). |
 
-### html/okno.css (127 wierszy)
+### html/okno.css (135 wierszy)
 
 wygląd okna parametrów.
 
 Zależy od: –
 Używają: html/okno.html
 
-### html/okno.html (117 wierszy)
+### html/okno.html (123 wierszy)
 
 okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby).
 
-Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/wyniki.js, html/okno.js
+Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/wyniki.js, html/okno.js
 Używają: sketchup/okno.rb
 
-### html/okno.js (388 wierszy)
+### html/okno.js (392 wierszy)
 
 logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
 
-Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY)
+Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB)
 Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
 | Wiersz | Element | Opis |
@@ -1379,30 +1392,30 @@ Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, A
 | 23 | `wywolaj(nazwa, dane)` | Wywołanie Ruby (window.sketchup.nazwa) – poza SketchUpem nic nie robi. |
 | 32 | `zbudujSekcje()` | Sekcje formularza (rozwijane) z listy sekcji; zachowuje rozwinięcie przy przebudowie. |
 | 51 | `zbudujFormularz(parametry)` | Formularz: sekcje, pole na każdy parametr (z podpowiedzią) i wymiary zamka. |
-| 62 | `dodajPole(opis, parametry)` | Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst) i podpowiedź pod nim. |
-| 105 | `wartoscPola(klucz, domyslna)` | Wartość pola parametru z formularza (gdy brak pola – domyślna). |
-| 113 | `wypelnijSzablony(lista)` | Lista szablonów w polu wyboru. |
-| 121 | `komunikatSzablonu(tekst)` | Komunikat przy szablonach. |
-| 124 | `zbudujZamek(parametry)` | Pola wymiarów zamka: wartości własne albo z presetu. |
-| 143 | `zbierzParametry()` | Parametry z formularza (z wymiarami zamka) do wysłania do Ruby. |
-| 158 | `dodajOtwor(o)` | Wiersz otworu w tabeli (ściana, od, szerokość, wysokość, parapet, nazwa). |
-| 185 | `wypelnijSciany(sel, wybrana)` | Lista ścian dla otworu (bez kontrforów); brakująca ściana zostaje z dopiskiem. |
-| 204 | `zbierzOtwory()` | Otwory z tabeli do wysłania do Ruby. |
-| 219 | `odswiezScianyOtworow()` | Odświeżenie list ścian w tabeli otworów po podglądzie. |
-| 226 | `pierwszaSciana()` | Pierwsza ściana (nie kontrfor) – domyślna dla nowego otworu. |
-| 237 | `pokazKomunikat(tekst, rodzaj)` | Komunikat nad formularzem (ok / blad). |
-| 244 | `ukryjKomunikat()` | Ukrycie komunikatu. |
-| 247 | `pokazWynik(d)` | Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany. |
-| 263 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
-| 277 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana. |
-| 285 | `dane()` | Dane formularza jako JSON (parametry i otwory). |
-| 288 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie). |
-| 294 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
-| 310 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
-| 317 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
-| 323 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
-| 340 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
-| 385 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
+| 63 | `dodajPole(opis, parametry)` | Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst) i podpowiedź pod nim. |
+| 106 | `wartoscPola(klucz, domyslna)` | Wartość pola parametru z formularza (gdy brak pola – domyślna). |
+| 114 | `wypelnijSzablony(lista)` | Lista szablonów w polu wyboru. |
+| 122 | `komunikatSzablonu(tekst)` | Komunikat przy szablonach. |
+| 125 | `zbudujZamek(parametry)` | Pola wymiarów zamka: wartości własne albo z presetu. |
+| 144 | `zbierzParametry()` | Parametry z formularza (z wymiarami zamka) do wysłania do Ruby. |
+| 159 | `dodajOtwor(o)` | Wiersz otworu w tabeli (ściana, od, szerokość, wysokość, parapet, nazwa). |
+| 186 | `wypelnijSciany(sel, wybrana)` | Lista ścian dla otworu (bez kontrforów); brakująca ściana zostaje z dopiskiem. |
+| 205 | `zbierzOtwory()` | Otwory z tabeli do wysłania do Ruby. |
+| 220 | `odswiezScianyOtworow()` | Odświeżenie list ścian w tabeli otworów po podglądzie. |
+| 227 | `pierwszaSciana()` | Pierwsza ściana (nie kontrfor) – domyślna dla nowego otworu. |
+| 238 | `pokazKomunikat(tekst, rodzaj)` | Komunikat nad formularzem (ok / blad). |
+| 245 | `ukryjKomunikat()` | Ukrycie komunikatu. |
+| 248 | `pokazWynik(d)` | Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany. |
+| 264 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
+| 278 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana. |
+| 286 | `dane()` | Dane formularza jako JSON (parametry i otwory). |
+| 289 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie). |
+| 295 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
+| 312 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
+| 319 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
+| 325 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
+| 342 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
+| 389 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
 
 ### html/rzut.js (134 wierszy)
 
@@ -1444,6 +1457,22 @@ Używają: html/okno.js (AMGW.widok, lista ścian po podglądzie)
 | 159 | `styki(svg, d, X, Y)` | Styki bali: czerwona kreska na końcu bala oznaczonym jako styk. |
 | 174 | `dach(svg, d, X, Y)` | Linia dachu (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi). |
 | 184 | `wience(svg, d, z, m, X, Y, px, k)` | Numery wieńców z lewej (co który się mieści). |
+
+### html/tryb.js (67 wierszy)
+
+tryb pól okna – „Podstawowe” (tylko najczęściej zmieniane parametry i te zmienione względem fabrycznych) albo „Wszystkie”.
+
+Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (klasa „zmieniony” na etykiecie)
+Używają: html/okno.js (po zbudowaniu formularza, po zmianie pola, przełącznik w nagłówku formularza)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 13 | `AMGW_TRYB` |  |
+| 20 | `pokaz(e, widoczny)` | Pokazanie albo ukrycie elementu (pusty display – wartość z arkusza stylów). |
+| 26 | `zastosuj(opisy)` | Widoczność pól według trybu: w trybie podstawowym pola podstawowe i zmienione, sekcje bez widocznych pól ukryte, wymiary zamka tylko w trybie „Wszystkie”. |
+| 49 | `przyciski()` | Wyróżnienie przycisku bieżącego trybu. |
+| 57 | `ustaw(tryb, opisy)` | Ustawienie trybu ('podstawowe' \| 'wszystkie') i odświeżenie widoczności pól. |
+| 64 | `tryb()` | Bieżący tryb. |
 
 ### html/wspolne.js (48 wierszy)
 
@@ -1814,7 +1843,7 @@ Używają: testy/uruchom.sh
 |---:|---|---|
 | 15 | `ZIARNA` | Ziarno => co ujawniło (runda 3). |
 
-### testy/t_okno.js (215 wierszy)
+### testy/t_okno.js (239 wierszy)
 
 okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
 
@@ -1873,7 +1902,7 @@ Używają: testy/uruchom.sh
 |---:|---|---|
 | 13 | `sprawdz_pozycje(pl, opis)` |  |
 
-### testy/t_sketchup.rb (286 wierszy)
+### testy/t_sketchup.rb (292 wierszy)
 
 warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany.
 

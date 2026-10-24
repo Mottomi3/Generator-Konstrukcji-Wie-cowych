@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.css
   Zadanie: wygląd okna parametrów.
-  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany
+  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany, przełącznik pól
   Zależy od: –
   Używają: html/okno.html
 */
@@ -125,3 +125,11 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 #rzut .klik-sciana { cursor: pointer; }
 .naglowek-listy { justify-content: space-between; align-items: center; margin-top: 10px; }
 .naglowek-listy h3 { margin: 0; }
+
+/* Przełącznik pól: podstawowe / wszystkie */
+.przelacznik { display: flex; align-items: center; gap: 0; }
+.przelacznik span { color: var(--szary); margin-right: 8px; }
+.przelacznik button { border-radius: 0; padding: 4px 12px; }
+.przelacznik button:first-of-type { border-radius: 4px 0 0 4px; }
+.przelacznik button:last-of-type { border-radius: 0 4px 4px 0; border-left: none; }
+.przelacznik button.wybrany { background: var(--akcent-jasny); border-color: var(--akcent); color: var(--akcent); font-weight: 600; }

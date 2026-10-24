@@ -249,6 +249,12 @@ Testy.sprawdz(!Ustawienia.nazwy_szablonow.include?('Mój domek'), 'szablon usuni
 dlg.wywolaj('domyslne')
 u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
 Testy.rowne(u['parametry'], ParametryLista.domyslne, 'przywrócenie fabrycznych')
+Testy.rowne(Okno.dane_startowe['tryb_pol'], 'podstawowe', 'tryb pól okna: domyślnie podstawowe')
+dlg.wywolaj('tryb_pol', 'wszystkie')
+Testy.rowne([Ustawienia.tryb_pol, Okno.dane_startowe['tryb_pol']], %w[wszystkie wszystkie], 'tryb pól okna zapamiętany na komputerze')
+dlg.wywolaj('tryb_pol', 'cokolwiek')
+Testy.rowne(Ustawienia.tryb_pol, 'podstawowe', 'nieznany tryb pól – podstawowe')
+Testy.sprawdz(Okno.dane_startowe['opisy'].count { |o| o['podstawowy'] } >= 20, 'opisy pól z oznaczeniem podstawowych')
 File.open(Ustawienia.sciezka, 'w') { |f| f.write('{uszkodzony') }
 Testy.rowne(Ustawienia.ostatnie, {}, 'uszkodzony plik – puste ustawienia, bez błędu')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
