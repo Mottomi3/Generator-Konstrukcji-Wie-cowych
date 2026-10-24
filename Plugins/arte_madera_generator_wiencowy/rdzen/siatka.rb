@@ -3,13 +3,15 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/siatka.rb
 # Zadanie: siatka ścian (płaskich wielokątów z otworami) zamkniętej bryły bala z profilu – do budowy komponentu w SketchUpie.
-# Tematy: siatka, ściany bryły, wielokąt z otworem, scalanie ścian współpłaszczyznowych, punkty T, bryła zamknięta, objętość siatki
-# Zależy od: rdzen/bryla.rb
+# Tematy: siatka, ściany bryły, wielokąt z otworem, scalanie ścian współpłaszczyznowych, punkty T, bryła zamknięta, objętość siatki, pasy przekroju, siatka pełnego profilu
+# Zależy od: rdzen/bryla.rb (profil prosty), rdzen/profil_bala.rb (pasy pełnego profilu)
 # Używają: sketchup/budowa.rb, testy/t_siatka.rb
 #
-# Kroki: ściany przedziałów profilu (przód, tył, wierzch, spód) i czoła na granicach przedziałów (różnica przekrojów
-# z sąsiednich przedziałów, komórki siatki y × z) → wstawienie wierzchołków leżących na krawędziach (punkty T) →
-# scalenie ścian w tej samej płaszczyźnie (znoszenie krawędzi przeciwnych) → pętle zewnętrzne i otwory.
+# Przedział profilu ma pasy wzdłuż grubości (bal prosty – jeden pas y0…y1, pełny profil – pasy z piórem i wpustem).
+# Kroki: ściany pasów (wierzch, spód), boki na granicach pasów (część pasa, której nie zakrywa sąsiedni pas – trapezy),
+# czoła na granicach przedziałów (różnica przekrojów z sąsiednich przedziałów, komórki siatki y × z) → wstawienie
+# wierzchołków leżących na krawędziach (punkty T) → scalenie ścian w tej samej płaszczyźnie (znoszenie krawędzi
+# przeciwnych) → pętle zewnętrzne i otwory.
 # Wynik: [{ normalna: [x, y, z], petle: [zewnętrzna, otwór…] }] – punkty [x, y, z] w mm układu bala.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -34,44 +36,87 @@ module ArteMadera
       # Ściany przedziałów i czoła, każda: { n: normalna, p: [punkty] } (kolejność przeciwna do wskazówek patrząc z zewnątrz).
       def sciany_surowe(prof)
         f = []
-        prof.each do |q|
-          xa = q[:xa]
-          xb = q[:xb]
-          f << { n: [0.0, -1.0, 0.0], p: [[xa, q[:y0], q[:zb_a]], [xb, q[:y0], q[:zb_b]], [xb, q[:y0], q[:zt_b]], [xa, q[:y0], q[:zt_a]]] }
-          f << { n: [0.0, 1.0, 0.0], p: [[xa, q[:y1], q[:zt_a]], [xb, q[:y1], q[:zt_b]], [xb, q[:y1], q[:zb_b]], [xa, q[:y1], q[:zb_a]]] }
-          f << { n: normalna([[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]]]),
-                 p: [[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]], [xa, q[:y1], q[:zt_a]]] }
-          f << { n: normalna([[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]]]),
-                 p: [[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]], [xb, q[:y0], q[:zb_b]]] }
+        lista = prof.map { |q| [q[:xa], q[:xb], pasy(q)] }
+        lista.each do |xa, xb, ps|
+          ps.each do |q|
+            f << { n: normalna([[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]]]),
+                   p: [[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]], [xa, q[:y1], q[:zt_a]]] }
+            f << { n: normalna([[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]]]),
+                   p: [[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]], [xb, q[:y0], q[:zb_b]]] }
+          end
+          f.concat(boki_y(xa, xb, ps))
         end
-        prof.each_with_index do |q, i|
-          lewy = i > 0 && (prof[i - 1][:xb] - q[:xa]).abs < Bryla::EPS ? prof[i - 1] : nil
-          f.concat(czolo(q[:xa], lewy, q))
-          prawy = i < prof.length - 1 && (prof[i + 1][:xa] - q[:xb]).abs < Bryla::EPS ? prof[i + 1] : nil
-          f.concat(czolo(q[:xb], q, nil)) if prawy.nil?
+        lista.each_with_index do |(xa, xb, ps), i|
+          lewy = i > 0 && (lista[i - 1][1] - xa).abs < Bryla::EPS ? lista[i - 1][2] : nil
+          f.concat(czolo(xa, lewy, ps))
+          prawy = i < lista.length - 1 && (lista[i + 1][0] - xb).abs < Bryla::EPS
+          f.concat(czolo(xb, ps, nil)) unless prawy
         end
         f
       end
 
-      # Czoło w płaszczyźnie x: komórki przekroju lewego bez prawego (normalna +x) i prawego bez lewego (−x).
-      def czolo(x, lewy, prawy)
-        pl = lewy ? [lewy[:y0], lewy[:y1], lewy[:zb_b], lewy[:zt_b]] : nil
-        pp = prawy ? [prawy[:y0], prawy[:y1], prawy[:zb_a], prawy[:zt_a]] : nil
+      # Pasy przedziału: pełny profil – lista pasy, profil prosty – jeden pas y0…y1.
+      def pasy(q)
+        q[:pasy] || [{ y0: q[:y0], y1: q[:y1], zb_a: q[:zb_a], zb_b: q[:zb_b], zt_a: q[:zt_a], zt_b: q[:zt_b] }]
+      end
+
+      # Boki pasów przedziału xa…xb na granicach y: część pasa niezakryta przez pas sąsiedni (po drugiej stronie granicy).
+      def boki_y(xa, xb, ps)
+        wynik = []
+        ys = ps.map { |q| [q[:y0], q[:y1]] }.flatten.map { |y| y.round(6) }.uniq.sort
+        ys.each do |y|
+          lewy = ps.find { |q| (q[:y1] - y).abs < Bryla::EPS }
+          prawy = ps.find { |q| (q[:y0] - y).abs < Bryla::EPS }
+          roznica(lewy, prawy).each { |dol, gora| wynik.concat(trapez(xa, xb, y, dol, gora, 1.0)) } if lewy
+          roznica(prawy, lewy).each { |dol, gora| wynik.concat(trapez(xa, xb, y, dol, gora, -1.0)) } if prawy
+        end
+        wynik
+      end
+
+      # Część pasa a niezakryta przez pas b (nil – cały): [[spód [z_a, z_b], wierzch [z_a, z_b]]] – do dwóch trapezów.
+      def roznica(a, b)
+        return [[[a[:zb_a], a[:zb_b]], [a[:zt_a], a[:zt_b]]]] if b.nil?
+        wynik = []
+        dol = [[a[:zt_a], b[:zb_a]].min, [a[:zt_b], b[:zb_b]].min]
+        wynik << [[a[:zb_a], a[:zb_b]], [[dol[0], a[:zb_a]].max, [dol[1], a[:zb_b]].max]]
+        gora = [[a[:zb_a], b[:zt_a]].max, [a[:zb_b], b[:zt_b]].max]
+        wynik << [[[gora[0], a[:zt_a]].min, [gora[1], a[:zt_b]].min], [a[:zt_a], a[:zt_b]]]
+        wynik
+      end
+
+      # Trapez boku w płaszczyźnie y od spodu dol do wierzchu gora (normalna ±y); [] gdy zerowej wysokości.
+      def trapez(xa, xb, y, dol, gora, kier)
+        return [] if gora[0] - dol[0] <= Bryla::EPS && gora[1] - dol[1] <= Bryla::EPS
+        pkt = if kier > 0
+                [[xa, y, gora[0]], [xb, y, gora[1]], [xb, y, dol[1]], [xa, y, dol[0]]]
+              else
+                [[xa, y, dol[0]], [xb, y, dol[1]], [xb, y, gora[1]], [xa, y, gora[0]]]
+              end
+        pkt = bez_powtorzen(pkt)
+        pkt.length >= 3 ? [{ n: [0.0, kier, 0.0], p: pkt }] : []
+      end
+
+      # Czoło w płaszczyźnie x: komórki przekroju lewego bez prawego (normalna +x) i prawego bez lewego (−x); przekroje
+      # z pasów (lewy – wartości na końcu b, prawy – na początku a).
+      def czolo(x, lewe, prawe)
+        pl = (lewe || []).map { |q| [q[:y0], q[:y1], q[:zb_b], q[:zt_b]] }
+        pp = (prawe || []).map { |q| [q[:y0], q[:y1], q[:zb_a], q[:zt_a]] }
         ys = []
         zs = []
-        [pl, pp].compact.each do |r|
+        (pl + pp).each do |r|
           ys << r[0] << r[1]
           zs << r[2] << r[3]
         end
         ys = ys.sort.uniq
         zs = zs.sort.uniq
         wynik = []
+        w = lambda { |lista, ym, zm| lista.any? { |r| ym > r[0] && ym < r[1] && zm > r[2] && zm < r[3] } }
         ys.each_cons(2) do |y0, y1|
           zs.each_cons(2) do |z0, z1|
             ym = (y0 + y1) / 2.0
             zm = (z0 + z1) / 2.0
-            w_l = pl && ym > pl[0] && ym < pl[1] && zm > pl[2] && zm < pl[3]
-            w_p = pp && ym > pp[0] && ym < pp[1] && zm > pp[2] && zm < pp[3]
+            w_l = w.call(pl, ym, zm)
+            w_p = w.call(pp, ym, zm)
             if w_l && !w_p
               wynik << { n: [1.0, 0.0, 0.0], p: [[x, y0, z0], [x, y1, z0], [x, y1, z1], [x, y0, z1]] }
             elsif w_p && !w_l

@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/przyklady.rb
 # Zadanie: przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory.
-# Tematy: przykładowe domy, test działania, dom 4 × 4, dom jak 900, dom z działową, łączenie na przemian, obrys L, krokwie przy szczycie
+# Tematy: przykładowe domy, test działania, dom 4 × 4, dom jak 900, dom z działową, łączenie na przemian, obrys L, krokwie przy szczycie, pełny profil w teście, działowa pod antresolą w teście
 # Zależy od: –
 # Używają: sketchup/raport.rb (test działania), testy/t_raport.rb
 #
@@ -31,7 +31,7 @@ module ArteMadera
         { 'sciana' => sciana, 'od' => od, 'szerokosc' => szer, 'wysokosc' => wys, 'parapet' => parapet, 'nazwa' => nazwa }
       end
 
-      # Lista przykładów: [{ 'nazwa' =>, 'wejscie' => { 'segmenty', 'z0', 'parametry', 'otwory' } }].
+      # Lista przykładów: [{ 'nazwa' =>, 'wejscie' => { 'segmenty', 'z0', 'parametry', 'otwory', 'sciany' } }].
       def lista
         [
           dom('Domek 4 × 4 – bez łączeń i węgłów', prostokat(0, 0, 4000, 4000), {}, []),
@@ -45,13 +45,18 @@ module ArteMadera
           dom('Obrys L – ściany bez dachu i podłogi',
               wielokat([[0, 0], [8000, 0], [8000, 4000], [4500, 4000], [4500, 7000], [0, 7000]]), {}, []),
           dom('Krokwie z obu stron szczytu, podłoga ocieplona 150', prostokat(0, 0, 6000, 5000),
-              { 'dach_uklad' => 'krokwie', 'krokwie_przy_szczycie' => 'obie_strony', 'izolacja_podlogi' => 150 }, [])
+              { 'dach_uklad' => 'krokwie', 'krokwie_przy_szczycie' => 'obie_strony', 'izolacja_podlogi' => 150 }, []),
+          dom('Pełny profil, działowa pod antresolą, ostatek 200, węgieł ręczny', prostokat(0, 0, 6000, 4200) + [[[2000, 0], [2000, 4200]]],
+              { 'liczba_wiencow' => 20, 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie' },
+              [otwor('W-5', 1200, 900, 2000, 0, 'D1')],
+              'W-5' => { 'nad' => 'antresola', 'wysokosc' => 2450 }, 'W-1' => { 'ostatek_od' => 200 }, 'W-3' => { 'wegly' => [3500] })
         ]
       end
 
-      # Przykład: nazwa i wejście domu.
-      def dom(nazwa, segmenty, parametry, otwory)
-        { 'nazwa' => nazwa, 'wejscie' => { 'segmenty' => segmenty, 'z0' => 0.0, 'parametry' => parametry, 'otwory' => otwory } }
+      # Przykład: nazwa i wejście domu (sciany – ustawienia ścian z widoku ściany).
+      def dom(nazwa, segmenty, parametry, otwory, sciany = {})
+        { 'nazwa' => nazwa, 'wejscie' => { 'segmenty' => segmenty, 'z0' => 0.0, 'parametry' => parametry, 'otwory' => otwory,
+                                           'sciany' => sciany } }
       end
     end
   end

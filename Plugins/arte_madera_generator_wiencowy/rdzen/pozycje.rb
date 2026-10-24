@@ -4,17 +4,18 @@
 # Plik: rdzen/pozycje.rb
 # Zadanie: numeracja pozycji jak u producenta – identyczne bale (ta sama bryła, także po obrocie o 180°) dostają jedną pozycję „nr-długość”.
 # Tematy: pozycja, numeracja bali, nazwa bala 10-4200, identyczne bale, komponent, prefiks Bs / Kf, ilość sztuk, lista bali
-# Zależy od: rdzen/bryla.rb, rdzen/parametry.rb
+# Zależy od: rdzen/bryla.rb, rdzen/parametry.rb, rdzen/profil_bala.rb (opis pełnego profilu w pozycji)
 # Używają: rdzen/projekt.rb, sketchup/budowa.rb (jedna definicja komponentu na pozycję)
 #
 # Pozycja (Hash): nr, nazwa ('10-4200'), prefiks ('Bs' bale ścienne, 'Kf' kontrfory), dl, t, h, cechy (w ułożeniu
-# kanonicznym), podpis, ilosc, bale (lista). Bal dostaje b[:pozycja] i b[:obrocony] (ułożony odwrotnie niż kanoniczny).
+# kanonicznym), podpis, ilosc, bale (lista), profil (opis pełnego profilu – rdzen/profil_bala.rb; nil – bal prosty). Bal dostaje b[:pozycja] i b[:obrocony] (ułożony odwrotnie niż kanoniczny).
 # Kolejność numerów: ściany W-1, W-2…, w ścianie wieńce od dołu, w wieńcu wzdłuż ściany.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
+require File.join(File.dirname(__FILE__), 'profil_bala') unless defined?(ArteMadera::GeneratorWiencowy::ProfilBala)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -24,6 +25,7 @@ module ArteMadera
       # Pozycje wszystkich bali (lista w kolejności numerów).
       def numeruj(bale, p)
         t = Parametry.grubosc(p)
+        profil = ProfilBala.opis(p)
         wg_podpisu = {}
         lista = []
         posortowane(bale).each do |b|
@@ -34,7 +36,7 @@ module ArteMadera
           if poz.nil?
             cechy = obrot ? Bryla.obrocone(b[:dl], b[:cechy]) : b[:cechy]
             poz = { nr: lista.length + 1, prefiks: prefiks, dl: b[:dl], t: t, h: b[:h], cechy: cechy, podpis: podpis,
-                    ilosc: 0, bale: [], polbal: b[:polbal] }
+                    ilosc: 0, bale: [], polbal: b[:polbal], profil: profil }
             poz[:nazwa] = "#{poz[:nr]}-#{b[:dl].round}"
             wg_podpisu[klucz] = poz
             lista << poz

@@ -59,7 +59,7 @@ module ArteMadera
         return [] if zas.nil?
         bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : [zas]
         wewn = wn[:nadstawka] ? bazy.flatten.reject { |s| (s - w[:s_od]).abs < 0.01 || (s - w[:s_do]).abs < 0.01 } : []
-        ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h])
+        ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h], p['min_pasek_przy_otworze'])
         ciecia[:uwagi].each { |u| uwagi << u unless uwagi.include?(u) }
         przedzialy = bazy.map { |a, b| G.odejmij_przedzialy(a, b, ciecia[:pelne], 0.5) }.flatten(1)
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)

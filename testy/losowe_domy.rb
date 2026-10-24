@@ -3,11 +3,12 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
-# Dom z ziarna jest zawsze ten sam (Random.new(ziarno)) – błąd z raportu odtwarza się podając ziarno.
+# Dom z ziarna jest zawsze ten sam (Random.new(ziarno)) – błąd z raportu odtwarza się podając ziarno. Dodatki z rundy 4
+# (pełny profil, strop, ustawienia ścian) z osobnego losowania – domy z ziaren rund 1–3 bez zmian.
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
 require File.expand_path('kolizje_belek', File.dirname(__FILE__))
@@ -67,7 +68,38 @@ module LosoweDomy
     end
     p = parametry(r)
     otw = otwory(r, prostokat_dom ? [w, d, w, d] : [w, d - cd, cw, cd])
-    { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw }
+    sciany = dodatki(Random.new(ziarno * 7919 + 13), p, prostokat_dom ? w : w - cw, opis)
+    { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
+  end
+
+  # Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą,
+  # węgły ręczne na W-1; zwraca ustawienia ścian (parametry uzupełnia w p, opis w opis).
+  def dodatki(r, p, dl_w1, opis)
+    if r.rand < 0.3
+      p['profil_bala'] = 'pelny'
+      p['pioro_liczba'] = wybierz(r, %w[1 2])
+      opis << "pełny profil (#{p['pioro_liczba']} pióra)"
+    end
+    if r.rand < 0.2
+      p['strop'] = 'tak'
+      p['dzialowa_nizsza_wysokosc'] = (1800 + r.rand(13) * 100).to_s
+      opis << "strop #{p['dzialowa_nizsza_wysokosc']}"
+    end
+    sciany = {}
+    if r.rand < 0.3
+      id = "W-#{1 + r.rand(4)}"
+      (sciany[id] ||= {})[r.rand < 0.5 ? 'ostatek_od' : 'ostatek_do'] = wybierz(r, %w[200 150 300])
+      opis << "ostatek #{id}"
+    end
+    if r.rand < 0.3
+      sciany['W-5'] = { 'nad' => wybierz(r, %w[antresola polka strop]), 'wysokosc' => (1800 + r.rand(13) * 100).to_s }
+      opis << "W-5 #{sciany['W-5']['nad']}"
+    end
+    if r.rand < 0.2
+      (sciany['W-1'] ||= {})['wegly'] = (0...(1 + r.rand(2))).map { 400 + r.rand([dl_w1 - 800, 1].max) }
+      opis << "węgły ręczne W-1 #{sciany['W-1']['wegly'].inspect}"
+    end
+    sciany
   end
 
   # Losowe parametry (wartości tekstowe jak z okna).
@@ -106,7 +138,8 @@ module LosoweDomy
   def sprawdz(dom, belki = true)
     problemy = []
     pl = begin
-      plan_pelny(dom[:segmenty], dom[:parametry], dom[:otwory])
+      G::Projekt.oblicz('segmenty' => dom[:segmenty], 'parametry' => dom[:parametry], 'otwory' => dom[:otwory],
+                        'sciany' => dom[:sciany] || {})
     rescue => e
       return [["wyjątek #{e.class}: #{e.message} @ #{e.backtrace.first(3).join(' | ')}"], nil]
     end
@@ -147,10 +180,9 @@ module LosoweDomy
 
   # Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }.
   def siatka(poz)
-    prof = G::Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
     sciany = G::Siatka.uprosc(G::Projekt.siatka_pozycji(poz)[:sciany])
     k = G::Siatka.sprawdz(sciany)
-    v = G::Bryla.objetosc(prof)
+    v = G::Projekt.objetosc_pozycji(poz)
     { ok: k[:zamknieta] && (k[:objetosc] - v).abs <= v * 1e-9 + 1e-3, min_krawedz: min_krawedz(sciany) }
   end
 

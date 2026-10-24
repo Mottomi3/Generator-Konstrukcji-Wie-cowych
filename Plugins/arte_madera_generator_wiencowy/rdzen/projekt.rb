@@ -16,7 +16,7 @@ unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
   %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach szczyty dopelnienie
-     pod_dachem bale zamek bryla siatka pozycje statyka podloga kontrola].each do |plik|
+     pod_dachem bale zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -60,6 +60,7 @@ module ArteMadera
         bale = Bale.zbuduj(sciany, p)
         plan[:ostrzezenia].concat(bale[:ostrzezenia])
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
+        ProfilBala.oznacz(bale[:bale], p)
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
@@ -94,7 +95,7 @@ module ArteMadera
         z = p['zamek']
         sciany = plan[:sciany].map do |w|
           { id: w[:id], rodzaj: Sciany.opis_rodzaju(w), dlugosc: (w[:s_do] - w[:s_od]).round,
-            wysokosc: Wience.wysokosc(w, p).round(1), wience: w[:wience].length, bale: w[:bale].length,
+            wysokosc: Wience.wysokosc(w, p).round(1), wience: w[:wience].count { |k| !k[:nadstawka] }, bale: w[:bale].length,
             otwory: (w[:otwory] || []).count { |o| !o[:gniazdo] },
             styki: styki_opis(w) }
         end
@@ -120,10 +121,21 @@ module ArteMadera
         [st[:parzyste].map { |s| s.round }, st[:nieparzyste].map { |s| s.round }]
       end
 
-      # Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji.
+      # Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem
+      # i wpustem, gdy pozycja ma opis profilu).
       def siatka_pozycji(poz)
-        prof = Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
-        Siatka.z_profilu(prof)
+        Siatka.z_profilu(profil_pozycji(poz))
+      end
+
+      # Profil bryły pozycji: pełny (rdzen/profil_bala.rb) albo prosty (rdzen/bryla.rb).
+      def profil_pozycji(poz)
+        return ProfilBala.przedzialy(poz[:dl], poz[:t], poz[:h], poz[:cechy], poz[:profil]) if poz[:profil]
+        Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
+      end
+
+      # Objętość bryły pozycji [mm³] (pełny albo prosty profil).
+      def objetosc_pozycji(poz)
+        ProfilBala.objetosc(profil_pozycji(poz))
       end
     end
   end

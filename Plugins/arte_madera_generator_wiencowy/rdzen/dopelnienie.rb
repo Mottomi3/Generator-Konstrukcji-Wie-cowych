@@ -4,20 +4,22 @@
 # Plik: rdzen/dopelnienie.rb
 # Zadanie: dopełnienie zamka nad niższą działową – przy ścianach, które idą wyżej, odcinki działowej (ostatek + grubość + dopelnienie_wewn) aż do góry tamtej ściany, jak 1100 W-6, W-7 i 1200 W-5, W-7.
 # Tematy: dopełnienie zamka, nadstawka, odcinki nad działową, działowa niższa, 244 nad działową, 344 nad działową, strop, antresola
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ściany), rdzen/szczyty.rb (linia szczytu)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ściany), rdzen/szczyty.rb (położenie na szczycie), rdzen/dach.rb (linia podparcia)
 # Używają: rdzen/projekt.rb (po węgłach, przed gniazdami płatwi), rdzen/wience.rb (wieńce nadstawki), rdzen/bale.rb (kawałki nadstawki)
 #
 # Działowa z w[:nizsza] kończy się pełnym wieńcem nie wyżej niż w[:nizsza][:z]. Przy każdym skrzyżowaniu ze ścianą
 # zewnętrzną albo działową pełnej wysokości, która jest wyżej, działowa dostaje kolumnę odcinków (w[:dopelnienie] =
 # [{ s0:, s1:, z_do:, z_gora: }]): wieniec nadstawki leży w kolumnie, gdy zaczyna się niżej niż z_do (góra tamtej
 # ściany – ostatni odcinek wystaje o pół wieńca i zamyka zamek; pod połacią ścina go linia dachu), a przy ścianie ze
-# szczytem – gdy cały mieści się pod linią szczytu (z_gora). Odcinek przy końcu działowej: od końca z ostatkiem do
+# szczytem – gdy cały mieści się pod linią podparcia dachu (z_gora; spód krokwi / desek – odcinek wystaje z obu stron
+# szczytu pod połać, jak węgieł przy szczycie). Odcinek przy końcu działowej: od końca z ostatkiem do
 # osi skrzyżowania + pół grubości + dopelnienie_wewn; w środku działowej – po tyle z obu stron (jak węgieł 244).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
+require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -54,10 +56,11 @@ module ArteMadera
         uwagi
       end
 
-      # Wysokość ściany x w miejscu s (oś skrzyżowania ± pół grubości): [z, czy pod linią szczytu].
+      # Wysokość ściany x w miejscu s (oś skrzyżowania ± pół grubości): [z, czy limit dachu]; ściana ze szczytem – linia
+      # podparcia dachu (odcinek wchodzi pod połać po obu stronach szczytu, tam leżą krokwie i deski).
       def wysokosc_przy(x, s, t, p)
         return [Wience.wysokosc(x, p), false] if x[:szczyt].nil?
-        l = [s - t / 2.0, s + t / 2.0].map { |q| Szczyty.linia(x, q, p) }.min
+        l = [s - t / 2.0, s + t / 2.0].map { |q| Dach.linia_podparcia(x[:szczyt], Szczyty.v_z_s(x, q), p) }.min
         [l, true]
       end
 

@@ -140,7 +140,7 @@ module ArteMadera
             niezamkniete << poz[:nazwa]
             next
           end
-          oczek = Bryla.objetosc(Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy]))
+          oczek = Projekt.objetosc_pozycji(poz)
           jest = inst.volume.to_f * CAL3
           objetosc << [poz[:nazwa], oczek.round, jest.round] if (jest - oczek).abs > oczek * TOL_OBJ + 1.0
         end

@@ -199,6 +199,9 @@ module ArteMadera
           jednostka: 'mm', min: 0.0, max: 1000.0, rodzaj: :liczba, sekcja: 'otwory' },
         { klucz: 'luz_nad_otworem', domyslna: 0.0, etykieta: 'Luz osiadania nad otworem', jednostka: 'mm', min: 0.0,
           max: 200.0, rodzaj: :liczba, sekcja: 'otwory' },
+        { klucz: 'min_pasek_przy_otworze', domyslna: 20.0, etykieta: 'Najcieńszy pasek bala nad / pod otworem', jednostka: 'mm',
+          min: 1.0, max: 100.0, rodzaj: :liczba, sekcja: 'otwory',
+          podpowiedz: 'Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem.' },
         { klucz: 'okno_szerokosc', podstawowy: true, domyslna: 1020.0, etykieta: 'Nowe okno – szerokość', jednostka: 'mm', min: 100.0,
           max: 6000.0, rodzaj: :liczba, sekcja: 'otwory', podpowiedz: 'Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010).' },
         { klucz: 'okno_wysokosc', podstawowy: true, domyslna: 1010.0, etykieta: 'Nowe okno – wysokość', jednostka: 'mm', min: 100.0,
@@ -225,6 +228,8 @@ module ArteMadera
         'Domek parterowy 44 (jak 900)' => { 'liczba_wiencow' => 16 },
         'Dom parterowy wysoki (jak 1800)' => { 'liczba_wiencow' => 20 },
         'Dom 1,5 kondygnacji (jak 1200)' => { 'liczba_wiencow' => 25 },
+        'Dom 1,5 kondygnacji ze stropem nad parterem' => { 'liczba_wiencow' => 25, 'strop' => 'tak', 'dzialowa_nizsza_wysokosc' => 2780.0 },
+        'Pełny profil bala – pióro i wpust (wizualizacja)' => { 'profil_bala' => 'pelny' },
         'Bez łączenia bali (bale do 7 m)' => { 'max_dlugosc' => 7000.0 },
         'Podłoga ocieplona 150 mm' => { 'izolacja_podlogi' => 150.0 }
       }.freeze unless const_defined?(:SZABLONY)
