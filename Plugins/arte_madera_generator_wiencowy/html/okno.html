@@ -4,7 +4,7 @@
   Plik: html/okno.html
   Zadanie: okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby).
   Tematy: okno, układ okna, sekcje formularza, przyciski, szablony, podpowiedzi, karta widoku ściany, przełącznik pól
-  Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/wyniki.js, html/okno.js
+  Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/edycja.js, html/wyniki.js, html/okno.js
   Używają: sketchup/okno.rb
 -->
 <html lang="pl">
@@ -71,7 +71,8 @@
         </div>
         <div id="widok" class="widok"></div>
         <p class="drobny">Widok od lica: liczby na balach – numery pozycji, z lewej – numery wieńców, czerwona kreska – styk,
-          przerywana – skrzyżowanie ze ścianą lub węgłem, brązowa przerywana – linia dachu.</p>
+          przerywana – skrzyżowanie ze ścianą lub węgłem (pogrubiony opis – węgieł ręczny), brązowa przerywana – linia dachu.</p>
+        <div id="widok-panel" class="panel-sciany"></div>
       </div>
       <div class="karta">
         <h2>Okna i drzwi</h2>
@@ -117,6 +118,7 @@
   <script src="sciana.js"></script>
   <script src="zmiany.js"></script>
   <script src="tryb.js"></script>
+  <script src="edycja.js"></script>
   <script src="wyniki.js"></script>
   <script src="okno.js"></script>
 </body>

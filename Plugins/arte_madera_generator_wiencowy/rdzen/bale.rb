@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/bale.rb
 # Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
-# Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb
+# Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu, odcinki nadstawki
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
@@ -19,6 +19,7 @@ require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::
 require File.join(File.dirname(__FILE__), 'styki') unless defined?(ArteMadera::GeneratorWiencowy::Styki)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 require File.join(File.dirname(__FILE__), 'pod_dachem') unless defined?(ArteMadera::GeneratorWiencowy::PodDachem)
+require File.join(File.dirname(__FILE__), 'dopelnienie') unless defined?(ArteMadera::GeneratorWiencowy::Dopelnienie)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -50,28 +51,31 @@ module ArteMadera
         wynik
       end
 
-      # Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu / dachu) minus otwory przelotowe, podzielony stykami –
-      # styki tylko w kawałkach dłuższych niż maksymalny bal; pomija okruchy przy skosie i gniazdach płatwi.
+      # Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu / dachu; wieniec nadstawki – tylko odcinki dopełnienia)
+      # minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal; pomija okruchy
+      # przy skosie i gniazdach płatwi.
       def kawalki_wienca(w, wn, i, p, uwagi)
         zas = zasieg(w, wn[:z0], p)
         return [] if zas.nil?
+        bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : [zas]
+        wewn = wn[:nadstawka] ? bazy.flatten.reject { |s| (s - w[:s_od]).abs < 0.01 || (s - w[:s_do]).abs < 0.01 } : []
         ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h])
         ciecia[:uwagi].each { |u| uwagi << u unless uwagi.include?(u) }
-        przedzialy = G.odejmij_przedzialy(zas[0], zas[1], ciecia[:pelne], 0.5)
+        przedzialy = bazy.map { |a, b| G.odejmij_przedzialy(a, b, ciecia[:pelne], 0.5) }.flatten(1)
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)
         g = p['szczelina_styku'].to_f / 2.0
         lmax = p['max_dlugosc'].to_f
         okruch = p['szczyt_min_kawalek'].to_f
         wynik = []
         przedzialy.each do |a, b|
-          punkty = [[a, koniec_typ(w, a, ciecia, zas)]]
+          punkty = [[a, koniec_typ(w, a, ciecia, zas, wewn)]]
           if b - a > lmax + 0.01
             styki.sort.each do |st|
               next unless st - g > a + 1.0 && st + g < b - 1.0
               punkty << [st - g, :styk] << [st + g, :styk]
             end
           end
-          punkty << [b, koniec_typ(w, b, ciecia, zas)]
+          punkty << [b, koniec_typ(w, b, ciecia, zas, wewn)]
           punkty.each_slice(2) do |(s0, t0), (s1, t1)|
             next if s1 - s0 < okruch && ([t0, t1] & [:skos, :gniazdo]).any?
             bal = nowy_bal(w, wn, i, s0, s1, [t0, t1], ciecia[:wyciecia])
@@ -95,12 +99,14 @@ module ArteMadera
         PodDachem.skosy(w, s0, s1, z0, h, p)
       end
 
-      # Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, gniazdo płatwi, skos szczytu, wolny koniec.
-      def koniec_typ(w, s, ciecia, zas)
+      # Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, gniazdo płatwi, skos szczytu, wolny koniec
+      # (także wewnętrzny koniec odcinka nadstawki – lista wewn).
+      def koniec_typ(w, s, ciecia, zas, wewn = [])
         przy = lambda { |o| (o[0] - s).abs < 0.6 || (o[1] - s).abs < 0.6 }
         return :gniazdo if ciecia[:gniazda].any? { |o| przy.call(o) }
         return :otwor if ciecia[:pelne].any? { |o| przy.call(o) }
         return :skos if ((s - zas[0]).abs < 0.01 && zas[0] > w[:s_od] + 0.01) || ((s - zas[1]).abs < 0.01 && zas[1] < w[:s_do] - 0.01)
+        return :wolny if wewn.any? { |x| (x - s).abs < 0.01 }
         return :ostatek if w[:rodzaj] == :kontrfor
         if (s - w[:s_od]).abs < 0.01
           return w[:s_od] < -0.01 ? :ostatek : :wolny
@@ -128,7 +134,7 @@ module ArteMadera
         s = G.dot(G.sub(kf[:a], gosp[:a]), gosp[:kier])
         t = Parametry.grubosc(p)
         return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, wn[:z0] + wn[:h], p) }
-        sasiedzi = Wience.dla_sciany(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
+        sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
         sasiedzi.none? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
       end

@@ -2,7 +2,7 @@
 #
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/okno_dane.rb
-# Zadanie: dane okna z prawdziwego przebiegu (atrapa SketchUpa) – wypisuje JSON { init:, wynik:, widok: } dla testu okna w przeglądarce.
+# Zadanie: dane okna z prawdziwego przebiegu (atrapa SketchUpa) – wypisuje JSON { init:, wynik:, widok:, widok_szczytu:, widok_dzialowej: } dla testu okna w przeglądarce.
 # Tematy: dane testowe okna, init okna, wynik okna, widok ściany
 # Zależy od: testy/atrapa/sketchup.rb, testy/pomoc.rb
 # Używają: testy/t_okno.js
@@ -30,5 +30,7 @@ wynik = Sterowanie.podglad('parametry' => { 'max_dlugosc' => '5000' },
                            'otwory' => [{ 'sciana' => 'W-1', 'od' => '800', 'szerokosc' => '1020', 'wysokosc' => '1010', 'parapet' => '900' }])
 widok = Sterowanie.widok('W-1')
 widok_szczytu = Sterowanie.widok('W-2')
+widok_dzialowej = Sterowanie.widok('W-5')
 FileUtils.rm_rf(ENV['AM_GW_USTAWIENIA'])
-puts JSON.generate('init' => init, 'wynik' => wynik, 'widok' => widok, 'widok_szczytu' => widok_szczytu)
+puts JSON.generate('init' => init, 'wynik' => wynik, 'widok' => widok, 'widok_szczytu' => widok_szczytu,
+                   'widok_dzialowej' => widok_dzialowej)

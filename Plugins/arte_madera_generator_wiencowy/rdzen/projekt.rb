@@ -8,15 +8,15 @@
 # Używają: sketchup/sterowanie.rb, testy
 #
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
-# 'parametry' {…}, 'otwory' [{…}]. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
+# 'parametry' {…}, 'otwory' [{…}], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
 # podłogi i dachu), pozycje_elementow, pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany wience otwory usztywnienie styki elementy dach szczyty pod_dachem bale zamek bryla
-     siatka pozycje statyka podloga kontrola].each do |plik|
+  %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach szczyty dopelnienie
+     pod_dachem bale zamek bryla siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -26,8 +26,8 @@ module ArteMadera
     module Projekt
       module_function
 
-      # Cały przebieg: obrys → ściany → szczyty → otwory → styki → węgły → gniazda płatwi → bale → zamki → pozycje →
-      # belki dachu i podłogi.
+      # Cały przebieg: obrys → ściany → ustawienia ścian → szczyty → otwory → styki → węgły → dopełnienie nad niższymi
+      # działowymi → gniazda płatwi → bale → zamki → pozycje → belki dachu i podłogi.
       def oblicz(wejscie)
         wej = wejscie.is_a?(Hash) ? wejscie : {}
         p, uwagi = Parametry.normalizuj(wej['parametry'])
@@ -46,12 +46,15 @@ module ArteMadera
         return plan unless plan[:bledy].empty?
         sciany = sc[:sciany]
         Sciany.numeruj!(sciany)
+        plan[:ostrzezenia].concat(UstawieniaScian.zastosuj(sciany, wej['sciany'], p, sc[:os_kalenicy]))
+        Sciany.numeruj!(sciany)
         sz = Szczyty.przygotuj(sciany, p, sc[:os_kalenicy])
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
         plan[:ostrzezenia].concat(Styki.planuj(sciany, p, sc[:os_kalenicy]))
         plan[:ostrzezenia].concat(Usztywnienie.planuj(sciany, p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
+        plan[:ostrzezenia].concat(Dopelnienie.planuj(sciany, p))
         Szczyty.gniazda(sciany, p, sz[:dom])
         plan[:ostrzezenia].concat(PodDachem.przygotuj(sciany, p, sz[:dom]))
         bale = Bale.zbuduj(sciany, p)

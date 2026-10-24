@@ -51,8 +51,8 @@ module ArteMadera
             'sekcje' => ParametryLista::SEKCJE.map { |k, tytul, otwarta| { 'klucz' => k, 'tytul' => tytul, 'otwarta' => otwarta } },
             'presety' => ParametryLista::PRESETY, 'opisy_zamka' => ParametryLista::OPISY_ZAMKA,
             'parametry' => d['parametry'] || {}, 'szablony' => Ustawienia.nazwy_szablonow, 'plik_ustawien' => Ustawienia.sciezka,
-            'otwory' => d['otwory'] || [], 'info' => d['info'].to_s, 'podsumowanie' => d['podsumowanie'],
-            'tryb_pol' => Ustawienia.tryb_pol }
+            'otwory' => d['otwory'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,
+            'podsumowanie' => d['podsumowanie'], 'tryb_pol' => Ustawienia.tryb_pol }
         end
 
         # Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź).

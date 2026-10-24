@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
   Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -250,6 +250,7 @@ var AMGW = (function () {
     if (!d.sciany) {
       AMGW_SCIANA.lista($('widok-sciana'), [], '');
       AMGW_SCIANA.rysuj($('widok'), null, $('widok-opis'));
+      AMGW_EDYCJA.panel($('widok-panel'), null);
       return;
     }
     stan.sciany = d.sciany;
@@ -274,16 +275,20 @@ var AMGW = (function () {
     }
   }
 
-  // Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana.
+  // Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana; kliknięcie w rysunek dodaje albo usuwa
+  // węgieł; pod rysunkiem panel ustawień ściany.
   function widok(d) {
     if (d && d.id && stan.widok && d.id !== stan.widok) { return; }
-    AMGW_SCIANA.rysuj($('widok'), d, $('widok-opis'));
+    AMGW_SCIANA.rysuj($('widok'), d, $('widok-opis'), function (s, zasieg) {
+      AMGW_EDYCJA.klik(d, s, AMGW_EDYCJA.wegielPrzy(d, s, zasieg));
+    });
+    AMGW_EDYCJA.panel($('widok-panel'), d);
   }
 
   // ---- wywołania ----
 
-  // Dane formularza jako JSON (parametry i otwory).
-  function dane() { return JSON.stringify({ parametry: zbierzParametry(), otwory: zbierzOtwory() }); }
+  // Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku).
+  function dane() { return JSON.stringify({ parametry: zbierzParametry(), otwory: zbierzOtwory(), sciany: AMGW_EDYCJA.dane() }); }
 
   // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie).
   function zaplanujPodglad() {
@@ -300,6 +305,7 @@ var AMGW = (function () {
     $('info').textContent = d.info || '';
     wypelnijSzablony(d.szablony);
     $('plik-ustawien').textContent = d.plik_ustawien ? 'Ostatnie ustawienia zapisują się w: ' + d.plik_ustawien : '';
+    AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
     zbudujFormularz(d.parametry || {});
     AMGW_TRYB.ustaw(d.tryb_pol, stan.opisy);
     var i;

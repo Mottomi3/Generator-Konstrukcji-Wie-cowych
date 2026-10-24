@@ -43,6 +43,11 @@ module ArteMadera
           przeslony(w).each do |a, b|
             swiatlo = b - a - t
             next if swiatlo <= limit + 0.5
+            if w[:wegly_reczne]
+              uwagi << format('Ściana %s: światło %.0f mm dłuższe niż %.0f mm – węgły tej ściany ustawione ręcznie: dodaj węgieł ' \
+                              'kliknięciem w widoku ściany albo przywróć automatyczne.', w[:id], swiatlo, limit)
+              next
+            end
             if p['wegly_rozmieszczenie'] == 'tylko_narysowane'
               uwagi << format('Ściana %s: światło %.0f mm dłuższe niż %.0f mm – narysuj węgieł (krótka linia w poprzek ściany).',
                               w[:id], swiatlo, limit)
@@ -123,8 +128,10 @@ module ArteMadera
         w[:skrzyzowania].any? { |k| k[:typ] == :naroznik && (k[:s] - s).abs < 1.0 }
       end
 
-      # Czy w miejscu s może stanąć nowy węgieł (odstęp od skrzyżowań, otworów, końców ściany).
+      # Czy w miejscu s może stanąć nowy węgieł (odstęp od skrzyżowań, otworów, końców ściany); ściana z węgłami
+      # ustawionymi ręcznie – nigdzie (automat jej nie zmienia).
       def miejsce_ok?(w, p, s, zajete)
+        return false if w[:wegly_reczne]
         min = p['min_odstep_skrzyzowan'].to_f
         t = Parametry.grubosc(p)
         o = p['ostatek'].to_f

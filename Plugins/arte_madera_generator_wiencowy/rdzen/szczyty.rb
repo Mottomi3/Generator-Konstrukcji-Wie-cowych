@@ -46,12 +46,13 @@ module ArteMadera
         wynik
       end
 
-      # Czy ściana dostaje szczyt: zewnętrzna szczytowa od narożnika do narożnika albo działowa szczytowa od ściany do ściany.
+      # Czy ściana dostaje szczyt: zewnętrzna szczytowa od narożnika do narożnika albo działowa szczytowa od ściany do ściany
+      # (niższa działowa – pod stropem, antresolą, półką – szczytu nie ma).
       def szczytowa?(w, p)
         return false unless w[:kierunek] == :B
         konce = [0.0, w[:dl_osi]].map { |s| w[:skrzyzowania].find { |k| (k[:s] - s).abs < 1.0 } }
         return konce.all? { |k| k && k[:typ] == :naroznik } if w[:rodzaj] == :zewnetrzna
-        return false unless w[:rodzaj] == :dzialowa && Parametry.tak?(p, 'szczyty_na_dzialowych')
+        return false unless w[:rodzaj] == :dzialowa && Parametry.tak?(p, 'szczyty_na_dzialowych') && w[:nizsza].nil?
         konce.all? { |k| k && k[:inna][:rodzaj] == :zewnetrzna && k[:inna][:kierunek] == :A }
       end
 
@@ -158,7 +159,7 @@ module ArteMadera
       def gniazda_sciany(w, platwie, iv, p)
         luz = p['gniazdo_luz'].to_f
         t = Parametry.grubosc(p)
-        gora = Wience.wysokosc(w, p)
+        gora = Wience.wysokosc_calkowita(w, p)
         w_poprzek = w[:kier][iv].abs > 0.5
         platwie.each do |pl|
           next if pl[:z_spod] >= gora - 0.01

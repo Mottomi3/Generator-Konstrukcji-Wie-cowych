@@ -202,6 +202,75 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return { x: r.left, y: r.top + window.scrollY, width: Math.max(r.width, 10), height: Math.max(r.height, 10) };
   }) });
 
+  // Panel ustawień ściany pod widokiem: ostatki, węgły kliknięciem w widok, działowa pod antresolą.
+  var podgladDane = async function () {
+    await page.waitForTimeout(450);
+    var wy = await page.evaluate(function () { return window.__wywolania; });
+    var pp = wy.filter(function (x) { return x[0] === 'podglad'; });
+    return pp.length ? JSON.parse(pp[pp.length - 1][1]) : null;
+  };
+  await page.selectOption('#widok-sciana', 'W-1');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  var panel = await page.evaluate(function () {
+    return [!!document.getElementById('e-ostatek-od'), !!document.getElementById('e-ostatek-do'), !!document.getElementById('e-nad'),
+            document.querySelector('#widok-panel .wegly-stan').textContent];
+  });
+  sprawdz(panel[0] && panel[1] && !panel[2] && panel[3].indexOf('automatycznie') >= 0, 'panel ściany zewnętrznej: ostatki, węgły automatyczne (' + panel.join(',') + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.fill('#e-ostatek-od', '200');
+  await page.dispatchEvent('#e-ostatek-od', 'change');
+  var dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-1'] && dp.sciany['W-1'].ostatek_od === 200, 'ostatek 200 lewego końca w danych podglądu (' + JSON.stringify(dp && dp.sciany) + ')');
+  // Punkt ekranu dla miejsca na rysunku: x linii skrzyżowania (opis id) + przesunięcie [mm], wysokość środka rysunku.
+  var punkt = function (id, dx) {
+    return page.evaluate(function (a) {
+      var svg = document.querySelector('#widok svg');
+      var linie = document.querySelectorAll('#widok line.skrzyzowanie');
+      var teksty = document.querySelectorAll('#widok text');
+      var x = null;
+      var i;
+      for (i = 0; i < teksty.length; i++) {
+        if (teksty[i].textContent === a[0]) { x = parseFloat(teksty[i].getAttribute('x')); }
+      }
+      var vb = svg.viewBox.baseVal;
+      var pt = svg.createSVGPoint();
+      pt.x = x + a[1];
+      pt.y = vb.height / 2;
+      var q = pt.matrixTransform(svg.getScreenCTM());
+      return [q.x, q.y, linie.length];
+    }, [id, dx]);
+  };
+  await page.evaluate(function () { window.__wywolania = []; });
+  var pk = await punkt('W-5', 600);
+  await page.mouse.click(pk[0], pk[1]);
+  dp = await podgladDane();
+  var wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
+  sprawdz(wl && wl.length === 3 && Math.abs(wl[0] - 1478) < 1 && Math.abs(wl[1] - 4080) < 11 && Math.abs(wl[2] - 4680) < 1,
+          'klik w widok: nowy węgieł, narysowany i pod styk zostają (' + JSON.stringify(wl) + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  pk = await punkt('W-6', 20);
+  await page.mouse.click(pk[0], pk[1]);
+  dp = await podgladDane();
+  wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
+  sprawdz(wl && wl.length === 2 && Math.abs(wl[0] - 4080) < 11, 'klik przy węgle: węgieł usunięty (' + JSON.stringify(wl) + ')');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  var st = await page.evaluate(function () { return document.querySelector('#widok-panel .wegly-stan').textContent; });
+  sprawdz(st.indexOf('ręcznie (2)') >= 0, 'panel: węgły ręczne (' + st + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#e-wegly-auto');
+  dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-1'] && dp.sciany['W-1'].wegly === undefined && dp.sciany['W-1'].ostatek_od === 200, 'przywróć automatyczne – lista węgłów usunięta, ostatek zostaje');
+  await page.selectOption('#widok-sciana', 'W-5');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok_dzialowej);
+  var nad = await page.evaluate(function () { var e = document.getElementById('e-nad'); return e ? e.options.length : 0; });
+  sprawdz(nad === 5, 'panel działowej: co nad działową (' + nad + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.selectOption('#e-nad', 'antresola');
+  dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-5'] && dp.sciany['W-5'].nad === 'antresola', 'działowa pod antresolą w danych podglądu');
+  await page.selectOption('#widok-sciana', 'W-1');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+
   // Zestawienie CSV: przycisk woła Ruby, komunikat z wynikiem zapisu.
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-zestawienie');
