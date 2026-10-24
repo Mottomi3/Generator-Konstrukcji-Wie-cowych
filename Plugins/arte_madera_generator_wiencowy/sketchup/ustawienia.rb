@@ -3,13 +3,14 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/ustawienia.rb
 # Zadanie: zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony.
-# Tematy: zapis ustawień, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData
+# Tematy: zapis ustawień, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
 # Zależy od: rdzen/parametry_lista.rb (szablony wbudowane), log.rb
 # Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
 # inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 1, 'ostatnie' => {…},
-# 'szablony' => { nazwa => {…} } } – wartości tak, jak w oknie (teksty); sprawdza je Parametry.normalizuj.
+# 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
+# (teksty); sprawdza je Parametry.normalizuj.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require 'json'
@@ -42,12 +43,13 @@ module ArteMadera
 
       # Zawartość pliku (pusty zestaw, gdy brak pliku albo plik uszkodzony – wtedy ostrzeżenie w Log).
       def wczytaj
-        pusty = { 'wersja' => WERSJA, 'ostatnie' => {}, 'szablony' => {} }
+        pusty = { 'wersja' => WERSJA, 'ostatnie' => {}, 'szablony' => {}, 'okno' => {} }
         return pusty unless File.exist?(sciezka)
         d = JSON.parse(File.read(sciezka, encoding: 'UTF-8'))
         return pusty unless d.is_a?(Hash)
         pusty.merge('ostatnie' => d['ostatnie'].is_a?(Hash) ? d['ostatnie'] : {},
-                    'szablony' => d['szablony'].is_a?(Hash) ? d['szablony'] : {})
+                    'szablony' => d['szablony'].is_a?(Hash) ? d['szablony'] : {},
+                    'okno' => d['okno'].is_a?(Hash) ? d['okno'] : {})
       rescue => e
         Log.warn("Ustawienia: nie można odczytać #{sciezka} (#{e.class}: #{e.message}) – przyjęto domyślne.")
         pusty
@@ -75,6 +77,18 @@ module ArteMadera
         return false unless parametry.is_a?(Hash)
         d = wczytaj
         d['ostatnie'] = parametry
+        zapisz(d)
+      end
+
+      # Tryb pól okna: 'podstawowe' (domyślnie) albo 'wszystkie'.
+      def tryb_pol
+        wczytaj['okno']['tryb_pol'] == 'wszystkie' ? 'wszystkie' : 'podstawowe'
+      end
+
+      # Zapamiętanie trybu pól okna.
+      def zapamietaj_tryb_pol(tryb)
+        d = wczytaj
+        d['okno']['tryb_pol'] = tryb.to_s == 'wszystkie' ? 'wszystkie' : 'podstawowe'
         zapisz(d)
       end
 

@@ -68,6 +68,20 @@ Testy.rowne(u_kr.call(wyn['na_szczycie']).first, 22.0, 'na szczycie: krokiew w o
 Testy.sprawdz(u_kr.call(wyn['wewnatrz']).each_cons(2).all? { |a, b| b - a <= 900.01 }, 'rozstaw krokwi ≤ 900')
 czysto(wyn['obie_strony'], 'krokwie')
 
+Testy.grupa('Dwa bliskie szczyty na działowych – krokwie bez kolizji (ziarno 1251)')
+[120, 75].each do |odl|
+  seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]], [[3000 + odl, 0], [3000 + odl, 4000]]]
+  %w[obie_strony zewnatrz na_szczycie].each do |k|
+    pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => k, 'szczyty_na_dzialowych' => 'tak')
+    us = u_kr.call(pl)
+    Testy.rowne(kolizje_belek(pl, 'K'), 0, "#{odl} mm, #{k}: krokwie bez kolizji z balami")
+    Testy.sprawdz(us.each_cons(2).all? { |a, b| b - a >= 50.0 - 0.01 }, "#{odl} mm, #{k}: krokwie nie nachodzą na siebie")
+    next unless k == 'obie_strony'
+    Testy.rowne(us.select { |u| u > 3000 && u < 3000 + odl }, odl == 120 ? [3060.0] : [],
+                "#{odl} mm: między szczytami #{odl == 120 ? 'jedna krokiew pośrodku' : 'bez krokwi (nie mieści się)'}")
+  end
+end
+
 Testy.grupa('Same krokwie – bez płatwi pośrednich')
 pl = plan_pelny(prostokat(0, 0, 5000, 4000), 'dach_uklad' => 'krokwie')
 Testy.rowne(pl[:elementy].select { |e| e[:prefiks] == 'P' }.map { |e| e[:b] }.sort, [60.0, 60.0, 80.0], 'płatwie: 2 ścienne + kalenicowa')

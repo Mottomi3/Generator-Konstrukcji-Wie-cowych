@@ -34,7 +34,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     window.__wywolania = [];
     window.sketchup = {};
     ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'szablon_wczytaj', 'szablon_zapisz', 'szablon_usun', 'domyslne',
-     'widok', 'zapisz_liste'].forEach(function (n) {
+     'widok', 'zapisz_liste', 'tryb_pol', 'sciany'].forEach(function (n) {
       window.sketchup[n] = function (arg) { window.__wywolania.push([n, arg]); };
     });
   });
@@ -63,6 +63,30 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(etykiety.indexOf('W-1') >= 0 && etykiety.indexOf('W-5') >= 0, 'rzut z opisami ścian');
   var wiersze = await page.evaluate(function () { return document.querySelectorAll('#tab-sciany tbody tr').length; });
   sprawdz(wiersze === dane.init.podsumowanie.sciany.length, 'tabela ścian');
+
+  // Tryb pól: „Podstawowe” (z ustawień) – pola zaawansowane, sekcja rysunku i wymiary zamka ukryte; „Wszystkie” – wszystko.
+  var widoczne = function () {
+    return page.evaluate(function () {
+      var v = function (id) { var e = document.getElementById(id); return !!e && e.offsetParent !== null; };
+      return [v('p-liczba_wiencow'), v('p-mijanka'), v('h-mijanka'), v('sekcja-rysunek'), v('pola-zamek'),
+              document.getElementById('btn-tryb-podstawowe').className];
+    });
+  };
+  var tr = await widoczne();
+  sprawdz(dane.init.tryb_pol === 'podstawowe' && tr[0] && !tr[1] && !tr[2] && !tr[3] && !tr[4] && tr[5] === 'wybrany',
+          'tryb podstawowy: tylko pola podstawowe (' + tr.join(',') + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#btn-tryb-wszystkie');
+  tr = await widoczne();
+  w = await page.evaluate(function () { return window.__wywolania; });
+  sprawdz(tr[0] && tr[1] && tr[2] && tr[3] && tr[4], 'tryb wszystkie: wszystkie pola (' + tr.join(',') + ')');
+  sprawdz(w.length === 1 && w[0][0] === 'tryb_pol' && w[0][1] === 'wszystkie', 'przełącznik zapamiętuje tryb w Ruby');
+  await page.click('#btn-tryb-podstawowe');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: { mijanka: '500' }, komunikat: '' }); });
+  tr = await widoczne();
+  sprawdz(!tr[0] === false && tr[1] && tr[2], 'tryb podstawowy: pole zmienione względem fabrycznych widoczne (' + tr.join(',') + ')');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  await page.click('#btn-tryb-wszystkie');
 
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-okno');
@@ -177,6 +201,75 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     var r = document.getElementById('widok').getBoundingClientRect();
     return { x: r.left, y: r.top + window.scrollY, width: Math.max(r.width, 10), height: Math.max(r.height, 10) };
   }) });
+
+  // Panel ustawień ściany pod widokiem: ostatki, węgły kliknięciem w widok, działowa pod antresolą.
+  var podgladDane = async function () {
+    await page.waitForTimeout(450);
+    var wy = await page.evaluate(function () { return window.__wywolania; });
+    var pp = wy.filter(function (x) { return x[0] === 'podglad'; });
+    return pp.length ? JSON.parse(pp[pp.length - 1][1]) : null;
+  };
+  await page.selectOption('#widok-sciana', 'W-1');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  var panel = await page.evaluate(function () {
+    return [!!document.getElementById('e-ostatek-od'), !!document.getElementById('e-ostatek-do'), !!document.getElementById('e-nad'),
+            document.querySelector('#widok-panel .wegly-stan').textContent];
+  });
+  sprawdz(panel[0] && panel[1] && !panel[2] && panel[3].indexOf('automatycznie') >= 0, 'panel ściany zewnętrznej: ostatki, węgły automatyczne (' + panel.join(',') + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.fill('#e-ostatek-od', '200');
+  await page.dispatchEvent('#e-ostatek-od', 'change');
+  var dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-1'] && dp.sciany['W-1'].ostatek_od === 200, 'ostatek 200 lewego końca w danych podglądu (' + JSON.stringify(dp && dp.sciany) + ')');
+  // Punkt ekranu dla miejsca na rysunku: x linii skrzyżowania (opis id) + przesunięcie [mm], wysokość środka rysunku.
+  var punkt = function (id, dx) {
+    return page.evaluate(function (a) {
+      var svg = document.querySelector('#widok svg');
+      var linie = document.querySelectorAll('#widok line.skrzyzowanie');
+      var teksty = document.querySelectorAll('#widok text');
+      var x = null;
+      var i;
+      for (i = 0; i < teksty.length; i++) {
+        if (teksty[i].textContent === a[0]) { x = parseFloat(teksty[i].getAttribute('x')); }
+      }
+      var vb = svg.viewBox.baseVal;
+      var pt = svg.createSVGPoint();
+      pt.x = x + a[1];
+      pt.y = vb.height / 2;
+      var q = pt.matrixTransform(svg.getScreenCTM());
+      return [q.x, q.y, linie.length];
+    }, [id, dx]);
+  };
+  await page.evaluate(function () { window.__wywolania = []; });
+  var pk = await punkt('W-5', 600);
+  await page.mouse.click(pk[0], pk[1]);
+  dp = await podgladDane();
+  var wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
+  sprawdz(wl && wl.length === 3 && Math.abs(wl[0] - 1478) < 1 && Math.abs(wl[1] - 4080) < 11 && Math.abs(wl[2] - 4680) < 1,
+          'klik w widok: nowy węgieł, narysowany i pod styk zostają (' + JSON.stringify(wl) + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  pk = await punkt('W-6', 20);
+  await page.mouse.click(pk[0], pk[1]);
+  dp = await podgladDane();
+  wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
+  sprawdz(wl && wl.length === 2 && Math.abs(wl[0] - 4080) < 11, 'klik przy węgle: węgieł usunięty (' + JSON.stringify(wl) + ')');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  var st = await page.evaluate(function () { return document.querySelector('#widok-panel .wegly-stan').textContent; });
+  sprawdz(st.indexOf('ręcznie (2)') >= 0, 'panel: węgły ręczne (' + st + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.click('#e-wegly-auto');
+  dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-1'] && dp.sciany['W-1'].wegly === undefined && dp.sciany['W-1'].ostatek_od === 200, 'przywróć automatyczne – lista węgłów usunięta, ostatek zostaje');
+  await page.selectOption('#widok-sciana', 'W-5');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok_dzialowej);
+  var nad = await page.evaluate(function () { var e = document.getElementById('e-nad'); return e ? e.options.length : 0; });
+  sprawdz(nad === 5, 'panel działowej: co nad działową (' + nad + ')');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.selectOption('#e-nad', 'antresola');
+  dp = await podgladDane();
+  sprawdz(dp && dp.sciany['W-5'] && dp.sciany['W-5'].nad === 'antresola', 'działowa pod antresolą w danych podglądu');
+  await page.selectOption('#widok-sciana', 'W-1');
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
 
   // Zestawienie CSV: przycisk woła Ruby, komunikat z wynikiem zapisu.
   await page.evaluate(function () { window.__wywolania = []; });

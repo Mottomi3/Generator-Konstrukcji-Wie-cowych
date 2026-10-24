@@ -1,6 +1,6 @@
 # Specyfikacja – ArteMadera Generator Wieńcowy
 
-Stan: kompilacja 3 (2026-10-14). Wszystkie wymiary w mm. Pełna lista parametrów z wartościami domyślnymi:
+Stan: kompilacja 4 (2026-10-24). Wszystkie wymiary w mm. Pełna lista parametrów z wartościami domyślnymi:
 `docs/parametry.md` (generowana). Decyzje użytkownika: `decyzje_projektowe.md` (Projekt claude.ai
 i `00_Analiza\` na dysku).
 
@@ -89,6 +89,32 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 - Kolejność: najpierw węgły pod styki (§5), potem usztywniające – węgły styków często wystarczają.
 - Dom 4 × 4 (lico): bale 4200 w całości, światło 3956 – bez łączeń i bez węgłów (jak 1000, 1100, 900 W-4).
 
+## 5b. Ustawienia pojedynczej ściany (widok ściany, `rdzen/ustawienia_scian.rb`)
+
+Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (zapisane w domu, przebudowa je zachowuje):
+- **Ostatek na każdym końcu** (`ostatek_od` – lewy koniec widoku od lica, `ostatek_do` – prawy) zamiast parametru
+  `ostatek` – np. 200 pod taras (1100, 1200); 40…600, wolny koniec działowej bez ostatka.
+- **Węgły ręczne** (`wegly` – osie wszystkich węgłów ściany w mm od początku osi): kliknięcie w widok dodaje węgieł
+  (oś zaokrąglona do 10 mm), kliknięcie przy węgle (± 80 mm) go usuwa. Pierwsza zmiana przepisuje węgły ściany
+  (narysowane, pod styki, usztywniające) na listę ręczną – automat tej ściany jest wyłączony; za długie światło albo
+  styki, których nie da się dobrać, dają ostrzeżenie. „Przywróć automatyczne” usuwa listę. Węgieł za blisko innego
+  skrzyżowania (300) – pominięty z ostrzeżeniem.
+- **Co jest nad działową** (`nad`): nic (pełna wysokość), strop, antresola, półka; brak – według parametru `strop`.
+  Wymóg użytkownika: **działowa niższa od ścian zewnętrznych tylko pod stropem, antresolą albo półką** (§5c).
+
+## 5c. Działowa niższa – dopełnienie zamka (`rdzen/dopelnienie.rb`)
+
+- Działowa pod stropem / antresolą / półką kończy się najwyższym pełnym wieńcem nie wyżej niż `wysokosc` z ustawień
+  ściany albo parametr `dzialowa_nizsza_wysokosc` (2500 → szczytowa 17 wieńców = 2363, wzdłuż kalenicy półbal + 17 =
+  2432,5 jak 1100 W-6; 2780 → 20 wieńców jak 1200 W-5, W-7). Parametr `strop` = tak – wszystkie działowe pod stropem.
+- Nad nią, przy każdej ścianie zewnętrznej albo działowej pełnej wysokości, która idzie wyżej, kolumna odcinków
+  działowej: ostatek + grubość + `dopelnienie_wewn` (100) → 244, przy ostatku 200 → 344 (jak 1100 W-6, W-7, 1200
+  W-5, W-7); w środku działowej (skrzyżowanie X) – po 100 z obu stron. Odcinki to bale ścienne działowej (Bs, jej
+  numery pozycji). Kolumna sięga do góry tamtej ściany: ostatni odcinek wystaje o pół wieńca i zamyka zamek; pod
+  połacią ścina go linia dachu; przy ścianie ze szczytem – tylko całe odcinki pod linią podparcia dachu (spód krokwi
+  i desek), jak węgieł przy szczycie.
+- Niższa działowa nie ma szczytu; otwór wyższy niż jej góra – ostrzeżenie; węgły na niej – do jej góry.
+
 ## 6. Otwory
 
 - Wpis: ściana (W-n), od, szerokość, wysokość, parapet. „Od” liczone od narożnika lica zewnętrznego na początku
@@ -101,7 +127,12 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 ## 7. Bale, pozycje, model
 
 - Bryła bala prostego: 44 × 139 (półbal 69,5), obróbki: gniazda, podcięcia, wycięcia przy otworach, gniazda płatwi,
-  skosy szczytów. Pióro i wpust (pełny profil) – późniejsza runda (przełącznik).
+  skosy szczytów.
+- **Pełny profil** (`profil_bala` = pelny, do wizualizacji; `rdzen/profil_bala.rb`): bal prosty + pióra na wierzchu
+  (wysokość „Pióro” z wymiarów zamka, 7) − wpusty od spodu (o `wpust_luz` 1 szersze i głębsze); `pioro_liczba` 1 albo
+  2 (domyślnie 2 × 8 mm w rozstawie 20 – do potwierdzenia). Pierwszy wieniec (na podwalinie, także półbal) bez wpustu –
+  osobne pozycje. Obróbki tną wszystkie pasy (w gnieździe zamka pióro i wpust znikają – zamek bez zmian). Pozycje,
+  listy, zestawienie, kontrola kolizji – jak dla bala prostego; zmienia się tylko bryła komponentu.
 - Punkty podziału bryły bliższe niż 0,2 mm są scalane – SketchUp nie tworzy krawędzi krótszych niż 0,0254 mm, a tak
   bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły.
 - Identyczne bale (ta sama bryła, także po obrocie o 180° wokół pionu) = jedna pozycja „nr-długość” (np. `2-4200`)
@@ -171,15 +202,21 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 - Ostatnio użyte parametry zapisują się przy każdym podglądzie i generowaniu w pliku ustawień na komputerze
   (Windows: `%APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json`) – nowy dom startuje z nimi po ponownym
   uruchomieniu SketchUpa. Dom w modelu ma swoje parametry (edycja).
-- Szablony: wbudowane (jak 900, jak 1800, 1,5 kondygnacji, bez łączenia, podłoga 150) i własne (zapisz / wczytaj /
-  usuń); „Przywróć fabryczne”.
+- Szablony: wbudowane (jak 900, jak 1800, 1,5 kondygnacji, 1,5 kondygnacji ze stropem nad parterem, bez łączenia,
+  podłoga 150, pełny profil bala) i własne (zapisz / wczytaj / usuń); „Przywróć fabryczne”. Szablony obejmują
+  parametry – ustawienia pojedynczych ścian należą do domu.
 - Pola zmienione względem ustawień fabrycznych – wyróżniona etykieta (w dymku wartość fabryczna), w nagłówku sekcji
   liczba zmian.
+- **Pola: Podstawowe / Wszystkie** (`html/tryb.js`): w trybie podstawowym tylko parametry oznaczone `podstawowy: true`
+  w liście i te zmienione względem fabrycznych (nic, co zmienia dom, nie znika); sekcje bez widocznych pól i wymiary
+  zamka ukryte. Tryb zapamiętany na komputerze (domyślnie podstawowe).
 - Rzut z numerami ścian i punktami odniesienia, tabela okien i drzwi (nowe okno / drzwi z wymiarów w ustawieniach),
   wynik: liczby (bale, węgły, szczyty, belki), ostrzeżenia, podpowiedzi, ściany ze stykami, lista bali i belek.
 - **Widok ściany** (`rdzen/widok.rb`, `html/sciana.js`): wybór z listy albo kliknięcie ściany na rzucie; widok od lica
   jak rozkład ściany producenta – bale z gniazdami zamków i skosem dachu, numery pozycji na balach, numery wieńców,
-  styki (czerwone), skrzyżowania ze ścianami i węgłami (przerywane), otwory, linia dachu. Odświeża się po podglądzie.
+  styki (czerwone), skrzyżowania ze ścianami i węgłami (przerywane; węgieł ręczny – pogrubiony opis), otwory, linia
+  dachu. Odświeża się po podglądzie. Pod widokiem panel ustawień ściany (§5b, `html/edycja.js`): ostatki końców,
+  co nad działową i jej góra, stan węgłów („Przywróć automatyczne”); kliknięcie w rysunek dodaje / usuwa węgieł.
   Cała ściana w szerokości okna (długa i niska – przewijanie w poziomie); na rzucie opisy węgłów w środku domu.
 - **Zestawienie CSV** (przycisk przy liście; `rdzen/zestawienie.rb`, `sketchup/eksport.rb`): grupa, pozycja, rodzaj,
   przekrój, długość, ilość, objętość; sumy grup i całości; średnik i przecinek dziesiętny, BOM – otwiera się w Excelu.
@@ -187,9 +224,10 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 ## 10a. Test działania i raport (menu)
 
 „Rozszerzenia → ArteMadera Generator Wieńcowy → Test działania i raport do wysłania…” (`sketchup/raport.rb`):
-- buduje 6 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
-  i węgłem, 10 × 8 z łączeniami i węgłami usztywniającymi, obrys L, krokwie z obu stron szczytu i podłoga 150) w jednej
-  operacji, którą na końcu cofa – model zostaje bez zmian;
+- buduje 7 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
+  i węgłem, 10 × 8 z łączeniami i węgłami usztywniającymi, obrys L, krokwie z obu stron szczytu i podłoga 150, pełny
+  profil z działową pod antresolą, ostatkiem 200 i węgłem ręcznym) w jednej operacji, którą na końcu cofa – model
+  zostaje bez zmian;
 - dla każdego domu: liczby z planu i z modelu (instancje według prefiksu), bryły niezamknięte (`manifold?`), bryły
   o objętości innej niż z profilu (> 0,2 %), ściany, których nie narysowano, kontrola zamków i styków, czasy;
 - zaznaczony dom: kompilacja, ręczne zmiany, zgodność modelu z parametrami;
@@ -198,6 +236,7 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
 
 ## 11. Etapy dalej
 
-Taras (wysunięte górne bale + słupy, balustrada), edycja w widoku ściany (klik – dodaj / usuń węgieł, ostatek 200 na
-wybranych narożnikach), pełny profil bala, Dokumentacja 2D – grupy Bs/Kf/Sz (belki mają już jej kody), deski dachu
-i podłogi, dach dla obrysów L / U, połacie dla wtyczki dachów (KROK 2).
+Według decyzji użytkownika (propozycje 2, 3, 4, 5, 7, 10 objaśnione w rundzie 4 – czekają na wybór): Dokumentacja
+2D – grupy Bs/Kf/Sz, dach dokładniej (cięcia krokwi, deski, obrysy L / U albo połacie dla wtyczki dachów), taras,
+szybsza budowa modelu, okna i drzwi (typowe wymiary, dociąganie do krawędzi bala, ościeżnice), pliki dla producenta
+(XLSX, CNC).

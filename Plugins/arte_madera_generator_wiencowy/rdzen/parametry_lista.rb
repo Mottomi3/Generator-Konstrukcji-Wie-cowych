@@ -3,13 +3,14 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry
 # Zależy od: –
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
 # Nowy parametr = jeden wpis w LISTA (okno samo doda pole w swojej sekcji, wartość trafi do zapisanych ustawień);
 # odczyt w kodzie tylko przez p['klucz'] (przekroje: Parametry.przekroj(p, 'klucz') → [b, h]).
 # Rodzaje pól: :liczba, :calkowita, :wybor (lista :wybory), :przekroj („50x150”), :tekst.
+# podstawowy: true – pole widoczne w trybie okna „Podstawowe” (pozostałe tylko w „Wszystkie” albo gdy zmienione).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 module ArteMadera
@@ -31,27 +32,49 @@ module ArteMadera
 
       # Wszystkie parametry (kolejność = kolejność w oknie w ramach sekcji).
       LISTA = [
-        { klucz: 'preset', domyslna: '44x146', etykieta: 'Przekrój bala', rodzaj: :wybor, sekcja: 'przekroj',
+        { klucz: 'preset', podstawowy: true, domyslna: '44x146', etykieta: 'Przekrój bala', rodzaj: :wybor, sekcja: 'przekroj',
           wybory: nil, podpowiedz: 'Preset z kompletem wymiarów zamka; wymiary można zmienić poniżej.' },
         { klucz: 'zamek_odbicie', domyslna: 'rysunek', etykieta: 'Kierunek podcięć zamka', rodzaj: :wybor, sekcja: 'przekroj',
           wybory: [['rysunek', 'jak na rysunku warsztatowym'], ['lustro', 'lustrzane odbicie']],
           podpowiedz: 'Labirynt podcięć – oba warianty bez kolizji; zmiana odwraca bale poprzeczne licem.' },
+        { klucz: 'profil_bala', podstawowy: true, domyslna: 'prosty', etykieta: 'Profil bala w modelu', rodzaj: :wybor,
+          sekcja: 'przekroj', wybory: [['prosty', 'bal prosty (lekki model, jak w listach)'],
+                                       ['pelny', 'pełny profil – pióro i wpust (do wizualizacji)']],
+          podpowiedz: 'Pełny profil: pióra na wierzchu, wpust od spodu (pierwszy wieniec bez wpustu). Zamki, pozycje i listy bez zmian.' },
+        { klucz: 'pioro_liczba', domyslna: '2', etykieta: 'Pióra – liczba', rodzaj: :wybor, sekcja: 'przekroj',
+          wybory: [['1', 'jedno pióro w osi bala'], ['2', 'dwa pióra (podwójne pióro-wpust)']],
+          podpowiedz: 'Wysokość pióra – „Pióro” w wymiarach zamka poniżej.' },
+        { klucz: 'pioro_szerokosc', domyslna: 8.0, etykieta: 'Pióro – szerokość', jednostka: 'mm', min: 2.0, max: 30.0,
+          rodzaj: :liczba, sekcja: 'przekroj' },
+        { klucz: 'pioro_rozstaw', domyslna: 20.0, etykieta: 'Pióra – rozstaw osi (dwa pióra)', jednostka: 'mm', min: 4.0,
+          max: 36.0, rodzaj: :liczba, sekcja: 'przekroj' },
+        { klucz: 'wpust_luz', domyslna: 1.0, etykieta: 'Wpust – luz (szerszy i głębszy od pióra)', jednostka: 'mm', min: 0.0,
+          max: 5.0, rodzaj: :liczba, sekcja: 'przekroj' },
 
-        { klucz: 'liczba_wiencow', domyslna: 16, etykieta: 'Liczba wieńców (ściany okapowe)', jednostka: 'szt.',
+        { klucz: 'liczba_wiencow', podstawowy: true, domyslna: 16, etykieta: 'Liczba wieńców (ściany okapowe)', jednostka: 'szt.',
           min: 3, max: 60, rodzaj: :calkowita, sekcja: 'sciany',
           podpowiedz: 'Pełne wieńce ścian wzdłuż kalenicy; szczytowe mają o jeden więcej (pierwszy bal szczytu).' },
-        { klucz: 'ostatek', domyslna: 100.0, etykieta: 'Ostatek za licem', jednostka: 'mm', min: 40.0, max: 600.0,
+        { klucz: 'ostatek', podstawowy: true, domyslna: 100.0, etykieta: 'Ostatek za licem', jednostka: 'mm', min: 40.0, max: 600.0,
           rodzaj: :liczba, sekcja: 'sciany', podpowiedz: 'Wypust bala za licem ściany poprzecznej (projekty: 100, przy tarasie 200).' },
-        { klucz: 'kalenica', domyslna: 'dluzszy', etykieta: 'Kalenica (półbal na ścianach wzdłuż kalenicy)', rodzaj: :wybor,
+        { klucz: 'kalenica', podstawowy: true, domyslna: 'dluzszy', etykieta: 'Kalenica (półbal na ścianach wzdłuż kalenicy)', rodzaj: :wybor,
           sekcja: 'sciany', wybory: [['dluzszy', 'wzdłuż dłuższego boku'], ['krotszy', 'wzdłuż krótszego boku'],
                                      ['x', 'wzdłuż osi X obrysu'], ['y', 'wzdłuż osi Y obrysu']] },
+        { klucz: 'strop', podstawowy: true, domyslna: 'nie', etykieta: 'Strop nad parterem (zamknięta góra)', rodzaj: :wybor,
+          sekcja: 'sciany', wybory: [['nie', 'nie – działowe do pełnej wysokości'], ['tak', 'tak – działowe kończą się pod stropem']],
+          podpowiedz: 'Niższa działowa tylko pod stropem, antresolą lub półką. Antresolę albo półkę nad jedną działową ustawisz w widoku ściany.' },
+        { klucz: 'dzialowa_nizsza_wysokosc', podstawowy: true, domyslna: 2500.0, etykieta: 'Działowa pod stropem / antresolą – góra',
+          jednostka: 'mm', min: 500.0, max: 8000.0, rodzaj: :liczba, sekcja: 'sciany',
+          podpowiedz: 'Spód stropu, antresoli albo półki; działowa kończy się pełnym wieńcem nie wyżej (1100: 2432, 1200: 2780).' },
+        { klucz: 'dopelnienie_wewn', domyslna: 100.0, etykieta: 'Dopełnienie zamka nad niższą działową – do wnętrza',
+          jednostka: 'mm', min: 40.0, max: 600.0, rodzaj: :liczba, sekcja: 'sciany',
+          podpowiedz: 'Odcinki nad działową przy ścianach, które idą wyżej: ostatek + grubość + tyle (1100: 244, 1200 przy ostatku 200: 344).' },
 
-        { klucz: 'max_dlugosc', domyslna: 5100.0, etykieta: 'Maksymalna długość bala', jednostka: 'mm', min: 1000.0,
+        { klucz: 'max_dlugosc', podstawowy: true, domyslna: 5100.0, etykieta: 'Maksymalna długość bala', jednostka: 'mm', min: 1000.0,
           max: 13_000.0, rodzaj: :liczba, sekcja: 'laczenia',
           podpowiedz: 'Najdłuższy bal od producenta (listy 1800 i 1200: 5044 i 5090).' },
         { klucz: 'min_odcinek', domyslna: 200.0, etykieta: 'Najkrótszy kawałek bala', jednostka: 'mm', min: 50.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'laczenia', podpowiedz: 'Krótszy kawałek – ostrzeżenie.' },
-        { klucz: 'styk_uklad', domyslna: 'na_przemian', etykieta: 'Łączenie bali na długości', rodzaj: :wybor,
+        { klucz: 'styk_uklad', podstawowy: true, domyslna: 'na_przemian', etykieta: 'Łączenie bali na długości', rodzaj: :wybor,
           sekcja: 'laczenia',
           wybory: [['na_przemian', 'na przemian w kolejnych węgłach / działowych (jak 1200)'],
                    ['para', 'para węgłów w odstępie mijanki, styk w osi zamka (jak 900 W-2)'],
@@ -65,7 +88,7 @@ module ArteMadera
           min: 0.0, max: 2000.0, rodzaj: :liczba, sekcja: 'laczenia',
           podpowiedz: 'Kawałek bala między stykiem a otworem nie krótszy niż tyle.' },
 
-        { klucz: 'wegly_max_swiatlo', domyslna: 4800.0, etykieta: 'Najdłuższe światło ściany bez węgła', jednostka: 'mm',
+        { klucz: 'wegly_max_swiatlo', podstawowy: true, domyslna: 4800.0, etykieta: 'Najdłuższe światło ściany bez węgła', jednostka: 'mm',
           min: 1500.0, max: 10_000.0, rodzaj: :liczba, sekcja: 'wegly',
           podpowiedz: 'Między licami ścian podpierających (narożnik, działowa, węgieł). 1800 W-2: 4756 bez węgła.' },
         { klucz: 'wegly_max_swiatlo_wysokie', domyslna: 3700.0, etykieta: 'To samo dla ścian wysokich', jednostka: 'mm',
@@ -74,7 +97,7 @@ module ArteMadera
         { klucz: 'wegly_prog_wysokosci', domyslna: 3000.0, etykieta: 'Ściana wysoka od wysokości', jednostka: 'mm',
           min: 1500.0, max: 8000.0, rodzaj: :liczba, sekcja: 'wegly',
           podpowiedz: 'Wysokość ściany okapowej bez szczytu (1100: 2966 – bez węgła, 1200: 3580 – z węgłem).' },
-        { klucz: 'wegly_rozmieszczenie', domyslna: 'rowno', etykieta: 'Rozmieszczenie nowych węgłów', rodzaj: :wybor,
+        { klucz: 'wegly_rozmieszczenie', podstawowy: true, domyslna: 'rowno', etykieta: 'Rozmieszczenie nowych węgłów', rodzaj: :wybor,
           sekcja: 'wegly',
           wybory: [['rowno', 'równo na długości ściany'], ['od_naroznikow', 'od narożników o zadany odstęp (jak 1000)'],
                    ['tylko_narysowane', 'tylko narysowane (generator tylko ostrzega)']] },
@@ -87,19 +110,19 @@ module ArteMadera
         { klucz: 'odstep_od_otworu', domyslna: 150.0, etykieta: 'Odstęp węgła od krawędzi otworu', jednostka: 'mm',
           min: 0.0, max: 2000.0, rodzaj: :liczba, sekcja: 'wegly' },
 
-        { klucz: 'szczyty', domyslna: 'tak', etykieta: 'Szczyty z bali', rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
+        { klucz: 'szczyty', podstawowy: true, domyslna: 'tak', etykieta: 'Szczyty z bali', rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu.' },
         { klucz: 'szczyty_na_dzialowych', domyslna: 'nie', etykieta: 'Szczyty także na działowych szczytowych',
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Jak 1800 W-2 – ściana działowa do kalenicy.' },
-        { klucz: 'dach_kat', domyslna: 20.0, etykieta: 'Kąt dachu', jednostka: '°', min: 5.0, max: 60.0, rodzaj: :liczba,
+        { klucz: 'dach_kat', podstawowy: true, domyslna: 20.0, etykieta: 'Kąt dachu', jednostka: '°', min: 5.0, max: 60.0, rodzaj: :liczba,
           sekcja: 'szczyty', podpowiedz: 'Projekty 900 i 1000: 20°.' },
-        { klucz: 'dach_uklad', domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
+        { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['platwie', 'same płatwie (deski na płatwiach)'], ['krokwie', 'krokwie na płatwi ściennej i kalenicowej'],
                    ['platwie_krokwie', 'płatwie i krokwie']] },
         { klucz: 'dach_podniesienie', domyslna: 69.5, etykieta: 'Wierzch płatwi nad ścianą okapową (przy licu wewn.)',
           jednostka: 'mm', min: -300.0, max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.' },
-        { klucz: 'krokwie_przy_szczycie', domyslna: 'obie_strony', etykieta: 'Krokwie przy ścianie szczytowej',
+        { klucz: 'krokwie_przy_szczycie', podstawowy: true, domyslna: 'obie_strony', etykieta: 'Krokwie przy ścianie szczytowej',
           rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['obie_strony', 'z obu stron szczytu'], ['wewnatrz', 'tylko od wewnątrz'], ['zewnatrz', 'tylko od zewnątrz'],
                    ['na_szczycie', 'na szczycie (krokiew oparta na balach)']],
@@ -130,12 +153,12 @@ module ArteMadera
           podpowiedz: 'Krótsze okruchy między skosem dachu a gniazdem płatwi są pomijane (900: najkrótszy 104).' },
         { klucz: 'dach_elementy', domyslna: 'tak', etykieta: 'Belki dachu w modelu (płatwie, krokwie)', rodzaj: :wybor,
           sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Dla obrysu prostokątnego.' },
-        { klucz: 'dach_okap', domyslna: 500.0, etykieta: 'Okap – wysunięcie krokwi za ścianę', jednostka: 'mm', min: 0.0,
+        { klucz: 'dach_okap', podstawowy: true, domyslna: 500.0, etykieta: 'Okap – wysunięcie krokwi za ścianę', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
-        { klucz: 'dach_okap_szczyt', domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
+        { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
 
-        { klucz: 'podloga', domyslna: 'tak', etykieta: 'Podłoga (podwaliny, legary, podciągi)', rodzaj: :wybor,
+        { klucz: 'podloga', podstawowy: true, domyslna: 'tak', etykieta: 'Podłoga (podwaliny, legary, podciągi)', rodzaj: :wybor,
           sekcja: 'podloga', wybory: TAK_NIE },
         { klucz: 'podwalina_przekroj', domyslna: '100x100', etykieta: 'Podwalina pod ścianami', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', podpowiedz: 'Projekt 900: 100 × 100. Niższa niż legar – podniesiona do wysokości legara.' },
@@ -145,9 +168,9 @@ module ArteMadera
           wybory: [['krotszy', 'krótszego boku'], ['dluzszy', 'dłuższego boku'], ['x', 'osi X obrysu'], ['y', 'osi Y obrysu']] },
         { klucz: 'legary_rozstaw', domyslna: 600.0, etykieta: 'Rozstaw legarów (osiowo)', jednostka: 'mm', min: 250.0,
           max: 1200.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Projekt 900: 550–610.' },
-        { klucz: 'izolacja_podlogi', domyslna: 100.0, etykieta: 'Izolacja między legarami', jednostka: 'mm', min: 0.0,
+        { klucz: 'izolacja_podlogi', podstawowy: true, domyslna: 100.0, etykieta: 'Izolacja między legarami', jednostka: 'mm', min: 0.0,
           max: 400.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Legar nie niższy niż izolacja (0 – bez izolacji).' },
-        { klucz: 'legary_dobor', domyslna: 'zalecany', etykieta: 'Dobór przekroju legara', rodzaj: :wybor, sekcja: 'podloga',
+        { klucz: 'legary_dobor', podstawowy: true, domyslna: 'zalecany', etykieta: 'Dobór przekroju legara', rodzaj: :wybor, sekcja: 'podloga',
           wybory: [['zalecany', 'zalecany (ugięcie ≤ L/zalecane)'], ['minimalny', 'minimalny (ugięcie ≤ L/minimalne)'],
                    ['reczny', 'ręczny – podany niżej (tylko sprawdzenie)']] },
         { klucz: 'legar_przekroj', domyslna: '50x100', etykieta: 'Legar – przekrój ręczny', jednostka: 'mm',
@@ -176,15 +199,18 @@ module ArteMadera
           jednostka: 'mm', min: 0.0, max: 1000.0, rodzaj: :liczba, sekcja: 'otwory' },
         { klucz: 'luz_nad_otworem', domyslna: 0.0, etykieta: 'Luz osiadania nad otworem', jednostka: 'mm', min: 0.0,
           max: 200.0, rodzaj: :liczba, sekcja: 'otwory' },
-        { klucz: 'okno_szerokosc', domyslna: 1020.0, etykieta: 'Nowe okno – szerokość', jednostka: 'mm', min: 100.0,
+        { klucz: 'min_pasek_przy_otworze', domyslna: 20.0, etykieta: 'Najcieńszy pasek bala nad / pod otworem', jednostka: 'mm',
+          min: 1.0, max: 100.0, rodzaj: :liczba, sekcja: 'otwory',
+          podpowiedz: 'Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem.' },
+        { klucz: 'okno_szerokosc', podstawowy: true, domyslna: 1020.0, etykieta: 'Nowe okno – szerokość', jednostka: 'mm', min: 100.0,
           max: 6000.0, rodzaj: :liczba, sekcja: 'otwory', podpowiedz: 'Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010).' },
-        { klucz: 'okno_wysokosc', domyslna: 1010.0, etykieta: 'Nowe okno – wysokość', jednostka: 'mm', min: 100.0,
+        { klucz: 'okno_wysokosc', podstawowy: true, domyslna: 1010.0, etykieta: 'Nowe okno – wysokość', jednostka: 'mm', min: 100.0,
           max: 4000.0, rodzaj: :liczba, sekcja: 'otwory' },
-        { klucz: 'okno_parapet', domyslna: 900.0, etykieta: 'Nowe okno – parapet', jednostka: 'mm', min: 0.0, max: 4000.0,
+        { klucz: 'okno_parapet', podstawowy: true, domyslna: 900.0, etykieta: 'Nowe okno – parapet', jednostka: 'mm', min: 0.0, max: 4000.0,
           rodzaj: :liczba, sekcja: 'otwory' },
-        { klucz: 'drzwi_szerokosc', domyslna: 930.0, etykieta: 'Nowe drzwi – szerokość', jednostka: 'mm', min: 300.0,
+        { klucz: 'drzwi_szerokosc', podstawowy: true, domyslna: 930.0, etykieta: 'Nowe drzwi – szerokość', jednostka: 'mm', min: 300.0,
           max: 6000.0, rodzaj: :liczba, sekcja: 'otwory' },
-        { klucz: 'drzwi_wysokosc', domyslna: 2100.0, etykieta: 'Nowe drzwi – wysokość', jednostka: 'mm', min: 1000.0,
+        { klucz: 'drzwi_wysokosc', podstawowy: true, domyslna: 2100.0, etykieta: 'Nowe drzwi – wysokość', jednostka: 'mm', min: 1000.0,
           max: 4000.0, rodzaj: :liczba, sekcja: 'otwory' },
         { klucz: 'nowy_otwor_od', domyslna: 1000.0, etykieta: 'Nowy otwór – odległość od narożnika', jednostka: 'mm',
           min: 0.0, max: 30_000.0, rodzaj: :liczba, sekcja: 'otwory' },
@@ -202,6 +228,8 @@ module ArteMadera
         'Domek parterowy 44 (jak 900)' => { 'liczba_wiencow' => 16 },
         'Dom parterowy wysoki (jak 1800)' => { 'liczba_wiencow' => 20 },
         'Dom 1,5 kondygnacji (jak 1200)' => { 'liczba_wiencow' => 25 },
+        'Dom 1,5 kondygnacji ze stropem nad parterem' => { 'liczba_wiencow' => 25, 'strop' => 'tak', 'dzialowa_nizsza_wysokosc' => 2780.0 },
+        'Pełny profil bala – pióro i wpust (wizualizacja)' => { 'profil_bala' => 'pelny' },
         'Bez łączenia bali (bale do 7 m)' => { 'max_dlugosc' => 7000.0 },
         'Podłoga ocieplona 150 mm' => { 'izolacja_podlogi' => 150.0 }
       }.freeze unless const_defined?(:SZABLONY)
@@ -218,7 +246,7 @@ module ArteMadera
           'grubosc' => 44.0,        # grubość ściany
           'wysokosc' => 146.0,      # wysokość bala z piórem (do list zamówień)
           'krycie' => 139.0,        # rozstaw wieńców = wysokość bryły bala prostego
-          'pioro' => 7.0,           # wysokość pióra (pełny profil – późniejsza runda)
+          'pioro' => 7.0,           # wysokość pióra (pełny profil – rdzen/profil_bala.rb)
           'gniazdo_szer' => 40.0,   # szerokość gniazda górnego i dolnego w zamku
           'gniazdo_gleb' => 36.0,   # głębokość gniazda od wierzchu i od spodu bryły
           'podciecie_gleb' => 2.5,  # głębokość podcięcia bocznego (każde lico)

@@ -120,7 +120,8 @@ module ArteMadera
       end
 
       # Położenia krokwi wzdłuż kalenicy (u) między szczytami w u1 < u2 (osie ścian szczytowych); wewn – osie szczytów
-      # na działowych (krokwie z obu stron albo na szczycie). Pozostałe krokwie równo między krokwiami przy szczytach.
+      # na działowych (krokwie z obu stron albo na szczycie). Pozostałe krokwie równo między krokwiami przy szczytach;
+      # na koniec bez krokwi wchodzących w inny szczyt i bez nachodzących na siebie (bez_kolizji).
       def krokwie_u(u1, u2, p, wewn = [])
         return [] unless krokwie?(p)
         t = Parametry.grubosc(p)
@@ -157,7 +158,20 @@ module ArteMadera
           n = ((hi - lo) / p['krokwie_rozstaw'].to_f - 1e-9).ceil
           (1...n).each { |i| wynik << lo + i * (hi - lo) / n }
         end
-        wynik.sort
+        bez_kolizji(wynik, [u1, u2] + wewn, zew, bk, szczyt_do_wierzchu_krokwi?(p))
+      end
+
+      # Krokwie bez kolizji: gdy szczyty sięgają wierzchu krokwi – bez krokwi, której oś jest bliżej osi szczytu niż pół
+      # grubości + pół krokwi (np. przy dwóch bliskich szczytach na działowych); nachodzące na siebie – jedna pośrodku.
+      def bez_kolizji(lista, osie, zew, bk, obok_szczytu)
+        wolne = obok_szczytu ? lista.reject { |u| osie.any? { |g| (u - g).abs < zew - 0.01 } } : lista
+        wolne.sort.each_with_object([]) do |u, wynik|
+          if !wynik.empty? && u - wynik.last < bk - 0.01
+            wynik[-1] = (wynik.last + u) / 2.0
+          else
+            wynik << u
+          end
+        end
       end
 
       # Belki dachu domu prostokątnego: płatwie wzdłuż kalenicy i krokwie (elementy). dom = { os:, v_a:, v_b:, u1:, u2: }.

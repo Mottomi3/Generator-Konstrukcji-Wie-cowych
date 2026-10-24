@@ -14,10 +14,9 @@ def sprawdz_pozycje(pl, opis)
   bledne = 0
   zbedne = 0
   (pl[:pozycje] + (pl[:pozycje_elementow] || [])).each do |poz|
-    prof = Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy])
     s = Projekt.siatka_pozycji(poz)
     k = Siatka.sprawdz(s[:sciany])
-    v = Bryla.objetosc(prof)
+    v = Projekt.objetosc_pozycji(poz)
     ok = k[:zamknieta] && (k[:objetosc] - v).abs <= v * 1e-9 + 1e-3
     ok &&= s[:sciany].all? { |f| f[:petle].all? { |pt| pt.length >= 3 } }
     u = Siatka.uprosc(s[:sciany])
@@ -77,5 +76,35 @@ Testy.rowne(z_otworem, 2, 'dwie ściany czołowe z otworem')
 k = Siatka.sprawdz(s[:sciany])
 Testy.sprawdz(k[:zamknieta], 'bryła z przewężeniem zamknięta')
 Testy.rowne(k[:objetosc].round(3), Bryla.objetosc(prof).round(3), 'objętość bryły z przewężeniem')
+
+Testy.grupa('Pełny profil – dwa pióra i wpusty, pierwszy wieniec bez wpustu')
+pp = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000, 'profil_bala' => 'pelny')
+sprawdz_pozycje(pp, 'pełny profil, dom 900')
+ps = plan(prostokat(0, 0, 4000, 3000), 'max_dlugosc' => 4000)
+Testy.sprawdz(pp[:pozycje].length > ps[:pozycje].length, "bale pierwszego wieńca bez wpustu – osobne pozycje (#{pp[:pozycje].length} > #{ps[:pozycje].length})")
+# Przedział bala bez obróbek (największe pole przekroju).
+srodek = lambda do |poz|
+  Projekt.profil_pozycji(poz).max_by { |x| x[:pasy].inject(0.0) { |acc, c| acc + (c[:y1] - c[:y0]) * (c[:zt_a] - c[:zb_a]) } }
+end
+bal = pp[:pozycje].find { |x| !x[:polbal] && x[:cechy].none? { |c| c[:typ] == 'bez_wpustu' } }
+q = srodek.call(bal)
+Testy.rowne(q[:pasy].length, 9, 'dwa pióra: 9 pasów przekroju')
+Testy.rowne([q[:pasy].map { |c| c[:zt_a] }.max, q[:pasy].map { |c| c[:zb_a] }.max], [146.0, 8.0], 'pióro 7 nad wierzchem, wpust 8 od spodu')
+Testy.rowne(q[:pasy].select { |c| c[:zt_a] > 139.5 }.map { |c| [c[:y0], c[:y1]] }, [[8.0, 16.0], [28.0, 36.0]], 'pióra 8 mm w rozstawie 20')
+pole = q[:pasy].inject(0.0) { |acc, c| acc + (c[:y1] - c[:y0]) * (c[:zt_a] - c[:zb_a]) }
+Testy.rowne(pole, 44 * 139.0 + 2 * 8 * 7.0 - 2 * 9 * 8.0, 'pole przekroju: bal prosty + pióra − wpusty', 0.01)
+Testy.sprawdz(Projekt.objetosc_pozycji(bal) < Bryla.objetosc(Bryla.profil(bal[:dl], bal[:t], bal[:h], bal[:cechy])), 'objętość z profilem mniejsza niż bala prostego')
+spod = pp[:pozycje].find { |x| !x[:polbal] && x[:cechy].any? { |c| c[:typ] == 'bez_wpustu' } }
+Testy.rowne(srodek.call(spod)[:pasy].map { |c| c[:zb_a] }.max, 0.0, 'pierwszy wieniec bez wpustu')
+Testy.sprawdz(pp[:pozycje].select { |x| x[:polbal] }.all? { |x| x[:cechy].any? { |c| c[:typ] == 'bez_wpustu' } }, 'półbal bez wpustu')
+p1 = plan(prostokat(0, 0, 4000, 3000), 'profil_bala' => 'pelny', 'pioro_liczba' => '1', 'pioro_szerokosc' => 16)
+q = srodek.call(p1[:pozycje].find { |x| !x[:polbal] && x[:cechy].none? { |c| c[:typ] == 'bez_wpustu' } })
+Testy.rowne(q[:pasy].select { |c| c[:zt_a] > 139.5 }.map { |c| [c[:y0], c[:y1]] }, [[14.0, 30.0]], 'jedno pióro 16 w osi bala')
+sprawdz_pozycje(p1, 'jedno pióro')
+seg = prostokat(0, 0, 9000, 6000) + [[[4000, 0], [4000, 6000]], [[6500, -150], [6500, 150]]]
+otw = [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 950 },
+       { 'sciana' => 'W-2', 'od' => 2000, 'szerokosc' => 930, 'wysokosc' => 2100, 'parapet' => 0 }]
+sprawdz_pozycje(plan_pelny(seg, { 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie' }, otw), 'pełny profil: szczyty, otwory, węgły')
+Testy.rowne(Kontrola.kolizje(pp).length, 0, 'zamki bez kolizji (pióro w gnieździe zamka wycięte)')
 
 Testy.koniec

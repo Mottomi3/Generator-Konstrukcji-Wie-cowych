@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/sciana.js
   Zadanie: widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany.
-  Tematy: widok ściany, rozkład ściany, elewacja ściany, wybór ściany w oknie, styki na widoku, numery pozycji na widoku
+  Tematy: widok ściany, rozkład ściany, elewacja ściany, wybór ściany w oknie, styki na widoku, numery pozycji na widoku, kliknięcie w widok ściany, węgieł ręczny na widoku
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/okno.js (AMGW.widok, lista ścian po podglądzie)
 
@@ -63,8 +63,9 @@ var AMGW_SCIANA = (function () {
     return [smin, smax, zmin, zmax];
   }
 
-  // Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany).
-  function rysuj(box, d, opis) {
+  // Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany); naKlik(s, zasieg) – kliknięcie
+  // w rysunek: miejsce s na osi ściany i zasięg trafienia w węgieł [mm] (8 px rysunku).
+  function rysuj(box, d, opis, naKlik) {
     wyczysc(box);
     if (opis) { opis.textContent = ''; }
     if (!d || d.blad || !d.bale || !d.bale.length) {
@@ -92,6 +93,7 @@ var AMGW_SCIANA = (function () {
     styki(svg, d, X, Y);
     dach(svg, d, X, Y);
     wience(svg, d, z, m, X, Y, px, k);
+    if (naKlik) { klikanie(svg, d, z, m, k, naKlik); }
     box.appendChild(svg);
     if (opis) {
       opis.textContent = d.id + ' · ' + (RODZAJE[d.rodzaj] || d.rodzaj) + (d.szczyt ? ' ze szczytem' : '') + ' · ' +
@@ -99,7 +101,21 @@ var AMGW_SCIANA = (function () {
     }
   }
 
-  // Skrzyżowania z innymi ścianami i węgłami: linia przerywana i opis nad ścianą.
+  // Kliknięcie w rysunek: miejsce na osi ściany (z odwróconego przekształcenia SVG) do funkcji naKlik.
+  function klikanie(svg, d, z, m, k, naKlik) {
+    svg.setAttribute('class', 'klikalny');
+    svg.addEventListener('click', function (ev) {
+      var ctm = svg.getScreenCTM();
+      if (!ctm) { return; }
+      var pt = svg.createSVGPoint();
+      pt.x = ev.clientX;
+      pt.y = ev.clientY;
+      var s = pt.matrixTransform(ctm.inverse()).x + z[0] - m;
+      if (s > d.s_od && s < d.s_do) { naKlik(s, 8 / k); }
+    });
+  }
+
+  // Skrzyżowania z innymi ścianami i węgłami: linia przerywana i opis nad ścianą (węgieł ręczny – opis pogrubiony).
   function skrzyzowania(svg, d, z, X, Y, px) {
     var i;
     for (i = 0; i < (d.skrzyzowania || []).length; i++) {
@@ -109,7 +125,7 @@ var AMGW_SCIANA = (function () {
                                       'stroke-width': '1', 'stroke-dasharray': '4 3', 'vector-effect': 'non-scaling-stroke',
                                       'class': 'skrzyzowanie' }));
       var t = svgEl('text', { x: X(k[0]), y: Y(z[3]), dy: px(-6), 'font-size': px(10), 'text-anchor': 'middle',
-                              fill: kf ? '#8a5a2b' : '#5c4a38' });
+                              fill: kf ? '#8a5a2b' : '#5c4a38', 'font-weight': k[3] === 'reczny' ? '700' : '400' });
       t.appendChild(document.createTextNode(k[1]));
       svg.appendChild(t);
     }

@@ -22,13 +22,20 @@ DOMY = {
   'pelny900' => [prostokat(0, 0, 4000, 3000), {},
                  [{ 'sciana' => 'W-2', 'od' => 1000, 'szerokosc' => 900, 'wysokosc' => 2100, 'parapet' => 0 }], true],
   'krokwie' => [prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]],
-                { 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => 'wewnatrz' }, [], true]
+                { 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => 'wewnatrz' }, [], true],
+  'antresola' => [prostokat(0, 0, 6000, 4200) + [[[2000, 0], [2000, 4200]], [[0, 1500], [2000, 1500]]],
+                  { 'liczba_wiencow' => 20, 'dach_uklad' => 'platwie_krokwie', 'podloga' => 'nie' }, [], true,
+                  { 'W-5' => { 'nad' => 'antresola', 'wysokosc' => '2500' }, 'W-6' => { 'nad' => 'antresola', 'wysokosc' => '2500' },
+                    'W-1' => { 'ostatek_od' => '200' } }],
+  'profil' => [prostokat(0, 0, 4000, 3000), { 'profil_bala' => 'pelny', 'liczba_wiencow' => 6, 'szczyty' => 'nie', 'podloga' => 'nie' },
+               [{ 'sciana' => 'W-1', 'od' => 1500, 'szerokosc' => 900, 'wysokosc' => 500, 'parapet' => 300 }], true]
 }.freeze
 
 plik = ARGV[0] || 'dom.obj'
 nazwa = ARGV[1] || 'dom900'
-seg, par, otw, pelny = DOMY[nazwa]
-pl = pelny ? plan_pelny(seg, par, otw) : plan(seg, par, otw)
+seg, par, otw, pelny, ust = DOMY[nazwa]
+par = { 'szczyty' => 'nie', 'podloga' => 'nie' }.merge(par) unless pelny
+pl = Projekt.oblicz('segmenty' => seg, 'parametry' => par, 'otwory' => otw, 'sciany' => ust || {})
 raise pl[:bledy].join("\n") unless pl[:bledy].empty?
 siatki = {}
 wierzcholki = []

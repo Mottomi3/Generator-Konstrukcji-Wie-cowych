@@ -34,6 +34,7 @@ uruchom t_siatka ruby -I testy/atrapa testy/t_siatka.rb
 uruchom t_widok ruby -I testy/atrapa testy/t_widok.rb
 uruchom t_zestawienie ruby -I testy/atrapa testy/t_zestawienie.rb
 uruchom t_raport ruby -I testy/atrapa testy/t_raport.rb
+uruchom t_sciany_ust ruby -I testy/atrapa testy/t_sciany_ust.rb
 uruchom t_losowe ruby -I testy/atrapa testy/t_losowe.rb
 uruchom t_sketchup ruby -I testy/atrapa testy/t_sketchup.rb
 

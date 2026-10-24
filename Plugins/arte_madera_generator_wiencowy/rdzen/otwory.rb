@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/otwory.rb
 # Zadanie: otwory okienne i drzwiowe – położenie na ścianie, sprawdzenie, cięcia bali w każdym wieńcu.
-# Tematy: otwór, okno, drzwi, parapet, nadproże, luz osiadania, cięcie proste przy otworze, wycięcie bala przy otworze, poziom ±0
+# Tematy: otwór, okno, drzwi, parapet, nadproże, luz osiadania, cięcie proste przy otworze, wycięcie bala przy otworze, poziom ±0, cienki pasek bala przy otworze
 # Zależy od: rdzen/geometria.rb, rdzen/parametry.rb
 # Używają: rdzen/projekt.rb, rdzen/bale.rb, rdzen/styki.rb (omijanie otworów)
 #
@@ -68,16 +68,23 @@ module ArteMadera
       end
 
       # Cięcia w wieńcu [z0, z0 + h]: { pelne: [[s0, s1]] – bal przerwany, gniazda: [[s0, s1]] – te z pelnych, które są
-      # gniazdami płatwi, wyciecia: [{ s0:, s1:, strona:, gleb: }], uwagi: [] }.
-      def dla_wienca(w, z0, h)
+      # gniazdami płatwi, wyciecia: [{ s0:, s1:, strona:, gleb: }], uwagi: [] }. Pasek bala cieńszy niż pasek [mm]
+      # (min_pasek_przy_otworze) nad albo pod otworem – bal przecięty w całości (taki pasek się nie trzyma, a w pełnym
+      # profilu byłby płytszy niż wpust), z ostrzeżeniem.
+      def dla_wienca(w, z0, h, pasek = TOL_Z)
         z1 = z0 + h
+        pasek = [pasek.to_f, TOL_Z].max
         wynik = { pelne: [], gniazda: [], wyciecia: [], uwagi: [] }
         (w[:otwory] || []).each do |o|
           dol = [z0, o[:z0]].max
           gora = [z1, o[:z1]].min
           next if gora - dol <= TOL_Z
-          od_dolu = o[:z0] <= z0 + TOL_Z
-          do_gory = o[:z1] >= z1 - TOL_Z
+          od_dolu = o[:z0] <= z0 + pasek
+          do_gory = o[:z1] >= z1 - pasek
+          if !o[:gniazdo] && ((od_dolu && o[:z0] > z0 + TOL_Z) || (do_gory && o[:z1] < z1 - TOL_Z))
+            wynik[:uwagi] << format('Otwór %s (%s): pasek bala cieńszy niż %.0f mm przy otworze usunięty – otwór sięga do ' \
+                                    'krawędzi bala.', o[:nazwa], w[:id], pasek)
+          end
           if od_dolu && do_gory
             wynik[:pelne] << [o[:s0], o[:s1]]
             wynik[:gniazda] << [o[:s0], o[:s1]] if o[:gniazdo]

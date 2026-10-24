@@ -7,7 +7,7 @@
 # Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
 # Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 #
-# Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory.
+# Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory, sciany (ustawienia ścian z widoku ściany).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 module ArteMadera
@@ -32,7 +32,7 @@ module ArteMadera
           else
             @dom = nil
             ostatnie = Ustawienia.ostatnie
-            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [] }
+            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [], 'sciany' => {} }
             info = format('Zaznaczono %d linii na wysokości %.0f mm.', z[:segmenty].length, z[:z0])
             info += ' Parametry z ostatniego użycia.' unless ostatnie.empty?
             tryb = 'nowy'
@@ -40,7 +40,7 @@ module ArteMadera
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
           @plan = plan
           Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'],
-                     'info' => info, 'podsumowanie' => dla_okna(plan))
+                     'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan))
         rescue => e
           Log.error('Sterowanie.start', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
@@ -107,11 +107,12 @@ module ArteMadera
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}")
         end
 
-        # Wejście domu: zapamiętane linie i poziom + parametry i otwory z okna.
+        # Wejście domu: zapamiętane linie i poziom + parametry, otwory i ustawienia ścian (widok ściany) z okna.
         def scal(dane)
           baza = @wejscie || {}
           { 'segmenty' => baza['segmenty'] || [], 'z0' => baza['z0'].to_f,
-            'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [] }
+            'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [],
+            'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}) }
         end
 
         # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut.

@@ -43,7 +43,8 @@ module ArteMadera
                   end
           if wynik.nil?
             uwagi << format('Ściana %s (%.0f mm): nie udało się dobrać miejsc styków przy maksymalnej długości bala %.0f mm ' \
-                            '(otwory lub skrzyżowania zajmują miejsce) – bale dłuższe niż dopuszczalne.', w[:id], dl, p['max_dlugosc'])
+                            '(otwory lub skrzyżowania zajmują miejsce) – bale dłuższe niż dopuszczalne.%s', w[:id], dl, p['max_dlugosc'],
+                            w[:wegly_reczne] ? ' Węgły tej ściany ustawione ręcznie – dodaj węgieł w widoku ściany.' : '')
             next
           end
           wynik[:nowe].each { |s| Sciany.dodaj_kontrfor(sciany, w, s, p, :styk, os_kalenicy) }

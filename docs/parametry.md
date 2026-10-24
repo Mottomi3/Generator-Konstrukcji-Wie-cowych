@@ -9,6 +9,11 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `preset` | Przekrój bala | 44x146 | `44x146` – Bal 44 × 146 (krycie 139, pióro 7) | Preset z kompletem wymiarów zamka; wymiary można zmienić poniżej. |
 | `zamek_odbicie` | Kierunek podcięć zamka | rysunek | `rysunek` – jak na rysunku warsztatowym; `lustro` – lustrzane odbicie | Labirynt podcięć – oba warianty bez kolizji; zmiana odwraca bale poprzeczne licem. |
+| `profil_bala` | Profil bala w modelu | prosty | `prosty` – bal prosty (lekki model, jak w listach); `pelny` – pełny profil – pióro i wpust (do wizualizacji) | Pełny profil: pióra na wierzchu, wpust od spodu (pierwszy wieniec bez wpustu). Zamki, pozycje i listy bez zmian. |
+| `pioro_liczba` | Pióra – liczba | 2 | `1` – jedno pióro w osi bala; `2` – dwa pióra (podwójne pióro-wpust) | Wysokość pióra – „Pióro” w wymiarach zamka poniżej. |
+| `pioro_szerokosc` | Pióro – szerokość | 8 mm | 2 … 30 |  |
+| `pioro_rozstaw` | Pióra – rozstaw osi (dwa pióra) | 20 mm | 4 … 36 |  |
+| `wpust_luz` | Wpust – luz (szerszy i głębszy od pióra) | 1 mm | 0 … 5 |  |
 
 ## Ściany
 
@@ -17,6 +22,9 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `liczba_wiencow` | Liczba wieńców (ściany okapowe) | 16 szt. | 3 … 60 | Pełne wieńce ścian wzdłuż kalenicy; szczytowe mają o jeden więcej (pierwszy bal szczytu). |
 | `ostatek` | Ostatek za licem | 100 mm | 40 … 600 | Wypust bala za licem ściany poprzecznej (projekty: 100, przy tarasie 200). |
 | `kalenica` | Kalenica (półbal na ścianach wzdłuż kalenicy) | dluzszy | `dluzszy` – wzdłuż dłuższego boku; `krotszy` – wzdłuż krótszego boku; `x` – wzdłuż osi X obrysu; `y` – wzdłuż osi Y obrysu |  |
+| `strop` | Strop nad parterem (zamknięta góra) | nie | `nie` – nie – działowe do pełnej wysokości; `tak` – tak – działowe kończą się pod stropem | Niższa działowa tylko pod stropem, antresolą lub półką. Antresolę albo półkę nad jedną działową ustawisz w widoku ściany. |
+| `dzialowa_nizsza_wysokosc` | Działowa pod stropem / antresolą – góra | 2500 mm | 500 … 8000 | Spód stropu, antresoli albo półki; działowa kończy się pełnym wieńcem nie wyżej (1100: 2432, 1200: 2780). |
+| `dopelnienie_wewn` | Dopełnienie zamka nad niższą działową – do wnętrza | 100 mm | 40 … 600 | Odcinki nad działową przy ścianach, które idą wyżej: ostatek + grubość + tyle (1100: 244, 1200 przy ostatku 200: 344). |
 
 ## Długości bali i łączenia
 
@@ -94,6 +102,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `min_kawalek_przy_otworze` | Kawałek bala przy otworze – najkrótszy | 70 mm | 0 … 1000 |  |
 | `luz_nad_otworem` | Luz osiadania nad otworem | 0 mm | 0 … 200 |  |
+| `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
 | `okno_szerokosc` | Nowe okno – szerokość | 1020 mm | 100 … 6000 | Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
 | `okno_wysokosc` | Nowe okno – wysokość | 1010 mm | 100 … 4000 |  |
 | `okno_parapet` | Nowe okno – parapet | 900 mm | 0 … 4000 |  |
@@ -116,5 +125,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | Domek parterowy 44 (jak 900) | `liczba_wiencow` = 16 |
 | Dom parterowy wysoki (jak 1800) | `liczba_wiencow` = 20 |
 | Dom 1,5 kondygnacji (jak 1200) | `liczba_wiencow` = 25 |
+| Dom 1,5 kondygnacji ze stropem nad parterem | `liczba_wiencow` = 25, `strop` = tak, `dzialowa_nizsza_wysokosc` = 2780 |
+| Pełny profil bala – pióro i wpust (wizualizacja) | `profil_bala` = pelny |
 | Bez łączenia bali (bale do 7 m) | `max_dlugosc` = 7000 |
 | Podłoga ocieplona 150 mm | `izolacja_podlogi` = 150 |

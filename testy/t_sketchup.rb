@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '3', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '4', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -192,15 +192,28 @@ przes = Geom::Transformation.axes(Geom::Point3d.new(1000 / CAL, 500 / CAL, 0), G
                                   Geom::Vector3d.new(0, 0, 1))
 dom.transformation = przes * dom.transformation
 cel = dom.transformation.to_a
-dlg.wywolaj('generuj', JSON.generate('parametry' => d['parametry'].merge('liczba_wiencow' => '10'), 'otwory' => d['otwory']))
+Testy.rowne(d['sciany'], {}, 'dom bez ustawień ścian')
+dlg.wywolaj('generuj', JSON.generate('parametry' => d['parametry'].merge('liczba_wiencow' => '10'), 'otwory' => d['otwory'],
+                                     'sciany' => { 'W-1' => { 'ostatek_od' => 200 } }))
 nowe = m.entities.grep(Sketchup::Group).select { |g| g.name == 'Dom wieńcowy' }
 Testy.rowne(nowe.length, 1, 'jeden dom po przebudowie')
 Testy.sprawdz(!dom.valid?, 'stara grupa usunięta')
 Testy.rowne(m.definitions.to_a.count { |x| x.get_attribute('ArteMadera_GW', 'dom') == stary_id }, 0, 'stare definicje usunięte')
 dom = nowe[0]
 Testy.rowne(Atrybuty.czytaj_wejscie(dom)['parametry']['liczba_wiencow'], '10', 'nowe parametry zapisane')
+Testy.rowne(Atrybuty.czytaj_wejscie(dom)['sciany'], { 'W-1' => { 'ostatek_od' => 200 } }, 'ustawienia ścian zapisane w domu')
+Testy.rowne(Sterowanie.widok('W-1')['ustawienia']['ostatek_od'], 200.0, 'widok ściany: ostatek z ustawień ściany')
 Testy.sprawdz(dom.transformation.to_a.zip(cel).all? { |a, b| (a - b).abs < 1e-6 }, 'przesunięty dom zostaje na miejscu po przebudowie')
 Testy.sprawdz(!Atrybuty.zmieniony_recznie?(dom), 'przesunięcie całego domu to nie ręczna zmiana')
+
+m.selection.clear
+m.selection.add(dom)
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+d2 = ostatni_skrypt(Okno.dialog, 'AMGW.init(')
+Testy.rowne(d2['sciany'], { 'W-1' => { 'ostatek_od' => 200 } }, 'edycja: ustawienia ścian wczytane do okna')
+Okno.dialog.wywolaj('podglad', JSON.generate('parametry' => d2['parametry'], 'otwory' => d2['otwory']))
+Testy.rowne(Sterowanie.widok('W-1')['ustawienia']['ostatek_od'], 200.0, 'podgląd bez ustawień ścian w danych – zostają z domu')
 
 Testy.grupa('Ręczna zmiana – pytanie przed nadpisaniem')
 inst = instancje(dom).first
@@ -249,6 +262,12 @@ Testy.sprawdz(!Ustawienia.nazwy_szablonow.include?('Mój domek'), 'szablon usuni
 dlg.wywolaj('domyslne')
 u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
 Testy.rowne(u['parametry'], ParametryLista.domyslne, 'przywrócenie fabrycznych')
+Testy.rowne(Okno.dane_startowe['tryb_pol'], 'podstawowe', 'tryb pól okna: domyślnie podstawowe')
+dlg.wywolaj('tryb_pol', 'wszystkie')
+Testy.rowne([Ustawienia.tryb_pol, Okno.dane_startowe['tryb_pol']], %w[wszystkie wszystkie], 'tryb pól okna zapamiętany na komputerze')
+dlg.wywolaj('tryb_pol', 'cokolwiek')
+Testy.rowne(Ustawienia.tryb_pol, 'podstawowe', 'nieznany tryb pól – podstawowe')
+Testy.sprawdz(Okno.dane_startowe['opisy'].count { |o| o['podstawowy'] } >= 20, 'opisy pól z oznaczeniem podstawowych')
 File.open(Ustawienia.sciezka, 'w') { |f| f.write('{uszkodzony') }
 Testy.rowne(Ustawienia.ostatnie, {}, 'uszkodzony plik – puste ustawienia, bez błędu')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
