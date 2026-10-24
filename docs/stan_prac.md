@@ -1,7 +1,7 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
 Stan na: runda 4, kompilacja 4 (2026-10-24), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 17 zestawów (w tym
-testy na Ruby 2.7.8, jak w SketchUpie 2023), 644 sprawdzenia, FAILURES 0; poza zestawem: LOSOWE_R4 losowych domów
+testy na Ruby 2.7.8, jak w SketchUpie 2023), 660 sprawdzeń, FAILURES 0; poza zestawem: 1600 losowych domów
 (od rundy 4 także z pełnym profilem, działowymi pod stropem / antresolą / półką, ostatkami końców i węgłami ręcznymi)
 bez problemów. Repozytorium: prywatne `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, pełna historia rund
 1–4) + kopia `repozytorium_r4.bundle` na dysku.
@@ -119,10 +119,12 @@ propozycji 2, 3, 4, 5, 7, 10 nie zrozumiał – objaśnione prościej, czekają 
 - **Nowe parametry**: `profil_bala`, `pioro_liczba`, `pioro_szerokosc`, `pioro_rozstaw`, `wpust_luz`, `strop`,
   `dzialowa_nizsza_wysokosc`, `dopelnienie_wewn`, `min_pasek_przy_otworze`; szablony „Dom 1,5 kondygnacji ze stropem
   nad parterem”, „Pełny profil bala – pióro i wpust (wizualizacja)”; siódmy przykładowy dom testu działania.
-- **Sprawdzenie**: LOSOWE_R4 losowych domów z nowościami rundy – znalezione i poprawione: odcinki dopełnienia przy
+- **Sprawdzenie**: 1600 losowych domów z nowościami rundy – znalezione i poprawione: odcinki dopełnienia przy
   szczycie wchodzące w krokwie (teraz pod linią podparcia dachu), krawędzie 0,06–0,09 mm w bryłach pełnego profilu
   (wierzchy pasów różne o mniej niż 0,2 mm wyrównywane), pasek bala 7,9 mm pod wpustem przy oknie (pasek cieńszy niż
-  `min_pasek_przy_otworze` 20 jest usuwany z ostrzeżeniem – otwór sięga krawędzi bala); ziarna w `testy/t_losowe.rb`.
+  `min_pasek_przy_otworze` 20 jest usuwany z ostrzeżeniem – otwór sięga krawędzi bala); także błąd sprzed rundy 4:
+  dwa szczyty na działowych blisko siebie (75 mm) – krokwie wchodziły w sąsiedni szczyt (teraz pomijane, nachodzące
+  na siebie scalone w jedną pośrodku, `rdzen/dach.rb#bez_kolizji`); ziarna w `testy/t_losowe.rb`.
 
 ## 6. Otwarte pytania (przyjęte wartości domyślne – do potwierdzenia)
 

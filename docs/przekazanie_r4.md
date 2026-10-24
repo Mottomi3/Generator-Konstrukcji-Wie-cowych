@@ -23,6 +23,7 @@
 | Pełny profil bala: pióra, wpusty, pierwszy wieniec bez wpustu, objętość | `rdzen/profil_bala.rb` |
 | Siatka bryły z pasami przekroju (pełny profil) | `rdzen/siatka.rb` |
 | Węgły ręczne – bez automatu, ostrzeżenia | `rdzen/usztywnienie.rb`, `rdzen/styki.rb` |
+| Krokwie przy bliskich szczytach (bez kolizji, scalanie) | `rdzen/dach.rb#bez_kolizji` |
 | Kolejność obliczeń (ustawienia ścian, dopełnienie, profil) | `rdzen/projekt.rb#oblicz` |
 | Dane widoku ściany (ustawienia, wartości domyślne) | `rdzen/widok.rb` |
 | Okno: tryb pól / panel ustawień ściany / kliknięcie w widok | `html/tryb.js` / `html/edycja.js` / `html/sciana.js` |
@@ -36,9 +37,9 @@
 
 Decyzja użytkownika (2026-10-24 11:26): „1, 6, 8 ale tylko gdy góra jest zamknięta lub gdy jest antresola/półka
 ponad, 9. Pozostałych propozycji nie rozumiem.” Wykonanie: `docs/stan_prac.md` §5, zasady: `docs/specyfikacja.md`
-§5b, §5c, §7, §10. Testy: rdzeń 142, węgły 51, szczyty 67, podłoga 39, zamek 22, siatki 24, widok 17, zestawienie 14,
-raport 27, ustawienia ścian 59, losowe 48, SketchUp 79, okno 55, Ruby 2.7 (11 zestawów), zasady, spis treści,
-parametry.
+§5b, §5c, §7, §10. Testy: rdzeń 142, węgły 51, szczyty 81, podłoga 39, zamek 22, siatki 24, widok 17, zestawienie 14,
+raport 27, ustawienia ścian 59, losowe 50, SketchUp 79, okno 55 (razem 660), Ruby 2.7 (11 zestawów), zasady, spis
+treści, parametry.
 
 Punkt 8 według wzorów producenta: 1100 W-6 (18 wieńców, nad nią 9 × 244 przy szczycie W-4), 1100 W-7 (17 wieńców,
 3 × 244 przy ścianach okapowych), 1200 W-5, W-7 (20 wieńców pod antresolą, 6 × 344 do połaci). Działowa jest niższa
