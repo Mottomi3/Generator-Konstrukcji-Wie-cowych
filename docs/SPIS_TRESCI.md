@@ -49,6 +49,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | dobór przekroju legara | `rdzen/podloga.rb` |
 | dodaj węgieł | `rdzen/ustawienia_scian.rb` |
 | dodaj węgieł kliknięciem | `html/edycja.js` |
+| dokumentacja 2d | `testy/zrzut_dok2d.rb` |
 | dom 4 × 4 | `rdzen/przyklady.rb`, `testy/t_wegly.rb` |
 | dom 900 | `testy/t_rdzen.rb` |
 | dom jak 900 | `rdzen/przyklady.rb` |
@@ -88,6 +89,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | grupa domu | `sketchup/budowa.rb` |
 | grupa podłoga | `sketchup/budowa.rb` |
 | grupa ściany | `sketchup/budowa.rb` |
+| grupy pozycji | `testy/zrzut_dok2d.rb` |
 | góra ścian | `rdzen/wience.rb` |
 | htmldialog | `sketchup/okno.rb` |
 | identyczne bale | `rdzen/bryla.rb`, `rdzen/pozycje.rb` |
@@ -273,6 +275,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | podwójne pióro | `rdzen/profil_bala.rb` |
 | podział wieńca | `rdzen/bale.rb` |
 | podłoga | `rdzen/podloga.rb` |
+| pokaz grup | `testy/zrzut_dok2d.rb` |
 | pola podstawowe | `rdzen/parametry_lista.rb`, `html/tryb.js` |
 | pola zmienione | `html/okno.css` |
 | pole obrysu | `testy/t_widok.rb` |
@@ -291,6 +294,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | prefiks bs/kf/sz/pw/l/pd/p/k | `sketchup/atrybuty.rb` |
 | prefiks elementu | `rdzen/elementy.rb` |
 | prefiks sz | `rdzen/szczyty.rb` |
+| prefiksy bs kf sz | `testy/zrzut_dok2d.rb` |
 | presety | `rdzen/parametry_lista.rb` |
 | profil bala | `rdzen/bryla.rb` |
 | profil bala – parametry | `rdzen/parametry_lista.rb` |
@@ -491,11 +495,13 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | zestawienie csv | `rdzen/zestawienie.rb` |
 | zestawienie csv do pliku | `sketchup/eksport.rb` |
 | zestawy testów | `testy/uruchom.sh` |
+| zgodność z dokumentacją 2d | `testy/zrzut_dok2d.rb` |
 | zgodność z ruby sketchupa | `testy/ruby27.sh` |
 | ziarna błędów | `testy/t_losowe.rb` |
 | ziarno | `testy/losowe_domy.rb` |
 | zmienione względem fabrycznych | `html/zmiany.js` |
 | znacznik kontrforu | `rdzen/obrys.rb` |
+| zrzut geometrii | `testy/zrzut_dok2d.rb` |
 | zrzut okna | `testy/t_okno.js` |
 | ładowanie modułów | `main.rb` |
 | łączenie bali na długość | `rdzen/styki.rb` |
@@ -593,6 +599,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_zamek.rb` | 95 | zamek 44 × 146 zgodny z rysunkiem IMG-20250930-WA0005 – wymiary obróbek, luzy, labirynt (tylko poprawne ułożenie bez kolizji). |
 | `testy/t_zestawienie.rb` | 51 | zestawienie CSV (rdzeń) i zapis pliku z okna (atrapa SketchUpa) – kolumny, przecinek dziesiętny, sumy, BOM, anulowanie. |
 | `testy/uruchom.sh` | 63 | wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”. |
+| `testy/zrzut_dok2d.rb` | 130 | przykładowy dom zbudowany na atrapie SketchUpa zapisany jako zrzut geometrii Dokumentacji 2D (format „ArteMadera-geometria”) – sprawdzenie, jak Dokumentacja 2D widzi bale i belki generatora. |
 
 ## 3. Zawartość plików
 
@@ -2135,3 +2142,22 @@ wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZES
 
 Zależy od: ruby, node (+ playwright i Chromium dla okna – bez nich test okna jest pomijany z ostrzeżeniem)
 Używają: start i zamknięcie rundy
+
+### testy/zrzut_dok2d.rb (130 wierszy)
+
+przykładowy dom zbudowany na atrapie SketchUpa zapisany jako zrzut geometrii Dokumentacji 2D (format „ArteMadera-geometria”) – sprawdzenie, jak Dokumentacja 2D widzi bale i belki generatora.
+
+Zależy od: testy/atrapa/sketchup.rb, sketchup/budowa.rb, rdzen/przyklady.rb
+Używają: ręcznie – ruby -I testy/atrapa testy/zrzut_dok2d.rb [numer przykładu] plik.json; potem w repozytorium
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 24 | `module ZrzutDok2D` |  |
+| 30 | `zrzut(model)` | Zrzut całego modelu atrapy: Hash w formacie „ArteMadera-geometria”. |
+| 43 | `lista(ents)` | Lista encji: ściany, ich krawędzie (w SketchUpie powstają ze ścianą – atrapa ich nie ma) i wystąpienia. |
+| 55 | `krawedzie(sciany)` | Krawędzie pętli ścian – każda raz (klucz z końców zaokrąglonych do 1e-6 cala). |
+| 73 | `wystapienie(e)` | Grupa albo komponent: definicja (indeks), transformacja, nazwa, tag, atrybuty. |
+| 87 | `definicja(d, grupa, ents = nil)` | Indeks definicji w zrzucie (każda definicja raz, z encjami i atrybutami); ents – encje grupy. |
+| 100 | `tag(t)` | Nazwa tagu (zapamiętana do listy tagów). |
+| 107 | `atrybuty(obj)` | Atrybuty jak w zrzucie: { słownik => { klucz => wartość } } albo nil. |
+| 114 | `zbuduj(n)` | Przykładowy dom nr n (rdzen/przyklady.rb) zbudowany na atrapie; zwraca model. |
