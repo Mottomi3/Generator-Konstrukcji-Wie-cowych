@@ -21,7 +21,8 @@ ZIARNA = {
   4 => 'krótka krawędź skosu szczytu', 38 => 'krótka krawędź skosu szczytu', 1 => 'zwykły', 2 => 'zwykły', 3 => 'zwykły',
   338 => 'r4: strop – odcinki dopełnienia przy szczycie pod krokwiami', 375 => 'r4: działowa wzdłuż kalenicy pod stropem przy szczycie',
   740 => 'r4: pełny profil, antresola, krokwie od zewnątrz', 695 => 'r4: pełny profil – skos 0,06 mm nad wierzchem bala',
-  791 => 'r4: pełny profil – pasek bala pod oknem płytszy niż wpust', 739 => 'r4: pełny profil, obrys L, strop'
+  791 => 'r4: pełny profil – pasek bala pod oknem płytszy niż wpust', 739 => 'r4: pełny profil, obrys L, strop',
+  1251 => 'r4: dwa szczyty na działowych 75 mm od siebie – krokwie w szczycie'
 }.freeze
 
 ZIARNA.each do |z, opis|

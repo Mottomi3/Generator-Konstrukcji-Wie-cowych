@@ -19,8 +19,8 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – ten sam co w arte_madera_generator_wiencowy/main.rb.
-    PLUGIN_BUILD      = '3'.freeze unless const_defined?(:PLUGIN_BUILD)
-    PLUGIN_BUILD_DATE = '2026-10-14'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
+    PLUGIN_BUILD      = '4'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD_DATE = '2026-10-24'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     plik_rejestratora = __FILE__.dup
     plik_rejestratora.force_encoding('UTF-8') if plik_rejestratora.respond_to?(:force_encoding)
@@ -31,8 +31,10 @@ module ArteMadera
         rozszerzenie.description = 'Generator domów z bali (konstrukcja wieńcowa): z narysowanego obrysu i osi ścian ' \
                                    'działowych tworzy ściany z bali z zamkami narożnymi, węgłami i łączeniem na mijankę, ' \
                                    'szczyty z gniazdami płatwi, płatwie, krokwie i podłogę; każdy bal i belka to komponent ' \
-                                   'z atrybutami dla Dokumentacji 2D. Ustawienia zapamiętywane, szablony, widok ściany, ' \
-                                   'zestawienie CSV, test działania z raportem. ' \
+                                   'z atrybutami dla Dokumentacji 2D. Ustawienia zapamiętywane, szablony, widok ściany z edycją ' \
+                                   '(węgły kliknięciem, ostatki, działowa niższa pod stropem / antresolą / półką), ' \
+                                   'pełny profil bala (pióro i wpust), pola Podstawowe / Wszystkie, zestawienie CSV, ' \
+                                   'test działania z raportem. ' \
                                    'Menu: Rozszerzenia → ArteMadera Generator Wieńcowy. ' \
                                    "Kompilacja #{PLUGIN_BUILD} (#{PLUGIN_BUILD_DATE})."
         rozszerzenie.version = PLUGIN_VERSION

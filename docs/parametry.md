@@ -102,6 +102,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `min_kawalek_przy_otworze` | Kawałek bala przy otworze – najkrótszy | 70 mm | 0 … 1000 |  |
 | `luz_nad_otworem` | Luz osiadania nad otworem | 0 mm | 0 … 200 |  |
+| `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
 | `okno_szerokosc` | Nowe okno – szerokość | 1020 mm | 100 … 6000 | Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
 | `okno_wysokosc` | Nowe okno – wysokość | 1010 mm | 100 … 4000 |  |
 | `okno_parapet` | Nowe okno – parapet | 900 mm | 0 … 4000 |  |
@@ -124,5 +125,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | Domek parterowy 44 (jak 900) | `liczba_wiencow` = 16 |
 | Dom parterowy wysoki (jak 1800) | `liczba_wiencow` = 20 |
 | Dom 1,5 kondygnacji (jak 1200) | `liczba_wiencow` = 25 |
+| Dom 1,5 kondygnacji ze stropem nad parterem | `liczba_wiencow` = 25, `strop` = tak, `dzialowa_nizsza_wysokosc` = 2780 |
+| Pełny profil bala – pióro i wpust (wizualizacja) | `profil_bala` = pelny |
 | Bez łączenia bali (bale do 7 m) | `max_dlugosc` = 7000 |
 | Podłoga ocieplona 150 mm | `izolacja_podlogi` = 150 |

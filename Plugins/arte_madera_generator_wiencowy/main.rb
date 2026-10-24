@@ -21,8 +21,8 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '3'.freeze unless const_defined?(:PLUGIN_BUILD)
-    PLUGIN_BUILD_DATE = '2026-10-14'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
+    PLUGIN_BUILD      = '4'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD_DATE = '2026-10-24'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
       katalog = File.dirname(__FILE__).dup

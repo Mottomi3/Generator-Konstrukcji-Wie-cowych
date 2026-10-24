@@ -111,7 +111,8 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   działowej: ostatek + grubość + `dopelnienie_wewn` (100) → 244, przy ostatku 200 → 344 (jak 1100 W-6, W-7, 1200
   W-5, W-7); w środku działowej (skrzyżowanie X) – po 100 z obu stron. Odcinki to bale ścienne działowej (Bs, jej
   numery pozycji). Kolumna sięga do góry tamtej ściany: ostatni odcinek wystaje o pół wieńca i zamyka zamek; pod
-  połacią ścina go linia dachu; przy ścianie ze szczytem – tylko całe odcinki pod linią szczytu.
+  połacią ścina go linia dachu; przy ścianie ze szczytem – tylko całe odcinki pod linią podparcia dachu (spód krokwi
+  i desek), jak węgieł przy szczycie.
 - Niższa działowa nie ma szczytu; otwór wyższy niż jej góra – ostrzeżenie; węgły na niej – do jej góry.
 
 ## 6. Otwory
