@@ -116,6 +116,8 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .lista-podp li.blad { color: var(--blad); font-weight: 600; }
 #tab-otwory select { min-width: 66px; }
 #tab-otwory td:last-child { width: 28px; }
+#tab-otwory td.otwor-w-balach { color: var(--szary); white-space: nowrap; font-size: 11px; }
+#tab-otwory input::placeholder { color: var(--szary); font-style: italic; }
 
 /* Widok ściany */
 .widok { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--linia, #e2d6c6); border-radius: 6px; background: #fffdf9; min-height: 60px; }

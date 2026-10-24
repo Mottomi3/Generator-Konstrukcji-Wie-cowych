@@ -8,8 +8,10 @@
 # Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu)
 #
 # Przekrój poprzeczny dachu opisuje „geo” = { v_a:, v_b: } – osie ścian okapowych w kierunku v (prostopadle do kalenicy);
-# kalenica w połowie. Linia podparcia: wysokość wierzchu płatwi; na licu wewnętrznym ściany okapowej = z_ref, w stronę
-# kalenicy rośnie o tg(kąt). Płatew stoi wierzchem na linii przy swojej krawędzi od strony okapu (nic nie wystaje nad dach).
+# kalenica w połowie. Linia podparcia: spód krokwi (płaszczyzna dachu nad płatwiami); na licu wewnętrznym ściany
+# okapowej = z_ref, w stronę kalenicy rośnie o tg(kąt). Płatew ścięta (platwie_sciecie = tak, wymóg użytkownika):
+# podniesiona tak, że wierzch ścięty po skosie leży w linii podparcia na całej szerokości (kalenicowa – z dwóch stron);
+# bez ścięcia – wierzch poziomy na linii przy krawędzi od strony okapu (nic nie wystaje nad dach).
 # Krokwie leżą na linii podparcia; szczyt kończy się na linii podparcia (bez krokwi lub krokiew na szczycie) albo na
 # wierzchu krokwi (krokwie obok szczytu).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -55,11 +57,15 @@ module ArteMadera
       end
 
       # Wysokość linii podparcia na licu wewnętrznym ściany okapowej [mm] (płatew ścienna na ścianie albo podniesienie).
+      # Płatew stojąca na ścianie: bez ścięcia linia przechodzi przez jej wierzch przy krawędzi od okapu, ze ścięciem – przy
+      # krawędzi od kalenicy (płatew stoi na ścianie, wierzch ścięty pod dach).
       def z_ref(p)
         z_okap = Wience.wysokosci(p)[:okapowa]
         if Parametry.tak?(p, 'platwa_na_scianie') && p['platwa_scienna_polozenie'] == 'na_scianie'
           b, h = Parametry.przekroj(p, 'platwa_scienna_przekroj')
-          return z_okap + h + tg(p) * (b / 2.0 + Parametry.grubosc(p) / 2.0)
+          t2 = Parametry.grubosc(p) / 2.0
+          return z_okap + h + tg(p) * (t2 - b / 2.0) if Parametry.tak?(p, 'platwie_sciecie')
+          return z_okap + h + tg(p) * (b / 2.0 + t2)
         end
         z_okap + p['dach_podniesienie'].to_f
       end
@@ -82,7 +88,8 @@ module ArteMadera
         linia_szczytu(geo, (geo[:v_a] + geo[:v_b]) / 2.0, p)
       end
 
-      # Płatwie w przekroju: [{ rodzaj: 'scienna' | 'posrednia' | 'kalenicowa', v:, b:, h:, z_spod: }] (v – oś płatwi).
+      # Płatwie w przekroju: [{ rodzaj: 'scienna' | 'posrednia' | 'kalenicowa', v:, b:, h:, z_spod:, gora: }] (v – oś płatwi,
+      # gora – wierzch ścięty: [[dv, dz]] od osi płatwi i od spodu, nil – wierzch poziomy).
       def platwie(geo, p)
         t = Parametry.grubosc(p)
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
@@ -111,12 +118,20 @@ module ArteMadera
         wynik.sort_by { |x| x[:v] }
       end
 
-      # Jedna płatew: wierzch na linii podparcia przy krawędzi od strony okapu (kier – kierunek do kalenicy).
+      # Jedna płatew (kier – kierunek do kalenicy): ścięta – najwyższy punkt wierzchu w linii podparcia (krawędź od
+      # kalenicy, kalenicowa – w osi), wierzch po skosie; bez ścięcia albo gdy ścięcie zostawiłoby mniej niż 1/3 wysokości
+      # – wierzch poziomy na linii przy krawędzi od strony okapu.
       def platwa(geo, p, rodzaj, v, b, h, kier)
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
-        krawedz = rodzaj == 'kalenicowa' ? [linia_podparcia(geo, vk - b / 2.0, p), linia_podparcia(geo, vk + b / 2.0, p)].min :
-                                           linia_podparcia(geo, v - kier * b / 2.0, p)
-        { rodzaj: rodzaj, v: v, b: b, h: h, z_spod: krawedz - h }
+        boki = rodzaj == 'kalenicowa' ? [vk - b / 2.0, vk + b / 2.0] : [v - kier * b / 2.0, v + kier * b / 2.0]
+        z_boki = boki.map { |x| linia_podparcia(geo, x, p) }
+        z_gora = rodzaj == 'kalenicowa' ? linia_podparcia(geo, vk, p) : z_boki[1]
+        if Parametry.tak?(p, 'platwie_sciecie') && z_gora - z_boki.min < h * 2.0 / 3.0
+          gora = rodzaj == 'kalenicowa' ? [[-b / 2.0, h - (z_gora - z_boki[0])], [0.0, h], [b / 2.0, h - (z_gora - z_boki[1])]] :
+                                          [[-kier * b / 2.0, h - (z_gora - z_boki[0])], [kier * b / 2.0, h]].sort
+          return { rodzaj: rodzaj, v: v, b: b, h: h, z_spod: z_gora - h, gora: gora }
+        end
+        { rodzaj: rodzaj, v: v, b: b, h: h, z_spod: z_boki.min - h, gora: nil }
       end
 
       # Położenia krokwi wzdłuż kalenicy (u) między szczytami w u1 < u2 (osie ścian szczytowych); wewn – osie szczytów
@@ -183,10 +198,20 @@ module ArteMadera
         u0 = dom[:u1] - wys
         u3 = dom[:u2] + wys
         wynik = platwie(geo, p).map do |pl|
-          Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os)
+          Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
+                           przekroj_platwi(dom, pl))
         end
         wynik.concat(krokwie(dom, geo, p))
         wynik
+      end
+
+      # Przekrój płatwi ściętej w układzie belki (y – szerokość: przy osi kalenicy x rośnie z v, przy osi y maleje), nil –
+      # prostokąt.
+      def przekroj_platwi(dom, pl)
+        return nil if pl[:gora].nil?
+        b = pl[:b]
+        gora = pl[:gora].map { |dv, dz| [dom[:os] == :x ? b / 2.0 + dv : b / 2.0 - dv, dz] }.sort_by { |y, _z| -y }
+        [[0.0, 0.0], [b, 0.0]] + gora
       end
 
       # Krokwie obu połaci: od okapu (lico ściany okapowej + dach_okap) do kalenicy, spód na linii podparcia.

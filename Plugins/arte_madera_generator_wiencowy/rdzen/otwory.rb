@@ -3,17 +3,20 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/otwory.rb
 # Zadanie: otwory okienne i drzwiowe – położenie na ścianie, sprawdzenie, cięcia bali w każdym wieńcu.
-# Tematy: otwór, okno, drzwi, parapet, nadproże, luz osiadania, cięcie proste przy otworze, wycięcie bala przy otworze, poziom ±0, cienki pasek bala przy otworze
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb
+# Tematy: otwór, okno, drzwi, parapet, nadproże, cięcie proste przy otworze, wycięcie bala przy otworze, poziom ±0, cienki pasek bala przy otworze
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/stolarka.rb (otwór ze stolarki i luzów)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb, rdzen/styki.rb (omijanie otworów)
 #
-# Otwór (wejście, klucze tekstowe): sciana ('W-1'), od (od punktu odniesienia ściany: zewnętrzna – narożnik lica
-# zewnętrznego na początku ściany, działowa – początek narysowanej osi), szerokosc, wysokosc, parapet (od ±0 = spód
-# pierwszego bala), nazwa (opcjonalnie). W ścianie: w[:otwory] = [{ s0:, s1:, z0:, z1:, nazwa: }].
+# Otwór (wejście, klucze tekstowe): sciana ('W-1'), od (krawędź otworu od punktu odniesienia ściany: zewnętrzna –
+# narożnik lica zewnętrznego na początku ściany, działowa – początek narysowanej osi), szerokosc i wysokosc STOLARKI,
+# parapet (spód stolarki od ±0 = spód pierwszego bala), luz_gorny (pusty – podpowiedź), nazwa (opcjonalnie). Otwór
+# w balach = stolarka + luzy (rdzen/stolarka.rb). W ścianie: w[:otwory] = [{ s0:, s1:, z0:, z1:, nazwa:, stolarka:,
+# luz_gorny:, podpowiedz: }].
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'stolarka') unless defined?(ArteMadera::GeneratorWiencowy::Stolarka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -28,7 +31,6 @@ module ArteMadera
         uwagi = []
         sciany.each { |w| w[:otwory] = [] }
         t = Parametry.grubosc(p)
-        luz = p['luz_nad_otworem'].to_f
         min_kaw = p['min_kawalek_przy_otworze'].to_f
         (wejscie || []).each_with_index do |o, i|
           nazwa = o['nazwa'].to_s.strip
@@ -46,10 +48,11 @@ module ArteMadera
             uwagi << "Otwór #{nazwa} (#{w[:id]}): brak wymiarów – pominięty."
             next
           end
-          s0 = w[:ref] + od
-          s1 = s0 + szer
-          z0 = par
-          z1 = par + wys + luz
+          otw = Stolarka.otwor(w[:ref] + od, szer, wys, par, o, p)
+          s0 = otw[:s0]
+          s1 = otw[:s1]
+          z0 = otw[:z0]
+          z1 = otw[:z1]
           gora = wysokosc_sciany.call(w)
           if s0 < w[:s_od] || s1 > w[:s_do] || z0 < -0.01 || z1 > gora + 0.01
             uwagi << "Otwór #{nazwa} (#{w[:id]}) wychodzi poza ścianę – pominięty."
@@ -62,7 +65,7 @@ module ArteMadera
             uwagi << format('Otwór %s (%s) jest bliżej niż %.0f mm od lica ściany %s – kawałek bala przy otworze będzie za krótki.',
                             nazwa, w[:id], min_kaw, k[:inna][:id] || 'poprzecznej')
           end
-          w[:otwory] << { s0: s0, s1: s1, z0: z0, z1: z1, nazwa: nazwa }
+          w[:otwory] << otw.merge(nazwa: nazwa)
         end
         uwagi
       end

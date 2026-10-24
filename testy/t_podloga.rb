@@ -109,10 +109,10 @@ Testy.rowne(pe.map { |x| x[:nazwa] }.uniq.length, pe.length, 'nazwy pozycji jedn
 Testy.rowne(pe.map { |x| x[:ilosc] }.inject(0) { |a, b| a + b }, pl[:elementy].length, 'każda belka w pozycji')
 zle = pe.count do |poz|
   k = Siatka.sprawdz(Siatka.uprosc(Projekt.siatka_pozycji(poz)[:sciany]))
-  v = Bryla.objetosc(Bryla.profil(poz[:dl], poz[:t], poz[:h], poz[:cechy]))
+  v = Projekt.objetosc_pozycji(poz)
   !(k[:zamknieta] && (k[:objetosc] - v).abs <= v * 1e-9 + 1e-3)
 end
-Testy.rowne(zle, 0, 'siatki belek zamknięte (podwaliny z zakładem)')
+Testy.rowne(zle, 0, 'siatki belek zamknięte (podwaliny z zakładem, płatwie ścięte)')
 Testy.sprawdz(pl[:podsumowanie][:lista].any? { |x| x[:prefiks] == 'L' }, 'legary na liście zamówienia')
 
 Testy.koniec

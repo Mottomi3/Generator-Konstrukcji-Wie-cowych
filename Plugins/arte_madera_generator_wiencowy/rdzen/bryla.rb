@@ -41,7 +41,7 @@ module ArteMadera
         xs = [0.0, dl]
         (gora + dol).each { |g| xs << g[0] << g[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
-        xs.concat(przeciecia(gora)).concat(przeciecia(dol))
+        xs.concat(przeciecia(gora + dol))
         xs = punkty_podzialu(xs, dl)
         wynik = []
         xs.each_cons(2) do |xa, xb|
@@ -54,10 +54,20 @@ module ArteMadera
           end
           zt_a, zt_b = wartosci(gora, xa, xb, xm, :min)
           zb_a, zb_b = wartosci(dol, xa, xb, xm, :max)
-          next if y1 - y0 <= EPS || zt_a - zb_a <= EPS || zt_b - zb_b <= EPS
+          next unless klin_ok?(zb_a, zb_b, zt_a, zt_b) && y1 - y0 > EPS
+          zt_a = zb_a if zt_a - zb_a < EPS
+          zt_b = zb_b if zt_b - zb_b < EPS
           wynik << { xa: xa, xb: xb, y0: y0, y1: y1, zb_a: zb_a, zb_b: zb_b, zt_a: zt_a, zt_b: zt_b }
         end
         wynik
+      end
+
+      # Czy przedział ma materiał: wysokość dodatnia na co najmniej jednym końcu i nigdzie ujemna – także klin (skos
+      # szczytu doprowadzony do spodu bala: wysokość zero na jednym końcu, bal kończy się ostrzem, nie pionowym czołem).
+      def klin_ok?(zb_a, zb_b, zt_a, zt_b)
+        ha = zt_a - zb_a
+        hb = zt_b - zb_b
+        [ha, hb].max > EPS && [ha, hb].min > -EPS
       end
 
       # Punkty podziału profilu: 0, dl i punkty wewnętrzne odległe od poprzedniego (i od końców) o więcej niż SCAL.

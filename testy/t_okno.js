@@ -112,6 +112,33 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   d = JSON.parse(pg[pg.length - 1][1]);
   sprawdz(d.otwory.length === 2 && d.otwory[1].szerokosc === '1000' && d.otwory[1].wysokosc === '2100', 'nowe drzwi z wymiarów w parametrach');
 
+  // Stolarka i luzy: otwór w balach = stolarka + 2 × luz boczny (10), wysokość + luz górny (pusty – podpowiedź 1,5 %).
+  var stolarka = function () {
+    return page.evaluate(function () {
+      var r = document.querySelectorAll('#tab-otwory tbody tr');
+      return Array.prototype.map.call(r, function (tr) {
+        return [tr.querySelector('[data-o="luz_gorny"]').placeholder, tr.querySelector('.otwor-w-balach').textContent];
+      });
+    });
+  };
+  var st = await stolarka();
+  sprawdz(st[0][0] === '20' && st[0][1] === '1040 × 1030', 'okno 1020 × 1010: podpowiedź luzu 20, otwór 1040 × 1030 (' + st[0].join(' | ') + ')');
+  sprawdz(st[1][0] === '35' && st[1][1] === '1020 × 2135', 'drzwi 1000 × 2100: podpowiedź 35, otwór 1020 × 2135 (' + st[1].join(' | ') + ')');
+  await page.fill('#tab-otwory tbody tr:first-child [data-o="luz_gorny"]', '30');
+  await page.dispatchEvent('#tab-otwory tbody tr:first-child [data-o="luz_gorny"]', 'change');
+  await page.fill('#p-luz_boczny', '5');
+  await page.dispatchEvent('#p-luz_boczny', 'change');
+  await page.fill('#p-osiadanie_scian', '3');
+  await page.dispatchEvent('#p-osiadanie_scian', 'change');
+  await page.waitForTimeout(500);
+  st = await stolarka();
+  sprawdz(st[0][1] === '1030 × 1040' && st[1][0] === '65' && st[1][1] === '1010 × 2165',
+          'luz wpisany 30, luz boczny 5, osiadanie 3 % (' + JSON.stringify(st) + ')');
+  w = await page.evaluate(function () { return window.__wywolania; });
+  pg = w.filter(function (x) { return x[0] === 'podglad'; });
+  d = JSON.parse(pg[pg.length - 1][1]);
+  sprawdz(d.otwory[0].luz_gorny === '30' && d.otwory[1].luz_gorny === '', 'luz górny w danych otworów (wpisany / pusty)');
+
   await page.evaluate(function () { window.__wywolania = []; });
   await page.fill('#szablon-nazwa', 'Mój');
   await page.click('#btn-szablon-zapisz');

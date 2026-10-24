@@ -26,6 +26,9 @@ module ArteMadera
     module Bale
       G = Geometria unless const_defined?(:G)
 
+      # Kawałek bala krótszy niż tyle [mm] przy skosie albo gnieździe to okruch – pomijany zawsze.
+      OKRUCH = 1.0 unless const_defined?(:OKRUCH)
+
       module_function
 
       # Wszystkie bale domu (bez obróbek zamka): { bale: [...], ostrzezenia: [...] }.
@@ -65,7 +68,7 @@ module ArteMadera
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)
         g = p['szczelina_styku'].to_f / 2.0
         lmax = p['max_dlugosc'].to_f
-        okruch = p['szczyt_min_kawalek'].to_f
+        okruch = [p['szczyt_min_kawalek'].to_f, OKRUCH].max
         wynik = []
         przedzialy.each do |a, b|
           punkty = [[a, koniec_typ(w, a, ciecia, zas, wewn)]]

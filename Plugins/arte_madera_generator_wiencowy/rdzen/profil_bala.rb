@@ -108,8 +108,8 @@ module ArteMadera
           next if yb - ya <= EPS
           zt_a, zt_b = Bryla.wartosci(gora, xa, xb, xm, :min)
           zb_a, zb_b = Bryla.wartosci(dol, xa, xb, xm, :max)
-          next if zt_a - zb_a <= EPS || zt_b - zb_b <= EPS
-          wynik << { y0: ya, y1: yb, zb_a: zb_a, zb_b: zb_b, zt_a: zt_a, zt_b: zt_b }
+          next unless Bryla.klin_ok?(zb_a, zb_b, zt_a, zt_b)
+          wynik << { y0: ya, y1: yb, zb_a: zb_a, zb_b: zb_b, zt_a: [zt_a, zb_a].max, zt_b: [zt_b, zb_b].max }
         end
         %i[zt_a zt_b zb_a zb_b].each { |k| wyrownaj!(wynik, k) }
         wynik.empty? ? nil : { xa: xa, xb: xb, pasy: wynik }

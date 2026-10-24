@@ -69,8 +69,9 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `platwa_scienna_polozenie` | Płatew ścienna – położenie | przy_licu | `przy_licu` – przy licu wewnętrznym, wierzchem na linii dachu (jak 900); `na_scianie` – stoi na ścianie okapowej, w osi |  |
 | `platwa_scienna_przekroj` | Płatew na ścianie | 60x200 mm | szer. × wys. | Projekt 900: 60 × 200. |
 | `gniazdo_luz` | Luz w gnieździe płatwi (każda strona) | 5 mm | 0 … 30 |  |
-| `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 30 mm | 5 … 140 | Niższy klin bala przy skosie dachu jest pomijany. |
-| `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 50 mm | 0 … 500 | Krótsze okruchy między skosem dachu a gniazdem płatwi są pomijane (900: najkrótszy 104). |
+| `platwie_sciecie` | Wierzch płatwi ścięty do płaszczyzny dachu | tak | `tak` – tak; `nie` – nie | Tak – płatew podniesiona, wierzch ścięty po skosie (kalenicowa z dwóch stron), krokwie i deski leżą na całej szerokości. Nie – wierzch poziomy pod dachem. |
+| `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 0 mm | 0 … 140 | 0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy klin pomijany (bal kończy się pionowo). |
+| `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 10 mm | 0 … 500 | Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; 900: najkrótszy kawałek 104). |
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego. |
 | `dach_okap` | Okap – wysunięcie krokwi za ścianę | 500 mm | 0 … 1500 | W poziomie, od lica ściany okapowej. |
 | `dach_okap_szczyt` | Wysunięcie płatwi za szczyt | 500 mm | 0 … 1500 | Od lica szczytu (900: płatwie 6082). |
@@ -96,18 +97,20 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `ugiecie_minimalne` | Ugięcie dopuszczalne L / | 250 | 100 … 1000 | Granica – mniej sztywna podłoga już niedopuszczalna. |
 | `przekroje_katalog` | Dostępne przekroje legarów | 45x95, 45x120, 45x145, 45x170, 45x195, 45x220, 50x100, 50x150, 50x175, 50x200, 50x225, 63x175, 63x200, 63x225, 75x200, 75x225, 75x250, 100x100, 100x150 |  | Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy spełniający warunki. |
 
-## Otwory – ustawienia
+## Okna i drzwi – stolarka i luzy
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
 | `min_kawalek_przy_otworze` | Kawałek bala przy otworze – najkrótszy | 70 mm | 0 … 1000 |  |
-| `luz_nad_otworem` | Luz osiadania nad otworem | 0 mm | 0 … 200 |  |
+| `luz_boczny` | Luz boczny stolarki (z każdej strony) | 10 mm | 0 … 100 | Otwór w balach = szerokość stolarki + 2 × luz boczny (typowo 5–10 mm, zakryty listwą). |
+| `osiadanie_scian` | Osiadanie ścian – podpowiedź luzu górnego | 1,5 % | 0 … 10 | Luz nad stolarką, gdy w tabeli puste pole „Luz górny”: wysokość stolarki × osiadanie, w górę do 5 mm. Bal suszony 44 mm ok. 1–2 % (montaż latem mniej, zimą więcej), drewno świeże 4–6 %. |
+| `luz_gorny_min` | Luz górny – najmniejszy w podpowiedzi | 10 mm | 0 … 200 |  |
 | `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
-| `okno_szerokosc` | Nowe okno – szerokość | 1020 mm | 100 … 6000 | Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
-| `okno_wysokosc` | Nowe okno – wysokość | 1010 mm | 100 … 4000 |  |
-| `okno_parapet` | Nowe okno – parapet | 900 mm | 0 … 4000 |  |
-| `drzwi_szerokosc` | Nowe drzwi – szerokość | 930 mm | 300 … 6000 |  |
-| `drzwi_wysokosc` | Nowe drzwi – wysokość | 2100 mm | 1000 … 4000 |  |
+| `okno_szerokosc` | Nowe okno – szerokość stolarki | 1020 mm | 100 … 6000 | Wymiary stolarki wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
+| `okno_wysokosc` | Nowe okno – wysokość stolarki | 1010 mm | 100 … 4000 |  |
+| `okno_parapet` | Nowe okno – parapet (spód stolarki) | 900 mm | 0 … 4000 |  |
+| `drzwi_szerokosc` | Nowe drzwi – szerokość stolarki | 930 mm | 300 … 6000 |  |
+| `drzwi_wysokosc` | Nowe drzwi – wysokość stolarki | 2100 mm | 1000 … 4000 |  |
 | `nowy_otwor_od` | Nowy otwór – odległość od narożnika | 1000 mm | 0 … 30000 |  |
 
 ## Rozpoznanie rysunku i waga

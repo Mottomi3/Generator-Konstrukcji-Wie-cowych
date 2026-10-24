@@ -124,6 +124,7 @@ module ArteMadera
       # Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem
       # i wpustem, gdy pozycja ma opis profilu).
       def siatka_pozycji(poz)
+        return { sciany: Pryzmat.siatka(poz[:dl], poz[:przekroj]) } if poz[:przekroj]
         Siatka.z_profilu(profil_pozycji(poz))
       end
 
@@ -135,6 +136,7 @@ module ArteMadera
 
       # Objętość bryły pozycji [mm³] (pełny albo prosty profil).
       def objetosc_pozycji(poz)
+        return Pryzmat.objetosc(poz[:dl], poz[:przekroj]) if poz[:przekroj]
         ProfilBala.objetosc(profil_pozycji(poz))
       end
     end

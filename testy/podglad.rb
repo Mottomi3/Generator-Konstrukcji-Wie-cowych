@@ -4,12 +4,13 @@
 # Plik: testy/podglad.rb
 # Zadanie: zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py).
 # Tematy: podgląd 3D, eksport OBJ, dom testowy, sprawdzenie wzrokowe
-# Zależy od: testy/pomoc.rb
+# Zależy od: testy/pomoc.rb, rdzen/przyklady.rb
 # Używają: testy/podglad.py
 #
-# Uruchomienie: ruby -I testy/atrapa testy/podglad.rb plik.obj [nazwa_domu]
+# Uruchomienie: ruby -I testy/atrapa testy/podglad.rb plik.obj [nazwa_domu | przykladN – dom N z rdzen/przyklady.rb]
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
+require File.join(KATALOG_WTYCZKI, 'rdzen', 'przyklady')
 include ArteMadera::GeneratorWiencowy
 
 DOMY = {
@@ -34,6 +35,11 @@ DOMY = {
 plik = ARGV[0] || 'dom.obj'
 nazwa = ARGV[1] || 'dom900'
 seg, par, otw, pelny, ust = DOMY[nazwa]
+if nazwa =~ /\Aprzyklad(\d+)\z/
+  # Przykładowy dom testu działania (rdzen/przyklady.rb) – pełny, z dachem i podłogą.
+  wej = Przyklady.lista[Regexp.last_match(1).to_i]['wejscie']
+  seg, par, otw, pelny, ust = wej['segmenty'], wej['parametry'], wej['otwory'], true, wej['sciany']
+end
 par = { 'szczyty' => 'nie', 'podloga' => 'nie' }.merge(par) unless pelny
 pl = Projekt.oblicz('segmenty' => seg, 'parametry' => par, 'otwory' => otw, 'sciany' => ust || {})
 raise pl[:bledy].join("\n") unless pl[:bledy].empty?

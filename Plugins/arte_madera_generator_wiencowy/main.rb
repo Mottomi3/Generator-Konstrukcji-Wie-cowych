@@ -39,8 +39,8 @@ module ArteMadera
 
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
-      rdzen/geometria rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/otwory
-      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/elementy rdzen/dach rdzen/szczyty rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
+      rdzen/geometria rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/stolarka rdzen/otwory
+      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/elementy rdzen/dach rdzen/szczyty rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
       rdzen/zamek
       rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie
       rdzen/przyklady sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/eksport
