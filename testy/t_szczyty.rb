@@ -46,11 +46,11 @@ Testy.rowne(sc.map { |x| x[:v].round(2) }, [22.0, 2978.0], 'płatwie w osiach ś
 Testy.rowne(kolizje_belek(pl, 'P'), 0, 'bez kolizji')
 Testy.sprawdz(nad_linia(pl, 'W-4') <= 0.01, 'bale pod linią dachu')
 
-Testy.grupa('Krokwie przy szczycie – obie strony, od wewnątrz, na szczycie')
+Testy.grupa('Krokwie z generatora przy szczycie – obie strony, od wewnątrz, na szczycie')
 seg = prostokat(0, 0, 5000, 4000)
 wyn = {}
 %w[obie_strony wewnatrz zewnatrz na_szczycie].each do |k|
-  pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => k)
+  pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'krokwie_przy_szczycie' => k)
   wyn[k] = pl
   Testy.rowne(pl[:bledy], [], "#{k}: brak błędów")
   Testy.sprawdz(nad_linia(pl, 'W-2') <= 0.01, "#{k}: bale pod linią szczytu")
@@ -72,7 +72,8 @@ Testy.grupa('Dwa bliskie szczyty na działowych – krokwie bez kolizji (ziarno 
 [120, 75].each do |odl|
   seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]], [[3000 + odl, 0], [3000 + odl, 4000]]]
   %w[obie_strony zewnatrz na_szczycie].each do |k|
-    pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => k, 'szczyty_na_dzialowych' => 'tak')
+    pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'krokwie_przy_szczycie' => k,
+                    'szczyty_na_dzialowych' => 'tak')
     us = u_kr.call(pl)
     Testy.rowne(kolizje_belek(pl, 'K'), 0, "#{odl} mm, #{k}: krokwie bez kolizji z balami")
     Testy.sprawdz(us.each_cons(2).all? { |a, b| b - a >= 50.0 - 0.01 }, "#{odl} mm, #{k}: krokwie nie nachodzą na siebie")

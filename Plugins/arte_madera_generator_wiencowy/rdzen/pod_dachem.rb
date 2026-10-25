@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/pod_dachem.rb
 # Zadanie: bale wystające pod połać – węgły na ścianach okapowych i działowe w poprzek kalenicy ścięte linią dachu (spód krokwi / desek); ostrzeżenie o zbyt stromym dachu.
-# Tematy: pod dachem, prześwit pod połacią, węgieł pod okapem, ostatek pod dachem, linia podparcia, stromy dach, skos węgła
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia podparcia), rdzen/szczyty.rb (skosy_linii)
+# Tematy: pod dachem, prześwit pod połacią, węgieł pod okapem, ostatek pod dachem, linia podparcia, stromy dach, skos węgła, węgieł ściany wysokiej pod połacią
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia podparcia, załom, lico okapu), rdzen/szczyty.rb (zasieg_linii, skosy_linii)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (zasięg i skos bali pod dachem)
 #
 # Dotyczy domu prostokątnego z dachem (dom ze szczytów). Ściany biegnące w poprzek kalenicy bez własnego szczytu
@@ -34,8 +34,7 @@ module ArteMadera
           next if w[:rodzaj] == :zewnetrzna
           w[:pod_dachem] = geo
         end
-        t = Parametry.grubosc(p)
-        z_lico = Dach.linia_podparcia(geo, geo[:v_a] - t / 2.0, p)
+        z_lico = Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p)
         z_okap = Wience.wysokosci(p)[:okapowa]
         if z_lico < z_okap - 0.5
           uwagi << format('Dach: przy zewnętrznym licu ściany okapowej spód krokwi / desek jest %.0f mm poniżej wierzchu ściany ' \
@@ -56,27 +55,23 @@ module ArteMadera
         Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p)
       end
 
+      # Załom linii dachu nad ścianą (kalenica) – s; dach jednospadowy – nil.
+      def zalom(w, p)
+        g = w[:pod_dachem]
+        v = g ? Dach.zalom_v(g, p) : nil
+        v.nil? ? nil : (v - w[:a][g[:iv]]) * w[:kier][g[:iv]]
+      end
+
       # Zasięg [s0, s1] wieńca o spodzie z0 pod linią dachu (najniższy kawałek jak w szczycie); nil – cały nad dachem.
       def zasieg(w, z0, p)
-        g = w[:pod_dachem]
-        return [w[:s_od], w[:s_do]] if g.nil?
-        m = p['szczyt_min_wysokosc'].to_f
-        vk = (g[:v_a] + g[:v_b]) / 2.0
-        szczyt = Dach.linia_podparcia(g, vk, p)
-        return nil if szczyt <= z0 + m
-        r = (szczyt - z0 - m) / Dach.tg(p)
-        s = [vk - r, vk + r].map { |v| (v - w[:a][g[:iv]]) * w[:kier][g[:iv]] }.sort
-        lo = [s[0], w[:s_od]].max
-        hi = [s[1], w[:s_do]].min
-        hi - lo > 1.0 ? [lo, hi] : nil
+        return [w[:s_od], w[:s_do]] if w[:pod_dachem].nil?
+        Szczyty.zasieg_linii(w[:s_od], w[:s_do], zalom(w, p), z0 + p['szczyt_min_wysokosc'].to_f) { |s| linia(w, s, p) }
       end
 
       # Skosy kawałka bala s0…s1 (spód z0, wysokość h) pod linią dachu; [] gdy mieści się pod połacią.
       def skosy(w, s0, s1, z0, h, p)
-        g = w[:pod_dachem]
-        return [] if g.nil?
-        sk = ((g[:v_a] + g[:v_b]) / 2.0 - w[:a][g[:iv]]) * w[:kier][g[:iv]]
-        Szczyty.skosy_linii(s0, s1, z0, h, sk) { |s| linia(w, s, p) }
+        return [] if w[:pod_dachem].nil?
+        Szczyty.skosy_linii(s0, s1, z0, h, zalom(w, p)) { |s| linia(w, s, p) }
       end
     end
   end

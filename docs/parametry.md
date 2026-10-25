@@ -21,7 +21,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `liczba_wiencow` | Liczba wieńców (ściany okapowe) | 16 szt. | 3 … 60 | Pełne wieńce ścian wzdłuż kalenicy; szczytowe mają o jeden więcej (pierwszy bal szczytu). |
 | `ostatek` | Ostatek za licem | 100 mm | 40 … 600 | Wypust bala za licem ściany poprzecznej (projekty: 100, przy tarasie 200). |
-| `kalenica` | Kalenica (półbal na ścianach wzdłuż kalenicy) | dluzszy | `dluzszy` – wzdłuż dłuższego boku; `krotszy` – wzdłuż krótszego boku; `x` – wzdłuż osi X obrysu; `y` – wzdłuż osi Y obrysu |  |
+| `kalenica` | Kalenica (półbal na ścianach wzdłuż kalenicy) | dluzszy | `dluzszy` – wzdłuż dłuższego boku; `krotszy` – wzdłuż krótszego boku; `x` – wzdłuż osi X obrysu; `y` – wzdłuż osi Y obrysu | Dach jednospadowy – kierunek okapów: ściana niska i wysoka biegną wzdłuż „kalenicy”. |
 | `strop` | Strop nad parterem (zamknięta góra) | nie | `nie` – nie – działowe do pełnej wysokości; `tak` – tak – działowe kończą się pod stropem | Niższa działowa tylko pod stropem, antresolą lub półką. Antresolę albo półkę nad jedną działową ustawisz w widoku ściany. |
 | `dzialowa_nizsza_wysokosc` | Działowa pod stropem / antresolą – góra | 2500 mm | 500 … 8000 | Spód stropu, antresoli albo półki; działowa kończy się pełnym wieńcem nie wyżej (1100: 2432, 1200: 2780). |
 | `dopelnienie_wewn` | Dopełnienie zamka nad niższą działową – do wnętrza | 100 mm | 40 … 600 | Odcinki nad działową przy ścianach, które idą wyżej: ostatek + grubość + tyle (1100: 244, 1200 przy ostatku 200: 344). |
@@ -56,12 +56,17 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `szczyty` | Szczyty z bali | tak | `tak` – tak; `nie` – nie | Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu. |
 | `szczyty_na_dzialowych` | Szczyty także na działowych szczytowych | nie | `tak` – tak; `nie` – nie | Jak 1800 W-2 – ściana działowa do kalenicy. |
+| `dach_rodzaj` | Dach | dwuspadowy | `dwuspadowy` – dwuspadowy – dwa szczyty, kalenica w środku; `jednospadowy` – jednospadowy – ściana niska i wysoka, szczyty skośne | Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów (KROK 1 z obrysu). |
+| `dach_spadek` | Jednospadowy – spadek w stronę | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry) | Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. Okapy wzdłuż „kalenicy”: wzdłuż X – spadek w dół / w górę rysunku, wzdłuż Y – w lewo / w prawo. |
+| `dach_okap_wysoki` | Jednospadowy – okap za ścianą wysoką | 500 mm | 0 … 1500 | W poziomie, od lica ściany wysokiej. |
+| `jednospad_min_pasek` | Jednospadowy – najcieńszy górny bal ściany wysokiej | 30 mm | 0 … 300 | Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany. |
 | `dach_kat` | Kąt dachu | 20 ° | 5 … 60 | Projekty 900 i 1000: 20°. |
 | `dach_uklad` | Układ dachu | platwie | `platwie` – same płatwie (deski na płatwiach); `krokwie` – krokwie na płatwi ściennej i kalenicowej; `platwie_krokwie` – płatwie i krokwie |  |
+| `dach_wiezba` | Krokwie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów (KROK 2, kontrola); `generator` – generator (bez kontroli) | Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
 | `dach_podniesienie` | Wierzch płatwi nad ścianą okapową (przy licu wewn.) | 69,5 mm | -300 … 1500 | Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie. |
-| `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie obok szczytu – szczyt dochodzi do wierzchu krokwi; krokiew na szczycie – szczyt kończy się pod nią. |
-| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. |  |
-| `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 |  |
+| `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
+| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
+| `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 | Z aplikacją do dachów – wartość na start KROKU 2. |
 | `platwa_przekroj` | Płatew pośrednia | 80x180 mm | szer. × wys. | Projekt 900: 80 × 180. |
 | `platwa_kalenicowa_przekroj` | Płatew kalenicowa | 80x180 mm | szer. × wys. |  |
 | `platwie_rozstaw_max` | Największy rozstaw płatwi (w poziomie) | 1000 mm | 300 … 4000 | 900: ok. 990. |
@@ -69,11 +74,30 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `platwa_scienna_polozenie` | Płatew ścienna – położenie | przy_licu | `przy_licu` – przy licu wewnętrznym, wierzchem na linii dachu (jak 900); `na_scianie` – stoi na ścianie okapowej, w osi |  |
 | `platwa_scienna_przekroj` | Płatew na ścianie | 60x200 mm | szer. × wys. | Projekt 900: 60 × 200. |
 | `gniazdo_luz` | Luz w gnieździe płatwi (każda strona) | 5 mm | 0 … 30 |  |
-| `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 30 mm | 5 … 140 | Niższy klin bala przy skosie dachu jest pomijany. |
-| `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 50 mm | 0 … 500 | Krótsze okruchy między skosem dachu a gniazdem płatwi są pomijane (900: najkrótszy 104). |
+| `platwie_sciecie` | Wierzch płatwi ścięty do płaszczyzny dachu | tak | `tak` – tak; `nie` – nie | Tak – płatew podniesiona, wierzch ścięty po skosie (kalenicowa z dwóch stron), krokwie i deski leżą na całej szerokości. Nie – wierzch poziomy pod dachem. |
+| `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 0 mm | 0 … 140 | 0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy klin pomijany (bal kończy się pionowo). |
+| `zamek_min_drewno` | Drewno w zamku przy skosie dachu – najmniej | 20 mm | 0 … 100 | Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego). |
+| `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 10 mm | 0 … 500 | Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; 900: najkrótszy kawałek 104). |
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego. |
 | `dach_okap` | Okap – wysunięcie krokwi za ścianę | 500 mm | 0 … 1500 | W poziomie, od lica ściany okapowej. |
 | `dach_okap_szczyt` | Wysunięcie płatwi za szczyt | 500 mm | 0 … 1500 | Od lica szczytu (900: płatwie 6082). |
+
+## Taras
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `taras` | Taras przed ścianą szczytową | nie | `nie` – bez tarasu; `podciag` – jak 1100 – podciąg na słupach, balustrada; `sciany` – jak 1200 – ściany pełne, front otwarty | Narysuj sam dom – taras dokłada generator: obrys dłuższy o głębokość tarasu, ściana domu zostaje (działowa ze szczytem), dach i płatwie idą nad taras. 1100: nad tarasem górne wieńce ścian na słupach, szczyt frontu, balustrada z bali; 1200: ściany boczne na całą wysokość. Tylko obrys prostokątny. |
+| `taras_strona` | Taras – po stronie | max | `max` – prawej albo górnej (rysunek z góry); `min` – lewej albo dolnej (rysunek z góry) | Na końcu wzdłuż kalenicy: kalenica wzdłuż X – prawa / lewa strona rysunku, wzdłuż Y – górna / dolna. |
+| `taras_glebokosc` | Taras – głębokość | 2000 mm | 500 … 6000 | Od lica ściany domu do lica frontu tarasu (1200: 2000). |
+| `taras_wience_gorne` | Podciąg – górne wieńce ścian nad tarasem | 2 | 1 … 6 | Wariant 1100: dwa górne bale ścian bocznych (95-2372, 96-2372) i front od wieńca, który zamyka się z nimi w narożniku. |
+| `taras_ostatek` | Ostatek dolnych bali ścian bocznych przy tarasie | 100 mm | 0 … 600 | Za licem ściany domu, pod podciągiem. |
+| `taras_slup_przekroj` | Słup tarasu (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Projekty: 80 × 180, 120 × 120, 140 × 140. |
+| `taras_slupy_rozstaw_max` | Słupy – największy rozstaw (osiowo) | 2000 mm | 800 … 5000 | Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu. |
+| `taras_wejscie` | Wejście na taras od frontu | srodek | `srodek` – pośrodku; `lewa` – z lewej (patrząc na front z zewnątrz); `prawa` – z prawej (patrząc na front z zewnątrz); `brak` – bez wejścia – balustrada na całym froncie |  |
+| `taras_wejscie_szerokosc` | Wejście – szerokość w świetle słupów | 1200 mm | 600 … 4000 |  |
+| `taras_balustrada_bale` | Balustrada – liczba bali | 4 | 0 … 8 | Bale na przemian z rzędami przekładek (1100: 4 bale i 3 rzędy, ok. 1 m). 0 – bez balustrady. |
+| `taras_przekladka` | Balustrada – długość przekładki | 300 mm | 50 … 1000 | Odcinek bala między balami balustrady (1100: 300). |
+| `taras_przekladka_odstep` | Balustrada – największy prześwit między przekładkami | 600 mm | 50 … 2000 | Przekładki przy obu końcach przęsła i równo między nimi. |
 
 ## Podłoga
 
@@ -96,18 +120,20 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `ugiecie_minimalne` | Ugięcie dopuszczalne L / | 250 | 100 … 1000 | Granica – mniej sztywna podłoga już niedopuszczalna. |
 | `przekroje_katalog` | Dostępne przekroje legarów | 45x95, 45x120, 45x145, 45x170, 45x195, 45x220, 50x100, 50x150, 50x175, 50x200, 50x225, 63x175, 63x200, 63x225, 75x200, 75x225, 75x250, 100x100, 100x150 |  | Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy spełniający warunki. |
 
-## Otwory – ustawienia
+## Okna i drzwi – stolarka i luzy
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
 | `min_kawalek_przy_otworze` | Kawałek bala przy otworze – najkrótszy | 70 mm | 0 … 1000 |  |
-| `luz_nad_otworem` | Luz osiadania nad otworem | 0 mm | 0 … 200 |  |
+| `luz_boczny` | Luz boczny stolarki (z każdej strony) | 10 mm | 0 … 100 | Otwór w balach = szerokość stolarki + 2 × luz boczny (typowo 5–10 mm, zakryty listwą). |
+| `osiadanie_scian` | Osiadanie ścian – podpowiedź luzu górnego | 1,5 % | 0 … 10 | Luz nad stolarką, gdy w tabeli puste pole „Luz górny”: wysokość stolarki × osiadanie, w górę do 5 mm. Bal suszony 44 mm ok. 1–2 % (montaż latem mniej, zimą więcej), drewno świeże 4–6 %. |
+| `luz_gorny_min` | Luz górny – najmniejszy w podpowiedzi | 10 mm | 0 … 200 |  |
 | `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
-| `okno_szerokosc` | Nowe okno – szerokość | 1020 mm | 100 … 6000 | Wymiary wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
-| `okno_wysokosc` | Nowe okno – wysokość | 1010 mm | 100 … 4000 |  |
-| `okno_parapet` | Nowe okno – parapet | 900 mm | 0 … 4000 |  |
-| `drzwi_szerokosc` | Nowe drzwi – szerokość | 930 mm | 300 … 6000 |  |
-| `drzwi_wysokosc` | Nowe drzwi – wysokość | 2100 mm | 1000 … 4000 |  |
+| `okno_szerokosc` | Nowe okno – szerokość stolarki | 1020 mm | 100 … 6000 | Wymiary stolarki wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
+| `okno_wysokosc` | Nowe okno – wysokość stolarki | 1010 mm | 100 … 4000 |  |
+| `okno_parapet` | Nowe okno – parapet (spód stolarki) | 900 mm | 0 … 4000 |  |
+| `drzwi_szerokosc` | Nowe drzwi – szerokość stolarki | 930 mm | 300 … 6000 |  |
+| `drzwi_wysokosc` | Nowe drzwi – wysokość stolarki | 2100 mm | 1000 … 4000 |  |
 | `nowy_otwor_od` | Nowy otwór – odległość od narożnika | 1000 mm | 0 … 30000 |  |
 
 ## Rozpoznanie rysunku i waga

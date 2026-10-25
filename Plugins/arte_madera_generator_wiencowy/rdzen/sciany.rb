@@ -28,7 +28,7 @@ module ArteMadera
         wynik = { sciany: [], os_kalenicy: :x, ostrzezenia: [], bledy: [] }
         t = Parametry.grubosc(p)
         tol = p['tolerancja_rysunku'].to_f
-        wynik[:os_kalenicy] = os_kalenicy(obrys[:obrys], p['kalenica'])
+        wynik[:os_kalenicy] = obrys[:os_kalenicy] || os_kalenicy(obrys[:obrys], p['kalenica'])
         licznik = [0]
         zewn = zewnetrzne(obrys[:obrys], t, p, licznik, wynik)
         dzial = dzialowe(obrys[:dzialowe], zewn, t, p, licznik, wynik, tol)
@@ -233,6 +233,7 @@ module ArteMadera
 
       # Opis rodzaju ściany do okna i list.
       def opis_rodzaju(w)
+        return Taras.opis(w) if defined?(Taras) && Taras.opis(w)
         case w[:rodzaj]
         when :zewnetrzna then w[:kierunek] == :A ? 'zewnętrzna okapowa' : 'zewnętrzna szczytowa'
         when :dzialowa then 'działowa'

@@ -4,12 +4,13 @@
 # Plik: testy/podglad.rb
 # Zadanie: zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py).
 # Tematy: podgląd 3D, eksport OBJ, dom testowy, sprawdzenie wzrokowe
-# Zależy od: testy/pomoc.rb
+# Zależy od: testy/pomoc.rb, rdzen/przyklady.rb
 # Używają: testy/podglad.py
 #
-# Uruchomienie: ruby -I testy/atrapa testy/podglad.rb plik.obj [nazwa_domu]
+# Uruchomienie: ruby -I testy/atrapa testy/podglad.rb plik.obj [nazwa_domu | przykladN – dom N z rdzen/przyklady.rb]
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
+require File.join(KATALOG_WTYCZKI, 'rdzen', 'przyklady')
 include ArteMadera::GeneratorWiencowy
 
 DOMY = {
@@ -22,18 +23,31 @@ DOMY = {
   'pelny900' => [prostokat(0, 0, 4000, 3000), {},
                  [{ 'sciana' => 'W-2', 'od' => 1000, 'szerokosc' => 900, 'wysokosc' => 2100, 'parapet' => 0 }], true],
   'krokwie' => [prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]],
-                { 'dach_uklad' => 'platwie_krokwie', 'krokwie_przy_szczycie' => 'wewnatrz' }, [], true],
+                { 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'krokwie_przy_szczycie' => 'wewnatrz' }, [], true],
   'antresola' => [prostokat(0, 0, 6000, 4200) + [[[2000, 0], [2000, 4200]], [[0, 1500], [2000, 1500]]],
-                  { 'liczba_wiencow' => 20, 'dach_uklad' => 'platwie_krokwie', 'podloga' => 'nie' }, [], true,
+                  { 'liczba_wiencow' => 20, 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'podloga' => 'nie' }, [], true,
                   { 'W-5' => { 'nad' => 'antresola', 'wysokosc' => '2500' }, 'W-6' => { 'nad' => 'antresola', 'wysokosc' => '2500' },
                     'W-1' => { 'ostatek_od' => '200' } }],
   'profil' => [prostokat(0, 0, 4000, 3000), { 'profil_bala' => 'pelny', 'liczba_wiencow' => 6, 'szczyty' => 'nie', 'podloga' => 'nie' },
-               [{ 'sciana' => 'W-1', 'od' => 1500, 'szerokosc' => 900, 'wysokosc' => 500, 'parapet' => 300 }], true]
+               [{ 'sciana' => 'W-1', 'od' => 1500, 'szerokosc' => 900, 'wysokosc' => 500, 'parapet' => 300 }], true],
+  'jednospadowy' => [prostokat(0, 0, 6000, 4500) + [[[3000, 0], [3000, 4500]]],
+                     { 'dach_rodzaj' => 'jednospadowy', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'dach_kat' => 15,
+                       'szczyty_na_dzialowych' => 'tak', 'podloga' => 'nie' },
+                     [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 900 }], true],
+  'taras1100' => [prostokat(0, 0, 4000, 4000), { 'taras' => 'podciag', 'taras_glebokosc' => 2400, 'taras_wejscie' => 'lewa',
+                                                 'liczba_wiencow' => 20, 'podloga' => 'nie' }, [], true],
+  'taras1200' => [prostokat(0, 0, 7000, 4000), { 'taras' => 'sciany', 'liczba_wiencow' => 20, 'podloga' => 'nie',
+                                                 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, [], true]
 }.freeze
 
 plik = ARGV[0] || 'dom.obj'
 nazwa = ARGV[1] || 'dom900'
 seg, par, otw, pelny, ust = DOMY[nazwa]
+if nazwa =~ /\Aprzyklad(\d+)\z/
+  # Przykładowy dom testu działania (rdzen/przyklady.rb) – pełny, z dachem i podłogą.
+  wej = Przyklady.lista[Regexp.last_match(1).to_i]['wejscie']
+  seg, par, otw, pelny, ust = wej['segmenty'], wej['parametry'], wej['otwory'], true, wej['sciany']
+end
 par = { 'szczyty' => 'nie', 'podloga' => 'nie' }.merge(par) unless pelny
 pl = Projekt.oblicz('segmenty' => seg, 'parametry' => par, 'otwory' => otw, 'sciany' => ust || {})
 raise pl[:bledy].join("\n") unless pl[:bledy].empty?

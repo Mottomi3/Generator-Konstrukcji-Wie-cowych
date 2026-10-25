@@ -36,8 +36,8 @@ siatki, SketchUp na atrapie, okno w Chromium, zasady, aktualność spisu treści
 | Katalog | Co |
 |---|---|
 | `Plugins/arte_madera_generator_wiencowy.rb` | rejestrator rozszerzenia |
-| `Plugins/arte_madera_generator_wiencowy/rdzen/` | obliczenia: obrys → ściany → szczyty → otwory → styki → węgły → bale → zamki → pozycje → belki dachu i podłogi → siatki brył |
-| `Plugins/arte_madera_generator_wiencowy/sketchup/` | wejście z zaznaczenia, budowa modelu, atrybuty, okno, menu |
+| `Plugins/arte_madera_generator_wiencowy/rdzen/` | obliczenia: obrys (z tarasem) → ściany → szczyty → otwory → styki → węgły → bale → zamki → pozycje → belki dachu, słupy tarasu i podłogi → połacie dla aplikacji do dachów → siatki brył |
+| `Plugins/arte_madera_generator_wiencowy/sketchup/` | wejście z zaznaczenia, budowa modelu, atrybuty, okno, menu, połacie i KROK 2 w aplikacji do dachów |
 | `Plugins/arte_madera_generator_wiencowy/html/` | okno parametrów (HTML, CSS, JS ES5) |
 | `testy/` | testy, atrapa API (`testy/atrapa/`), kontrola zasad, spis treści, paczka .rbz, podgląd 3D |
 | `docs/` | spis treści, specyfikacja, stan prac, scenariusz odbioru, przekazania |

@@ -4,7 +4,7 @@
 # Plik: rdzen/usztywnienie.rb
 # Zadanie: węgły 244 usztywniające ściany – limit światła ściany (zwykłej i wysokiej), rozmieszczenie nowych węgłów, miejsce, w którym węgieł może stanąć.
 # Tematy: węgieł, wzmocnienie ściany, światło ściany, ściana wysoka, rozmieszczenie węgłów, węgieł od narożnika, miejsce na węgieł, kontrfor
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian), rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian), rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/taras.rb (front i przęsła tarasu bez węgłów)
 # Używają: rdzen/projekt.rb, rdzen/styki.rb (miejsce_ok?, wolne_miejsce)
 #
 # Światło = odległość między licami sąsiednich podparć ściany (narożnik, działowa, węgieł) – oś do osi minus grubość.
@@ -16,6 +16,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'sciany') unless defined?(ArteMadera::GeneratorWiencowy::Sciany)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
+require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -37,10 +38,12 @@ module ArteMadera
         limit = limit_swiatla(p)
         t = Parametry.grubosc(p)
         do_sprawdzenia = sciany.select do |w|
+          next false if Taras.front?(w)
           w[:rodzaj] == :zewnetrzna || (w[:rodzaj] == :dzialowa && Parametry.tak?(p, 'wegly_na_dzialowych'))
         end
         do_sprawdzenia.each do |w|
           przeslony(w).each do |a, b|
+            next if Taras.przeslona_tarasu?(w, a, b)
             swiatlo = b - a - t
             next if swiatlo <= limit + 0.5
             if w[:wegly_reczne]

@@ -81,6 +81,8 @@ module ArteMadera
           when 'bez_wpustu' then bez_wpustu = true
           end
         end
+        ciecia_gora = Bryla.wyrownaj_poziomy(ciecia_gora, h, true)
+        ciecia_dol = Bryla.wyrownaj_poziomy(ciecia_dol, 0.0, false)
         pasy = pasy_przekroju(t, opis, bez_wpustu).map do |y0, y1, g, d|
           [y0, y1, [[0.0, dl, h + g, h + g]] + ciecia_gora, [[0.0, dl, d, d]] + ciecia_dol]
         end
@@ -88,8 +90,7 @@ module ArteMadera
         (ciecia_gora + ciecia_dol).each { |c| xs << c[0] << c[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
         linie = pasy.map { |pas| pas[2] + pas[3] }.flatten(1).uniq
-        xs.concat(Bryla.przeciecia(linie))
-        Bryla.punkty_podzialu(xs, dl).each_cons(2).map { |xa, xb| przedzial(xa, xb, t, pasy, boki) }.compact
+        Bryla.punkty_podzialu(xs, dl, Bryla.przeciecia(linie)).each_cons(2).map { |xa, xb| przedzial(xa, xb, t, pasy, boki) }.compact
       end
 
       # Jeden przedział xa…xb: pasy z wierzchem i spodem (ograniczenia pasa w środku przedziału), zwężone podcięciami.
@@ -108,8 +109,8 @@ module ArteMadera
           next if yb - ya <= EPS
           zt_a, zt_b = Bryla.wartosci(gora, xa, xb, xm, :min)
           zb_a, zb_b = Bryla.wartosci(dol, xa, xb, xm, :max)
-          next if zt_a - zb_a <= EPS || zt_b - zb_b <= EPS
-          wynik << { y0: ya, y1: yb, zb_a: zb_a, zb_b: zb_b, zt_a: zt_a, zt_b: zt_b }
+          next unless Bryla.klin_ok?(zb_a, zb_b, zt_a, zt_b)
+          wynik << { y0: ya, y1: yb, zb_a: zb_a, zb_b: zb_b, zt_a: [zt_a, zb_a].max, zt_b: [zt_b, zb_b].max }
         end
         %i[zt_a zt_b zb_a zb_b].each { |k| wyrownaj!(wynik, k) }
         wynik.empty? ? nil : { xa: xa, xb: xb, pasy: wynik }

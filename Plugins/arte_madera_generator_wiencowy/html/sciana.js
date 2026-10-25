@@ -154,7 +154,7 @@ var AMGW_SCIANA = (function () {
     }
   }
 
-  // Otwory: prostokąt z nazwą.
+  // Otwory: prostokąt otworu w balach, w nim stolarka (przerywana – widać luz boczny i górny) i nazwa.
   function otwory(svg, d, X, Y, px) {
     var i;
     for (i = 0; i < (d.otwory || []).length; i++) {
@@ -162,6 +162,12 @@ var AMGW_SCIANA = (function () {
       svg.appendChild(svgEl('rect', { x: X(o[0]), y: Y(o[3]), width: (o[1] - o[0]).toFixed(1), height: (o[3] - o[2]).toFixed(1),
                                       fill: '#ffffff', 'fill-opacity': '0.85', stroke: '#4a90c2', 'stroke-width': '1.5',
                                       'vector-effect': 'non-scaling-stroke', 'class': 'otwor' }));
+      var st = o[5];
+      if (st) {
+        svg.appendChild(svgEl('rect', { x: X(st[0]), y: Y(st[3]), width: (st[1] - st[0]).toFixed(1), height: (st[3] - st[2]).toFixed(1),
+                                        fill: 'none', stroke: '#2f6f9f', 'stroke-width': '1', 'stroke-dasharray': '4 3',
+                                        'vector-effect': 'non-scaling-stroke', 'class': 'stolarka' }));
+      }
       if (o[4]) {
         var t = svgEl('text', { x: X((o[0] + o[1]) / 2), y: Y((o[2] + o[3]) / 2), 'font-size': px(10), 'text-anchor': 'middle',
                                 'dominant-baseline': 'central', fill: '#2f6f9f' });

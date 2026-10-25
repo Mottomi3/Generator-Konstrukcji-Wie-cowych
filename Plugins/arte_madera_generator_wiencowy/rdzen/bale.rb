@@ -26,6 +26,9 @@ module ArteMadera
     module Bale
       G = Geometria unless const_defined?(:G)
 
+      # Kawałek bala krótszy niż tyle [mm] przy skosie albo gnieździe to okruch – pomijany zawsze.
+      OKRUCH = 1.0 unless const_defined?(:OKRUCH)
+
       module_function
 
       # Wszystkie bale domu (bez obróbek zamka): { bale: [...], ostrzezenia: [...] }.
@@ -65,7 +68,7 @@ module ArteMadera
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)
         g = p['szczelina_styku'].to_f / 2.0
         lmax = p['max_dlugosc'].to_f
-        okruch = p['szczyt_min_kawalek'].to_f
+        okruch = [p['szczyt_min_kawalek'].to_f, OKRUCH].max
         wynik = []
         przedzialy.each do |a, b|
           punkty = [[a, koniec_typ(w, a, ciecia, zas, wewn)]]
@@ -86,11 +89,17 @@ module ArteMadera
         wynik
       end
 
-      # Zasięg wieńca o spodzie z0: pod linią szczytu (ściana ze szczytem), pod linią dachu (ściana pod połacią), cały.
+      # Zasięg wieńca o spodzie z0: pod linią szczytu (ściana ze szczytem), pod linią dachu (ściana pod połacią), cały;
+      # ściana tarasu – ograniczony przez Taras.zasieg.
       def zasieg(w, z0, p)
-        return Szczyty.zasieg(w, z0, p) if w[:szczyt]
-        return PodDachem.zasieg(w, z0, p) if w[:pod_dachem]
-        [w[:s_od], w[:s_do]]
+        zas = if w[:szczyt]
+                Szczyty.zasieg(w, z0, p)
+              elsif w[:pod_dachem]
+                PodDachem.zasieg(w, z0, p)
+              else
+                [w[:s_od], w[:s_do]]
+              end
+        w[:taras] ? Taras.zasieg(w, z0, zas, p) : zas
       end
 
       # Skosy kawałka bala wg linii szczytu albo linii dachu nad ścianą.
@@ -127,8 +136,8 @@ module ArteMadera
           polbal: wn[:polbal], cechy: cechy, konce: konce }
       end
 
-      # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu, pod linią szczytu)
-      # w osi kontrforu.
+      # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu, pod linią szczytu,
+      # w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu.
       def kontrfor_obecny?(kf, wn, p)
         gosp = kf[:gospodarz]
         s = G.dot(G.sub(kf[:a], gosp[:a]), gosp[:kier])
@@ -136,7 +145,11 @@ module ArteMadera
         return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, wn[:z0] + wn[:h], p) }
         sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
-        sasiedzi.none? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
+        return false if sasiedzi.any? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
+        sasiedzi.all? do |g|
+          z = zasieg(gosp, g[:z0], p)
+          z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
+        end
       end
 
       # Ostrzeżenia o długościach: kawałek krótszy od najkrótszego, bal dłuższy od maksymalnego.

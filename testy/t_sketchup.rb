@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '4', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '5', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -160,7 +160,7 @@ Testy.sprawdz(obrocone > 0, "są bale obrócone o 180° (#{obrocone})")
 
 Testy.grupa('Położenie belek podłogi i dachu (także krokwi ukośnych)')
 bledne = 0
-pl_kr = Projekt.oblicz(Atrybuty.czytaj_wejscie(dom).merge('parametry' => { 'dach_uklad' => 'platwie_krokwie', 'liczba_wiencow' => '12' }))
+pl_kr = Projekt.oblicz(Atrybuty.czytaj_wejscie(dom).merge('parametry' => { 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'liczba_wiencow' => '12' }))
 pl_kr[:elementy].each do |e|
   tr = Konwersja.transformacja_elementu(e)
   poz = e[:pozycja]
@@ -175,6 +175,23 @@ pl_kr[:elementy].each do |e|
 end
 Testy.rowne(bledne, 0, 'punkty komponentu belki leżą w belce z planu')
 Testy.sprawdz(pl_kr[:elementy].any? { |e| e[:polozenie][:x][2].abs > 0.1 }, 'są krokwie ukośne')
+
+Testy.grupa('Taras jak 1100 w modelu – grupa i tag Taras, słupy pionowe, balustrada')
+model_glowny = Sketchup.model
+Sketchup.model = Sketchup::Model.new
+m_t = Sketchup.active_model
+wej_t = { 'segmenty' => prostokat(0, 0, 4000, 4000), 'z0' => 0.0, 'otwory' => [], 'sciany' => {},
+          'parametry' => { 'taras' => 'podciag', 'liczba_wiencow' => '12', 'podloga' => 'nie' } }
+pl_t = Projekt.oblicz(wej_t)
+zb_t = Budowa.zbuduj(m_t, pl_t, wej_t)
+taras_g = zb_t[:grupa].entities.to_a.find { |g| g.is_a?(Sketchup::Group) && g.name == 'Taras' }
+Testy.sprawdz(!taras_g.nil? && taras_g.layer.name == 'Taras', 'grupa Taras z tagiem Taras')
+sl_t = taras_g ? taras_g.entities.to_a.select { |i| i.definition.get_attribute('ArteMadera', 'prefiks') == 'S' } : []
+Testy.rowne(sl_t.length, pl_t[:elementy].count { |e| e[:prefiks] == 'S' }, 'słupy w grupie Taras (prefiks S dla Dokumentacji 2D)')
+Testy.sprawdz(sl_t.all? { |i| i.transformation.xaxis.z.abs > 0.999 }, 'słupy pionowe')
+bal_t = instancje(zb_t[:grupa]).select { |i| i.layer && i.layer.name == 'Taras' && i.definition.get_attribute('ArteMadera', 'prefiks') != 'S' }
+Testy.rowne(bal_t.length, pl_t[:bale].count { |b| b[:taras] }, 'bale balustrady z tagiem Taras w grupach ścian')
+Sketchup.model = model_glowny
 
 Testy.grupa('Edycja i przebudowa')
 stary_id = Atrybuty.dom_id(dom)

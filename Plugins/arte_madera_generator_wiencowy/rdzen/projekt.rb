@@ -3,20 +3,20 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/projekt.rb
 # Zadanie: przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
-# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory)
+# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie, taras w przebiegu
 # Zależy od: wszystkie pliki rdzen/
 # Używają: sketchup/sterowanie.rb, testy
 #
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
 # 'parametry' {…}, 'otwory' [{…}], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
-# podłogi i dachu), pozycje_elementow, pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
+# podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach szczyty dopelnienie
-     pod_dachem bale zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
+  %w[geometria parametry obrys sciany ustawienia_scian wience taras taras_balustrada otwory usztywnienie styki elementy dach_jednospadowy dach szczyty polacie
+     dopelnienie pod_dachem bale skos_przy_narozniku zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -26,8 +26,9 @@ module ArteMadera
     module Projekt
       module_function
 
-      # Cały przebieg: obrys → ściany → ustawienia ścian → szczyty → otwory → styki → węgły → dopełnienie nad niższymi
-      # działowymi → gniazda płatwi → bale → zamki → pozycje → belki dachu i podłogi.
+      # Cały przebieg: obrys (z tarasem) → ściany → ustawienia ścian → role ścian tarasu → szczyty → otwory → styki → węgły →
+      # dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy
+      # narożnikach → zamki → pozycje → belki dachu, słupy tarasu i podłoga.
       def oblicz(wejscie)
         wej = wejscie.is_a?(Hash) ? wejscie : {}
         p, uwagi = Parametry.normalizuj(wej['parametry'])
@@ -35,10 +36,11 @@ module ArteMadera
                  pary_zamkow: 0, ostrzezenia: uwagi.dup, bledy: [], podpowiedzi: [], podsumowanie: nil }
         ob = Obrys.rozpoznaj(wej['segmenty'] || [], p)
         plan[:kat] = ob[:kat]
-        plan[:obrys] = ob[:obrys]
         plan[:ostrzezenia].concat(ob[:ostrzezenia])
         plan[:bledy].concat(ob[:bledy])
         return plan unless plan[:bledy].empty?
+        plan[:ostrzezenia].concat(Taras.przedluz!(ob, p))
+        plan[:obrys] = ob[:obrys]
         sc = Sciany.zbuduj(ob, p)
         plan[:os_kalenicy] = sc[:os_kalenicy]
         plan[:ostrzezenia].concat(sc[:ostrzezenia])
@@ -48,6 +50,7 @@ module ArteMadera
         Sciany.numeruj!(sciany)
         plan[:ostrzezenia].concat(UstawieniaScian.zastosuj(sciany, wej['sciany'], p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
+        Taras.oznacz!(sciany, ob[:taras], p)
         sz = Szczyty.przygotuj(sciany, p, sc[:os_kalenicy])
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
@@ -58,6 +61,8 @@ module ArteMadera
         Szczyty.gniazda(sciany, p, sz[:dom])
         plan[:ostrzezenia].concat(PodDachem.przygotuj(sciany, p, sz[:dom]))
         bale = Bale.zbuduj(sciany, p)
+        TarasBalustrada.dodaj!(Taras.przesla(sciany, p), bale, p)
+        SkosPrzyNarozniku.przytnij!(sciany, bale, p)
         plan[:ostrzezenia].concat(bale[:ostrzezenia])
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
         ProfilBala.oznacz(bale[:bale], p)
@@ -71,9 +76,13 @@ module ArteMadera
         plan
       end
 
-      # Belki dachu (dom prostokątny) i podłogi: elementy, pozycje (numery po balach), podpowiedzi podłogi.
+      # Belki dachu (dom prostokątny) i podłogi: elementy, pozycje (numery po balach), podpowiedzi podłogi; połacie dla
+      # aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        plan[:elementy].concat(Taras.slupy(plan[:sciany], p))
+        plan[:polacie] = Polacie.dla_domu(dom, p)
+        plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]))
         pod = Podloga.zaplanuj(plan[:sciany], p)
         plan[:elementy].concat(pod[:elementy])
         plan[:podpowiedzi].concat(pod[:podpowiedzi])
@@ -104,7 +113,7 @@ module ArteMadera
         belki = Elementy.lista_zamowienia(plan[:pozycje_elementow])
         m3_belek = belki.inject(0.0) { |s, x| s + x[:objetosc_m3] }
         { sciany: sciany, liczba_bali: plan[:bale].length, liczba_pozycji: plan[:pozycje].length,
-          objetosc_m3: m3.round(3), waga_kg: (m3 * p['gestosc'].to_f).round, wysokosci: Wience.wysokosci(p),
+          objetosc_m3: m3.round(3), waga_kg: (m3 * p['gestosc'].to_f).round, wysokosci: wysokosci(plan),
           przekroj: z['nazwa'], lista: lista + belki, pary_zamkow: plan[:pary_zamkow],
           objetosc_belek_m3: m3_belek.round(3), liczba_belek: plan[:elementy].length,
           szczyty: plan[:sciany].count { |w| w[:szczyt] }, bale_szczytu: plan[:bale].count { |b| b[:pozycja][:prefiks] == 'Sz' },
@@ -112,6 +121,20 @@ module ArteMadera
           wegly_usztywniajace: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :usztywnienie },
           wegly_narysowane: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek },
           limit_swiatla: Usztywnienie.limit_swiatla(p).round }
+      end
+
+      # Wysokości ścian do okna (Wience.wysokosci) i ściana wysoka dachu jednospadowego (góra jej bali – do połaci).
+      def wysokosci(plan)
+        p = plan[:parametry]
+        w = plan[:sciany].find { |x| x[:szczyt] && x[:szczyt][:plaski] }
+        return Wience.wysokosci(p) if w.nil?
+        Wience.wysokosci(p).merge(wysoka: (w[:bale].map { |b| b[:z0] + b[:h] - wysokosc_ciecia(b) }.max || 0.0).round(1))
+      end
+
+      # O ile górny bal jest niższy po przycięciu wzdłuż (skos płaski na całej długości) [mm].
+      def wysokosc_ciecia(b)
+        c = b[:cechy].find { |x| x[:typ] == 'skos_gora' && (x[:z0] - x[:z1]).abs < 0.01 && x[:x0] < 0.5 && x[:x1] > b[:dl] - 0.5 }
+        c ? b[:h] - c[:z0] : 0.0
       end
 
       # Styki ściany do okna: [styki wieńców parzystych, nieparzystych] w mm od początku osi (puste – bez styków).
@@ -124,6 +147,7 @@ module ArteMadera
       # Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem
       # i wpustem, gdy pozycja ma opis profilu).
       def siatka_pozycji(poz)
+        return { sciany: Pryzmat.siatka(poz[:dl], poz[:przekroj]) } if poz[:przekroj]
         Siatka.z_profilu(profil_pozycji(poz))
       end
 
@@ -135,6 +159,7 @@ module ArteMadera
 
       # Objętość bryły pozycji [mm³] (pełny albo prosty profil).
       def objetosc_pozycji(poz)
+        return Pryzmat.objetosc(poz[:dl], poz[:przekroj]) if poz[:przekroj]
         ProfilBala.objetosc(profil_pozycji(poz))
       end
     end

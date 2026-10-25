@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/atrapa/sketchup.rb
 # Zadanie: atrapa API SketchUpa (Geom, Sketchup::Model/Entities/Group/ComponentDefinition/Face/Edge, UI) do testów bez SketchUpa.
-# Tematy: atrapa API, testy offline, Geom::Point3d, Geom::Transformation, ściana z otworem w atrapie
+# Tematy: atrapa API, testy offline, Geom::Point3d, Geom::Transformation, ściana z otworem w atrapie, rama grupy (bounds), liczniki UI.start_timer
 # Zależy od: –
 # Używają: testy/t_sketchup.rb, testy/pomoc.rb
 #
@@ -148,7 +148,54 @@ module Geom
   end
 end
 
+module Geom
+  # Prostopadłościan otaczający (jak Geom::BoundingBox): add punktów albo innej ramy, min, max, center, empty?.
+  class BoundingBox
+    attr_reader :min, :max
+
+    def add(*rzeczy)
+      rzeczy.flatten.each do |r|
+        if r.is_a?(BoundingBox)
+          add(r.min, r.max) unless r.empty?
+          next
+        end
+        @min = @min ? Point3d.new([@min.x, r.x].min, [@min.y, r.y].min, [@min.z, r.z].min) : Point3d.new(r.x, r.y, r.z)
+        @max = @max ? Point3d.new([@max.x, r.x].max, [@max.y, r.y].max, [@max.z, r.z].max) : Point3d.new(r.x, r.y, r.z)
+      end
+      self
+    end
+
+    def empty?
+      @min.nil?
+    end
+
+    def center
+      return Point3d.new if empty?
+      Point3d.new((@min.x + @max.x) / 2.0, (@min.y + @max.y) / 2.0, (@min.z + @max.z) / 2.0)
+    end
+  end
+end
+
 module Sketchup
+  # Rama zawartości (ściany, grupy, instancje) w układzie rodzica przez przekształcenie tr – do Group#bounds.
+  module AtrapaRamy
+    module_function
+
+    def rama(ents, tr)
+      bb = Geom::BoundingBox.new
+      ents.each do |e|
+        if e.is_a?(Face)
+          bb.add(e.punkty.map { |pt| pt.transform(tr) })
+        elsif e.is_a?(Group)
+          bb.add(rama(e.entities, tr * e.transformation))
+        elsif e.is_a?(ComponentInstance)
+          bb.add(rama(e.definition.entities, tr * e.transformation))
+        end
+      end
+      bb
+    end
+  end
+
   class Atrybutowy
     def atrybuty
       @atrybuty ||= {}
@@ -373,6 +420,11 @@ module Sketchup
       @definition
     end
 
+    # Rama w układzie rodzica (jak Group#bounds).
+    def bounds
+      AtrapaRamy.rama(@entities, @transformation)
+    end
+
     def erase!
       @valid = false
       @entities.each { |e| e.erase! if e.respond_to?(:erase!) }
@@ -570,8 +622,9 @@ module Sketchup
       @entities
     end
 
-    def start_operation(nazwa, *_reszta)
-      @operacje << [:start, nazwa]
+    # Operacja dołączona do poprzedniej (4. argument transparent = true) – zapis z :dolaczona.
+    def start_operation(nazwa, *reszta)
+      @operacje << ([:start, nazwa] + (reszta[2] ? [:dolaczona] : []))
       @migawka = [@entities.to_a, @definitions.to_a]
       true
     end
@@ -653,6 +706,33 @@ module UI
     # Okno zapisu: test ustawia UI.plik_zapisu (nil – „Anuluj”).
     def savepanel(_tytul, _katalog = nil, _nazwa = nil)
       @plik_zapisu
+    end
+
+    # Liczniki: blok czeka w UI.liczniki, test uruchamia go przez UI.uruchom_liczniki (jak SketchUp po zakończeniu
+    # bieżącego wywołania); stop_timer zapisuje zatrzymane.
+    def liczniki
+      @liczniki ||= []
+    end
+
+    def zatrzymane
+      @zatrzymane ||= []
+    end
+
+    def start_timer(_sekundy, _powtarzaj = false, &blk)
+      liczniki << blk
+      liczniki.length
+    end
+
+    def stop_timer(id)
+      zatrzymane << id
+      nil
+    end
+
+    def uruchom_liczniki
+      lista = liczniki.dup
+      liczniki.clear
+      lista.each { |blk| blk.call if blk }
+      lista.length
     end
 
     def menu(_nazwa)

@@ -3,18 +3,20 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/elementy.rb
 # Zadanie: elementy z belek (podłoga, dach) – belka prostopadłościenna w dowolnym położeniu, pozycje identycznych belek, lista zamówienia.
-# Tematy: element, belka, podwalina, legar, podpora, płatew, krokiew, pozycja elementu, prefiks elementu, lista belek, położenie belki
+# Tematy: element, belka, podwalina, legar, podpora, płatew, krokiew, słup tarasu, pozycja elementu, prefiks elementu, lista belek, położenie belki
 # Zależy od: rdzen/geometria.rb, rdzen/bryla.rb (podpis), rdzen/parametry.rb
-# Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/projekt.rb, sketchup/budowa.rb
+# Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/taras.rb, rdzen/projekt.rb, sketchup/budowa.rb
 #
-# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie), rodzaj
-# (tekst do nazwy komponentu), tag (:podloga | :dach), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
-# cechy (obróbki jak u bali), polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).
+# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie, S słupy), rodzaj
+# (tekst do nazwy komponentu), tag (:podloga | :dach | :taras), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
+# cechy (obróbki jak u bali), przekroj (opcjonalnie – wielokąt [[y, z]], np. płatew ścięta; rdzen/pryzmat.rb),
+# polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'pryzmat') unless defined?(ArteMadera::GeneratorWiencowy::Pryzmat)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -25,14 +27,14 @@ module ArteMadera
       # PREFIX_GROUPS), nazwy zawierają słowa, po których Dokumentacja 2D rozpoznaje grupę także bez atrybutu.
       RODZAJE = {
         'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
-        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach]
+        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function
 
       # Belka pozioma od p0 do p1 (rzut, mm): szerokość b w poprzek – po lewej stronie kierunku przy :lewo, symetrycznie
-      # przy :os, po prawej przy :prawo; spód na wysokości z_spod.
-      def pozioma(prefiks, p0, p1, b, h, z_spod, wyrownanie = :os, cechy = [])
+      # przy :os, po prawej przy :prawo; spód na wysokości z_spod; przekroj – wielokąt (nil – prostokąt b × h).
+      def pozioma(prefiks, p0, p1, b, h, z_spod, wyrownanie = :os, cechy = [], przekroj = nil)
         d = G.norm(G.sub(p1, p0))
         l = G.lewa(d)
         przes = case wyrownanie
@@ -41,7 +43,9 @@ module ArteMadera
                 else -b / 2.0
                 end
         o = G.add(p0, G.mul(l, przes))
-        nowy(prefiks, G.odl(p0, p1), b, h, [o[0], o[1], z_spod], [d[0], d[1], 0.0], [l[0], l[1], 0.0], [0.0, 0.0, 1.0], cechy)
+        e = nowy(prefiks, G.odl(p0, p1), b, h, [o[0], o[1], z_spod], [d[0], d[1], 0.0], [l[0], l[1], 0.0], [0.0, 0.0, 1.0], cechy)
+        e[:przekroj] = przekroj if przekroj
+        e
       end
 
       # Belka ukośna (krokiew): oś w płaszczyźnie pionowej wzdłuż kierunku d (rzut), nachylenie kat, początek spodu p.
@@ -67,6 +71,11 @@ module ArteMadera
         lista = []
         posortowane(elementy).each do |e|
           podpis, obrot = Bryla.podpis_kanoniczny(e[:dl], e[:b], e[:h], e[:cechy])
+          przekroj = nil
+          if e[:przekroj]
+            przekroj, obrot = Pryzmat.kanoniczny(e[:przekroj], e[:b])
+            podpis = "#{podpis}|#{Pryzmat.podpis(przekroj)}"
+          end
           klucz = "#{e[:prefiks]}##{podpis}"
           poz = wg[klucz]
           if poz.nil?
@@ -75,6 +84,7 @@ module ArteMadera
             poz = { nr: nr, prefiks: e[:prefiks], rodzaj: e[:rodzaj], tag: e[:tag], dl: e[:dl], t: e[:b], h: e[:h],
                     cechy: cechy, podpis: podpis, ilosc: 0, bale: [], polbal: false, element: true,
                     nazwa: "#{nr}-#{e[:dl].round}" }
+            poz[:przekroj] = przekroj if przekroj
             wg[klucz] = poz
             lista << poz
           end
@@ -86,9 +96,9 @@ module ArteMadera
         lista
       end
 
-      # Kolejność numeracji: grupa (podłoga, potem dach), prefiks, długość malejąco.
+      # Kolejność numeracji: grupa (podłoga, dach, taras), prefiks, długość malejąco.
       def posortowane(elementy)
-        kolej = %w[Pw Pd L P K]
+        kolej = %w[Pw Pd L P K S]
         elementy.sort_by { |e| [kolej.index(e[:prefiks]) || 9, -e[:dl].round, e[:b].round, e[:h].round] }
       end
 

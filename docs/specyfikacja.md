@@ -117,10 +117,15 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 
 ## 6. Otwory
 
-- Wpis: ściana (W-n), od, szerokość, wysokość, parapet. „Od” liczone od narożnika lica zewnętrznego na początku
-  ściany (kropka na rzucie w oknie); dla działowej – od początku narysowanej osi. Parapet od ±0 (spód pierwszego bala).
+- Wpis: ściana (W-n), od, szerokość i wysokość **stolarki** (okna, drzwi), parapet, luz górny, nazwa. „Od” liczone od
+  narożnika lica zewnętrznego na początku ściany (kropka na rzucie w oknie); dla działowej – od początku narysowanej
+  osi. Parapet od ±0 (spód pierwszego bala) = spód stolarki.
+- **Otwór w balach = stolarka + luzy** (`rdzen/stolarka.rb`, runda 5): po bokach `luz_boczny` (10) z każdej strony,
+  u góry luz na osiadanie ścian – wpisany w wierszu otworu albo (puste pole) podpowiedź: wysokość stolarki ×
+  `osiadanie_scian` (1,5 %), w górę do 5 mm, nie mniej niż `luz_gorny_min` (10); w oknie widać podpowiedź w polu
+  i wymiary otworu w balach, w widoku ściany – stolarkę w otworze (przerywana linia).
 - Bal w całości w wysokości otworu – przecięty (cięcie proste); bal częściowo – wycięcie od góry (pod parapetem) lub
-  od dołu (nad nadprożem). `luz_nad_otworem` (0) podnosi górną krawędź wycięcia.
+  od dołu (nad nadprożem).
 - Kontrfor w miejscu otworu – bez bali na wysokości otworu (przerwany). Otwór bliżej niż 70 od lica ściany
   poprzecznej – ostrzeżenie.
 
@@ -134,14 +139,18 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   osobne pozycje. Obróbki tną wszystkie pasy (w gnieździe zamka pióro i wpust znikają – zamek bez zmian). Pozycje,
   listy, zestawienie, kontrola kolizji – jak dla bala prostego; zmienia się tylko bryła komponentu.
 - Punkty podziału bryły bliższe niż 0,2 mm są scalane – SketchUp nie tworzy krawędzi krótszych niż 0,0254 mm, a tak
-  bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły.
+  bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły. Granice obróbek mają
+  pierwszeństwo przed przecięciami skosu z wierzchem lub spodem (runda 5): pominięte przecięcie ścina odrobinę więcej
+  drewna, przesunięta granica podcięcia zamka dawała bal 0,13 mm za szeroki w zamku.
 - Identyczne bale (ta sama bryła, także po obrocie o 180° wokół pionu) = jedna pozycja „nr-długość” (np. `2-4200`)
   i jeden komponent. Numery: W-1, W-2…, w ścianie wieńce od dołu, w wieńcu wzdłuż ściany.
 - Model: grupa „Dom wieńcowy” (obrót układu lokalnego, poziom ±0) > grupy W-n > instancje komponentów „Bal 2-4200”,
-  „Bal szczytu 7-2747”, „Kontrfor 9-244”; grupy „Podłoga” i „Dach” z belkami („Legar 15-2800”, „Płatew 16-5000”…).
-  Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory, Szczyty, Podłoga, Dach.
+  „Bal szczytu 7-2747”, „Kontrfor 9-244”; grupy „Podłoga”, „Dach” i „Taras” z belkami („Legar 15-2800”, „Płatew
+  16-5000”, „Słup tarasu 40-1946”…). Tagi: Ściany zewnętrzne, Ściany działowe, Kontrfory, Szczyty, Podłoga, Dach, Taras
+  (słupy i bale balustrady).
 - Atrybuty dla Dokumentacji 2D (słownik `ArteMadera` na definicji): `rola` = timber, `prefiks` = Bs (bale ścienne) /
   Kf (węgły) / Sz (bale szczytu) / Pw (podwaliny) / L (legary) / Pd (podciągi pod legarami) / P (płatwie) / K (krokwie)
+  / S (słupy tarasu)
   – kody belek to grupy Dokumentacji 2D (rozpoznaje je od razu); Bs, Kf, Sz trzeba w niej dopisać
   (`element_roles.rb`, `PREFIX_GROUPS`) – do tego czasu bale trafią do grupy E. Dalej `pozycja`, `nazwa`.
   **Grupa domu nie ma roli** (rola „skip” na grupie wyłączyłaby wszystkie bale w Dokumentacji 2D).
@@ -158,24 +167,69 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   nad jej wierzchem (69,5 = wierzch najwyższego bala szczytowej, jak 900), w stronę kalenicy rośnie pod kątem
   `dach_kat` (20°). Płatew stojąca na ścianie (`platwa_scienna_polozenie` = na_scianie) wyznacza linię swoim wierzchem.
 - Płatwie: ścienne (60 × 200, przy licu wewnętrznym albo na ścianie), pośrednie (80 × 180, co ≤ `platwie_rozstaw_max`
-  990–1000 w poziomie), kalenicowa (80 × 180). Płatew stoi wierzchem na linii przy krawędzi od strony okapu – nic nie
-  wystaje nad dach. Długość = dom + 2 × `dach_okap_szczyt` (500).
+  990–1000 w poziomie), kalenicowa (80 × 180). **Wierzch ścięty do płaszczyzny dachu** (`platwie_sciecie` = tak, wymóg
+  użytkownika z rundy 5): płatew podniesiona tak, że ścięty po skosie wierzch leży w linii podparcia na całej szerokości
+  (pośrednia i ścienna – z jednej strony, kalenicowa – z dwóch), krokwie i deski leżą na całej płatwi; bez ścięcia –
+  wierzch poziomy przy krawędzi od okapu. Długość = dom + 2 × `dach_okap_szczyt` (500).
 - Gniazdo płatwi = otwór od spodu płatwi w górę (z luzem `gniazdo_luz` 5 na stronę): bal przy spodzie płatwi ma
   wycięcie od góry, bale wyżej są przecięte (jak 900: kawałki 66-147, 68-372). Gniazda dostają też działowe i węgły,
   pod którymi przechodzi płatew ścienna.
-- Krokwie (`dach_uklad` = krokwie / płatwie i krokwie): leżą na linii podparcia, od okapu (`dach_okap` 500 za
-  licem) do kalenicy, rozstaw ≤ `krokwie_rozstaw` (900). Przy szczycie (`krokwie_przy_szczycie`): z obu stron
-  szczytu, tylko od wewnątrz, tylko od zewnątrz – szczyt dochodzi do wierzchu krokwi; albo krokiew na szczycie –
-  szczyt kończy się pod krokwią.
-- Bale szczytu: skos wg linii szczytu, kliny niższe niż `szczyt_min_wysokosc` (30) pomijane, okruchy krótsze niż
-  `szczyt_min_kawalek` (50) między skosem a gniazdem płatwi pomijane; prefiks Sz.
+- Krokwie (`dach_uklad` = krokwie / płatwie i krokwie) – **kto je buduje** (`dach_wiezba`, runda 5):
+  - **aplikacja do dachów** (domyślnie; `rdzen/polacie.rb`, `sketchup/dach_aplikacja.rb`): po budowie domu generator
+    tworzy połacie w ArteMadera Roof (KROK 1 – obrys = lica zewnętrzne ścian okapowych na wysokości linii podparcia,
+    krawędzie szczytowe przesunięte o wysunięcie za szczyt − okap, kąt, okap), zapisuje w niej ustawienia KROKU 2
+    (w górę od połaci = spód krokwi, bez płatwi kalenicowej i zamków dolnych, krokiew, rozstaw i klasa drewna
+    z generatora, kontrola nośności) i otwiera okno KROKU 2 – krokwie, łaty, deski i kontrola nośności robi
+    aplikacja. Generator robi wtedy same płatwie; szczyt kończy się pod krokwiami (linia podparcia). Przebudowa domu
+    usuwa poprzednie połacie, więźbę nad nimi – po potwierdzeniu. Jedno „Cofnij” dla domu i połaci. Bez aplikacji –
+    komunikat w oknie;
+  - **generator** (uproszczone, bez kontroli): krokwie na linii podparcia, od okapu (`dach_okap` 500 za licem) do
+    kalenicy, rozstaw ≤ `krokwie_rozstaw` (900). Przy szczycie (`krokwie_przy_szczycie`): z obu stron szczytu, tylko
+    od wewnątrz, tylko od zewnątrz – szczyt dochodzi do wierzchu krokwi; albo krokiew na szczycie – szczyt kończy
+    się pod krokwią.
+- Bale szczytu: skos wg linii szczytu **pełnym klinem do końca** – szczyt wypełniony do linii dachu (wymóg
+  użytkownika z rundy 5; `szczyt_min_wysokosc` 0, większa wartość pomija niższe kliny), okruchy krótsze niż
+  `szczyt_min_kawalek` (10) między skosem a gniazdem płatwi pomijane; prefiks Sz. Bal szczytu to jeden element ze
+  skosem ściętym z całego bala; osobny krótki kawałek jest tylko tam, gdzie płatew przechodzi przez całą wysokość bala
+  (między płatwią a skosem dachu) – jak 21-140, 22-186, 23-233 w 1100 W-2 (decyzja użytkownika 2026-10-25: zostają).
+- **Bal ścięty dachem przez narożnik tylko w zamku** (`rdzen/skos_przy_narozniku.rb`, runda 5): gdy ściana poprzeczna
+  nie ma w słupie zamka bala na sąsiednim poziomie albo nad gniazdem od spodu zostałoby mniej niż `zamek_min_drewno`
+  (20) drewna, bal kończy się przy licu wewnętrznym ściany poprzecznej (bez wiszącego ostatka i cienkiego mostka –
+  np. przy ścianie wysokiej dachu jednospadowego).
 - Szczyt na działowej (`szczyty_na_dzialowych`): krokwie z obu stron takiego szczytu (albo na nim – opcja „na
   szczycie”), pozostałe krokwie równo między krokwiami przy szczytach.
 - Bale pod połacią (`rdzen/pod_dachem.rb`): ściany w poprzek kalenicy bez własnego szczytu (działowe niższe od dachu,
   węgły na ścianach okapowych) ścinane linią podparcia (spód krokwi / desek) – przy stromym dachu ostatki węgłów nie
   wchodzą w połać. Ostrzeżenie, gdy przy licu zewnętrznym ściany okapowej spód krokwi wypada niżej niż jej wierzch.
 - Węgły przy szczycie wchodzą w szczyt (do linii dachu), żeby trzymać styki bali szczytu.
-- Belki dachu tylko dla obrysu prostokątnego (inny obrys – szczyty liczone dla każdej ściany osobno, ostrzeżenie).
+- Belki dachu tylko dla obrysu prostokątnego (inny obrys – szczyty liczone dla każdej ściany osobno, ostrzeżenie;
+  dach zrób w aplikacji do dachów – KROK 1 z obrysu).
+- **Dach jednospadowy** (`dach_rodzaj`, `rdzen/dach_jednospadowy.rb`, runda 5): ściany wzdłuż „kalenicy” to ściana
+  niska (po stronie `dach_spadek`, wysokość ścian okapowych) i wysoka – sięga połaci: wieńce do linii podparcia przy jej
+  licu wewnętrznym, górny bal przycięty wzdłuż, pasek cieńszy niż `jednospad_min_pasek` (30) pomijany. Linia podparcia
+  od lica wewnętrznego ściany niskiej (z_ref) w górę pod kątem dachu; ściany w poprzek – szczyty skośne (jeden spadek);
+  płatew ścienna przy ścianie niskiej, pośrednie do lica ściany wysokiej, bez kalenicowej; krokwie z generatora
+  w jednym kawałku od okapu do okapu za ścianą wysoką (`dach_okap_wysoki`); połać dla aplikacji do dachów – jedna,
+  z trzema krawędziami szczytowymi. Tylko dom prostokątny.
+
+## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
+
+- Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):
+  obrys dłuższy o `taras_glebokosc` (od lica ściany domu do lica frontu), oś kalenicy jak dla domu bez tarasu, dawna
+  ściana szczytowa zostaje jako działowa ze szczytem (ostatki na zewnątrz), dach, płatwie i połacie idą nad taras.
+  Tylko obrys prostokątny.
+- **Jak 1100** (`podciag`): nad tarasem tylko górne `taras_wience_gorne` (2) wieńce ścian bocznych (podciąg z bali
+  do frontu, z ostatkiem) i front od wieńca, który zamyka się z nimi w narożniku, ze szczytem; dolne bale ścian
+  bocznych kończą się `taras_ostatek` (100) za licem ściany domu. Słupy (`taras_slup_przekroj` 120 × 120, prefiks S,
+  grupa i tag „Taras”) od poziomu 0 do spodu podciągu: w narożnikach frontu, przy wejściu (`taras_wejscie` pośrodku /
+  z lewej / z prawej patrząc na front z zewnątrz / brak, `taras_wejscie_szerokosc` 1200 w świetle) i pośrednie co
+  ≤ `taras_slupy_rozstaw_max` (2000) pod frontem i pod ścianami bocznymi. **Balustrada** z bali w przęsłach między
+  słupami i ścianą domu, w wieńcach ściany: `taras_balustrada_bale` (4) pełnych bali na przemian z rzędami przekładek
+  `taras_przekladka` (300) przy końcach przęsła i równo między nimi (prześwit ≤ `taras_przekladka_odstep` 600);
+  najniższy wieniec zawsze bal (ściana z półbalem: półbal i bal – jak 1100 W-1); bale bez zamków. Tylko dach
+  dwuspadowy.
+- **Jak 1200** (`sciany`): ściany boczne przedłużone na całą wysokość do frontu, front otwarty (bez bali – zostaje
+  w planie dla dachu i płatwi), bez słupów i balustrady; działa też z dachem jednospadowym.
 
 ## 9. Podłoga
 
@@ -224,10 +278,10 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 ## 10a. Test działania i raport (menu)
 
 „Rozszerzenia → ArteMadera Generator Wieńcowy → Test działania i raport do wysłania…” (`sketchup/raport.rb`):
-- buduje 7 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
+- buduje 9 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
   i węgłem, 10 × 8 z łączeniami i węgłami usztywniającymi, obrys L, krokwie z obu stron szczytu i podłoga 150, pełny
-  profil z działową pod antresolą, ostatkiem 200 i węgłem ręcznym) w jednej operacji, którą na końcu cofa – model
-  zostaje bez zmian;
+  profil z działową pod antresolą, ostatkiem 200 i węgłem ręcznym, dach jednospadowy ze szczytem na działowej, taras
+  jak 1100 z drzwiami w ścianie domu) w jednej operacji, którą na końcu cofa – model zostaje bez zmian;
 - dla każdego domu: liczby z planu i z modelu (instancje według prefiksu), bryły niezamknięte (`manifold?`), bryły
   o objętości innej niż z profilu (> 0,2 %), ściany, których nie narysowano, kontrola zamków i styków, czasy;
 - zaznaczony dom: kompilacja, ręczne zmiany, zgodność modelu z parametrami;
@@ -236,7 +290,7 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 
 ## 11. Etapy dalej
 
-Według decyzji użytkownika (propozycje 2, 3, 4, 5, 7, 10 objaśnione w rundzie 4 – czekają na wybór): Dokumentacja
-2D – grupy Bs/Kf/Sz, dach dokładniej (cięcia krokwi, deski, obrysy L / U albo połacie dla wtyczki dachów), taras,
-szybsza budowa modelu, okna i drzwi (typowe wymiary, dociąganie do krawędzi bala, ościeżnice), pliki dla producenta
-(XLSX, CNC).
+Po rundzie 5: Dokumentacja 2D – konstrukcja wieńcowa (zadanie `docs/zadanie_dokumentacja2d.md` – w tamtej wtyczce),
+aplikacja do dachów – poszycie (nadbitka, deskowanie, OSB) i stałe wejście dla generatora (zadanie
+`docs/zadanie_aplikacja_dachow.md` – w tamtej wtyczce); odbiór kompilacji 5 w SketchUpie; taras – szczegóły z odbioru
+(słupy, wejście, schody, deski tarasu). Propozycje 5 (szybsza budowa) i 10 (pliki dla producenta) – odpadły / później.

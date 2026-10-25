@@ -1,9 +1,9 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.js
-  Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, tabela otworów, wywołania Ruby.
-  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, tabela otworów, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA)
+  Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
+  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -153,85 +153,6 @@ var AMGW = (function () {
     return p;
   }
 
-  // ---- otwory ----
-
-  // Wiersz otworu w tabeli (ściana, od, szerokość, wysokość, parapet, nazwa).
-  function dodajOtwor(o) {
-    var tr = el('tr');
-    var td = el('td');
-    var sel = el('select', { 'data-o': 'sciana' });
-    wypelnijSciany(sel, o.sciana);
-    td.appendChild(sel);
-    tr.appendChild(td);
-    var klucze = ['od', 'szerokosc', 'wysokosc', 'parapet', 'nazwa'];
-    var i;
-    for (i = 0; i < klucze.length; i++) {
-      td = el('td');
-      var inp = el('input', { type: 'text', 'data-o': klucze[i] });
-      inp.value = o[klucze[i]] === undefined || o[klucze[i]] === null ? '' : String(o[klucze[i]]);
-      inp.addEventListener('change', zaplanujPodglad);
-      td.appendChild(inp);
-      tr.appendChild(td);
-    }
-    td = el('td');
-    var usun = el('button', { type: 'button', title: 'Usuń otwór' }, '×');
-    usun.addEventListener('click', function () { tr.parentNode.removeChild(tr); zaplanujPodglad(); });
-    td.appendChild(usun);
-    tr.appendChild(td);
-    sel.addEventListener('change', zaplanujPodglad);
-    $('tab-otwory').getElementsByTagName('tbody')[0].appendChild(tr);
-  }
-
-  // Lista ścian dla otworu (bez kontrforów); brakująca ściana zostaje z dopiskiem.
-  function wypelnijSciany(sel, wybrana) {
-    var i;
-    var jest = false;
-    wyczysc(sel);
-    for (i = 0; i < stan.sciany.length; i++) {
-      var w = stan.sciany[i];
-      if (w.rodzaj === 'kontrfor') { continue; }
-      var o = el('option', { value: w.id, title: w.rodzaj }, w.id);
-      if (w.id === wybrana) { o.selected = true; jest = true; }
-      sel.appendChild(o);
-    }
-    if (wybrana && !jest) {
-      var brak = el('option', { value: wybrana }, wybrana + ' (brak)');
-      brak.selected = true;
-      sel.appendChild(brak);
-    }
-  }
-
-  // Otwory z tabeli do wysłania do Ruby.
-  function zbierzOtwory() {
-    var wiersze = $('tab-otwory').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    var wynik = [];
-    var i;
-    for (i = 0; i < wiersze.length; i++) {
-      var pola = wiersze[i].querySelectorAll('[data-o]');
-      var o = {};
-      var j;
-      for (j = 0; j < pola.length; j++) { o[pola[j].getAttribute('data-o')] = pola[j].value; }
-      wynik.push(o);
-    }
-    return wynik;
-  }
-
-  // Odświeżenie list ścian w tabeli otworów po podglądzie.
-  function odswiezScianyOtworow() {
-    var sel = $('tab-otwory').querySelectorAll('select[data-o="sciana"]');
-    var i;
-    for (i = 0; i < sel.length; i++) { wypelnijSciany(sel[i], sel[i].value); }
-  }
-
-  // Pierwsza ściana (nie kontrfor) – domyślna dla nowego otworu.
-  function pierwszaSciana() {
-    var i;
-    for (i = 0; i < stan.sciany.length; i++) {
-      if (stan.sciany[i].rodzaj !== 'kontrfor') { return stan.sciany[i].id; }
-    }
-    return 'W-1';
-  }
-
   // ---- wyniki ----
 
   // Komunikat nad formularzem (ok / blad).
@@ -244,7 +165,7 @@ var AMGW = (function () {
   // Ukrycie komunikatu.
   function ukryjKomunikat() { $('komunikat').className = 'komunikat ukryty'; }
 
-  // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów i odświeżenie widoku wybranej ściany.
+  // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów (html/otwory.js) i odświeżenie widoku ściany.
   function pokazWynik(d) {
     AMGW_WYNIKI.pokaz(d, wybierzSciane);
     if (!d.sciany) {
@@ -254,7 +175,7 @@ var AMGW = (function () {
       return;
     }
     stan.sciany = d.sciany;
-    odswiezScianyOtworow();
+    AMGW_OTWORY.sciany(d.sciany);
     if (d.widoki) {
       stan.widok = AMGW_SCIANA.lista($('widok-sciana'), d.widoki, stan.widok);
       if (stan.widok) { wywolaj('widok', stan.widok); }
@@ -288,10 +209,11 @@ var AMGW = (function () {
   // ---- wywołania ----
 
   // Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku).
-  function dane() { return JSON.stringify({ parametry: zbierzParametry(), otwory: zbierzOtwory(), sciany: AMGW_EDYCJA.dane() }); }
+  function dane() { return JSON.stringify({ parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), sciany: AMGW_EDYCJA.dane() }); }
 
-  // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie).
+  // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli.
   function zaplanujPodglad() {
+    AMGW_OTWORY.przelicz();
     if (stan.timer) { clearTimeout(stan.timer); }
     stan.timer = setTimeout(function () { stan.timer = null; wywolaj('podglad', dane()); }, 350);
   }
@@ -306,11 +228,12 @@ var AMGW = (function () {
     wypelnijSzablony(d.szablony);
     $('plik-ustawien').textContent = d.plik_ustawien ? 'Ostatnie ustawienia zapisują się w: ' + d.plik_ustawien : '';
     AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
+    AMGW_OTWORY.init(wartoscPola, zaplanujPodglad);
     zbudujFormularz(d.parametry || {});
     AMGW_TRYB.ustaw(d.tryb_pol, stan.opisy);
     var i;
     if (d.podsumowanie) { pokazWynik(d.podsumowanie); }
-    for (i = 0; i < (d.otwory || []).length; i++) { dodajOtwor(d.otwory[i]); }
+    for (i = 0; i < (d.otwory || []).length; i++) { AMGW_OTWORY.dodaj(d.otwory[i]); }
     $('btn-generuj').textContent = d.tryb === 'edycja' ? 'Zastąp dom w modelu' : 'Generuj w modelu';
   }
 
@@ -335,7 +258,8 @@ var AMGW = (function () {
       pokazKomunikat('Nie można wygenerować domu – popraw błędy na liście.', 'blad');
     } else if (d.zbudowano) {
       pokazKomunikat('Dom wygenerowany w modelu: ' + d.liczby.bale + ' bali, ' + d.liczby.pozycje + ' pozycji.' +
-                     (d.bledne_sciany ? ' Uwaga: ' + d.bledne_sciany + ' ścian brył nie narysowano.' : ''), 'ok');
+                     (d.bledne_sciany ? ' Uwaga: ' + d.bledne_sciany + ' ścian brył nie narysowano.' : '') +
+                     (d.dach ? ' ' + d.dach.tekst : ''), d.dach && !d.dach.ok ? 'blad' : 'ok');
       $('btn-generuj').textContent = 'Zastąp dom w modelu';
     } else if (d.anulowano) {
       pokazKomunikat('Anulowano – dom w modelu bez zmian.', 'blad');
@@ -354,13 +278,15 @@ var AMGW = (function () {
     });
     $('btn-zamknij').addEventListener('click', function () { wywolaj('zamknij'); });
     $('btn-okno').addEventListener('click', function () {
-      dodajOtwor({ sciana: pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'), szerokosc: wartoscPola('okno_szerokosc', '1020'),
-                   wysokosc: wartoscPola('okno_wysokosc', '1010'), parapet: wartoscPola('okno_parapet', '900'), nazwa: '' });
+      AMGW_OTWORY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'),
+                          szerokosc: wartoscPola('okno_szerokosc', '1020'), wysokosc: wartoscPola('okno_wysokosc', '1010'),
+                          parapet: wartoscPola('okno_parapet', '900'), luz_gorny: '', nazwa: '' });
       zaplanujPodglad();
     });
     $('btn-drzwi').addEventListener('click', function () {
-      dodajOtwor({ sciana: pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'), szerokosc: wartoscPola('drzwi_szerokosc', '930'),
-                   wysokosc: wartoscPola('drzwi_wysokosc', '2100'), parapet: '0', nazwa: '' });
+      AMGW_OTWORY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'),
+                          szerokosc: wartoscPola('drzwi_szerokosc', '930'), wysokosc: wartoscPola('drzwi_wysokosc', '2100'),
+                          parapet: '0', luz_gorny: '', nazwa: '' });
       zaplanujPodglad();
     });
     $('btn-szablon-wczytaj').addEventListener('click', function () {
