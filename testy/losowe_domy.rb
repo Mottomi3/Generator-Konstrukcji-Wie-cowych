@@ -3,12 +3,13 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
 # Dom z ziarna jest zawsze ten sam (Random.new(ziarno)) – błąd z raportu odtwarza się podając ziarno. Dodatki z rundy 4
-# (pełny profil, strop, ustawienia ścian) z osobnego losowania – domy z ziaren rund 1–3 bez zmian.
+# (pełny profil, strop, ustawienia ścian) i rundy 5 (krokwie z aplikacji, luzy stolarki) z osobnych losowań – domy
+# z ziaren wcześniejszych rund bez zmian.
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
 require File.expand_path('kolizje_belek', File.dirname(__FILE__))
@@ -69,6 +70,7 @@ module LosoweDomy
     p = parametry(r)
     otw = otwory(r, prostokat_dom ? [w, d, w, d] : [w, d - cd, cw, cd])
     sciany = dodatki(Random.new(ziarno * 7919 + 13), p, prostokat_dom ? w : w - cw, opis)
+    dodatki_r5(Random.new(ziarno * 104_729 + 31), p, opis)
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -102,7 +104,20 @@ module LosoweDomy
     sciany
   end
 
-  # Losowe parametry (wartości tekstowe jak z okna).
+  # Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie),
+  # luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi).
+  def dodatki_r5(r, p, opis)
+    if r.rand < 0.4
+      p['dach_wiezba'] = 'aplikacja'
+      opis << 'krokwie z aplikacji' if %w[krokwie platwie_krokwie].include?(p['dach_uklad'])
+    end
+    return unless r.rand < 0.3
+    p['luz_boczny'] = wybierz(r, %w[0 5 15])
+    p['osiadanie_scian'] = wybierz(r, %w[0 3 4])
+    opis << "luzy stolarki #{p['luz_boczny']} / #{p['osiadanie_scian']} %"
+  end
+
+  # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
       'liczba_wiencow' => (8 + r.rand(19)).to_s, 'max_dlugosc' => wybierz(r, %w[3000 4000 5100 5100 6000 7000]),
@@ -116,7 +131,7 @@ module LosoweDomy
       'platwa_na_scianie' => wybierz(r, %w[tak tak nie]), 'platwa_scienna_polozenie' => wybierz(r, %w[przy_licu na_scianie]),
       'podloga' => wybierz(r, %w[tak tak nie]), 'legary_kierunek' => wybierz(r, %w[krotszy dluzszy x y]),
       'legary_dobor' => wybierz(r, %w[zalecany minimalny reczny]), 'izolacja_podlogi' => wybierz(r, %w[0 100 150 200]),
-      'szczelina_styku' => wybierz(r, %w[0 0 2])
+      'szczelina_styku' => wybierz(r, %w[0 0 2]), 'dach_wiezba' => 'generator'
     }
   end
 
@@ -175,7 +190,20 @@ module LosoweDomy
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end
     end
+    problemy.concat(problemy_polaci(pl))
     [problemy, pl]
+  end
+
+  # Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora.
+  def problemy_polaci(pl)
+    wz = wzgledem_polaci(pl)
+    return [] if wz.nil?
+    wynik = []
+    wynik << format('bale ponad połacią o %.2f mm', wz[:bale]) if wz[:bale] && wz[:bale] > 0.01
+    wynik << format('płatwie ponad połacią o %.2f mm', wz[:platwie]) if wz[:platwie] && wz[:platwie] > 0.01
+    wynik << format('płatew %.2f mm pod połacią – nie podpiera krokwi', -wz[:dotyk]) if wz[:dotyk] && wz[:dotyk] < -0.5
+    wynik << "krokwie generatora przy krokwiach z aplikacji: #{wz[:krokwie]}" if wz[:krokwie] > 0
+    wynik
   end
 
   # Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }.

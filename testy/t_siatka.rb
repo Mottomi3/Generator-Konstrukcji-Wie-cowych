@@ -51,7 +51,7 @@ sprawdz_pozycje(plan(prostokat(0, 0, 12_000, 5000), 'styk_uklad' => 'jeden_kontr
 Testy.grupa('Siatki – dom ze szczytami, gniazdami płatwi, krokwiami i podłogą')
 otw = [{ 'sciana' => 'W-2', 'od' => 1100, 'szerokosc' => 800, 'wysokosc' => 500, 'parapet' => 2450 }]
 sprawdz_pozycje(plan_pelny(prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]], {}, otw), 'dom ze szczytami')
-sprawdz_pozycje(plan_pelny(prostokat(0, 0, 5000, 4000), 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 35,
+sprawdz_pozycje(plan_pelny(prostokat(0, 0, 5000, 4000), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'dach_kat' => 35,
                            'szczyty_na_dzialowych' => 'tak'), 'krokwie, kąt 35°')
 
 Testy.grupa('Siatka – bryła ze skosem i otworem w czole')
@@ -104,7 +104,7 @@ sprawdz_pozycje(p1, 'jedno pióro')
 seg = prostokat(0, 0, 9000, 6000) + [[[4000, 0], [4000, 6000]], [[6500, -150], [6500, 150]]]
 otw = [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 950 },
        { 'sciana' => 'W-2', 'od' => 2000, 'szerokosc' => 930, 'wysokosc' => 2100, 'parapet' => 0 }]
-sprawdz_pozycje(plan_pelny(seg, { 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie' }, otw), 'pełny profil: szczyty, otwory, węgły')
+sprawdz_pozycje(plan_pelny(seg, { 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, otw), 'pełny profil: szczyty, otwory, węgły')
 Testy.rowne(Kontrola.kolizje(pp).length, 0, 'zamki bez kolizji (pióro w gnieździe zamka wycięte)')
 
 Testy.koniec

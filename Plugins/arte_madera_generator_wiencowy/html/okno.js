@@ -258,7 +258,8 @@ var AMGW = (function () {
       pokazKomunikat('Nie można wygenerować domu – popraw błędy na liście.', 'blad');
     } else if (d.zbudowano) {
       pokazKomunikat('Dom wygenerowany w modelu: ' + d.liczby.bale + ' bali, ' + d.liczby.pozycje + ' pozycji.' +
-                     (d.bledne_sciany ? ' Uwaga: ' + d.bledne_sciany + ' ścian brył nie narysowano.' : ''), 'ok');
+                     (d.bledne_sciany ? ' Uwaga: ' + d.bledne_sciany + ' ścian brył nie narysowano.' : '') +
+                     (d.dach ? ' ' + d.dach.tekst : ''), d.dach && !d.dach.ok ? 'blad' : 'ok');
       $('btn-generuj').textContent = 'Zastąp dom w modelu';
     } else if (d.anulowano) {
       pokazKomunikat('Anulowano – dom w modelu bez zmian.', 'blad');

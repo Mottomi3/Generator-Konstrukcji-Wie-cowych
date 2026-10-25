@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr
 # Zależy od: –
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
@@ -119,6 +119,13 @@ module ArteMadera
         { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['platwie', 'same płatwie (deski na płatwiach)'], ['krokwie', 'krokwie na płatwi ściennej i kalenicowej'],
                    ['platwie_krokwie', 'płatwie i krokwie']] },
+        { klucz: 'dach_wiezba', podstawowy: true, domyslna: 'aplikacja', etykieta: 'Krokwie – kto je buduje', rodzaj: :wybor,
+          sekcja: 'szczyty',
+          wybory: [['aplikacja', 'aplikacja do dachów – połacie i KROK 2 z kontrolą krokwi'],
+                   ['generator', 'generator – uproszczone, bez kontroli nośności']],
+          podpowiedz: 'Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na ' \
+                      'spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; ' \
+                      'szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
         { klucz: 'dach_podniesienie', domyslna: 69.5, etykieta: 'Wierzch płatwi nad ścianą okapową (przy licu wewn.)',
           jednostka: 'mm', min: -300.0, max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.' },
@@ -126,11 +133,12 @@ module ArteMadera
           rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['obie_strony', 'z obu stron szczytu'], ['wewnatrz', 'tylko od wewnątrz'], ['zewnatrz', 'tylko od zewnątrz'],
                    ['na_szczycie', 'na szczycie (krokiew oparta na balach)']],
-          podpowiedz: 'Krokwie obok szczytu – szczyt dochodzi do wierzchu krokwi; krokiew na szczycie – szczyt kończy się pod nią.' },
+          podpowiedz: 'Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod ' \
+                      'nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami.' },
         { klucz: 'krokiew_przekroj', domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty' },
+          rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
         { klucz: 'krokwie_rozstaw', domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
-          max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty' },
+          max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
         { klucz: 'platwa_przekroj', domyslna: '80x180', etykieta: 'Płatew pośrednia', jednostka: 'mm', rodzaj: :przekroj,
           sekcja: 'szczyty', podpowiedz: 'Projekt 900: 80 × 180.' },
         { klucz: 'platwa_kalenicowa_przekroj', domyslna: '80x180', etykieta: 'Płatew kalenicowa', jednostka: 'mm',

@@ -25,7 +25,8 @@ if [ ! -x "$R27" ]; then
 fi
 export AM_GW_CICHO=1
 SUMA=0
-for t in t_rdzen t_wegly t_szczyty t_podloga t_zamek t_siatka t_widok t_zestawienie t_raport t_sciany_ust t_sketchup; do
+for t in t_rdzen t_wegly t_szczyty t_polacie t_podloga t_zamek t_siatka t_widok t_zestawienie t_raport t_sciany_ust t_sketchup \
+         t_dach_aplikacja; do
   n=$("$R27" -W0 -I testy/atrapa "testy/$t.rb" 2>&1 | grep -E "FAILURES: [0-9]+" | tail -1 | grep -oE "[0-9]+$")
   [ -z "$n" ] && n=1
   echo "  $t (Ruby $("$R27" -e 'print RUBY_VERSION')): FAILURES $n"

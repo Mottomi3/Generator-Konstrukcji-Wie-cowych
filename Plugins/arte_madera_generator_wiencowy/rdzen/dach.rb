@@ -3,17 +3,18 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/dach.rb
 # Zadanie: geometria dachu dwuspadowego – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu.
-# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu
+# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów
 # Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb
-# Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu)
+# Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu), rdzen/polacie.rb (linia podparcia)
 #
 # Przekrój poprzeczny dachu opisuje „geo” = { v_a:, v_b: } – osie ścian okapowych w kierunku v (prostopadle do kalenicy);
 # kalenica w połowie. Linia podparcia: spód krokwi (płaszczyzna dachu nad płatwiami); na licu wewnętrznym ściany
 # okapowej = z_ref, w stronę kalenicy rośnie o tg(kąt). Płatew ścięta (platwie_sciecie = tak, wymóg użytkownika):
 # podniesiona tak, że wierzch ścięty po skosie leży w linii podparcia na całej szerokości (kalenicowa – z dwóch stron);
 # bez ścięcia – wierzch poziomy na linii przy krawędzi od strony okapu (nic nie wystaje nad dach).
-# Krokwie leżą na linii podparcia; szczyt kończy się na linii podparcia (bez krokwi lub krokiew na szczycie) albo na
-# wierzchu krokwi (krokwie obok szczytu).
+# Krokwie leżą na linii podparcia; szczyt kończy się na linii podparcia (bez krokwi, krokiew na szczycie albo krokwie
+# z aplikacji do dachów – dach_wiezba = aplikacja, generator robi wtedy same płatwie, rdzen/polacie.rb) albo na
+# wierzchu krokwi (krokwie z generatora obok szczytu).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -40,6 +41,11 @@ module ArteMadera
         %w[krokwie platwie_krokwie].include?(p['dach_uklad'])
       end
 
+      # Czy krokwie buduje generator (dach_wiezba = generator); przy aplikacji do dachów krokwie powstają w jej KROKU 2.
+      def krokwie_generatora?(p)
+        krokwie?(p) && p['dach_wiezba'] == 'generator'
+      end
+
       # Czy układ dachu ma płatwie pośrednie (między ścienną a kalenicową).
       def platwie_posrednie?(p)
         %w[platwie platwie_krokwie].include?(p['dach_uklad'])
@@ -51,9 +57,9 @@ module ArteMadera
         Parametry.przekroj(p, 'krokiew_przekroj')[1] / Math.cos(kat(p))
       end
 
-      # Czy szczyt dochodzi do wierzchu krokwi (krokwie obok szczytu), a nie do linii podparcia.
+      # Czy szczyt dochodzi do wierzchu krokwi (krokwie z generatora obok szczytu), a nie do linii podparcia.
       def szczyt_do_wierzchu_krokwi?(p)
-        krokwie?(p) && p['krokwie_przy_szczycie'] != 'na_szczycie'
+        krokwie_generatora?(p) && p['krokwie_przy_szczycie'] != 'na_szczycie'
       end
 
       # Wysokość linii podparcia na licu wewnętrznym ściany okapowej [mm] (płatew ścienna na ścianie albo podniesienie).
@@ -138,7 +144,7 @@ module ArteMadera
       # na działowych (krokwie z obu stron albo na szczycie). Pozostałe krokwie równo między krokwiami przy szczytach;
       # na koniec bez krokwi wchodzących w inny szczyt i bez nachodzących na siebie (bez_kolizji).
       def krokwie_u(u1, u2, p, wewn = [])
-        return [] unless krokwie?(p)
+        return [] unless krokwie_generatora?(p)
         t = Parametry.grubosc(p)
         bk = Parametry.przekroj(p, 'krokiew_przekroj')[0]
         zew = t / 2.0 + bk / 2.0

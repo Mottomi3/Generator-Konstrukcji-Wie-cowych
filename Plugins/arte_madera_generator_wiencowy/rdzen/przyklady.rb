@@ -45,9 +45,9 @@ module ArteMadera
           dom('Obrys L – ściany bez dachu i podłogi',
               wielokat([[0, 0], [8000, 0], [8000, 4000], [4500, 4000], [4500, 7000], [0, 7000]]), {}, []),
           dom('Krokwie z obu stron szczytu, podłoga ocieplona 150', prostokat(0, 0, 6000, 5000),
-              { 'dach_uklad' => 'krokwie', 'krokwie_przy_szczycie' => 'obie_strony', 'izolacja_podlogi' => 150 }, []),
+              { 'dach_uklad' => 'krokwie', 'dach_wiezba' => 'generator', 'krokwie_przy_szczycie' => 'obie_strony', 'izolacja_podlogi' => 150 }, []),
           dom('Pełny profil, działowa pod antresolą, ostatek 200, węgieł ręczny', prostokat(0, 0, 6000, 4200) + [[[2000, 0], [2000, 4200]]],
-              { 'liczba_wiencow' => 20, 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie' },
+              { 'liczba_wiencow' => 20, 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' },
               [otwor('W-5', 1200, 900, 2000, 0, 'D1')],
               'W-5' => { 'nad' => 'antresola', 'wysokosc' => 2450 }, 'W-1' => { 'ostatek_od' => 200 }, 'W-3' => { 'wegly' => [3500] })
         ]

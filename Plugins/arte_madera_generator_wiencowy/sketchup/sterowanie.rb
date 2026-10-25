@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/sterowanie.rb
 # Zadanie: przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
-# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan
-# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
+# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan, dach z aplikacji po budowie
+# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/dach_aplikacja.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
 # Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
 #
 # Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory, sciany (ustawienia ścian z widoku ściany).
@@ -60,7 +60,8 @@ module ArteMadera
           w || { 'blad' => "Brak ściany #{id} w ostatnim podglądzie.", 'id' => id.to_s }
         end
 
-        # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom); parametry zapamiętane na komputerze.
+        # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom), potem dach z aplikacji do dachów (połacie
+        # i KROK 2 – 'dach' w wyniku: tekst do okna); parametry zapamiętane na komputerze.
         def generuj(dane)
           model = Sketchup.active_model
           wej = scal(dane)
@@ -75,6 +76,7 @@ module ArteMadera
                                 'Nowa wersja zastąpi te zmiany. Kontynuować?', MB_YESNO)
             return wynik.merge('anulowano' => true) if odp != IDYES
           end
+          stary_id = stary ? Atrybuty.dom_id(stary) : nil
           zb = Log.time('budowa modelu') { Budowa.zbuduj(model, plan, wej, stary) }
           @dom = zb[:grupa]
           @wejscie = wej
@@ -82,7 +84,8 @@ module ArteMadera
           model.selection.add(@dom)
           Log.info(format('Dom wygenerowany: %d ścian, %d bali, %d pozycji.', plan[:sciany].length, plan[:bale].length,
                           plan[:pozycje].length))
-          wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany])
+          dach = DachAplikacja.po_budowie(model, @dom, plan, stary_id)
+          wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany], 'dach' => dach)
         end
 
         # Menu „Kontrola”: kolizje w zamkach, mijanka, długości dla zaznaczonego domu.

@@ -3,20 +3,20 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/projekt.rb
 # Zadanie: przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
-# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory)
+# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie
 # Zależy od: wszystkie pliki rdzen/
 # Używają: sketchup/sterowanie.rb, testy
 #
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
 # 'parametry' {…}, 'otwory' [{…}], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
-# podłogi i dachu), pozycje_elementow, pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
+# podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach szczyty dopelnienie
-     pod_dachem bale zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
+  %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach szczyty polacie
+     dopelnienie pod_dachem bale zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -71,9 +71,12 @@ module ArteMadera
         plan
       end
 
-      # Belki dachu (dom prostokątny) i podłogi: elementy, pozycje (numery po balach), podpowiedzi podłogi.
+      # Belki dachu (dom prostokątny) i podłogi: elementy, pozycje (numery po balach), podpowiedzi podłogi; połacie dla
+      # aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        plan[:polacie] = Polacie.dla_domu(dom, p)
+        plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]))
         pod = Podloga.zaplanuj(plan[:sciany], p)
         plan[:elementy].concat(pod[:elementy])
         plan[:podpowiedzi].concat(pod[:podpowiedzi])

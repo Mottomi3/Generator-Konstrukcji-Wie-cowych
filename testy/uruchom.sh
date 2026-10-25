@@ -3,7 +3,8 @@
 # Plik: testy/uruchom.sh
 # Zadanie: wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”.
 # Tematy: uruchamianie testów, zestawy testów, kontrola przed commitem
-# Zależy od: ruby, node (+ playwright i Chromium dla okna – bez nich test okna jest pomijany z ostrzeżeniem)
+# Zależy od: ruby, node (+ playwright i Chromium dla okna – bez nich test okna jest pomijany z ostrzeżeniem), aplikacja do dachów obok
+# repozytorium albo AM_GW_APLIKACJA_DACHOW (bez niej sprawdzenie z prawdziwą aplikacją jest pomijane z ostrzeżeniem)
 # Używają: start i zamknięcie rundy
 #
 # Użycie: bash testy/uruchom.sh
@@ -28,6 +29,7 @@ echo "Testy rdzenia i SketchUpa (atrapa):"
 uruchom t_rdzen ruby -I testy/atrapa testy/t_rdzen.rb
 uruchom t_wegly ruby -I testy/atrapa testy/t_wegly.rb
 uruchom t_szczyty ruby -I testy/atrapa testy/t_szczyty.rb
+uruchom t_polacie ruby -I testy/atrapa testy/t_polacie.rb
 uruchom t_podloga ruby -I testy/atrapa testy/t_podloga.rb
 uruchom t_zamek ruby -I testy/atrapa testy/t_zamek.rb
 uruchom t_siatka ruby -I testy/atrapa testy/t_siatka.rb
@@ -37,6 +39,15 @@ uruchom t_raport ruby -I testy/atrapa testy/t_raport.rb
 uruchom t_sciany_ust ruby -I testy/atrapa testy/t_sciany_ust.rb
 uruchom t_losowe ruby -I testy/atrapa testy/t_losowe.rb
 uruchom t_sketchup ruby -I testy/atrapa testy/t_sketchup.rb
+uruchom t_dach_aplikacja ruby -I testy/atrapa testy/t_dach_aplikacja.rb
+
+echo "Aplikacja do dachów (prawdziwa wtyczka na jej atrapie):"
+KD="${AM_GW_APLIKACJA_DACHOW:-../aplikacja-do-konstrukcji-dach-w}"
+if [ -f "$KD/artemadera_roof.rb" ]; then
+  uruchom dach_aplikacja ruby testy/sprawdz_dach_aplikacja.rb
+else
+  echo "  dach_aplikacja: POMINIĘTY (brak $KD – sklonuj Mottomi3/Aplikacja-do-konstrukcji-dach-w obok) – UWAGA"
+fi
 
 if [ -x /opt/ruby27/bin/ruby ]; then
   echo "Ruby 2.7 (jak w SketchUpie 2023):"

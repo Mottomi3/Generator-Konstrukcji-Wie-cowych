@@ -119,7 +119,7 @@ Testy.rowne(Wience.wysokosc(sciana(st_nic, 'W-5'), st_nic[:parametry]), 25 * 139
 nisko = plan_s(dom, {}, 'W-5' => { 'nad' => 'strop', 'wysokosc' => '5000' })
 Testy.sprawdz(nisko[:ostrzezenia].any? { |u| u.include?('W-5') && u.include?('pełnej wysokości') }, 'góra ponad pełną wysokość – ostrzeżenie')
 Testy.rowne(nadstawka(nisko, 'W-5').length, 0, 'wtedy bez nadstawki')
-dach = plan_s(dom, par.merge('dach_uklad' => 'platwie_krokwie'), { 'W-5' => { 'nad' => 'antresola', 'wysokosc' => '2500' } }, [], true)
+dach = plan_s(dom, par.merge('dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator'), { 'W-5' => { 'nad' => 'antresola', 'wysokosc' => '2500' } }, [], true)
 Testy.sprawdz(!sciana(dach, 'W-5')[:pod_dachem].nil?, 'działowa w poprzek kalenicy pod połacią')
 Testy.sprawdz(nad_dachem(dach, 'W-5') <= 0.01, "odcinki nadstawki pod połacią (wystaje #{nad_dachem(dach, 'W-5').round(2)})")
 Testy.rowne([kolizje_belek(dach, 'P'), kolizje_belek(dach, 'K')], [0, 0], 'płatwie i krokwie bez kolizji z odcinkami nadstawki')

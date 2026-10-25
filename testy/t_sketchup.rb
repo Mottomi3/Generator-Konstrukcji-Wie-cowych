@@ -160,7 +160,7 @@ Testy.sprawdz(obrocone > 0, "są bale obrócone o 180° (#{obrocone})")
 
 Testy.grupa('Położenie belek podłogi i dachu (także krokwi ukośnych)')
 bledne = 0
-pl_kr = Projekt.oblicz(Atrybuty.czytaj_wejscie(dom).merge('parametry' => { 'dach_uklad' => 'platwie_krokwie', 'liczba_wiencow' => '12' }))
+pl_kr = Projekt.oblicz(Atrybuty.czytaj_wejscie(dom).merge('parametry' => { 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'liczba_wiencow' => '12' }))
 pl_kr[:elementy].each do |e|
   tr = Konwersja.transformacja_elementu(e)
   poz = e[:pozycja]

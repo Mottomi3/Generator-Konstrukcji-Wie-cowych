@@ -58,10 +58,11 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `szczyty_na_dzialowych` | Szczyty także na działowych szczytowych | nie | `tak` – tak; `nie` – nie | Jak 1800 W-2 – ściana działowa do kalenicy. |
 | `dach_kat` | Kąt dachu | 20 ° | 5 … 60 | Projekty 900 i 1000: 20°. |
 | `dach_uklad` | Układ dachu | platwie | `platwie` – same płatwie (deski na płatwiach); `krokwie` – krokwie na płatwi ściennej i kalenicowej; `platwie_krokwie` – płatwie i krokwie |  |
+| `dach_wiezba` | Krokwie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów – połacie i KROK 2 z kontrolą krokwi; `generator` – generator – uproszczone, bez kontroli nośności | Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
 | `dach_podniesienie` | Wierzch płatwi nad ścianą okapową (przy licu wewn.) | 69,5 mm | -300 … 1500 | Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie. |
-| `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie obok szczytu – szczyt dochodzi do wierzchu krokwi; krokiew na szczycie – szczyt kończy się pod nią. |
-| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. |  |
-| `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 |  |
+| `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
+| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
+| `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 | Z aplikacją do dachów – wartość na start KROKU 2. |
 | `platwa_przekroj` | Płatew pośrednia | 80x180 mm | szer. × wys. | Projekt 900: 80 × 180. |
 | `platwa_kalenicowa_przekroj` | Płatew kalenicowa | 80x180 mm | szer. × wys. |  |
 | `platwie_rozstaw_max` | Największy rozstaw płatwi (w poziomie) | 1000 mm | 300 … 4000 | 900: ok. 990. |
