@@ -95,9 +95,12 @@ module ArteMadera
         w[:bale].map { |b| [b[:wieniec][:nr], r(b[:z0]), r(b[:h])] }.uniq.sort_by { |x| [x[1], x[0]] }
       end
 
-      # Otwory (bez gniazd płatwi): [[s0, s1, z0, z1, nazwa]].
+      # Otwory (bez gniazd płatwi): [[s0, s1, z0, z1, nazwa, stolarka [s0, s1, z0, z1] albo nil]].
       def otwory(w)
-        (w[:otwory] || []).reject { |o| o[:gniazdo] }.map { |o| [r(o[:s0]), r(o[:s1]), r(o[:z0]), r(o[:z1]), o[:nazwa].to_s] }
+        (w[:otwory] || []).reject { |o| o[:gniazdo] }.map do |o|
+          st = o[:stolarka]
+          [r(o[:s0]), r(o[:s1]), r(o[:z0]), r(o[:z1]), o[:nazwa].to_s, st ? [r(st[:s0]), r(st[:s1]), r(st[:z0]), r(st[:z1])] : nil]
+        end
       end
 
       # Linia dachu nad ścianą (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi): [[s, z]]; [] – brak.

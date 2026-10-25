@@ -39,6 +39,11 @@ poza = v['bale'].reject { |b| b['obrys'].all? { |s, z| s >= b['s0'] - 0.05 && s 
 Testy.rowne(poza.length, 0, 'obrys w prostokącie bala')
 Testy.sprawdz(v['styki'] > 0 && v['bale'].any? { |b| b['konce'].include?('styk') }, "styki w widoku (#{v['styki']})")
 Testy.rowne(v['otwory'].map { |o| o[4] }, ['O1'], 'okno w widoku')
+# Stolarka 1020 × 1010 w otworze: luz boczny 10 z obu stron, luz górny z podpowiedzi (1,5 % → 20).
+o1 = v['otwory'][0]
+Testy.rowne([o1[1] - o1[0], o1[3] - o1[2]], [1040.0, 1030.0], 'otwór w balach = stolarka + luzy')
+Testy.rowne([o1[5][1] - o1[5][0], o1[5][3] - o1[5][2], o1[5][0] - o1[0], o1[5][2] - o1[2]], [1020.0, 1010.0, 10.0, 0.0],
+            'stolarka w otworze (luz boczny 10, spód na parapecie)')
 Testy.sprawdz(v['skrzyzowania'].map { |k| k[1] }.include?('W-5'), 'skrzyżowanie z działową W-5')
 s5 = v['skrzyzowania'].find { |k| k[1] == 'W-5' }[0]
 # Bal, który przechodzi przez skrzyżowanie z W-5: w obrysie wierzch obniżony (gniazdo zamka) w pobliżu osi W-5.

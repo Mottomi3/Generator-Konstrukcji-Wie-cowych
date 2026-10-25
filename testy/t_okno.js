@@ -201,13 +201,15 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   var wv = await page.evaluate(function () {
     return [document.querySelectorAll('#widok polygon.bal').length, document.querySelectorAll('#widok line.styk').length,
             document.querySelectorAll('#widok line.skrzyzowanie').length, document.querySelectorAll('#widok text.nr-poz').length,
-            document.querySelectorAll('#widok rect.otwor').length, document.getElementById('widok-opis').textContent];
+            document.querySelectorAll('#widok rect.otwor').length, document.getElementById('widok-opis').textContent,
+            document.querySelectorAll('#widok rect.stolarka').length];
   });
   sprawdz(wv[0] === dane.widok.bale.length && wv[0] > 0, 'widok W-1: bal na każdy bal ściany (' + wv[0] + ')');
   sprawdz(wv[1] > 0, 'widok W-1: styki zaznaczone (' + wv[1] + ')');
   sprawdz(wv[2] === dane.widok.skrzyzowania.length && wv[2] > 0, 'widok W-1: skrzyżowania (' + wv[2] + ')');
   sprawdz(wv[3] > 0, 'widok W-1: numery pozycji na balach (' + wv[3] + ')');
   sprawdz(wv[4] === 1, 'widok W-1: okno (' + wv[4] + ')');
+  sprawdz(wv[6] === 1, 'widok W-1: stolarka w otworze (' + wv[6] + ')');
   sprawdz(wv[5].indexOf('W-1') === 0, 'opis widoku (' + wv[5] + ')');
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#rzut line.klik-sciana[data-sciana="W-2"]', { force: true });
