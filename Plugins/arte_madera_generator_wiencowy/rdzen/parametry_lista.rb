@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry
 # Zależy od: –
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
@@ -23,6 +23,7 @@ module ArteMadera
         ['laczenia', 'Długości bali i łączenia', true],
         ['wegly', 'Węgły 244 – wzmocnienia ścian', true],
         ['szczyty', 'Szczyty i dach', false],
+        ['taras', 'Taras', false],
         ['podloga', 'Podłoga', false],
         ['otwory', 'Okna i drzwi – stolarka i luzy', false],
         ['rysunek', 'Rozpoznanie rysunku i waga', false]
@@ -121,9 +122,9 @@ module ArteMadera
           podpowiedz: 'Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów ' \
                       '(KROK 1 z obrysu).' },
         { klucz: 'dach_spadek', podstawowy: true, domyslna: 'min', etykieta: 'Jednospadowy – spadek w stronę', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: [['min', 'mniejszych współrzędnych (dół albo lewa strona rysunku)'],
-                                      ['max', 'większych współrzędnych (góra albo prawa strona rysunku)']],
-          podpowiedz: 'Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci.' },
+          sekcja: 'szczyty', wybory: [['min', 'dolnej albo lewej (rysunek z góry)'], ['max', 'górnej albo prawej (rysunek z góry)']],
+          podpowiedz: 'Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. Okapy ' \
+                      'wzdłuż „kalenicy”: wzdłuż X – spadek w dół / w górę rysunku, wzdłuż Y – w lewo / w prawo.' },
         { klucz: 'dach_okap_wysoki', domyslna: 500.0, etykieta: 'Jednospadowy – okap za ścianą wysoką', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany wysokiej.' },
         { klucz: 'jednospad_min_pasek', domyslna: 30.0, etykieta: 'Jednospadowy – najcieńszy górny bal ściany wysokiej',
@@ -136,8 +137,7 @@ module ArteMadera
                    ['platwie_krokwie', 'płatwie i krokwie']] },
         { klucz: 'dach_wiezba', podstawowy: true, domyslna: 'aplikacja', etykieta: 'Krokwie – kto je buduje', rodzaj: :wybor,
           sekcja: 'szczyty',
-          wybory: [['aplikacja', 'aplikacja do dachów – połacie i KROK 2 z kontrolą krokwi'],
-                   ['generator', 'generator – uproszczone, bez kontroli nośności']],
+          wybory: [['aplikacja', 'aplikacja do dachów (KROK 2, kontrola)'], ['generator', 'generator (bez kontroli)']],
           podpowiedz: 'Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na ' \
                       'spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; ' \
                       'szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
@@ -191,6 +191,40 @@ module ArteMadera
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
         { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
+
+        { klucz: 'taras', podstawowy: true, domyslna: 'nie', etykieta: 'Taras przed ścianą szczytową', rodzaj: :wybor, sekcja: 'taras',
+          wybory: [['nie', 'bez tarasu'], ['podciag', 'jak 1100 – podciąg na słupach, balustrada'],
+                   ['sciany', 'jak 1200 – ściany pełne, front otwarty']],
+          podpowiedz: 'Narysuj sam dom – taras dokłada generator: obrys dłuższy o głębokość tarasu, ściana domu zostaje ' \
+                      '(działowa ze szczytem), dach i płatwie idą nad taras. 1100: nad tarasem górne wieńce ścian na ' \
+                      'słupach, szczyt frontu, balustrada z bali; 1200: ściany boczne na całą wysokość. Tylko obrys prostokątny.' },
+        { klucz: 'taras_strona', podstawowy: true, domyslna: 'max', etykieta: 'Taras – po stronie', rodzaj: :wybor, sekcja: 'taras',
+          wybory: [['max', 'prawej albo górnej (rysunek z góry)'], ['min', 'lewej albo dolnej (rysunek z góry)']],
+          podpowiedz: 'Na końcu wzdłuż kalenicy: kalenica wzdłuż X – prawa / lewa strona rysunku, wzdłuż Y – górna / dolna.' },
+        { klucz: 'taras_glebokosc', podstawowy: true, domyslna: 2000.0, etykieta: 'Taras – głębokość', jednostka: 'mm', min: 500.0,
+          max: 6000.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Od lica ściany domu do lica frontu tarasu (1200: 2000).' },
+        { klucz: 'taras_wience_gorne', domyslna: 2, etykieta: 'Podciąg – górne wieńce ścian nad tarasem', min: 1, max: 6,
+          rodzaj: :calkowita, sekcja: 'taras', podpowiedz: 'Wariant 1100: dwa górne bale ścian bocznych (95-2372, 96-2372) ' \
+                                                          'i front od wieńca, który zamyka się z nimi w narożniku.' },
+        { klucz: 'taras_ostatek', domyslna: 100.0, etykieta: 'Ostatek dolnych bali ścian bocznych przy tarasie', jednostka: 'mm',
+          min: 0.0, max: 600.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Za licem ściany domu, pod podciągiem.' },
+        { klucz: 'taras_slup_przekroj', domyslna: '120x120', etykieta: 'Słup tarasu (wzdłuż ściany × w poprzek)', jednostka: 'mm',
+          rodzaj: :przekroj, sekcja: 'taras', podpowiedz: 'Projekty: 80 × 180, 120 × 120, 140 × 140.' },
+        { klucz: 'taras_slupy_rozstaw_max', domyslna: 2000.0, etykieta: 'Słupy – największy rozstaw (osiowo)', jednostka: 'mm',
+          min: 800.0, max: 5000.0, rodzaj: :liczba, sekcja: 'taras',
+          podpowiedz: 'Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu.' },
+        { klucz: 'taras_wejscie', domyslna: 'srodek', etykieta: 'Wejście na taras od frontu', rodzaj: :wybor, sekcja: 'taras',
+          wybory: [['srodek', 'pośrodku'], ['lewa', 'z lewej (patrząc na front z zewnątrz)'],
+                   ['prawa', 'z prawej (patrząc na front z zewnątrz)'], ['brak', 'bez wejścia – balustrada na całym froncie']] },
+        { klucz: 'taras_wejscie_szerokosc', domyslna: 1200.0, etykieta: 'Wejście – szerokość w świetle słupów', jednostka: 'mm',
+          min: 600.0, max: 4000.0, rodzaj: :liczba, sekcja: 'taras' },
+        { klucz: 'taras_balustrada_bale', domyslna: 4, etykieta: 'Balustrada – liczba bali', min: 0, max: 8, rodzaj: :calkowita,
+          sekcja: 'taras', podpowiedz: 'Bale na przemian z rzędami przekładek (1100: 4 bale i 3 rzędy, ok. 1 m). 0 – bez balustrady.' },
+        { klucz: 'taras_przekladka', domyslna: 300.0, etykieta: 'Balustrada – długość przekładki', jednostka: 'mm', min: 50.0,
+          max: 1000.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Odcinek bala między balami balustrady (1100: 300).' },
+        { klucz: 'taras_przekladka_odstep', domyslna: 600.0, etykieta: 'Balustrada – największy prześwit między przekładkami',
+          jednostka: 'mm', min: 50.0, max: 2000.0, rodzaj: :liczba, sekcja: 'taras',
+          podpowiedz: 'Przekładki przy obu końcach przęsła i równo między nimi.' },
 
         { klucz: 'podloga', podstawowy: true, domyslna: 'tak', etykieta: 'Podłoga (podwaliny, legary, podciągi)', rodzaj: :wybor,
           sekcja: 'podloga', wybory: TAK_NIE },

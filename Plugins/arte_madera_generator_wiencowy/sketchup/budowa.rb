@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/budowa.rb
 # Zadanie: budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji.
-# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, belki w modelu, przebudowa, położenie domu przy przebudowie, przesunięty dom zostaje na miejscu, usuwanie starych definicji, operacja cofnij
+# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, grupa i tag Taras (słupy, balustrada), belki w modelu, przebudowa, położenie domu przy przebudowie, przesunięty dom zostaje na miejscu, usuwanie starych definicji, operacja cofnij
 # Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, rdzen/obrys.rb (kąt układu), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
 # Używają: sketchup/sterowanie.rb
 #
@@ -24,10 +24,11 @@ module ArteMadera
         kontrfor: 'Kontrfory',
         szczyt: 'Szczyty',
         podloga: 'Podłoga',
-        dach: 'Dach'
+        dach: 'Dach',
+        taras: 'Taras'
       }.freeze unless const_defined?(:TAGI)
       # Grupy belek w domu: tag => nazwa grupy.
-      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach' }.freeze unless const_defined?(:GRUPY_BELEK)
+      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras' }.freeze unless const_defined?(:GRUPY_BELEK)
 
       module_function
 
@@ -71,7 +72,7 @@ module ArteMadera
           g.layer = tagi[w[:rodzaj]]
           w[:bale].each do |b|
             inst = g.entities.add_instance(defs[b[:pozycja][:nr]], Konwersja.transformacja_bala(b, plan[:parametry]))
-            inst.layer = b[:pozycja][:prefiks] == 'Sz' ? tagi[:szczyt] : tagi[w[:rodzaj]]
+            inst.layer = b[:taras] ? tagi[:taras] : (b[:pozycja][:prefiks] == 'Sz' ? tagi[:szczyt] : tagi[w[:rodzaj]])
             Atrybuty.oznacz_instancje(inst, b)
           end
         end
@@ -96,7 +97,7 @@ module ArteMadera
         Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
       end
 
-      # Grupy „Podłoga” i „Dach” z instancjami belek (pozycje elementów).
+      # Grupy „Podłoga”, „Dach” i „Taras” z instancjami belek (pozycje elementów).
       def dodaj_belki(grupa, plan, defs, tagi)
         GRUPY_BELEK.each do |tag, nazwa|
           lista = (plan[:elementy] || []).select { |e| e[:tag] == tag }

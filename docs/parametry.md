@@ -57,12 +57,12 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `szczyty` | Szczyty z bali | tak | `tak` – tak; `nie` – nie | Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu. |
 | `szczyty_na_dzialowych` | Szczyty także na działowych szczytowych | nie | `tak` – tak; `nie` – nie | Jak 1800 W-2 – ściana działowa do kalenicy. |
 | `dach_rodzaj` | Dach | dwuspadowy | `dwuspadowy` – dwuspadowy – dwa szczyty, kalenica w środku; `jednospadowy` – jednospadowy – ściana niska i wysoka, szczyty skośne | Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów (KROK 1 z obrysu). |
-| `dach_spadek` | Jednospadowy – spadek w stronę | min | `min` – mniejszych współrzędnych (dół albo lewa strona rysunku); `max` – większych współrzędnych (góra albo prawa strona rysunku) | Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. |
+| `dach_spadek` | Jednospadowy – spadek w stronę | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry) | Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. Okapy wzdłuż „kalenicy”: wzdłuż X – spadek w dół / w górę rysunku, wzdłuż Y – w lewo / w prawo. |
 | `dach_okap_wysoki` | Jednospadowy – okap za ścianą wysoką | 500 mm | 0 … 1500 | W poziomie, od lica ściany wysokiej. |
 | `jednospad_min_pasek` | Jednospadowy – najcieńszy górny bal ściany wysokiej | 30 mm | 0 … 300 | Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany. |
 | `dach_kat` | Kąt dachu | 20 ° | 5 … 60 | Projekty 900 i 1000: 20°. |
 | `dach_uklad` | Układ dachu | platwie | `platwie` – same płatwie (deski na płatwiach); `krokwie` – krokwie na płatwi ściennej i kalenicowej; `platwie_krokwie` – płatwie i krokwie |  |
-| `dach_wiezba` | Krokwie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów – połacie i KROK 2 z kontrolą krokwi; `generator` – generator – uproszczone, bez kontroli nośności | Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
+| `dach_wiezba` | Krokwie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów (KROK 2, kontrola); `generator` – generator (bez kontroli) | Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
 | `dach_podniesienie` | Wierzch płatwi nad ścianą okapową (przy licu wewn.) | 69,5 mm | -300 … 1500 | Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie. |
 | `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
 | `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
@@ -81,6 +81,23 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego. |
 | `dach_okap` | Okap – wysunięcie krokwi za ścianę | 500 mm | 0 … 1500 | W poziomie, od lica ściany okapowej. |
 | `dach_okap_szczyt` | Wysunięcie płatwi za szczyt | 500 mm | 0 … 1500 | Od lica szczytu (900: płatwie 6082). |
+
+## Taras
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `taras` | Taras przed ścianą szczytową | nie | `nie` – bez tarasu; `podciag` – jak 1100 – podciąg na słupach, balustrada; `sciany` – jak 1200 – ściany pełne, front otwarty | Narysuj sam dom – taras dokłada generator: obrys dłuższy o głębokość tarasu, ściana domu zostaje (działowa ze szczytem), dach i płatwie idą nad taras. 1100: nad tarasem górne wieńce ścian na słupach, szczyt frontu, balustrada z bali; 1200: ściany boczne na całą wysokość. Tylko obrys prostokątny. |
+| `taras_strona` | Taras – po stronie | max | `max` – prawej albo górnej (rysunek z góry); `min` – lewej albo dolnej (rysunek z góry) | Na końcu wzdłuż kalenicy: kalenica wzdłuż X – prawa / lewa strona rysunku, wzdłuż Y – górna / dolna. |
+| `taras_glebokosc` | Taras – głębokość | 2000 mm | 500 … 6000 | Od lica ściany domu do lica frontu tarasu (1200: 2000). |
+| `taras_wience_gorne` | Podciąg – górne wieńce ścian nad tarasem | 2 | 1 … 6 | Wariant 1100: dwa górne bale ścian bocznych (95-2372, 96-2372) i front od wieńca, który zamyka się z nimi w narożniku. |
+| `taras_ostatek` | Ostatek dolnych bali ścian bocznych przy tarasie | 100 mm | 0 … 600 | Za licem ściany domu, pod podciągiem. |
+| `taras_slup_przekroj` | Słup tarasu (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Projekty: 80 × 180, 120 × 120, 140 × 140. |
+| `taras_slupy_rozstaw_max` | Słupy – największy rozstaw (osiowo) | 2000 mm | 800 … 5000 | Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu. |
+| `taras_wejscie` | Wejście na taras od frontu | srodek | `srodek` – pośrodku; `lewa` – z lewej (patrząc na front z zewnątrz); `prawa` – z prawej (patrząc na front z zewnątrz); `brak` – bez wejścia – balustrada na całym froncie |  |
+| `taras_wejscie_szerokosc` | Wejście – szerokość w świetle słupów | 1200 mm | 600 … 4000 |  |
+| `taras_balustrada_bale` | Balustrada – liczba bali | 4 | 0 … 8 | Bale na przemian z rzędami przekładek (1100: 4 bale i 3 rzędy, ok. 1 m). 0 – bez balustrady. |
+| `taras_przekladka` | Balustrada – długość przekładki | 300 mm | 50 … 1000 | Odcinek bala między balami balustrady (1100: 300). |
+| `taras_przekladka_odstep` | Balustrada – największy prześwit między przekładkami | 600 mm | 50 … 2000 | Przekładki przy obu końcach przęsła i równo między nimi. |
 
 ## Podłoga
 

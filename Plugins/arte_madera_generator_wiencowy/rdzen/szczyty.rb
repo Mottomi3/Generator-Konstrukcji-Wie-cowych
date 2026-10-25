@@ -4,7 +4,7 @@
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
 # Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
 # Szczyt ściany (w[:szczyt]): { v_a:, v_b: (osie ścian okapowych w kierunku v), v0: (v punktu a ściany), kv: (±1 – znak
@@ -16,6 +16,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -71,7 +72,8 @@ module ArteMadera
         return false unless w[:kierunek] == :B
         konce = [0.0, w[:dl_osi]].map { |s| w[:skrzyzowania].find { |k| (k[:s] - s).abs < 1.0 } }
         return konce.all? { |k| k && k[:typ] == :naroznik } if w[:rodzaj] == :zewnetrzna
-        return false unless w[:rodzaj] == :dzialowa && Parametry.tak?(p, 'szczyty_na_dzialowych') && w[:nizsza].nil?
+        return false unless w[:rodzaj] == :dzialowa && w[:nizsza].nil?
+        return false unless Parametry.tak?(p, 'szczyty_na_dzialowych') || Taras.sciana_domu?(w)
         konce.all? { |k| k && k[:inna][:rodzaj] == :zewnetrzna && k[:inna][:kierunek] == :A }
       end
 

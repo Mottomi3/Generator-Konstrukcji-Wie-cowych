@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/bryla.rb
 # Zadanie: bryła bala z obróbek – profil wzdłuż bala (przedziały z zakresem grubości i wysokości), przynależność punktu, objętość, podpis.
-# Tematy: bryła bala, profil bala, przedziały, obróbki bala, objętość, podpis bala, obrót o 180°, identyczne bale, skos (szczyty)
+# Tematy: bryła bala, profil bala, przedziały, obróbki bala, objętość, podpis bala, obrót o 180°, identyczne bale, skos (szczyty), wyrównanie bliskich poziomów obróbek
 # Zależy od: –
 # Używają: rdzen/siatka.rb, rdzen/pozycje.rb, rdzen/kontrola.rb
 #
@@ -38,6 +38,8 @@ module ArteMadera
           when 'podciecie' then boki << c
           end
         end
+        gora = wyrownaj_poziomy(gora, h, true)
+        dol = wyrownaj_poziomy(dol, 0.0, false)
         xs = [0.0, dl]
         (gora + dol).each { |g| xs << g[0] << g[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
@@ -68,6 +70,25 @@ module ArteMadera
         ha = zt_a - zb_a
         hb = zt_b - zb_b
         [ha, hb].max > EPS && [ha, hb].min > -EPS
+      end
+
+      # Poziome ograniczenia [x0, x1, z, z] (gniazda, wycięcia) różne o mniej niż SCAL – jeden poziom (wierzch: najniższy,
+      # spód: najwyższy – drewna ubywa, nie przybywa); różne od wierzchu / spodu bala (skraj) o mniej niż SCAL – na skraju
+      # (obróbka cieńsza niż 0,2 mm pominięta). Inaczej uskok krótszy niż tolerancja SketchUpa psuje ścianę bryły (np. dno
+      # gniazda płatwi 0,095 mm nad dnem gniazda zamka).
+      def wyrownaj_poziomy(lista, skraj, wierzch)
+        plaskie = lista.select { |g| (g[2] - g[3]).abs < EPS }.map { |g| g[2] }
+        lista.map do |g|
+          next g if (g[2] - g[3]).abs >= EPS
+          v = g[2]
+          if (v - skraj).abs < SCAL
+            v = skraj
+          else
+            bliskie = plaskie.select { |u| (u - v).abs < SCAL && (u - skraj).abs >= SCAL }
+            v = wierzch ? bliskie.min : bliskie.max
+          end
+          [g[0], g[1], v, v]
+        end
       end
 
       # Punkty podziału profilu: 0, dl i punkty wewnętrzne odległe od poprzedniego (i od końców) o więcej niż SCAL.

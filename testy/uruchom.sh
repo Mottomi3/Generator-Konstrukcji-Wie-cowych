@@ -31,6 +31,7 @@ uruchom t_wegly ruby -I testy/atrapa testy/t_wegly.rb
 uruchom t_szczyty ruby -I testy/atrapa testy/t_szczyty.rb
 uruchom t_polacie ruby -I testy/atrapa testy/t_polacie.rb
 uruchom t_jednospadowy ruby -I testy/atrapa testy/t_jednospadowy.rb
+uruchom t_taras ruby -I testy/atrapa testy/t_taras.rb
 uruchom t_podloga ruby -I testy/atrapa testy/t_podloga.rb
 uruchom t_zamek ruby -I testy/atrapa testy/t_zamek.rb
 uruchom t_siatka ruby -I testy/atrapa testy/t_siatka.rb

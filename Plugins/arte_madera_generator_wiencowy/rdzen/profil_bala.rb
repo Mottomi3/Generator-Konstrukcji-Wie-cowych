@@ -81,6 +81,8 @@ module ArteMadera
           when 'bez_wpustu' then bez_wpustu = true
           end
         end
+        ciecia_gora = Bryla.wyrownaj_poziomy(ciecia_gora, h, true)
+        ciecia_dol = Bryla.wyrownaj_poziomy(ciecia_dol, 0.0, false)
         pasy = pasy_przekroju(t, opis, bez_wpustu).map do |y0, y1, g, d|
           [y0, y1, [[0.0, dl, h + g, h + g]] + ciecia_gora, [[0.0, dl, d, d]] + ciecia_dol]
         end

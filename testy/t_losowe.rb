@@ -26,7 +26,11 @@ ZIARNA = {
   43 => 'r5: krokwie z aplikacji, szczyt na działowej, płatew na ścianie',
   377 => 'r5: krokwie z aplikacji, dwa szczyty na działowych, pełny profil',
   105 => 'r5: jednospadowy – bal szczytu nad ścianą wysoką, mostek 0,03 mm nad gniazdem zamka',
-  250 => 'r5: jednospadowy – ostatek szczytu nad ścianą wysoką bez zamka'
+  250 => 'r5: jednospadowy – ostatek szczytu nad ścianą wysoką bez zamka',
+  2023 => 'r5: taras – węgieł na froncie bez dolnych bali (bale węgła w powietrzu, kolizja ze słupem)',
+  2130 => 'r5: dno gniazda płatwi 0,095 mm nad dnem gniazda zamka (krótka krawędź)',
+  2002 => 'r5: taras jak 1100, krokwie z aplikacji, luzy stolarki', 2005 => 'r5: taras jak 1200 przy dachu jednospadowym',
+  2183 => 'r5: taras jak 1100 od strony min, pełny profil'
 }.freeze
 
 ZIARNA.each do |z, opis|

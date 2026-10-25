@@ -33,7 +33,11 @@ DOMY = {
   'jednospadowy' => [prostokat(0, 0, 6000, 4500) + [[[3000, 0], [3000, 4500]]],
                      { 'dach_rodzaj' => 'jednospadowy', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'dach_kat' => 15,
                        'szczyty_na_dzialowych' => 'tak', 'podloga' => 'nie' },
-                     [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 900 }], true]
+                     [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 900 }], true],
+  'taras1100' => [prostokat(0, 0, 4000, 4000), { 'taras' => 'podciag', 'taras_glebokosc' => 2400, 'taras_wejscie' => 'lewa',
+                                                 'liczba_wiencow' => 20, 'podloga' => 'nie' }, [], true],
+  'taras1200' => [prostokat(0, 0, 7000, 4000), { 'taras' => 'sciany', 'liczba_wiencow' => 20, 'podloga' => 'nie',
+                                                 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, [], true]
 }.freeze
 
 plik = ARGV[0] || 'dom.obj'

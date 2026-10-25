@@ -11,10 +11,10 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 
 | Co | Gdzie |
 |---|---|
-| Repozytorium | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (prywatne, gałąź `main`) |
+| Repozytorium | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`; od rundy 5 publiczne) |
 | Kontener | `/home/claude/gw` (testy liczą ścieżki względem siebie – katalog może być inny) |
 | Dysk użytkownika | `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` – `Plugins\`, `testy\`, `docs\` (z `docs\skille\`), `CLAUDE.md`, `README.md`, paczka `.rbz`, `repozytorium_rN.bundle` (historia git); obok `00_Analiza\`, `Pliki źródłowe\` (nie ruszać) |
-| Projekt claude.ai | `claude/stan_prac.md`, `claude/przekazanie_rN.md`, `claude/specyfikacja.md`, `claude/scenariusz_odbioru.md`, `claude/decyzje_projektowe.md`, `claude/analiza_plikow_zrodlowych.md` |
+| Projekt claude.ai | `claude/stan_prac.md`, `claude/przekazanie_rN.md`, `claude/specyfikacja.md`, `claude/scenariusz_odbioru.md`, `claude/parametry.md`, `claude/decyzje_projektowe.md`, `claude/analiza_plikow_zrodlowych.md`, `claude/zadanie_*.md` |
 | Wersja | 1.0.0; **numer kompilacji = numer rundy** |
 
 ## A. Start
@@ -25,7 +25,8 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
    (najnowszy) i `git clone repozytorium_rN.bundle /home/claude/gw` – pełna historia; brak paczki → pliki z `Plugins\`,
    `testy\`, `docs\`, `CLAUDE.md` i `git init -b main`.
 3. Zgodność z dyskiem: `PLUGIN_BUILD` w `Plugins\arte_madera_generator_wiencowy.rb` na dysku = w kodzie; inaczej zapytaj.
-4. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` (ok. 10 s). Zależności: ruby, node, playwright
+4. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` (ok. 6 min; aplikacja do dachów obok repozytorium –
+   `../aplikacja-do-konstrukcji-dach-w` – do zestawu „dach_aplikacja”). Zależności: ruby, node, playwright
    (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, `NODE_PATH=$(npm root -g)`), acorn, zip, python3 + matplotlib (podgląd).
 5. Lista zadań (TaskCreate); ostatnie – sprawdzenie i zapis.
 

@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/projekt.rb
 # Zadanie: przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
-# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie
+# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie, taras w przebiegu
 # Zależy od: wszystkie pliki rdzen/
 # Używają: sketchup/sterowanie.rb, testy
 #
@@ -15,7 +15,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience otwory usztywnienie styki elementy dach_jednospadowy dach szczyty polacie
+  %w[geometria parametry obrys sciany ustawienia_scian wience taras taras_balustrada otwory usztywnienie styki elementy dach_jednospadowy dach szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
@@ -26,8 +26,9 @@ module ArteMadera
     module Projekt
       module_function
 
-      # Cały przebieg: obrys → ściany → ustawienia ścian → szczyty → otwory → styki → węgły → dopełnienie nad niższymi
-      # działowymi → gniazda płatwi → bale → bale ścięte dachem przy narożnikach → zamki → pozycje → belki dachu i podłogi.
+      # Cały przebieg: obrys (z tarasem) → ściany → ustawienia ścian → role ścian tarasu → szczyty → otwory → styki → węgły →
+      # dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy
+      # narożnikach → zamki → pozycje → belki dachu, słupy tarasu i podłoga.
       def oblicz(wejscie)
         wej = wejscie.is_a?(Hash) ? wejscie : {}
         p, uwagi = Parametry.normalizuj(wej['parametry'])
@@ -35,10 +36,11 @@ module ArteMadera
                  pary_zamkow: 0, ostrzezenia: uwagi.dup, bledy: [], podpowiedzi: [], podsumowanie: nil }
         ob = Obrys.rozpoznaj(wej['segmenty'] || [], p)
         plan[:kat] = ob[:kat]
-        plan[:obrys] = ob[:obrys]
         plan[:ostrzezenia].concat(ob[:ostrzezenia])
         plan[:bledy].concat(ob[:bledy])
         return plan unless plan[:bledy].empty?
+        plan[:ostrzezenia].concat(Taras.przedluz!(ob, p))
+        plan[:obrys] = ob[:obrys]
         sc = Sciany.zbuduj(ob, p)
         plan[:os_kalenicy] = sc[:os_kalenicy]
         plan[:ostrzezenia].concat(sc[:ostrzezenia])
@@ -48,6 +50,7 @@ module ArteMadera
         Sciany.numeruj!(sciany)
         plan[:ostrzezenia].concat(UstawieniaScian.zastosuj(sciany, wej['sciany'], p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
+        Taras.oznacz!(sciany, ob[:taras], p)
         sz = Szczyty.przygotuj(sciany, p, sc[:os_kalenicy])
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
@@ -58,6 +61,7 @@ module ArteMadera
         Szczyty.gniazda(sciany, p, sz[:dom])
         plan[:ostrzezenia].concat(PodDachem.przygotuj(sciany, p, sz[:dom]))
         bale = Bale.zbuduj(sciany, p)
+        TarasBalustrada.dodaj!(Taras.przesla(sciany, p), bale, p)
         SkosPrzyNarozniku.przytnij!(sciany, bale, p)
         plan[:ostrzezenia].concat(bale[:ostrzezenia])
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
@@ -76,6 +80,7 @@ module ArteMadera
       # aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        plan[:elementy].concat(Taras.slupy(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
         plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]))
         pod = Podloga.zaplanuj(plan[:sciany], p)

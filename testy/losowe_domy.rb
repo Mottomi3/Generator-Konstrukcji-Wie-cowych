@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -18,6 +18,8 @@ module LosoweDomy
   G = ArteMadera::GeneratorWiencowy
   # Najkrótsza dopuszczalna krawędź bryły [mm] – zapas ponad tolerancję SketchUpa (0,0254 mm).
   MIN_KRAWEDZ = 0.1
+  # Ziarna od tego numeru dostają losowy taras (runda 5).
+  ZIARNA_Z_TARASEM = 2000
 
   module_function
 
@@ -71,6 +73,7 @@ module LosoweDomy
     otw = otwory(r, prostokat_dom ? [w, d, w, d] : [w, d - cd, cw, cd])
     sciany = dodatki(Random.new(ziarno * 7919 + 13), p, prostokat_dom ? w : w - cw, opis)
     dodatki_r5(Random.new(ziarno * 104_729 + 31), p, opis)
+    taras(Random.new(ziarno * 15_485_863 + 7), p, opis) if ziarno >= ZIARNA_Z_TARASEM
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -121,6 +124,21 @@ module LosoweDomy
     p['dach_spadek'] = wybierz(r, %w[min max])
     p['dach_okap_wysoki'] = wybierz(r, %w[0 300 500 800])
     opis << "dach jednospadowy (spadek #{p['dach_spadek']}, okap wysoki #{p['dach_okap_wysoki']})"
+  end
+
+  # Taras (osobne losowanie, tylko ziarna od ZIARNA_Z_TARASEM – domy z ziaren wcześniejszych rund bez zmian): wariant 1100
+  # albo 1200, strona, głębokość, podciąg, wejście, balustrada, słupy.
+  def taras(r, p, opis)
+    return unless r.rand < 0.6
+    p['taras'] = wybierz(r, %w[podciag podciag sciany])
+    p['taras_strona'] = wybierz(r, %w[min max])
+    p['taras_glebokosc'] = wybierz(r, %w[1200 2000 2400 3000])
+    p['taras_wience_gorne'] = wybierz(r, %w[1 2 2 3])
+    p['taras_wejscie'] = wybierz(r, %w[srodek lewa prawa brak])
+    p['taras_balustrada_bale'] = wybierz(r, %w[0 3 4 4])
+    p['taras_slup_przekroj'] = wybierz(r, %w[120x120 80x180 140x140])
+    p['taras_slupy_rozstaw_max'] = wybierz(r, %w[1500 2000 2500])
+    opis << "taras #{p['taras']} #{p['taras_strona']} #{p['taras_glebokosc']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
@@ -191,7 +209,7 @@ module LosoweDomy
     nazwy = (pl[:pozycje] + pl[:pozycje_elementow]).map { |x| x[:nazwa] }
     problemy << 'powtórzone nazwy pozycji' unless nazwy.uniq.length == nazwy.length
     if belki
-      %w[P K].each do |pr|
+      %w[P K S].each do |pr|
         n = kolizje_belek(pl, pr, 4)
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end
