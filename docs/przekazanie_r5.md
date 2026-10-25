@@ -42,6 +42,9 @@ rozmowy kilka razy się kończył – po wznowieniu stan odtwarzany z gałęzi (
 w częściach sesji, których nie było w streszczeniu – zawsze sprawdzaj `git log --all` i niezatwierdzone zmiany).
 Użytkownik ponowił wiadomość o płatwiach i szczycie (2026-10-25 15:01) – odpowiedź: rysunek przed / po
 (`szczyt_przed_po.png`) i prompt dla Dokumentacji 2D (także w Projekcie: `claude/zadanie_dokumentacja2d.md`).
+2026-10-25 16:05: „ściany szczytowe na wysokości płatwi z krótkich kawałków” – rysunek przed / po był rysowany
+odcinkami profilu (kreski wyglądały jak styki). Rysunki dla użytkownika rysuj obrysem bala (`Widok.sciana` –
+jak widok ściany w oknie, opis pozycja-długość). Krótkie kawałki między płatwią a skosem zostają (decyzja S4).
 
 ## 3. Zasady
 

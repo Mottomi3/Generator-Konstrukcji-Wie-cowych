@@ -2,8 +2,9 @@
 
 Stan na: runda 5, kompilacja 5 (2026-10-25), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 22 zestawy (w tym
 15 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.3.1 na jej atrapie),
-975 sprawdzeń, FAILURES 0; poza zestawem: 1050 losowych domów (od rundy 5 także krokwie z aplikacji do dachów, luzy
-stolarki, dach jednospadowy, taras 1100 i 1200 – ziarna od 2000) bez problemów. Repozytorium:
+977 sprawdzeń, FAILURES 0; poza zestawem: 600 losowych domów na końcowym kodzie (ziarna 1–200, 2001–2200 i 2301–2500;
+z krokwiami z aplikacji do dachów, luzami stolarki, dachem jednospadowym, od ziarna 2000 z tarasem 1100 / 1200) bez
+problemów – wcześniej w rundzie ok. 1750 na wersjach pośrednich (błędy poprawione, ziarna w `testy/t_losowe.rb`). Repozytorium:
 `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, pełna historia rund 1–5; od rundy 5 publiczne) + kopia
 `repozytorium_r5.bundle` na dysku.
 
@@ -150,6 +151,9 @@ z boazerii pióro-wpust na krokwiach, dach bez ocieplenia) / OSB – w aplikacji
 (1100 i 1200) do wyboru; 7 – wymiary stolarki, luz parametrem (górny i boczne), aplikacja podpowiada luz; 5 – nie
 teraz; 10 – odpada (inna aplikacja). 2026-10-25: płatwie za nisko – podnieść i ściąć do płaszczyzny dachu; bal szczytu
 nie może być urwany – pełnym skosem do końca; prompt dla Dokumentacji 2D (wysłany dwa razy – ponowiona wiadomość).
+2026-10-25 16:05: „ściany szczytowe na wysokości płatwi są z krótkich kawałków – skosy ścinamy z całego bala” – mylił
+rysunek z sesji (pionowe kreski na granicach odcinków obliczeń); bale szczytu są w całości ze skosem, krótkie są tylko
+kawałki między płatwią a skosem, gdzie płatew przecina bal na całej wysokości – decyzja: zostają jak w 1100 (S4).
 - **2 – Dokumentacja 2D**: `testy/zrzut_dok2d.rb` – dom z generatora w formacie „ArteMadera-geometria” (krawędzie,
   objętości brył) dla `model_dump_loader.rb`; pokaz: bale trafiają do grupy E, zamek opisany jako otwór, płatew ścięta
   jako nakładka, przekroje bali szczytu z obrysu. Zadanie dla tamtej wtyczki: `docs/zadanie_dokumentacja2d.md`.
@@ -177,8 +181,10 @@ nie może być urwany – pełnym skosem do końca; prompt dla Dokumentacji 2D (
 - **Sprawdzenie**: losowe domy z nowościami rundy (krokwie z aplikacji, luzy, dach jednospadowy, taras – od ziarna
   2000) – znalezione i poprawione: mostek nad gniazdem i ostatek szczytu bez zamka (jednospadowy, ziarna 105, 250),
   węgieł styku na froncie tarasu z balami w powietrzu (2023), dno gniazda płatwi 0,095 mm nad dnem gniazda zamka –
-  krótka krawędź (2130, błąd sprzed rundy 5; poziomy obróbek różne o mniej niż 0,2 mm wyrównywane); ziarna
-  w `testy/t_losowe.rb`.
+  krótka krawędź (2130, błąd sprzed rundy 5; poziomy obróbek różne o mniej niż 0,2 mm wyrównywane); koniec podcięcia
+  zamka scalony z przecięciem skosu z wierzchem bala 0,13 mm wcześniej – bal szczytu za szeroki w zamku z węgłem
+  (2348, błąd sprzed rundy 5; granice obróbek mają pierwszeństwo przed przecięciami, `rdzen/bryla.rb#punkty_podzialu`);
+  ziarna w `testy/t_losowe.rb`.
 
 ## 6. Otwarte pytania (przyjęte wartości domyślne – do potwierdzenia)
 
@@ -195,6 +201,7 @@ nie może być urwany – pełnym skosem do końca; prompt dla Dokumentacji 2D (
 | S1 | Gdzie stoi płatew ścienna 60 × 200 (900) i wysokość linii dachu | przy licu wewnętrznym, wierzch płatwi 69,5 nad ścianą okapową; oba parametry |
 | S2 | Wierzch płatwi a skos dachu | **rozstrzygnięte (runda 5)**: płatew podniesiona, wierzch ścięty do płaszczyzny dachu (`platwie_sciecie`) |
 | S3 | Krokwie przy szczycie | z obu stron (domyślnie); od wewnątrz / od zewnątrz / na szczycie w opcjach |
+| S4 | Kawałek bala szczytu między płatwią a skosem | **rozstrzygnięte (runda 5)**: zostaje osobnym kawałkiem, jak 21-140, 22-186, 23-233 w 1100 W-2 (płatew 180 przecina bal 139 na całej wysokości); pozostałe bale szczytu w całości ze skosem |
 | P1 | Obciążenia podłogi | 2,0 kN/m² użytkowe + 0,5 stałe, C24, L/400 zalecane, L/250 dopuszczalne |
 | P2 | Legar a podwalina | legary między podwalinami, wierzch równo (900); wyższy legar – podpowiedź |
 | H20 | Grupy w Dokumentacji 2D | belki – jej kody (P, K, Pd, L, Pw); bale Bs, Kf, Sz – dopisać w Dokumentacji 2D |

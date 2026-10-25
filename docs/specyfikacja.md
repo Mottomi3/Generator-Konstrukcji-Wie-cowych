@@ -139,7 +139,9 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   osobne pozycje. Obróbki tną wszystkie pasy (w gnieździe zamka pióro i wpust znikają – zamek bez zmian). Pozycje,
   listy, zestawienie, kontrola kolizji – jak dla bala prostego; zmienia się tylko bryła komponentu.
 - Punkty podziału bryły bliższe niż 0,2 mm są scalane – SketchUp nie tworzy krawędzi krótszych niż 0,0254 mm, a tak
-  bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły.
+  bliskie obróbki (np. podcięcie zamka 0,07 mm za wycięciem otworu) psułyby ściany bryły. Granice obróbek mają
+  pierwszeństwo przed przecięciami skosu z wierzchem lub spodem (runda 5): pominięte przecięcie ścina odrobinę więcej
+  drewna, przesunięta granica podcięcia zamka dawała bal 0,13 mm za szeroki w zamku.
 - Identyczne bale (ta sama bryła, także po obrocie o 180° wokół pionu) = jedna pozycja „nr-długość” (np. `2-4200`)
   i jeden komponent. Numery: W-1, W-2…, w ścianie wieńce od dołu, w wieńcu wzdłuż ściany.
 - Model: grupa „Dom wieńcowy” (obrót układu lokalnego, poziom ±0) > grupy W-n > instancje komponentów „Bal 2-4200”,
@@ -187,7 +189,9 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
     się pod krokwią.
 - Bale szczytu: skos wg linii szczytu **pełnym klinem do końca** – szczyt wypełniony do linii dachu (wymóg
   użytkownika z rundy 5; `szczyt_min_wysokosc` 0, większa wartość pomija niższe kliny), okruchy krótsze niż
-  `szczyt_min_kawalek` (10) między skosem a gniazdem płatwi pomijane; prefiks Sz.
+  `szczyt_min_kawalek` (10) między skosem a gniazdem płatwi pomijane; prefiks Sz. Bal szczytu to jeden element ze
+  skosem ściętym z całego bala; osobny krótki kawałek jest tylko tam, gdzie płatew przechodzi przez całą wysokość bala
+  (między płatwią a skosem dachu) – jak 21-140, 22-186, 23-233 w 1100 W-2 (decyzja użytkownika 2026-10-25: zostają).
 - **Bal ścięty dachem przez narożnik tylko w zamku** (`rdzen/skos_przy_narozniku.rb`, runda 5): gdy ściana poprzeczna
   nie ma w słupie zamka bala na sąsiednim poziomie albo nad gniazdem od spodu zostałoby mniej niż `zamek_min_drewno`
   (20) drewna, bal kończy się przy licu wewnętrznym ściany poprzecznej (bez wiszącego ostatka i cienkiego mostka –

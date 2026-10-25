@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_losowe.rb
 # Zadanie: stały zestaw losowych domów (ziarna, które kiedyś ujawniły błąd, i kilka zwykłych) – każdy bez problemów.
-# Tematy: test losowy, ziarna błędów, regresja, kolizje krokwi z działową, okruchy bali, styki bez zamka, krótkie krawędzie, krokwie z aplikacji i z generatora w teście losowym
+# Tematy: test losowy, ziarna błędów, regresja, kolizje krokwi z działową, okruchy bali, styki bez zamka, krótkie krawędzie, krokwie z aplikacji i z generatora w teście losowym, podcięcie zamka przy skosie
 # Zależy od: testy/losowe_domy.rb
 # Używają: testy/uruchom.sh
 #
@@ -30,7 +30,8 @@ ZIARNA = {
   2023 => 'r5: taras – węgieł na froncie bez dolnych bali (bale węgła w powietrzu, kolizja ze słupem)',
   2130 => 'r5: dno gniazda płatwi 0,095 mm nad dnem gniazda zamka (krótka krawędź)',
   2002 => 'r5: taras jak 1100, krokwie z aplikacji, luzy stolarki', 2005 => 'r5: taras jak 1200 przy dachu jednospadowym',
-  2183 => 'r5: taras jak 1100 od strony min, pełny profil'
+  2183 => 'r5: taras jak 1100 od strony min, pełny profil',
+  2348 => 'r5: koniec podcięcia zamka 0,13 mm za przecięciem skosu z wierzchem bala (kolizja z węgłem)'
 }.freeze
 
 ZIARNA.each do |z, opis|

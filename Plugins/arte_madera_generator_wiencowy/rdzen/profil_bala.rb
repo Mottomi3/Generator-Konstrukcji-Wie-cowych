@@ -90,8 +90,7 @@ module ArteMadera
         (ciecia_gora + ciecia_dol).each { |c| xs << c[0] << c[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
         linie = pasy.map { |pas| pas[2] + pas[3] }.flatten(1).uniq
-        xs.concat(Bryla.przeciecia(linie))
-        Bryla.punkty_podzialu(xs, dl).each_cons(2).map { |xa, xb| przedzial(xa, xb, t, pasy, boki) }.compact
+        Bryla.punkty_podzialu(xs, dl, Bryla.przeciecia(linie)).each_cons(2).map { |xa, xb| przedzial(xa, xb, t, pasy, boki) }.compact
       end
 
       # Jeden przedział xa…xb: pasy z wierzchem i spodem (ograniczenia pasa w środku przedziału), zwężone podcięciami.

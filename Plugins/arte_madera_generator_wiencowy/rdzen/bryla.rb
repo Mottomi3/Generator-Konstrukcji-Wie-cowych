@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/bryla.rb
 # Zadanie: bryła bala z obróbek – profil wzdłuż bala (przedziały z zakresem grubości i wysokości), przynależność punktu, objętość, podpis.
-# Tematy: bryła bala, profil bala, przedziały, obróbki bala, objętość, podpis bala, obrót o 180°, identyczne bale, skos (szczyty), wyrównanie bliskich poziomów obróbek
+# Tematy: bryła bala, profil bala, przedziały, obróbki bala, objętość, podpis bala, obrót o 180°, identyczne bale, skos (szczyty), wyrównanie bliskich poziomów obróbek, punkty podziału profilu (granice obróbek przed przecięciami)
 # Zależy od: –
 # Używają: rdzen/siatka.rb, rdzen/pozycje.rb, rdzen/kontrola.rb
 #
@@ -22,6 +22,9 @@ module ArteMadera
       # Punkty podziału profilu bliższe niż tyle [mm] są scalane – krawędź krótsza niż tolerancja SketchUpa (0,0254 mm)
       # psuje ścianę bryły, a różnica 0,2 mm jest poniżej dokładności obróbki.
       SCAL = 0.2 unless const_defined?(:SCAL)
+      # Ujemna wysokość przedziału na jednym końcu [mm], którą klin_ok? jeszcze przyjmuje (ostrze klina przesunięte
+      # najwyżej o SCAL do punktu podziału: SCAL × tg kąta dachu do 60°).
+      OSTRZE = 0.5 unless const_defined?(:OSTRZE)
 
       module_function
 
@@ -43,8 +46,7 @@ module ArteMadera
         xs = [0.0, dl]
         (gora + dol).each { |g| xs << g[0] << g[1] }
         boki.each { |c| xs << c[:x0] << c[:x1] }
-        xs.concat(przeciecia(gora + dol))
-        xs = punkty_podzialu(xs, dl)
+        xs = punkty_podzialu(xs, dl, przeciecia(gora + dol))
         wynik = []
         xs.each_cons(2) do |xa, xb|
           xm = (xa + xb) / 2.0
@@ -66,10 +68,12 @@ module ArteMadera
 
       # Czy przedział ma materiał: wysokość dodatnia na co najmniej jednym końcu i nigdzie ujemna – także klin (skos
       # szczytu doprowadzony do spodu bala: wysokość zero na jednym końcu, bal kończy się ostrzem, nie pionowym czołem).
+      # Ujemna do OSTRZE na jednym końcu – ostrze tuż obok punktu podziału, którego nie dodano (bliżej niż SCAL od granicy
+      # obróbki); wysokość na tym końcu = 0.
       def klin_ok?(zb_a, zb_b, zt_a, zt_b)
         ha = zt_a - zb_a
         hb = zt_b - zb_b
-        [ha, hb].max > EPS && [ha, hb].min > -EPS
+        [ha, hb].max > EPS && [ha, hb].min > -OSTRZE
       end
 
       # Poziome ograniczenia [x0, x1, z, z] (gniazda, wycięcia) różne o mniej niż SCAL – jeden poziom (wierzch: najniższy,
@@ -91,12 +95,19 @@ module ArteMadera
         end
       end
 
-      # Punkty podziału profilu: 0, dl i punkty wewnętrzne odległe od poprzedniego (i od końców) o więcej niż SCAL.
-      # Przedział między scalonymi punktami znika – sąsiednie przedziały biorą ograniczenia ze swojego środka.
-      def punkty_podzialu(xs, dl)
+      # Punkty podziału profilu: 0, dl i granice obróbek odległe od poprzedniej (i od końców) o więcej niż SCAL; potem
+      # punkty dodatkowe (przecięcia ograniczeń) odległe od wszystkich o więcej niż SCAL. Granica obróbki nie przesuwa się
+      # do bliskiego przecięcia (koniec podcięcia zamka 0,13 mm za przecięciem skosu z wierzchem – bal za szeroki
+      # w zamku, kolizja); pominięte przecięcie daje cięciwę – drewna ubywa, nie przybywa. Przedział między scalonymi
+      # punktami znika – sąsiednie przedziały biorą ograniczenia ze swojego środka.
+      def punkty_podzialu(xs, dl, dodatkowe = [])
         wynik = [0.0]
         xs.select { |x| x > SCAL && x < dl - SCAL }.sort.each { |x| wynik << x if x - wynik.last > SCAL }
         wynik << dl.to_f
+        dodatkowe.select { |x| x > SCAL && x < dl - SCAL }.sort.each do |x|
+          wynik << x if wynik.all? { |u| (u - x).abs > SCAL }
+        end
+        wynik.sort
       end
 
       # Punkty x, w których dwie proste ograniczenia przecinają się wewnątrz wspólnego zakresu.
