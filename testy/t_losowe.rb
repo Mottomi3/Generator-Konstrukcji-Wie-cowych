@@ -24,7 +24,9 @@ ZIARNA = {
   791 => 'r4: pełny profil – pasek bala pod oknem płytszy niż wpust', 739 => 'r4: pełny profil, obrys L, strop',
   1251 => 'r4: dwa szczyty na działowych 75 mm od siebie – krokwie w szczycie',
   43 => 'r5: krokwie z aplikacji, szczyt na działowej, płatew na ścianie',
-  377 => 'r5: krokwie z aplikacji, dwa szczyty na działowych, pełny profil'
+  377 => 'r5: krokwie z aplikacji, dwa szczyty na działowych, pełny profil',
+  105 => 'r5: jednospadowy – bal szczytu nad ścianą wysoką, mostek 0,03 mm nad gniazdem zamka',
+  250 => 'r5: jednospadowy – ostatek szczytu nad ścianą wysoką bez zamka'
 }.freeze
 
 ZIARNA.each do |z, opis|

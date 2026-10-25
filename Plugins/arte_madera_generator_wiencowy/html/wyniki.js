@@ -79,7 +79,8 @@ var AMGW_WYNIKI = (function () {
       liczby.appendChild(sp);
     }
     if (d.wysokosci && $('wysokosci')) {
-      $('wysokosci').textContent = 'Wysokość: ściany okapowe ' + fmt(d.wysokosci.okapowa) + ' mm, szczytowe ' +
+      $('wysokosci').textContent = 'Wysokość: ściany okapowe ' + fmt(d.wysokosci.okapowa) + ' mm' +
+        (d.wysokosci.wysoka ? ' (ściana wysoka ' + fmt(d.wysokosci.wysoka) + ' mm – do połaci)' : '') + ', szczytowe ' +
         fmt(d.wysokosci.szczytowa) + ' mm (z pierwszym balem szczytu), działowe ' + fmt(d.wysokosci.dzialowa_szczytowa) +
         '–' + fmt(d.wysokosci.dzialowa_okapowa) + ' mm.';
     }

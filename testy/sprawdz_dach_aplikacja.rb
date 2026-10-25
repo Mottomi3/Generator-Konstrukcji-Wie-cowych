@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/sprawdz_dach_aplikacja.rb
 # Zadanie: dom z bali z prawdziwą aplikacją do dachów (na jej atrapie SketchUpa) – połacie z RoofBuilder na płaszczyźnie spodu krokwi, KROK 2 w górę od połaci: krokwie leżą na płatwiach i nad szczytami, kontrola nośności w raporcie.
-# Tematy: aplikacja do dachów – sprawdzenie z prawdziwą wtyczką, połacie z RoofBuilder, KROK 2 w górę, krokwie z aplikacji nad płatwiami, kontrola krokwi z aplikacji
+# Tematy: aplikacja do dachów – sprawdzenie z prawdziwą wtyczką, połacie z RoofBuilder, KROK 2 w górę, krokwie z aplikacji nad płatwiami, kontrola krokwi z aplikacji, dach jednospadowy z aplikacją
 # Zależy od: aplikacja do dachów (katalog obok repozytorium albo AM_GW_APLIKACJA_DACHOW, jej tests/support), testy/pomoc.rb, testy/kolizje_belek.rb, sketchup/dach_aplikacja.rb, sketchup/konwersja.rb, sketchup/atrybuty.rb
 # Używają: testy/uruchom.sh (gdy aplikacja do dachów jest obok), ręcznie
 #
@@ -51,18 +51,25 @@ def odchylki(punkty, pol)
   [d.min, d.max]
 end
 
+# [nazwa, linie, parametry, poziom linii z0, liczba połaci]
 PRZYPADKI = [
-  ['Dom 5 × 4 m, krokwie na płatwi ściennej i kalenicowej', prostokat(0, 0, 5000, 4000), { 'dach_uklad' => 'krokwie' }, 0.0, 0],
+  ['Dom 5 × 4 m, krokwie na płatwi ściennej i kalenicowej', prostokat(0, 0, 5000, 4000), { 'dach_uklad' => 'krokwie' }, 0.0, 2],
   ['Dom 4 × 6,5 m obrócony o 30°, płatwie i krokwie, 35°, okap 600, za szczytem 300',
    obroc_odcinki(prostokat(0, 0, 4000, 6500), 30),
-   { 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 35, 'dach_okap' => 600, 'dach_okap_szczyt' => 300 }, 450.0, 0],
+   { 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 35, 'dach_okap' => 600, 'dach_okap_szczyt' => 300 }, 450.0, 2],
   ['Dom 7 × 4,5 m z działową ze szczytem, płatew ścienna na ścianie, krokiew 60 × 180',
    prostokat(0, 0, 7000, 4500) + [[[3500, 0], [3500, 4500]]],
    { 'dach_uklad' => 'platwie_krokwie', 'szczyty_na_dzialowych' => 'tak', 'platwa_scienna_polozenie' => 'na_scianie',
-     'krokiew_przekroj' => '60x180', 'drewno_klasa' => 'C30' }, 0.0, 0]
+     'krokiew_przekroj' => '60x180', 'drewno_klasa' => 'C30' }, 0.0, 2],
+  ['Dom 6 × 4,5 m, dach jednospadowy 15°, płatwie i krokwie, okap za ścianą wysoką 300',
+   prostokat(0, 0, 6000, 4500), { 'dach_rodzaj' => 'jednospadowy', 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 15,
+                                  'dach_okap_wysoki' => 300 }, 0.0, 1],
+  ['Dom 5 × 4 m obrócony o 120°, jednospadowy ze spadkiem w stronę większych współrzędnych',
+   obroc_odcinki(prostokat(0, 0, 5000, 4000), 120), { 'dach_rodzaj' => 'jednospadowy', 'dach_spadek' => 'max', 'dach_uklad' => 'krokwie' },
+   300.0, 1]
 ].freeze
 
-PRZYPADKI.each do |nazwa, seg, par, z0, _|
+PRZYPADKI.each do |nazwa, seg, par, z0, ile|
   Testy.grupa(nazwa)
   Sketchup.reset_model!
   Sketchup.defaults.clear
@@ -77,7 +84,7 @@ PRZYPADKI.each do |nazwa, seg, par, z0, _|
   Testy.sprawdz(!grupa.nil?, "połacie z aplikacji (#{info.inspect})")
   next if grupa.nil?
   sciany = grupa.entities.grep(Sketchup::Face)
-  Testy.rowne(sciany.length, 2, 'dwie połacie')
+  Testy.rowne(sciany.length, ile, "połacie: #{ile}")
   pk = punkty_lokalnie(grupa, dom)
   lo, hi = odchylki(pk, pol)
   Testy.sprawdz(lo > -0.01 && hi < 0.01, format('połacie w płaszczyźnie spodu krokwi z generatora (%.4f…%.4f mm)', lo, hi))
@@ -85,13 +92,13 @@ PRZYPADKI.each do |nazwa, seg, par, z0, _|
   xs = pol[:punkty].map { |q| q[0] }.minmax
   ys = pol[:punkty].map { |q| q[1] }.minmax
   Testy.rowne(ob, [xs[0] - pol[:okap], xs[1] + pol[:okap], ys[0] - pol[:okap], ys[1] + pol[:okap]].map { |v| v.round(2) },
-              'zasięg połaci = obrys + okap (szczyty: wysunięcie za szczyt)')
+              'zasięg połaci = obrys + okap (szczyty: wysunięcie za szczyt, jednospadowy: okap za ścianą wysoką)')
   Testy.rowne(grupa.get_attribute(Atrybuty::DICT_GW, 'polacie_domu'), Atrybuty.dom_id(dom), 'połacie oznaczone id domu')
 
   model.selection.clear
   model.selection.add(grupa)
   polacie_ap, blad = ROOF::FaceCollector.from_selection(model.selection)
-  Testy.sprawdz(blad.nil? && polacie_ap.length == 2, "KROK 2 widzi dwie połacie (#{blad.inspect})")
+  Testy.sprawdz(blad.nil? && polacie_ap.length == ile, "KROK 2 widzi połacie: #{ile} (#{blad.inspect})")
   ust = ROOF::Config.load_settings(:framing).merge(DachAplikacja.ustawienia_krok2(p)).merge(components: false, group_all: true)
   wiezba, raport = ROOF::FramingBuilder.generate(model, polacie_ap, ust)
   Testy.sprawdz(!wiezba.nil?, "więźba z KROKU 2 (#{raport.is_a?(String) ? raport : 'raport'})")

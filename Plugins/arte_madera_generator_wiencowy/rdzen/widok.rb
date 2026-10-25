@@ -106,17 +106,16 @@ module ArteMadera
       # Linia dachu nad ścianą (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi): [[s, z]]; [] – brak.
       def linia_dachu(w, p)
         if w[:szczyt]
-          sk = Szczyty.s_z_v(w, (w[:szczyt][:v_a] + w[:szczyt][:v_b]) / 2.0)
+          sk = Szczyty.zalom(w, p)
           blok = lambda { |s| Szczyty.linia(w, s, p) }
         elsif w[:pod_dachem]
-          g = w[:pod_dachem]
-          sk = ((g[:v_a] + g[:v_b]) / 2.0 - w[:a][g[:iv]]) * w[:kier][g[:iv]]
+          sk = PodDachem.zalom(w, p)
           blok = lambda { |s| PodDachem.linia(w, s, p) }
         else
           return []
         end
         s = [w[:s_od], w[:s_do]]
-        s.insert(1, sk) if sk > w[:s_od] && sk < w[:s_do]
+        s.insert(1, sk) if sk && sk > w[:s_od] && sk < w[:s_do]
         s.map { |x| [r(x), r(blok.call(x))] }
       end
 

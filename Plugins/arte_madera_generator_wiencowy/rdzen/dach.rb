@@ -2,13 +2,13 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/dach.rb
-# Zadanie: geometria dachu dwuspadowego – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu.
-# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb
-# Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu), rdzen/polacie.rb (linia podparcia)
+# Zadanie: geometria dachu – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu; dwuspadowy tutaj, jednospadowy w rdzen/dach_jednospadowy.rb.
+# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów, rodzaj dachu, załom linii dachu, lico okapu
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb, rdzen/dach_jednospadowy.rb
+# Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu), rdzen/polacie.rb (linia podparcia), rdzen/pod_dachem.rb, rdzen/dach_jednospadowy.rb
 #
 # Przekrój poprzeczny dachu opisuje „geo” = { v_a:, v_b: } – osie ścian okapowych w kierunku v (prostopadle do kalenicy);
-# kalenica w połowie. Linia podparcia: spód krokwi (płaszczyzna dachu nad płatwiami); na licu wewnętrznym ściany
+# kalenica w połowie (dach_rodzaj = jednospadowy – bez kalenicy, linia od ściany niskiej w górę: rdzen/dach_jednospadowy.rb). Linia podparcia: spód krokwi (płaszczyzna dachu nad płatwiami); na licu wewnętrznym ściany
 # okapowej = z_ref, w stronę kalenicy rośnie o tg(kąt). Płatew ścięta (platwie_sciecie = tak, wymóg użytkownika):
 # podniesiona tak, że wierzch ścięty po skosie leży w linii podparcia na całej szerokości (kalenicowa – z dwóch stron);
 # bez ścięcia – wierzch poziomy na linii przy krawędzi od strony okapu (nic nie wystaje nad dach).
@@ -20,6 +20,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
+require File.join(File.dirname(__FILE__), 'dach_jednospadowy') unless defined?(ArteMadera::GeneratorWiencowy::DachJednospadowy)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -34,6 +35,11 @@ module ArteMadera
       # Tangens kąta dachu.
       def tg(p)
         Math.tan(kat(p))
+      end
+
+      # Czy dach jednospadowy (ściana niska i wysoka, bez kalenicy).
+      def jednospadowy?(p)
+        p['dach_rodzaj'] == 'jednospadowy'
       end
 
       # Czy układ dachu ma krokwie.
@@ -78,6 +84,7 @@ module ArteMadera
 
       # Linia podparcia w punkcie v przekroju [mm].
       def linia_podparcia(geo, v, p)
+        return DachJednospadowy.linia_podparcia(geo, v, p) if jednospadowy?(p)
         t = Parametry.grubosc(p)
         pol = (geo[:v_b] - geo[:v_a]) / 2.0
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
@@ -89,14 +96,27 @@ module ArteMadera
         linia_podparcia(geo, v, p) + (szczyt_do_wierzchu_krokwi?(p) ? dodatek_krokwi(p) : 0.0)
       end
 
-      # Najwyższy punkt linii szczytu (w kalenicy) [mm].
+      # Najwyższy punkt linii szczytu (w kalenicy) [mm]; dach jednospadowy – nad osią ściany wysokiej.
       def z_szczytu(geo, p)
+        return linia_szczytu(geo, DachJednospadowy.wysoka_v(geo, p), p) if jednospadowy?(p)
         linia_szczytu(geo, (geo[:v_a] + geo[:v_b]) / 2.0, p)
       end
 
+      # Załom linii dachu (kalenica) w przekroju – v; dach jednospadowy – nil (linia prosta).
+      def zalom_v(geo, p)
+        jednospadowy?(p) ? nil : (geo[:v_a] + geo[:v_b]) / 2.0
+      end
+
+      # Lico zewnętrzne ściany okapowej (niskiej), nad którym połać przechodzi w okap – v.
+      def lico_okapu_v(geo, p)
+        return DachJednospadowy.lico_niskie_v(geo, p) if jednospadowy?(p)
+        geo[:v_a] - Parametry.grubosc(p) / 2.0
+      end
+
       # Płatwie w przekroju: [{ rodzaj: 'scienna' | 'posrednia' | 'kalenicowa', v:, b:, h:, z_spod:, gora: }] (v – oś płatwi,
-      # gora – wierzch ścięty: [[dv, dz]] od osi płatwi i od spodu, nil – wierzch poziomy).
+      # gora – wierzch ścięty: [[dv, dz]] od osi płatwi i od spodu, nil – wierzch poziomy); jednospadowy – bez kalenicowej.
       def platwie(geo, p)
+        return DachJednospadowy.platwie(geo, p) if jednospadowy?(p)
         t = Parametry.grubosc(p)
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
         wynik = []
@@ -220,8 +240,10 @@ module ArteMadera
         [[0.0, 0.0], [b, 0.0]] + gora
       end
 
-      # Krokwie obu połaci: od okapu (lico ściany okapowej + dach_okap) do kalenicy, spód na linii podparcia.
+      # Krokwie obu połaci: od okapu (lico ściany okapowej + dach_okap) do kalenicy, spód na linii podparcia (dach
+      # jednospadowy – krokwie w jednym kawałku, DachJednospadowy.krokwie).
       def krokwie(dom, geo, p)
+        return DachJednospadowy.krokwie(dom, geo, p) if jednospadowy?(p)
         t = Parametry.grubosc(p)
         bk, hk = Parametry.przekroj(p, 'krokiew_przekroj')
         vk = (geo[:v_a] + geo[:v_b]) / 2.0

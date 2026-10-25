@@ -52,11 +52,15 @@ DO ZROBIENIA (w tej kolejności)
    1100.pdf”.
 7. Pliki CNC (BVN, BTLx): bal z zamkiem – zamek jako zaciosy z góry i z dołu (BVN 0300 / BTLx Lap) z podcięciami,
    skos szczytu, cięcia i wycięcia przy otworach; sprawdzić na balach z testu.
+8. Dach domu z bali z dwóch wtyczek w jednym modelu: płatwie (P) robi generator – grupa „Dach” w domu, płatwie
+   ścięte do płaszczyzny dachu; krokwie, łaty, kontrłaty i deski robi aplikacja do dachów (KROK 2 – grupa
+   „Wiezba dachowa” obok domu; grupa „Dach - polacie” to same płaszczyzny, nie elementy). Jedna dokumentacja
+   z obu źródeł: płatwie generatora w grupie P razem z resztą więźby, bez dublowania i bez pomijania.
 
 JAK TESTOWAĆ
 - git clone -b runda-5 https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych gw && cd gw
   ruby -I testy/atrapa testy/zrzut_dok2d.rb 2 dom_wiencowy.json
-  (przykład 2 – dom 7 × 4,5 z działową, węgłem, oknem, szczytami, płatwiami i podłogą; numery 0–6 to inne
+  (przykład 2 – dom 7 × 4,5 z działową, węgłem, oknem, szczytami, płatwiami i podłogą; numery 0–7 to inne
   przykładowe domy). Plik to zrzut w formacie „ArteMadera-geometria” (z krawędziami i objętością brył).
 - W Dokumentacji 2D: ruby -I stublib model_dump_loader.rb dom_wiencowy.json payloads_wiencowy
   → karty, zestawienia, telefon.html, klient.html.

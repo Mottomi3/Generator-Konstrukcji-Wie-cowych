@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -105,16 +105,22 @@ module LosoweDomy
   end
 
   # Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie),
-  # luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi).
+  # luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi), dach jednospadowy.
   def dodatki_r5(r, p, opis)
     if r.rand < 0.4
       p['dach_wiezba'] = 'aplikacja'
       opis << 'krokwie z aplikacji' if %w[krokwie platwie_krokwie].include?(p['dach_uklad'])
     end
+    if r.rand < 0.3
+      p['luz_boczny'] = wybierz(r, %w[0 5 15])
+      p['osiadanie_scian'] = wybierz(r, %w[0 3 4])
+      opis << "luzy stolarki #{p['luz_boczny']} / #{p['osiadanie_scian']} %"
+    end
     return unless r.rand < 0.3
-    p['luz_boczny'] = wybierz(r, %w[0 5 15])
-    p['osiadanie_scian'] = wybierz(r, %w[0 3 4])
-    opis << "luzy stolarki #{p['luz_boczny']} / #{p['osiadanie_scian']} %"
+    p['dach_rodzaj'] = 'jednospadowy'
+    p['dach_spadek'] = wybierz(r, %w[min max])
+    p['dach_okap_wysoki'] = wybierz(r, %w[0 300 500 800])
+    opis << "dach jednospadowy (spadek #{p['dach_spadek']}, okap wysoki #{p['dach_okap_wysoki']})"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
@@ -191,7 +197,22 @@ module LosoweDomy
       end
     end
     problemy.concat(problemy_polaci(pl))
+    bez = bez_zamka_w_narozniku(pl)
+    problemy << "bale ścięte dachem w narożniku bez zamka: #{bez.first(3).join(', ')}" unless bez.empty?
     [problemy, pl]
+  end
+
+  # Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy.
+  def bez_zamka_w_narozniku(pl)
+    t = G::Parametry.grubosc(pl[:parametry])
+    pl[:sciany].select { |w| w[:szczyt] || w[:pod_dachem] }.flat_map do |w|
+      w[:skrzyzowania].select { |k| k[:typ] == :naroznik }.flat_map do |k|
+        w[:bale].select do |b|
+          b[:s0] < k[:s] + t / 2.0 - 0.01 && b[:s1] > k[:s] - t / 2.0 + 0.01 && b[:cechy].any? { |c| c[:typ] == 'skos_gora' } &&
+            b[:cechy].none? { |c| c[:typ].start_with?('gniazdo') && c[:os] && (c[:os] - k[:s]).abs < 0.01 }
+        end.map { |b| "#{w[:id]} wieniec #{b[:wieniec][:nr]}" }
+      end
+    end
   end
 
   # Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora.

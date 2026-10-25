@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry
 # Zależy od: –
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
@@ -58,7 +58,8 @@ module ArteMadera
           rodzaj: :liczba, sekcja: 'sciany', podpowiedz: 'Wypust bala za licem ściany poprzecznej (projekty: 100, przy tarasie 200).' },
         { klucz: 'kalenica', podstawowy: true, domyslna: 'dluzszy', etykieta: 'Kalenica (półbal na ścianach wzdłuż kalenicy)', rodzaj: :wybor,
           sekcja: 'sciany', wybory: [['dluzszy', 'wzdłuż dłuższego boku'], ['krotszy', 'wzdłuż krótszego boku'],
-                                     ['x', 'wzdłuż osi X obrysu'], ['y', 'wzdłuż osi Y obrysu']] },
+                                     ['x', 'wzdłuż osi X obrysu'], ['y', 'wzdłuż osi Y obrysu']],
+          podpowiedz: 'Dach jednospadowy – kierunek okapów: ściana niska i wysoka biegną wzdłuż „kalenicy”.' },
         { klucz: 'strop', podstawowy: true, domyslna: 'nie', etykieta: 'Strop nad parterem (zamknięta góra)', rodzaj: :wybor,
           sekcja: 'sciany', wybory: [['nie', 'nie – działowe do pełnej wysokości'], ['tak', 'tak – działowe kończą się pod stropem']],
           podpowiedz: 'Niższa działowa tylko pod stropem, antresolą lub półką. Antresolę albo półkę nad jedną działową ustawisz w widoku ściany.' },
@@ -114,6 +115,20 @@ module ArteMadera
           podpowiedz: 'Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu.' },
         { klucz: 'szczyty_na_dzialowych', domyslna: 'nie', etykieta: 'Szczyty także na działowych szczytowych',
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Jak 1800 W-2 – ściana działowa do kalenicy.' },
+        { klucz: 'dach_rodzaj', podstawowy: true, domyslna: 'dwuspadowy', etykieta: 'Dach', rodzaj: :wybor, sekcja: 'szczyty',
+          wybory: [['dwuspadowy', 'dwuspadowy – dwa szczyty, kalenica w środku'],
+                   ['jednospadowy', 'jednospadowy – ściana niska i wysoka, szczyty skośne']],
+          podpowiedz: 'Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów ' \
+                      '(KROK 1 z obrysu).' },
+        { klucz: 'dach_spadek', podstawowy: true, domyslna: 'min', etykieta: 'Jednospadowy – spadek w stronę', rodzaj: :wybor,
+          sekcja: 'szczyty', wybory: [['min', 'mniejszych współrzędnych (dół albo lewa strona rysunku)'],
+                                      ['max', 'większych współrzędnych (góra albo prawa strona rysunku)']],
+          podpowiedz: 'Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci.' },
+        { klucz: 'dach_okap_wysoki', domyslna: 500.0, etykieta: 'Jednospadowy – okap za ścianą wysoką', jednostka: 'mm', min: 0.0,
+          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany wysokiej.' },
+        { klucz: 'jednospad_min_pasek', domyslna: 30.0, etykieta: 'Jednospadowy – najcieńszy górny bal ściany wysokiej',
+          jednostka: 'mm', min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'szczyty',
+          podpowiedz: 'Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany.' },
         { klucz: 'dach_kat', podstawowy: true, domyslna: 20.0, etykieta: 'Kąt dachu', jednostka: '°', min: 5.0, max: 60.0, rodzaj: :liczba,
           sekcja: 'szczyty', podpowiedz: 'Projekty 900 i 1000: 20°.' },
         { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
@@ -162,6 +177,10 @@ module ArteMadera
           min: 0.0, max: 140.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: '0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy ' \
                       'klin pomijany (bal kończy się pionowo).' },
+        { klucz: 'zamek_min_drewno', domyslna: 20.0, etykieta: 'Drewno w zamku przy skosie dachu – najmniej', jednostka: 'mm',
+          min: 0.0, max: 100.0, rodzaj: :liczba, sekcja: 'szczyty',
+          podpowiedz: 'Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad ' \
+                      'gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego).' },
         { klucz: 'szczyt_min_kawalek', domyslna: 10.0, etykieta: 'Najkrótszy kawałek bala przy skosie i gnieździe', jednostka: 'mm',
           min: 0.0, max: 500.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; 900: najkrótszy ' \

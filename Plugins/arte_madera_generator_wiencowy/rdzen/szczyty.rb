@@ -3,12 +3,13 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
-# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie)
+# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
 # Szczyt ściany (w[:szczyt]): { v_a:, v_b: (osie ścian okapowych w kierunku v), v0: (v punktu a ściany), kv: (±1 – znak
-# v wzdłuż s), z_okap:, z_max: (wierzch linii szczytu w kalenicy) }. Gniazda płatwi to otwory ściany z gniazdo: true –
+# v wzdłuż s), z_okap:, z_max: (najwyższy punkt linii szczytu), plaski: (ściana wysoka dachu jednospadowego – v stałe,
+# kv = 0, linia pozioma) }. Gniazda płatwi to otwory ściany z gniazdo: true –
 # od spodu płatwi w górę (bal przy spodzie dostaje wycięcie od góry, bale wyżej są przecięte), jak w projekcie 900.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -37,13 +38,31 @@ module ArteMadera
           va = w[:a][idx]
           vb = w[:b][idx]
           geo = { v_a: [va, vb].min, v_b: [va, vb].max }
-          w[:szczyt] = geo.merge(v0: va, kv: vb >= va ? 1.0 : -1.0, z_okap: z_okap, z_max: Dach.z_szczytu(geo, p))
+          w[:szczyt] = geo.merge(v0: va, kv: vb >= va ? 1.0 : -1.0, z_okap: z_okap)
+          w[:szczyt][:z_max] = z_max(w, p)
         end
         wynik[:dom] = dom_prostokatny(sciany, szczytowe, os_kalenicy)
+        return jednospadowy(sciany, wynik, p, z_okap) if Dach.jednospadowy?(p)
         if wynik[:dom].nil? && Parametry.tak?(p, 'dach_elementy')
           wynik[:uwagi] << 'Dach: belki dachu (płatwie, krokwie) tylko dla obrysu prostokątnego – szczyty liczone dla każdej ściany osobno.'
         end
         wynik
+      end
+
+      # Dach jednospadowy (dom prostokątny): ściana wysoka dostaje szczyt płaski (do połaci); inny obrys – bez szczytów
+      # z ostrzeżeniem. Zwraca wynik przygotuj.
+      def jednospadowy(sciany, wynik, p, z_okap)
+        return wynik if wynik[:dom] && DachJednospadowy.sciana_wysoka!(sciany, wynik[:dom], p, z_okap)
+        sciany.each { |w| w.delete(:szczyt) }
+        wynik[:dom] = nil
+        wynik[:uwagi] << 'Dach jednospadowy: tylko dla domu prostokątnego – szczytów nie dodano (inny dach zrób w aplikacji do dachów).'
+        wynik
+      end
+
+      # Najwyższy punkt linii szczytu ściany [mm]: kalenica (dwuspadowy) albo wyższy koniec ściany (jednospadowy).
+      def z_max(w, p)
+        return Dach.z_szczytu(w[:szczyt], p) unless Dach.jednospadowy?(p)
+        [w[:s_od], w[:s_do]].map { |s| linia(w, s, p) }.max
       end
 
       # Czy ściana dostaje szczyt: zewnętrzna szczytowa od narożnika do narożnika albo działowa szczytowa od ściany do ściany
@@ -79,10 +98,21 @@ module ArteMadera
         (v - w[:szczyt][:v0]) * w[:szczyt][:kv]
       end
 
-      # Linia szczytu (wierzch bali) w miejscu s ściany [mm]; bez szczytu – nil.
+      # Linia szczytu (wierzch bali) w miejscu s ściany [mm]; szczyt płaski (ściana wysoka dachu jednospadowego) – linia
+      # podparcia przy jej licu wewnętrznym (krokwie i deski leżą na ścianie); bez szczytu – nil.
       def linia(w, s, p)
-        return nil if w[:szczyt].nil?
-        Dach.linia_szczytu(w[:szczyt], v_z_s(w, s), p)
+        g = w[:szczyt]
+        return nil if g.nil?
+        return Dach.linia_podparcia(g, g[:v0], p) if g[:plaski]
+        Dach.linia_szczytu(g, v_z_s(w, s), p)
+      end
+
+      # Załom linii szczytu (kalenica) – s ściany; dach jednospadowy i szczyt płaski – nil (linia prosta).
+      def zalom(w, p)
+        g = w[:szczyt]
+        return nil if g.nil? || g[:plaski]
+        v = Dach.zalom_v(g, p)
+        v.nil? ? nil : s_z_v(w, v)
       end
 
       # Czy wysokość z w miejscu s ściany jest pod linią szczytu (ściana bez szczytu – zawsze).
@@ -98,33 +128,46 @@ module ArteMadera
         z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) + 0.01
       end
 
-      # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek; nil – brak bala.
+      # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek (szczyt płaski –
+      # najcieńszy pasek górnego bala ściany wysokiej, jednospad_min_pasek); nil – brak bala.
       def zasieg(w, z0, p)
         g = w[:szczyt]
         return [w[:s_od], w[:s_do]] if g.nil?
         m = p['szczyt_min_wysokosc'].to_f
-        vk = (g[:v_a] + g[:v_b]) / 2.0
-        szczyt = Dach.linia_szczytu(g, vk, p)
-        return nil if szczyt <= z0 + m
-        r = (szczyt - z0 - m) / Dach.tg(p)
-        s = [s_z_v(w, vk - r), s_z_v(w, vk + r)].sort
-        lo = [s[0], w[:s_od]].max
-        hi = [s[1], w[:s_do]].min
-        hi - lo > 1.0 ? [lo, hi] : nil
+        m = [m, p['jednospad_min_pasek'].to_f].max if g[:plaski]
+        zasieg_linii(w[:s_od], w[:s_do], zalom(w, p), z0 + m) { |s| linia(w, s, p) }
+      end
+
+      # Zasięg [s0, s1] odcinka s_od…s_do, na którym linia dachu (blok: s → wysokość; prosta albo łamana z załomem sk,
+      # wypukła w górę) jest wyżej niż z_min; nil – nigdzie (krócej niż 1 mm).
+      def zasieg_linii(s_od, s_do, sk, z_min)
+        punkty = [s_od, s_do]
+        punkty.insert(1, sk) if sk && sk > s_od && sk < s_do
+        lo = nil
+        hi = nil
+        punkty.each_cons(2) do |a, b|
+          za = yield(a) - z_min
+          zb = yield(b) - z_min
+          next if za <= 0.0 && zb <= 0.0
+          x0 = za > 0.0 ? a : a + (b - a) * za / (za - zb)
+          x1 = zb > 0.0 ? b : a + (b - a) * za / (za - zb)
+          lo = x0 if lo.nil? || x0 < lo
+          hi = x1 if hi.nil? || x1 > hi
+        end
+        lo && hi - lo > 1.0 ? [lo, hi] : nil
       end
 
       # Obróbki skosu dla kawałka bala s0…s1 o spodzie z0 i wysokości h: [cechy skos_gora w układzie bala].
       def skosy(w, s0, s1, z0, h, p)
         return [] if w[:szczyt].nil?
-        sk = s_z_v(w, (w[:szczyt][:v_a] + w[:szczyt][:v_b]) / 2.0)
-        skosy_linii(s0, s1, z0, h, sk) { |s| linia(w, s, p) }
+        skosy_linii(s0, s1, z0, h, zalom(w, p)) { |s| linia(w, s, p) }
       end
 
-      # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załom w sk): odcinki, na których linia
-      # schodzi poniżej wierzchu bala.
+      # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załom w sk, nil – linia prosta): odcinki, na
+      # których linia schodzi poniżej wierzchu bala.
       def skosy_linii(s0, s1, z0, h, sk)
         punkty = [s0, s1]
-        punkty.insert(1, sk) if sk > s0 + 0.5 && sk < s1 - 0.5
+        punkty.insert(1, sk) if sk && sk > s0 + 0.5 && sk < s1 - 0.5
         wynik = []
         punkty.each_cons(2) do |a, b|
           za = yield(a) - z0
@@ -182,10 +225,11 @@ module ArteMadera
                         nazwa: "gniazdo płatwi #{pl[:rodzaj]}", gniazdo: true }
       end
 
-      # Czy bal należy do szczytu (prefiks Sz): ma skos albo leży nad ścianami okapowymi.
+      # Czy bal należy do szczytu (prefiks Sz): ma skos albo leży nad ścianami okapowymi (ściana wysoka dachu jednospadowego
+      # – bale ścienne Bs).
       def bal_szczytu?(b)
         w = b[:sciana]
-        return false if w[:szczyt].nil?
+        return false if w[:szczyt].nil? || w[:szczyt][:plaski]
         b[:cechy].any? { |c| c[:typ] == 'skos_gora' } || b[:z0] >= w[:szczyt][:z_okap] - 0.01
       end
     end

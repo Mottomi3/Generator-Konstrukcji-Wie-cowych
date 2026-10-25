@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/przyklady.rb
 # Zadanie: przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory.
-# Tematy: przykładowe domy, test działania, dom 4 × 4, dom jak 900, dom z działową, łączenie na przemian, obrys L, krokwie przy szczycie, pełny profil w teście, działowa pod antresolą w teście
+# Tematy: przykładowe domy, test działania, dom 4 × 4, dom jak 900, dom z działową, łączenie na przemian, obrys L, krokwie przy szczycie, pełny profil w teście, działowa pod antresolą w teście, dach jednospadowy w teście
 # Zależy od: –
 # Używają: sketchup/raport.rb (test działania), testy/t_raport.rb
 #
@@ -49,7 +49,10 @@ module ArteMadera
           dom('Pełny profil, działowa pod antresolą, ostatek 200, węgieł ręczny', prostokat(0, 0, 6000, 4200) + [[[2000, 0], [2000, 4200]]],
               { 'liczba_wiencow' => 20, 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' },
               [otwor('W-5', 1200, 900, 2000, 0, 'D1')],
-              'W-5' => { 'nad' => 'antresola', 'wysokosc' => 2450 }, 'W-1' => { 'ostatek_od' => 200 }, 'W-3' => { 'wegly' => [3500] })
+              'W-5' => { 'nad' => 'antresola', 'wysokosc' => 2450 }, 'W-1' => { 'ostatek_od' => 200 }, 'W-3' => { 'wegly' => [3500] }),
+          dom('Dach jednospadowy 15°, szczyt na działowej, krokwie w jednym kawałku', prostokat(0, 0, 6000, 4500) + [[[3000, 0], [3000, 4500]]],
+              { 'dach_rodzaj' => 'jednospadowy', 'dach_kat' => 15, 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator',
+                'szczyty_na_dzialowych' => 'tak' }, [otwor('W-1', 1200, 1020, 1010, 900, 'O1')])
         ]
       end
 
