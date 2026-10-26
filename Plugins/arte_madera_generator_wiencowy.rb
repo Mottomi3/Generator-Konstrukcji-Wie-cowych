@@ -19,8 +19,8 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – ten sam co w arte_madera_generator_wiencowy/main.rb.
-    PLUGIN_BUILD      = '5'.freeze unless const_defined?(:PLUGIN_BUILD)
-    PLUGIN_BUILD_DATE = '2026-10-25'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
+    PLUGIN_BUILD      = '6'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD_DATE = '2026-10-26'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     plik_rejestratora = __FILE__.dup
     plik_rejestratora.force_encoding('UTF-8') if plik_rejestratora.respond_to?(:force_encoding)

@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras, podpory dla aplikacji do dachów w teście losowym
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -233,16 +233,30 @@ module LosoweDomy
     end
   end
 
-  # Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora.
+  # Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora;
+  # podpory (płatwie, ściana wysoka) w granicy aplikacji (wierzch w osi pod połacią o ≤ b/2·sin α + 30 mm po normalnej).
   def problemy_polaci(pl)
     wz = wzgledem_polaci(pl)
     return [] if wz.nil?
-    wynik = []
+    wynik = podpory_poza(pl)
     wynik << format('bale ponad połacią o %.2f mm', wz[:bale]) if wz[:bale] && wz[:bale] > 0.01
     wynik << format('płatwie ponad połacią o %.2f mm', wz[:platwie]) if wz[:platwie] && wz[:platwie] > 0.01
     wynik << format('płatew %.2f mm pod połacią – nie podpiera krokwi', -wz[:dotyk]) if wz[:dotyk] && wz[:dotyk] < -0.5
     wynik << "krokwie generatora przy krokwiach z aplikacji: #{wz[:krokwie]}" if wz[:krokwie] > 0
     wynik
+  end
+
+  # Podpory, których aplikacja do dachów nie uzna (za wysoko, za nisko albo nie równolegle do okapu) – opisy.
+  def podpory_poza(pl)
+    pol = pl[:polacie]
+    a = pol[:kat] * Math::PI / 180.0
+    G::Krok2.ustawienia(pl[:parametry])
+    G::Krok2.podpory(pl).map do |q|
+      d = [q[:od], q[:do]].map { |x, y, z| (z_polaci(pol, x, y) - z) * Math.cos(a) }
+      rownolegla = (z_polaci(pol, q[:od][0], q[:od][1]) - z_polaci(pol, q[:do][0], q[:do][1])).abs < 0.01
+      next nil if rownolegla && d.all? { |v| v >= -0.01 && v <= q[:szerokosc] / 2.0 * Math.sin(a) + 30.0 }
+      format('podpora %s poza aplikacją (%.2f / %.2f mm od połaci)', q[:nazwa], d[0], d[1])
+    end.compact
   end
 
   # Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }.

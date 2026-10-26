@@ -62,7 +62,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `jednospad_min_pasek` | Jednospadowy – najcieńszy górny bal ściany wysokiej | 30 mm | 0 … 300 | Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany. |
 | `dach_kat` | Kąt dachu | 20 ° | 5 … 60 | Projekty 900 i 1000: 20°. |
 | `dach_uklad` | Układ dachu | platwie | `platwie` – same płatwie (deski na płatwiach); `krokwie` – krokwie na płatwi ściennej i kalenicowej; `platwie_krokwie` – płatwie i krokwie |  |
-| `dach_wiezba` | Krokwie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów (KROK 2, kontrola); `generator` – generator (bez kontroli) | Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
+| `dach_wiezba` | Krokwie i poszycie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów (KROK 2: krokwie, poszycie, kontrola); `generator` – generator (krokwie bez kontroli, bez poszycia) | Dom prostokątny. Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu płatwi generatora i jego płatwie jako podpory: z krokwiami – KROK 2 liczy krokwie (przęsła między płatwiami), poszycie, łaty i nośność; same płatwie – poszycie wprost na płatwiach, wzdłuż spadku, styki na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
 | `dach_podniesienie` | Wierzch płatwi nad ścianą okapową (przy licu wewn.) | 69,5 mm | -300 … 1500 | Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie. |
 | `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
 | `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
@@ -81,6 +81,25 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego. |
 | `dach_okap` | Okap – wysunięcie krokwi za ścianę | 500 mm | 0 … 1500 | W poziomie, od lica ściany okapowej. |
 | `dach_okap_szczyt` | Wysunięcie płatwi za szczyt | 500 mm | 0 … 1500 | Od lica szczytu (900: płatwie 6082). |
+
+## Poszycie dachu (aplikacja do dachów)
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `poszycie_nadbitka` | Nadbitka – boazeria pióro-wpust | nie | `tak` – tak; `nie` – nie | Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja). |
+| `nadbitka_grubosc` | Nadbitka – grubość | 19 mm | 10 … 60 |  |
+| `nadbitka_krycie` | Nadbitka – szerokość krycia | 121 mm | 50 … 300 |  |
+| `nadbitka_dlugosc` | Nadbitka – długość handlowa | 4000 mm | 1000 … 8000 |  |
+| `poszycie_deski` | Deskowanie pełne | tak | `tak` – tak; `nie` – nie | Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (jak 900) – deski na płatwiach wzdłuż spadku, styki na płatwiach. |
+| `deski_grubosc` | Deskowanie – grubość deski | 25 mm | 10 … 80 |  |
+| `deski_szerokosc` | Deskowanie – szerokość deski | 100 mm | 50 … 300 |  |
+| `deski_szczelina` | Deskowanie – szczelina między deskami | 3 mm | 0 … 30 |  |
+| `deski_dlugosc` | Deskowanie – długość handlowa | 4000 mm | 1000 … 8000 |  |
+| `poszycie_osb` | Płyty OSB | nie | `tak` – tak; `nie` – nie | Na poprzedniej warstwie (albo na krokwiach), dłuższy bok wzdłuż okapu, styki w mijance. |
+| `osb_grubosc` | OSB – grubość | 18 mm | 6 … 40 | Zwykle 18 albo 22. |
+| `osb_dlugosc` | OSB – długość płyty (wzdłuż okapu) | 2500 mm | 500 … 5000 |  |
+| `osb_szerokosc` | OSB – szerokość płyty | 1250 mm | 300 … 2500 |  |
+| `osb_szczelina` | OSB – szczelina przy każdej krawędzi | 3 mm | 0 … 20 |  |
 
 ## Taras
 

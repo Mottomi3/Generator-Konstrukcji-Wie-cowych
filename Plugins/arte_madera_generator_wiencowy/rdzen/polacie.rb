@@ -2,22 +2,24 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/polacie.rb
-# Zadanie: połacie dachu dla aplikacji do dachów – obrys, wysokość, kąt, okap i krawędzie szczytowe tak, żeby płaszczyzna połaci była spodem krokwi na płatwiach generatora.
-# Tematy: połacie dachu, aplikacja do dachów, ArteMadera Roof, KROK 1 z generatora, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, wysunięcie za szczyt w połaciach, dach z aplikacji, podpowiedź dachu, połać dachu jednospadowego
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, krokwie, lico okapu), rdzen/dach_jednospadowy.rb (ściana niska i wysoka)
+# Zadanie: połacie dachu dla aplikacji do dachów – obrys, wysokość, kąt, okap i krawędzie szczytowe tak, żeby płaszczyzna połaci leżała na wierzchu płatwi generatora (spód krokwi albo spód poszycia na samych płatwiach).
+# Tematy: połacie dachu, aplikacja do dachów, ArteMadera Roof, KROK 1 z generatora, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, wysunięcie za szczyt w połaciach, dach z aplikacji, podpowiedź dachu, połać dachu jednospadowego, połacie przy samych płatwiach
+# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, lico okapu), rdzen/dach_jednospadowy.rb (ściana niska i wysoka), rdzen/krok2.rb (podpowiedź KROKU 2)
 # Używają: rdzen/projekt.rb (plan[:polacie], podpowiedzi), sketchup/dach_aplikacja.rb
 #
-# Aplikacja do dachów (RoofBuilder.generate) prowadzi płaszczyznę połaci przez krawędź obrysu na wysokości obrysu,
+# Aplikacja do dachów (API.polacie) prowadzi płaszczyznę połaci przez krawędź obrysu na wysokości obrysu,
 # a okap (w poziomie) odsuwa wszystkie krawędzie – także szczytowe – o tyle samo. Obrys = zewnętrzne lica ścian
 # okapowych na wysokości linii podparcia w tym miejscu (z_ref − tg · grubość), krawędzie szczytowe przesunięte
 # o (wysunięcie za szczyt − okap): po odsunięciu połać kończy się przy szczycie razem z płatwiami, przy okapie
 # w odległości dach_okap od lica ściany. Dach jednospadowy: jedna połać – krawędź okapowa tylko przy ścianie niskiej,
 # pozostałe trzy szczytowe (strona wysoka przesunięta o okap za ścianą wysoką − okap). Punkty w mm układu domu (jak
-# bale), przeciwnie do wskazówek zegara.
+# bale), przeciwnie do wskazówek zegara. Połacie dla każdego układu dachu (krokwie albo same płatwie – wtedy KROK 2
+# kładzie poszycie wprost na płatwiach), gdy dach_wiezba = aplikacja.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'krok2') unless defined?(ArteMadera::GeneratorWiencowy::Krok2)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -27,15 +29,15 @@ module ArteMadera
 
       module_function
 
-      # Czy krokwie buduje aplikacja do dachów (układ z krokwiami i dach_wiezba = aplikacja).
+      # Czy krokwie i poszycie buduje aplikacja do dachów (dach_wiezba = aplikacja; każdy układ dachu).
       def z_aplikacji?(p)
-        Dach.krokwie?(p) && p['dach_wiezba'] != 'generator'
+        p['dach_wiezba'] != 'generator'
       end
 
       # Połacie domu prostokątnego dom = { os:, v_a:, v_b:, u1:, u2: } (Szczyty.dom_prostokatny):
       # { punkty: [[x, y]] (mm układu domu, przeciwnie do wskazówek zegara), z: (wysokość obrysu), kat: (°), okap: (mm),
       # szczyty: [numery krawędzi szczytowych od 1 – krawędź i: punkt i → i + 1, jak w aplikacji] };
-      # nil – bez połaci (krokwie z generatora, bez krokwi, bez belek dachu, obrys nieprostokątny).
+      # nil – bez połaci (krokwie z generatora, bez belek dachu, obrys nieprostokątny).
       def dla_domu(dom, p)
         return nil if dom.nil? || !z_aplikacji?(p) || !Parametry.tak?(p, 'dach_elementy')
         t = Parametry.grubosc(p)
@@ -75,10 +77,7 @@ module ArteMadera
       # Podpowiedzi do okna o dachu z aplikacji ([{ poziom:, tekst: }]); pusta lista, gdy krokwie robi generator.
       def podpowiedzi(dom, p, polacie)
         return [] unless z_aplikacji?(p) && Parametry.tak?(p, 'dach_elementy') && Parametry.tak?(p, 'szczyty')
-        if polacie
-          return [{ poziom: 'ok', tekst: 'Dach: krokwie z aplikacji do dachów – po wygenerowaniu powstaną połacie (spód krokwi ' \
-                                         'na płatwiach) i otworzy się KROK 2: krokwie, łaty, deski i kontrola nośności.' }]
-        end
+        return Krok2.podpowiedzi(p) if polacie
         return [{ poziom: 'uwaga', tekst: 'Dach: za krótki dom na połacie z tym wysunięciem za szczyt.' }] if dom
         [{ poziom: 'uwaga', tekst: 'Dach: połacie dla aplikacji do dachów tylko dla domu prostokątnego – inny dach zrób w ' \
                                    'aplikacji (KROK 1 z obrysu).' }]

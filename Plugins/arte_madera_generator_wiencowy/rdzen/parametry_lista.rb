@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry
 # Zależy od: –
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
@@ -23,6 +23,7 @@ module ArteMadera
         ['laczenia', 'Długości bali i łączenia', true],
         ['wegly', 'Węgły 244 – wzmocnienia ścian', true],
         ['szczyty', 'Szczyty i dach', false],
+        ['poszycie', 'Poszycie dachu (aplikacja do dachów)', false],
         ['taras', 'Taras', false],
         ['podloga', 'Podłoga', false],
         ['otwory', 'Okna i drzwi – stolarka i luzy', false],
@@ -135,12 +136,14 @@ module ArteMadera
         { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['platwie', 'same płatwie (deski na płatwiach)'], ['krokwie', 'krokwie na płatwi ściennej i kalenicowej'],
                    ['platwie_krokwie', 'płatwie i krokwie']] },
-        { klucz: 'dach_wiezba', podstawowy: true, domyslna: 'aplikacja', etykieta: 'Krokwie – kto je buduje', rodzaj: :wybor,
-          sekcja: 'szczyty',
-          wybory: [['aplikacja', 'aplikacja do dachów (KROK 2, kontrola)'], ['generator', 'generator (bez kontroli)']],
-          podpowiedz: 'Przy układzie z krokwiami (dom prostokątny). Aplikacja do dachów (ArteMadera Roof) dostaje połacie na ' \
-                      'spodzie krokwi – płatwie generatora leżą pod nimi – i w KROKU 2 liczy krokwie, łaty, deski i nośność; ' \
-                      'szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
+        { klucz: 'dach_wiezba', podstawowy: true, domyslna: 'aplikacja', etykieta: 'Krokwie i poszycie – kto je buduje',
+          rodzaj: :wybor, sekcja: 'szczyty',
+          wybory: [['aplikacja', 'aplikacja do dachów (KROK 2: krokwie, poszycie, kontrola)'],
+                   ['generator', 'generator (krokwie bez kontroli, bez poszycia)']],
+          podpowiedz: 'Dom prostokątny. Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu ' \
+                      'płatwi generatora i jego płatwie jako podpory: z krokwiami – KROK 2 liczy krokwie (przęsła między ' \
+                      'płatwiami), poszycie, łaty i nośność; same płatwie – poszycie wprost na płatwiach, wzdłuż spadku, styki ' \
+                      'na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
         { klucz: 'dach_podniesienie', domyslna: 69.5, etykieta: 'Wierzch płatwi nad ścianą okapową (przy licu wewn.)',
           jednostka: 'mm', min: -300.0, max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.' },
@@ -191,6 +194,39 @@ module ArteMadera
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
         { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
+
+        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Nadbitka – boazeria pióro-wpust',
+          rodzaj: :wybor, sekcja: 'poszycie', wybory: TAK_NIE,
+          podpowiedz: 'Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych ' \
+                      'płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja).' },
+        { klucz: 'nadbitka_grubosc', domyslna: 19.0, etykieta: 'Nadbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
+          rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'nadbitka_krycie', domyslna: 121.0, etykieta: 'Nadbitka – szerokość krycia', jednostka: 'mm', min: 50.0,
+          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'nadbitka_dlugosc', domyslna: 4000.0, etykieta: 'Nadbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
+          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'tak', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
+          sekcja: 'poszycie', wybory: TAK_NIE,
+          podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (jak 900) ' \
+                      '– deski na płatwiach wzdłuż spadku, styki na płatwiach.' },
+        { klucz: 'deski_grubosc', domyslna: 25.0, etykieta: 'Deskowanie – grubość deski', jednostka: 'mm', min: 10.0, max: 80.0,
+          rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'deski_szerokosc', domyslna: 100.0, etykieta: 'Deskowanie – szerokość deski', jednostka: 'mm', min: 50.0,
+          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'deski_szczelina', domyslna: 3.0, etykieta: 'Deskowanie – szczelina między deskami', jednostka: 'mm', min: 0.0,
+          max: 30.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'deski_dlugosc', domyslna: 4000.0, etykieta: 'Deskowanie – długość handlowa', jednostka: 'mm', min: 1000.0,
+          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'poszycie_osb', podstawowy: true, domyslna: 'nie', etykieta: 'Płyty OSB', rodzaj: :wybor, sekcja: 'poszycie',
+          wybory: TAK_NIE, podpowiedz: 'Na poprzedniej warstwie (albo na krokwiach), dłuższy bok wzdłuż okapu, styki w mijance.' },
+        { klucz: 'osb_grubosc', domyslna: 18.0, etykieta: 'OSB – grubość', jednostka: 'mm', min: 6.0, max: 40.0, rodzaj: :liczba,
+          sekcja: 'poszycie', podpowiedz: 'Zwykle 18 albo 22.' },
+        { klucz: 'osb_dlugosc', domyslna: 2500.0, etykieta: 'OSB – długość płyty (wzdłuż okapu)', jednostka: 'mm', min: 500.0,
+          max: 5000.0, rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'osb_szerokosc', domyslna: 1250.0, etykieta: 'OSB – szerokość płyty', jednostka: 'mm', min: 300.0, max: 2500.0,
+          rodzaj: :liczba, sekcja: 'poszycie' },
+        { klucz: 'osb_szczelina', domyslna: 3.0, etykieta: 'OSB – szczelina przy każdej krawędzi', jednostka: 'mm', min: 0.0,
+          max: 20.0, rodzaj: :liczba, sekcja: 'poszycie' },
 
         { klucz: 'taras', podstawowy: true, domyslna: 'nie', etykieta: 'Taras przed ścianą szczytową', rodzaj: :wybor, sekcja: 'taras',
           wybory: [['nie', 'bez tarasu'], ['podciag', 'jak 1100 – podciąg na słupach, balustrada'],

@@ -21,8 +21,8 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '5'.freeze unless const_defined?(:PLUGIN_BUILD)
-    PLUGIN_BUILD_DATE = '2026-10-25'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
+    PLUGIN_BUILD      = '6'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD_DATE = '2026-10-26'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
       katalog = File.dirname(__FILE__).dup
@@ -40,7 +40,7 @@ module ArteMadera
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
       rdzen/geometria rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras rdzen/taras_balustrada rdzen/stolarka rdzen/otwory
-      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/elementy rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
+      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/elementy rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
       rdzen/skos_przy_narozniku
       rdzen/zamek
       rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie

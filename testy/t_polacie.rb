@@ -2,9 +2,9 @@
 #
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_polacie.rb
-# Zadanie: połacie dla aplikacji do dachów – obrys, wysokość, krawędzie szczytowe, okap i wysunięcie za szczyt; płatwie pod połacią, szczyt pod krokwiami, bez krokwi generatora; kiedy połaci nie ma.
-# Tematy: testy połaci, aplikacja do dachów w testach, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, krokwie z generatora albo z aplikacji, podpowiedź dachu
-# Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, Plugins/.../rdzen/polacie.rb
+# Zadanie: połacie dla aplikacji do dachów – obrys, wysokość, krawędzie szczytowe, okap i wysunięcie za szczyt; płatwie pod połacią, szczyt pod krokwiami, bez krokwi generatora; same płatwie (poszycie na płatwiach); ustawienia KROKU 2 i podpory z płatwi; kiedy połaci nie ma.
+# Tematy: testy połaci, aplikacja do dachów w testach, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, krokwie z generatora albo z aplikacji, podpowiedź dachu, testy KROKU 2, testy podpór, testy poszycia
+# Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, Plugins/.../rdzen/polacie.rb, Plugins/.../rdzen/krok2.rb
 # Używają: testy/uruchom.sh
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
@@ -106,8 +106,9 @@ seg2 = prostokat(0, 0, 7000, 4500) + [[[3500, 0], [3500, 4500]]]
 end
 
 Testy.grupa('Kiedy połaci nie ma')
-pl = plan_pelny(seg)
-Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].none? { |h| h[:tekst].start_with?('Dach:') }, 'same płatwie – bez połaci i podpowiedzi')
+pl = plan_pelny(seg, 'dach_wiezba' => 'generator')
+Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].none? { |h| h[:tekst].start_with?('Dach:') },
+              'same płatwie, poszycie z generatora – bez połaci i podpowiedzi')
 pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'szczyty' => 'nie')
 Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].none? { |h| h[:tekst].start_with?('Dach:') }, 'bez szczytów – bez połaci i podpowiedzi')
 pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'dach_elementy' => 'nie')
@@ -117,5 +118,88 @@ Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].any? { |h| h[:poziom] == 'uw
               'obrys L – bez połaci, podpowiedź o aplikacji')
 pl = plan_pelny(prostokat(0, 0, 3000, 2500), 'dach_uklad' => 'krokwie', 'dach_okap' => 1500, 'dach_okap_szczyt' => 0)
 Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].any? { |h| h[:tekst].include?('za krótki') }, 'za krótki dom na połacie – podpowiedź')
+
+# Odległość wierzchu podpory od połaci w pionie [mm] na obu końcach (dodatnia – pod połacią).
+def pod_polacia(pol, q)
+  [q[:od], q[:do]].map { |x, y, z| z_polaci(pol, x, y) - z }
+end
+
+Testy.grupa('Same płatwie (domyślnie, jak 900) – połacie na wierzchu płatwi, KROK 2 bez krokwi, deski na płatwiach')
+pl = plan_pelny(seg)
+p = pl[:parametry]
+pol = pl[:polacie]
+Testy.rowne([p['dach_uklad'], p['dach_wiezba'], p['poszycie_deski']], %w[platwie aplikacja tak], 'domyślnie: same płatwie, aplikacja, deski')
+Testy.sprawdz(!pol.nil?, 'są połacie')
+Testy.rowne(pol[:z], Dach.z_ref(p) - Dach.tg(p) * Parametry.grubosc(p), 'połać na linii podparcia (wierzch płatwi)', 0.001)
+wz = wzgledem_polaci(pl)
+Testy.sprawdz(wz[:bale] <= 0.01 && wz[:platwie] <= 0.01, format('bale i płatwie pod połacią (%.3f / %.3f mm)', wz[:bale], wz[:platwie]))
+Testy.sprawdz(wz[:dotyk] >= -0.5, format('każda płatew podpiera poszycie (%.3f mm)', wz[:dotyk]))
+u = Krok2.ustawienia(p)
+Testy.rowne([u[:build_dir], u[:rafter_on], u[:ridge_on], u[:seat_on], u[:purlin_supports_on]], ['up', false, false, false, true],
+            'KROK 2: bez krokwi, w górę od połaci, płatwie jako podpory')
+Testy.rowne([u[:sheath_plank_on], u[:sheath_plank_t_mm], u[:sheath_plank_w_mm], u[:sheath_plank_gap_mm], u[:sheath_plank_len_mm]],
+            [true, 25.0, 100.0, 3.0, 4000.0], 'deskowanie z parametrów')
+Testy.rowne([u[:sheath_ceiling_on], u[:sheath_osb_on]], [false, false], 'nadbitka i OSB wyłączone')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'ok' && h[:tekst].include?('deskowanie na płatwiach') },
+              'podpowiedź: deskowanie na płatwiach w KROKU 2')
+pp = Krok2.podpory(pl)
+Testy.rowne(pp.length, pl[:elementy].count { |e| e[:prefiks] == 'P' }, "podpora z każdej płatwi (#{pp.length})")
+Testy.sprawdz(pp.length > 3, 'są płatwie pośrednie')
+od = pp.map { |q| pod_polacia(pol, q).max }
+Testy.rowne(od.count { |d| d.abs < 0.01 }, pp.length - 1, 'wierzch płatwi ściętej w osi na połaci')
+Testy.rowne(od.count { |d| (d - Krok2::GRZBIET_NIZEJ).abs < 0.01 }, 1, 'kalenicowa – 1 mm pod grzbietem (podpora wewnątrz obu połaci)')
+Testy.sprawdz(pp.all? { |q| (q[:od][1] - q[:do][1]).abs < 1e-6 && (q[:od][0] - q[:do][0]).abs > 1000 }, 'podpory równoległe do okapu')
+b, h = Parametry.przekroj(p, 'platwa_przekroj')
+Testy.sprawdz(pp.any? { |q| (q[:szerokosc] - b).abs < 1e-6 && (q[:wysokosc] - h).abs < 1e-6 }, 'szerokość i wysokość płatwi pośredniej')
+Testy.sprawdz(pp.all? { |q| q[:nazwa].start_with?('Płatew ') }, "nazwy pozycji (#{pp.first[:nazwa]})")
+pl = plan_pelny(seg, 'poszycie_deski' => 'nie')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'uwaga' && h[:tekst].include?('bez poszycia') }, 'same płatwie bez poszycia – uwaga')
+pl = plan_pelny(seg, 'poszycie_deski' => 'nie', 'poszycie_osb' => 'tak', 'osb_grubosc' => 22, 'poszycie_nadbitka' => 'tak')
+u = Krok2.ustawienia(pl[:parametry])
+Testy.rowne([u[:sheath_ceiling_on], u[:sheath_ceiling_t_mm], u[:sheath_plank_on], u[:sheath_osb_on], u[:sheath_osb_t_mm],
+             u[:sheath_osb_len_mm], u[:sheath_osb_w_mm]], [true, 19.0, false, true, 22.0, 2500.0, 1250.0], 'nadbitka i OSB 22')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('nadbitka + OSB na płatwiach') }, 'podpowiedź: warstwy od spodu')
+
+Testy.grupa('Krokwie z aplikacji – ustawienia KROKU 2 i podpory: płatwie ścienne i kalenicowa')
+pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'krokiew_przekroj' => '60x180', 'krokwie_rozstaw' => 800, 'drewno_klasa' => 'C30')
+p = pl[:parametry]
+pol = pl[:polacie]
+u = Krok2.ustawienia(p)
+Testy.rowne([u[:rafter_on], u[:rafter_mode], u[:rafter_w_mm], u[:rafter_h_mm], u[:rafter_spacing_mm], u[:timber_class], u[:check_on]],
+            [true, 'max', 60.0, 180.0, 800.0, 'C30', true], 'krokiew, rozstaw, klasa drewna, kontrola')
+Testy.rowne(u[:sheath_plank_on], true, 'deskowanie na krokwiach (domyślnie)')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'ok' && h[:tekst].include?('przęsła między płatwiami') }, 'podpowiedź o przęsłach')
+pp = Krok2.podpory(pl)
+Testy.rowne(pp.length, 3, 'podpory: 2 płatwie ścienne + kalenicowa')
+gk = pp.max_by { |q| q[:od][2] }
+Testy.rowne(gk[:od][1], 2000.0, 'kalenicowa – grzbiet w osi kalenicy', 1e-6)
+Testy.sprawdz(pp.flat_map { |q| pod_polacia(pol, q) }.all? { |d| d.abs < 0.01 || (d - Krok2::GRZBIET_NIZEJ).abs < 0.01 },
+              'wierzch płatwi ściętych na połaci (kalenicowa 1 mm pod grzbietem)')
+Testy.rowne(pod_polacia(pol, gk).map { |d| d.round(3) }, [1.0, 1.0], 'kalenicowa: 1 mm pod grzbietem')
+pl = plan_pelny(seg, 'dach_uklad' => 'platwie_krokwie', 'platwie_sciecie' => 'nie')
+pol = pl[:polacie]
+a = 20 * Math::PI / 180
+pp = Krok2.podpory(pl)
+ok = pp.all? do |q|
+  pod_polacia(pol, q).all? { |d| d >= -0.01 && d * Math.cos(a) <= q[:szerokosc] / 2.0 * Math.sin(a) + 30.0 }
+end
+Testy.sprawdz(ok, 'bez ścięcia: wierzch w osi pod połacią w granicy aplikacji (b/2·sin α + 30 mm)')
+Testy.rowne(Krok2.ustawienia(pl[:parametry]).key?(:timber_class), true, 'klasa C24 przekazana')
+pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'drewno_klasa' => 'C18')
+Testy.rowne(Krok2.ustawienia(pl[:parametry]).key?(:timber_class), false, 'klasa nieznana aplikacji – zostaje jej wybór')
+
+Testy.grupa('Dach jednospadowy – ściana wysoka jako podpora')
+pl = plan_pelny(seg, 'dach_rodzaj' => 'jednospadowy', 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 15)
+pol = pl[:polacie]
+pp = Krok2.podpory(pl)
+sw = pp.select { |q| q[:nazwa].start_with?('Ściana wysoka') }
+Testy.rowne(sw.length, 1, 'ściana wysoka w podporach')
+Testy.rowne(pp.length, pl[:elementy].count { |e| e[:prefiks] == 'P' } + 1, 'płatwie i ściana wysoka')
+a = 15 * Math::PI / 180
+t = Parametry.grubosc(pl[:parametry])
+d = pod_polacia(pol, sw[0])
+Testy.sprawdz(d.all? { |x| x >= -0.01 && x * Math.cos(a) <= t / 2.0 * Math.sin(a) + 30.0 }, format('wierzch ściany w osi pod połacią w granicy aplikacji (%.2f mm)', d.max))
+Testy.rowne(sw[0][:szerokosc], t, 'szerokość = grubość bala')
+Testy.rowne(Krok2.podpory(plan_pelny(seg, 'dach_uklad' => 'krokwie')).count { |q| q[:nazwa].start_with?('Ściana') }, 0, 'dwuspadowy – bez ściany')
 
 Testy.koniec

@@ -2,64 +2,60 @@
 #
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/atrapa/aplikacja_dachow.rb
-# Zadanie: atrapa aplikacji do dachów (ArteMadera::Roof) – Footprint, RoofBuilder.generate, Config, Commands.generate_framing – zapisuje wywołania generatora.
-# Tematy: atrapa aplikacji do dachów, połacie w atrapie, KROK 2 w atrapie, ustawienia aplikacji w atrapie
+# Zadanie: atrapa aplikacji do dachów (ArteMadera::Roof) – jej stałe API wersji 1 (polacie, podpory, wiezba) – zapisuje wywołania generatora.
+# Tematy: atrapa aplikacji do dachów, atrapa API dachów, połacie w atrapie, KROK 2 w atrapie, podpory w atrapie, więźba po OK w atrapie
 # Zależy od: testy/atrapa/sketchup.rb
 # Używają: testy/t_dach_aplikacja.rb
 #
-# Tylko to, czego używa sketchup/dach_aplikacja.rb (te same nazwy i kształt danych co w aplikacji 3.3): połacie to
-# grupa „Dach - polacie” z jedną poziomą ścianą obrysu (do ramy – bounds) i atrybutem ArteMaderaRoof.type.
-# AtrapaDachow.wywolania – lista [nazwa, dane]; AtrapaDachow.blad – komunikat, którym RoofBuilder odmówi.
+# Tylko to, czego używa sketchup/dach_aplikacja.rb (te same nazwy i kształt danych co API.md aplikacji 3.7.0): połacie
+# to grupa „Dach - polacie” z jedną poziomą ścianą obrysu (do ramy – bounds) i atrybutami ArteMaderaRoof (type, api),
+# podpory – JSON w grupie połaci (ArteMaderaRoof.supports), więźba – okno: [true, nil], procedura po OK zapamiętana
+# w AtrapaDachow.po_ok (test woła ją z grupą „Wiezba dachowa” albo nil). AtrapaDachow.wywolania – lista [nazwa, dane…];
+# AtrapaDachow.blad – komunikat, którym API.polacie odmówi; AtrapaDachow.blad_wiezby – odmowa API.wiezba.
+
+require 'json'
 
 module ArteMadera
   module Roof
-    class Footprint
-      attr_reader :points_2d, :holes_2d, :base_z, :source
+    PLUGIN_VERSION = '3.7.0'.freeze unless const_defined?(:PLUGIN_VERSION)
 
-      def initialize(points_2d, base_z, source, holes_2d = [])
-        @points_2d = points_2d
-        @holes_2d = holes_2d
-        @base_z = base_z
-        @source = source
+    module API
+      def self.wersja
+        1
       end
 
-      def edge_count
-        @points_2d.length
-      end
-    end
-
-    module Config
-      DEFAULTS_ROOF = { angle_deg: 35.0, overhang_mm: 500.0, gable_edges: '', edge_angles: '', make_group: true,
-                        keep_base_face: false }.freeze
-
-      def self.load_settings(kind)
-        AtrapaDachow.wywolania << [:load_settings, kind]
-        kind == :roof ? DEFAULTS_ROOF.dup : (AtrapaDachow.framing || {}).dup
+      def self.wersja_wtyczki
+        PLUGIN_VERSION
       end
 
-      def self.save_settings(kind, settings)
-        AtrapaDachow.wywolania << [:save_settings, kind, settings]
-        AtrapaDachow.framing = (AtrapaDachow.framing || {}).merge(settings) if kind == :framing
-        true
-      end
-    end
-
-    module RoofBuilder
-      def self.generate(model, footprint, settings)
-        AtrapaDachow.wywolania << [:generate, footprint, settings]
+      def self.polacie(model, punkty, z, kat, okap, krawedzie_szczytowe = [], opcje = {})
+        AtrapaDachow.wywolania << [:polacie, punkty, z, kat, okap, krawedzie_szczytowe, opcje]
         return [nil, AtrapaDachow.blad] if AtrapaDachow.blad
+        pts = punkty.map { |q| q.is_a?(Geom::Point3d) ? q : Geom::Point3d.new(q[0] / 25.4, q[1] / 25.4, (q[2] || 0.0) / 25.4) }
+        zc = z ? z / 25.4 : pts.inject(0.0) { |s, q| s + q.z } / pts.length
         g = model.active_entities.add_group
         g.name = 'Dach - polacie'
-        g.entities.add_face(footprint.points_2d.map { |x, y| Geom::Point3d.new(x, y, footprint.base_z) })
+        g.entities.add_face(pts.map { |q| Geom::Point3d.new(q.x, q.y, zc) })
         g.set_attribute('ArteMaderaRoof', 'type', 'roof_planes')
-        [g, 'Utworzono polacie dachu.']
+        g.set_attribute('ArteMaderaRoof', 'api', 1)
+        if opcje.fetch(:zaznacz, true)
+          model.selection.clear
+          model.selection.add(g)
+        end
+        [g, 'Utworzono połacie dachu.']
       end
-    end
 
-    module Commands
-      def self.generate_framing
-        AtrapaDachow.wywolania << [:generate_framing, Sketchup.active_model.selection.to_a]
-        nil
+      def self.podpory(grupa, lista, _model = nil)
+        AtrapaDachow.wywolania << [:podpory, grupa, lista]
+        grupa.set_attribute('ArteMaderaRoof', 'supports', lista.nil? ? '' : JSON.generate('podpory' => lista))
+        [true, "Podpory zapisane w grupie połaci: #{(lista || []).length}."]
+      end
+
+      def self.wiezba(grupa, ustawienia = {}, opcje = {})
+        AtrapaDachow.wywolania << [:wiezba, grupa, ustawienia, opcje]
+        return [nil, AtrapaDachow.blad_wiezby] if AtrapaDachow.blad_wiezby
+        AtrapaDachow.po_ok = opcje[:po_generowaniu]
+        [true, nil]
       end
     end
   end
@@ -67,7 +63,7 @@ end
 
 module AtrapaDachow
   class << self
-    attr_accessor :blad, :framing
+    attr_accessor :blad, :blad_wiezby, :po_ok
 
     def wywolania
       @wywolania ||= []
@@ -81,7 +77,8 @@ module AtrapaDachow
     def wyczysc
       wywolania.clear
       @blad = nil
-      @framing = nil
+      @blad_wiezby = nil
+      @po_ok = nil
     end
   end
 end

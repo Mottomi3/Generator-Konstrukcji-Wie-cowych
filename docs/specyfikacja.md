@@ -174,16 +174,22 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 - Gniazdo płatwi = otwór od spodu płatwi w górę (z luzem `gniazdo_luz` 5 na stronę): bal przy spodzie płatwi ma
   wycięcie od góry, bale wyżej są przecięte (jak 900: kawałki 66-147, 68-372). Gniazda dostają też działowe i węgły,
   pod którymi przechodzi płatew ścienna.
-- Krokwie (`dach_uklad` = krokwie / płatwie i krokwie) – **kto je buduje** (`dach_wiezba`, runda 5):
-  - **aplikacja do dachów** (domyślnie; `rdzen/polacie.rb`, `sketchup/dach_aplikacja.rb`): po budowie domu generator
-    tworzy połacie w ArteMadera Roof (KROK 1 – obrys = lica zewnętrzne ścian okapowych na wysokości linii podparcia,
-    krawędzie szczytowe przesunięte o wysunięcie za szczyt − okap, kąt, okap), zapisuje w niej ustawienia KROKU 2
-    (w górę od połaci = spód krokwi, bez płatwi kalenicowej i zamków dolnych, krokiew, rozstaw i klasa drewna
-    z generatora, kontrola nośności) i otwiera okno KROKU 2 – krokwie, łaty, deski i kontrola nośności robi
-    aplikacja. Generator robi wtedy same płatwie; szczyt kończy się pod krokwiami (linia podparcia). Przebudowa domu
-    usuwa poprzednie połacie, więźbę nad nimi – po potwierdzeniu. Jedno „Cofnij” dla domu i połaci. Bez aplikacji –
-    komunikat w oknie;
-  - **generator** (uproszczone, bez kontroli): krokwie na linii podparcia, od okapu (`dach_okap` 500 za licem) do
+- Krokwie i poszycie – **kto je buduje** (`dach_wiezba`, runda 5, od rundy 6 także przy samych płatwiach):
+  - **aplikacja do dachów** (domyślnie; `rdzen/polacie.rb`, `rdzen/krok2.rb`, `sketchup/dach_aplikacja.rb`), tylko przez
+    jej stałe API (`ArteMadera::Roof::API`, wersja 1 – aplikacja 3.7.0 lub nowsza; starsza albo brak – komunikat w oknie):
+    po budowie domu generator tworzy połacie (`API.polacie` – obrys = lica zewnętrzne ścian okapowych na wysokości linii
+    podparcia, krawędzie szczytowe przesunięte o wysunięcie za szczyt − okap, kąt, okap; w operacji budowy domu),
+    zapisuje w grupie połaci **podpory** (`API.podpory` – płatwie: wierzch w osi, kalenicowa 1 mm pod grzbietem, żeby
+    leżała pod obiema połaciami; dach jednospadowy – także ściana wysoka) i otwiera okno KROKU 2 (`API.wiezba`) z
+    ustawieniami domu: w górę od połaci, bez płatwi kalenicowej i zamków dolnych, krokiew, rozstaw, klasa drewna,
+    kontrola nośności, warstwy poszycia z sekcji „Poszycie dachu”. Kontrola krokwi liczy przęsła między płatwiami
+    (płatew kalenicowa – krokwie na płatwi, bez rozporu). **Same płatwie** (`dach_uklad` = platwie, jak 900): KROK 2 bez
+    krokwi – poszycie (deskowanie / nadbitka / OSB) wprost na płatwiach, wzdłuż spadku, styki na płatwiach; bez żadnej
+    warstwy – uwaga w podpowiedziach. Po OK więźba dostaje `ArteMadera_GW.wiezba_domu` (id domu). Generator robi same
+    płatwie; szczyt kończy się pod krokwiami / poszyciem (linia podparcia). Przebudowa domu usuwa poprzednie połacie, a
+    więźbę poprzedniej wersji (po id domu, bez id – nad obrysem poprzednich połaci) – po potwierdzeniu. Jedno „Cofnij”
+    dla domu i połaci;
+  - **generator** (uproszczone, bez kontroli i bez poszycia): krokwie na linii podparcia, od okapu (`dach_okap` 500 za licem) do
     kalenicy, rozstaw ≤ `krokwie_rozstaw` (900). Przy szczycie (`krokwie_przy_szczycie`): z obu stron szczytu, tylko
     od wewnątrz, tylko od zewnątrz – szczyt dochodzi do wierzchu krokwi; albo krokiew na szczycie – szczyt kończy
     się pod krokwią.
@@ -290,7 +296,9 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 
 ## 11. Etapy dalej
 
-Po rundzie 5: Dokumentacja 2D – konstrukcja wieńcowa (zadanie `docs/zadanie_dokumentacja2d.md` – w tamtej wtyczce),
-aplikacja do dachów – poszycie (nadbitka, deskowanie, OSB) i stałe wejście dla generatora (zadanie
-`docs/zadanie_aplikacja_dachow.md` – w tamtej wtyczce); odbiór kompilacji 5 w SketchUpie; taras – szczegóły z odbioru
-(słupy, wejście, schody, deski tarasu). Propozycje 5 (szybsza budowa) i 10 (pliki dla producenta) – odpadły / później.
+Po rundzie 6: odbiór kompilacji 6 w SketchUpie (z aplikacją do dachów 3.7.0); Dokumentacja 2D – konstrukcja
+wieńcowa (zadanie `docs/zadanie_dokumentacja2d.md` – w tamtej wtyczce); aplikacja do dachów – osie krokwi przy
+szczycie z wywołania, podpora dokładnie na kalenicy w obu połaciach, dach jednospadowy (ściana wysoka jako podpora
+u góry, okap za nią jako wspornik) – zadanie `docs/zadanie_aplikacja_dachow.md` (część 2); taras – szczegóły
+z odbioru (słupy, wejście, schody, deski tarasu). Propozycje 5 (szybsza budowa) i 10 (pliki dla producenta) – odpadły /
+później.

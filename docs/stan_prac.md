@@ -1,14 +1,13 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 5, kompilacja 5 (2026-10-25), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 22 zestawy (w tym
-15 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.3.1 na jej atrapie),
-977 sprawdzeń, FAILURES 0; poza zestawem: 600 losowych domów na końcowym kodzie (ziarna 1–200, 2001–2200 i 2301–2500;
-z krokwiami z aplikacji do dachów, luzami stolarki, dachem jednospadowym, od ziarna 2000 z tarasem 1100 / 1200) bez
-problemów – wcześniej w rundzie ok. 1750 na wersjach pośrednich (błędy poprawione, ziarna w `testy/t_losowe.rb`). Repozytorium:
-`Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, pełna historia rund 1–5; od rundy 5 publiczne) + kopia
-`repozytorium_r5.bundle` na dysku.
+Stan na: runda 6, kompilacja 6 (2026-10-26), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 22 zestawy (w tym
+15 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 przez jej API na jej
+atrapie), 1119 sprawdzeń, FAILURES 0; poza zestawem: 400 losowych domów na końcowym kodzie (ziarna 1–200 i 2001–2200;
+z połaciami i podporami dla aplikacji do dachów także przy samych płatwiach, od ziarna 2000 z tarasem) bez problemów.
+Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, pełna historia rund 1–6; publiczne) + kopia
+`repozytorium_r6.bundle` na dysku.
 
-## 1. Co działa (kompilacja 5)
+## 1. Co działa (kompilacja 6)
 
 - Rozpoznanie linii: obrys (lico zewnętrzne), osie działowych, węgły z krótkich linii; także zaznaczona ściana
   (prostokąt kliknięty raz); scalanie linii, dociąganie końców, dowolny obrót domu, obrys wielokątny (L, U…).
@@ -24,8 +23,12 @@ problemów – wcześniej w rundzie ok. 1750 na wersjach pośrednich (błędy po
   działowej (opcja – krokwie z obu stron albo na nim), okruchy bali przy gniazdach pomijane; bale pod połacią (węgły,
   działowe) ścinane linią dachu; bal ścięty dachem przez narożnik tylko w zamku; ostrzeżenie o zbyt stromym dachu.
 - **Dach** (dom prostokątny): dwuspadowy albo **jednospadowy** (ściana niska i wysoka, szczyty skośne); płatwie
-  **podniesione i ścięte do płaszczyzny dachu**; krokwie z **aplikacji do dachów** (połacie, okno KROKU 2 z kontrolą
-  nośności – domyślnie) albo z generatora (z obu stron szczytu / od wewnątrz / od zewnątrz / na szczycie); okapy.
+  **podniesione i ścięte do płaszczyzny dachu**; krokwie i poszycie z **aplikacji do dachów** (domyślnie; przez jej
+  stałe API, wersja 3.7.0+): połacie na wierzchu płatwi, **płatwie domu jako podpory** (kontrola krokwi – przęsła między
+  płatwiami, kalenicowa bez rozporu; jednospadowy – także ściana wysoka), okno KROKU 2 z ustawieniami domu i
+  **poszyciem** z sekcji „Poszycie dachu” (nadbitka, deskowanie, OSB); **same płatwie** (jak 900) – deski / OSB wprost
+  na płatwiach, wzdłuż spadku, styki na płatwiach; więźba po OK powiązana z domem (przebudowa usuwa właściwą). Albo
+  krokwie z generatora (z obu stron szczytu / od wewnątrz / od zewnątrz / na szczycie, bez poszycia); okapy.
 - **Taras** przed ścianą szczytową: jak 1100 (podciąg z górnych wieńców na słupach, szczyt frontu, balustrada z bali
   i przekładek, wejście) albo jak 1200 (ściany boczne pełne, front otwarty); dach nad tarasem.
 - **Podłoga**: podwaliny na zakład, legary, podciągi, dobór przekroju z podpowiedziami.
@@ -60,7 +63,8 @@ Opis zasad: `docs/specyfikacja.md`, wszystkie parametry: `docs/parametry.md`. Ma
 Przebieg: `rdzen/projekt.rb#oblicz` (obrys z tarasem → ściany → ustawienia ścian z widoku → role ścian tarasu →
 szczyty → otwory → styki → węgły → dopełnienie niższych działowych → gniazda płatwi → bale pod dachem → bale →
 balustrada → bale ścięte dachem przy narożnikach → zamki → profil → pozycje → belki dachu, słupy tarasu i podłoga →
-połacie dla aplikacji do dachów); po budowie domu `sketchup/dach_aplikacja.rb` (połacie i KROK 2).
+połacie dla aplikacji do dachów); po budowie domu `sketchup/dach_aplikacja.rb` (połacie, podpory i KROK 2 przez API
+aplikacji – ustawienia i podpory z `rdzen/krok2.rb`).
 
 ## 3. Zasady (stałe)
 
@@ -81,6 +85,8 @@ Patrz `docs/SPIS_TRESCI.md` §2. Nowe w rundzie 3: `rdzen/pod_dachem.rb`, `rdzen
 `t_losowe`, `t_widok`, `t_zestawienie`, `t_raport`, `losowe_domy.rb`, `kolizje_belek.rb`, `ruby27.sh`.
 Nowe w rundzie 4: `rdzen/ustawienia_scian.rb`, `rdzen/dopelnienie.rb`, `rdzen/profil_bala.rb`, `html/tryb.js`,
 `html/edycja.js`; test `t_sciany_ust`.
+Nowe w rundzie 6: `rdzen/krok2.rb` (ustawienia KROKU 2, poszycie, podpory); sekcja parametrów „Poszycie dachu”;
+atrapa API aplikacji do dachów `testy/atrapa/aplikacja_dachow.rb`.
 Nowe w rundzie 5: `rdzen/stolarka.rb`, `rdzen/pryzmat.rb`, `rdzen/polacie.rb`, `rdzen/dach_jednospadowy.rb`,
 `rdzen/skos_przy_narozniku.rb`, `rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, `sketchup/dach_aplikacja.rb`,
 `html/otwory.js`; testy `t_polacie`, `t_jednospadowy`, `t_taras`, `t_dach_aplikacja` (atrapa aplikacji do dachów
@@ -186,6 +192,33 @@ kawałki między płatwią a skosem, gdzie płatew przecina bal na całej wysoko
   (2348, błąd sprzed rundy 5; granice obróbek mają pierwszeństwo przed przecięciami, `rdzen/bryla.rb#punkty_podzialu`);
   ziarna w `testy/t_losowe.rb`.
 
+### Runda 6 (kompilacja 6) – aplikacja do dachów 3.7.0: API, płatwie jako podpory, poszycie
+
+Wiadomość użytkownika (2026-10-26 19:10): „sprawdź i ewentualnie, jeżeli ma to obecnie sens, wdroż” – aplikacja do
+dachów 3.7.0 (API dla innych wtyczek, płatwie pod połacią jako podpory krokwi, poszycie 3.6.0). Ocena: sens ma
+wszystko – stałe wejście usuwa zależność od wnętrza aplikacji (ograniczenie kompilacji 5), podpory poprawiają kontrolę
+krokwi (przęsła między płatwiami zamiast okap–kalenica), a poszycie na płatwiach daje deski domowi na samych płatwiach
+(domyślny układ, jak 900), który dotąd nie dostawał połaci.
+- **API** (`sketchup/dach_aplikacja.rb`): `API.polacie` (punkty Geom::Point3d w układzie kontekstu domu, z = nil,
+  szczyty w kolejności punktów – odwrócenie obiegu robi API, `:operacja => false` – w operacji budowy domu),
+  `API.podpory` (lista w grupie połaci), `API.wiezba` z oknem w liczniku i `:po_generowaniu` – więźba dostaje
+  `ArteMadera_GW.wiezba_domu`; przebudowa usuwa więźbę poprzedniej wersji po id (bez id – po położeniu, jak dotąd).
+  Brak API (aplikacja starsza niż 3.7.0) – komunikat; brak aplikacji albo inny kontekst – komunikat bez pustej operacji.
+  Usunięte: Footprint, RoofBuilder, Config, Commands i własne odwracanie obiegu.
+- **Podpory** (`rdzen/krok2.rb#podpory`): płatwie – wierzch w osi (ścięta – na połaci, kalenicowa – 1 mm pod grzbietem,
+  bo aplikacja 3.7.0 punkt na samej kalenicy przypisuje do jednej połaci albo żadnej), szerokość, wysokość, nazwa
+  pozycji; dach jednospadowy – także ściana wysoka (bez niej rozpór i przęsło do krawędzi połaci).
+- **Poszycie** (sekcja „Poszycie dachu”, 14 parametrów, przełączniki w polach podstawowych): nadbitka, deskowanie
+  pełne (domyślnie tak), OSB → `sheath_*` KROKU 2. „Krokwie i poszycie – kto je buduje” (`dach_wiezba`) = aplikacja
+  działa teraz dla każdego układu dachu; same płatwie – KROK 2 z `rafter_on` false; bez warstwy – uwaga.
+- **Testy**: atrapa API (`testy/atrapa/aplikacja_dachow.rb`), `t_dach_aplikacja` (punkty, podpory, okno, więźba po OK,
+  przebudowa po id, same płatwie, odmowa KROKU 2, aplikacja bez API), `t_polacie` (ustawienia KROKU 2, podpory,
+  ściana wysoka), `sprawdz_dach_aplikacja` z prawdziwą 3.7.0 – 8 domów: połacie w płaszczyźnie wierzchu płatwi
+  (±0,01 mm), każda podpora pod połacią (kalenicowa pod obiema), krokwie na połaci, przęsła w raporcie, deski
+  i nadbitka na płatwiach wzdłuż spadku ze stykami na płatwiach, OSB na nadbitce, dom odbity; losowe domy sprawdzają
+  podpory w granicy aplikacji.
+- Uwagi dla aplikacji do dachów – `docs/zadanie_aplikacja_dachow.md`, część 2.
+
 ## 6. Otwarte pytania (przyjęte wartości domyślne – do potwierdzenia)
 
 | # | Pytanie | Przyjęto |
@@ -207,7 +240,10 @@ kawałki między płatwią a skosem, gdzie płatew przecina bal na całej wysoko
 | H20 | Grupy w Dokumentacji 2D | belki – jej kody (P, K, Pd, L, Pw); bale Bs, Kf, Sz – dopisać w Dokumentacji 2D |
 | H21 | Producent / CNC: co dostaje, BVN czy BTLx | zestawienie CSV (pozycja, długość, ilość, m³); pliki CNC – do ustalenia |
 | R1 | Dach: generator czy wtyczka dachów (KROK 2) | **rozstrzygnięte (runda 5)**: płatwie z generatora, krokwie i dalsza więźba z aplikacji do dachów (`dach_wiezba`); krokwie z generatora w opcji |
-| R2 | Ustawienia KROKU 2 z generatora | zapisywane w aplikacji do dachów na stałe (kierunek w górę, bez płatwi kalenicowej i zamków dolnych, krokiew 50 × 150, rozstaw 900, klasa drewna) – przy zwykłym dachu w tej aplikacji trzeba je przestawić |
+| R2 | Ustawienia KROKU 2 z generatora | `API.wiezba` z oknem zapisuje je w aplikacji jako ostatnie (kierunek w górę, bez płatwi kalenicowej i zamków dolnych, krokiew 50 × 150, rozstaw 900, klasa drewna, poszycie) – przy zwykłym dachu w tej aplikacji trzeba je przestawić (prośba o `:zapisz => false` dla okna – zadanie, część 2) |
+| R3 | Same płatwie a aplikacja do dachów | **runda 6**: przy „Krokwie i poszycie – kto je buduje” = aplikacja także dom na samych płatwiach (domyślny, jak 900) dostaje połacie i KROK 2 bez krokwi – poszycie na płatwiach; bez poszycia – „generator” |
+| R4 | Poszycie na start KROKU 2 | deskowanie pełne 25 × 100, szczelina 3, długość 4000 – tak; nadbitka 19 × 121 / 4000 i OSB 18, 2500 × 1250, szczelina 3 – nie (wartości jak domyślne w aplikacji); grubość desek na płatwiach co ≤ 1000 – do potwierdzenia (wytyczne aplikacji) |
+| R5 | Płatew kalenicowa jako podpora | wierzch podany 1 mm pod grzbietem – aplikacja 3.7.0 punkt na samej kalenicy przypisuje do jednej połaci albo żadnej (zadanie, część 2) |
 | L1 | Luzy stolarki | boczny 10, górny = wysokość × 1,5 % (w górę do 5), nie mniej niż 10 |
 | J1 | Dach jednospadowy | spadek w stronę mniejszych współrzędnych, okap za ścianą wysoką 500, najcieńszy górny bal ściany wysokiej 30 |
 | T2 | Taras jak 1100 | 2 górne wieńce, słupy 120 × 120 co ≤ 2000, wejście 1200 pośrodku, balustrada 4 bale i przekładki 300 (prześwit ≤ 600), dolne bale ścian bocznych 100 za licem ściany domu |
@@ -216,19 +252,21 @@ kawałki między płatwią a skosem, gdzie płatew przecina bal na całej wysoko
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 5: najpierw menu „Test działania i raport do wysłania…” (plik JSON),
-potem stolarka i luzy, płatwie ścięte i pełny klin szczytu, krokwie z aplikacji do dachów (połacie, KROK 2), dach
-jednospadowy, taras 1100 i 1200.
+`docs/scenariusz_odbioru.md` – kompilacja 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
+do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
+(podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
+dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 5)
+## 8. Ograniczenia (kompilacja 6)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach (belki, połacie, dach jednospadowy, taras) i podłoga tylko dla obrysu prostokątnego; szczyty dla innych obrysów
   liczone każdy osobno – inne dachy w aplikacji do dachów (KROK 1 z obrysu).
 - Krokwie z generatora z czołami prostopadłymi do osi (bez cięć przy kalenicy i okapie) – pełne krokwie robi aplikacja.
-- Krokwie z aplikacji: szczyt zawsze pod krokwiami (krokwie przy szczycie ustawia aplikacja); kontrola krokwi liczy
-  rozpiętość od okapu do kalenicy (płatwie pośrednie jeszcze nie jako podpory – zadanie dla aplikacji); więźbę do
-  usunięcia przy przebudowie generator rozpoznaje po położeniu nad poprzednimi połaciami.
+- Krokwie z aplikacji: szczyt zawsze pod krokwiami (krokwie przy szczycie ustawia aplikacja – osie z wywołania to
+  zadanie dla niej); aplikacja do dachów 3.7.0 lub nowsza (starsza – komunikat, połacie nie powstają); więźba
+  z kompilacji 5 (bez id domu) rozpoznawana jak dotąd po położeniu nad poprzednimi połaciami. Dach jednospadowy:
+  aplikacja liczy okap za ścianą wysoką jak przęsło, a przy płatwiach pośrednich pokazuje rozpór (zadanie, część 2).
 - Taras: przed jedną ścianą szczytową, dach dwuspadowy (1100) albo dowolny (1200); bez schodów, desek tarasu
   i osłony z listew (1200); w wariancie 1200 płatwie nad tarasem bez podparcia od frontu.
 - Pełny profil tylko do wizualizacji: zamki, kolizje, pozycje i listy liczone dla bala prostego; bez faz; wymiary
@@ -236,15 +274,16 @@ jednospadowy, taras 1100 i 1200.
 - Działowa niższa: tylko działowe (ściany zewnętrzne zawsze pełnej wysokości), bez szczytu; strop / antresola to
   ustawienie – belek stropu generator nie rysuje.
 - Węgły ręczne wyłączają automat tej ściany – łączenia muszą trafić w węgły ręczne (inaczej ostrzeżenie).
-- Bez desek dachu i poszycia (zadanie dla aplikacji do dachów).
+- Poszycie dachu tylko z aplikacji do dachów (KROK 2); krokwie z generatora – bez poszycia.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Brak odbioru w prawdziwym SketchUpie (kompilacje 1–4) – stąd test działania z raportem.
+- Brak odbioru w prawdziwym SketchUpie (kompilacje 1–6) – stąd test działania z raportem.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 5: raport z testu działania (JSON) + scenariusz → poprawki.
-2. Dokumentacja 2D i aplikacja do dachów – zadania zlecone w tamtych sesjach (`docs/zadanie_*.md`); po zmianach
-   w aplikacji do dachów – generator na jej stałym wejściu (API), osie krokwi przy szczycie, podpory pośrednie.
+1. Odbiór kompilacji 6 (z aplikacją do dachów 3.7.0): raport z testu działania (JSON) + scenariusz → poprawki.
+2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
+   (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po
+   zmianach tam: osie krokwi z generatora, kalenicowa wprost w grzbiecie.
 3. Taras – szczegóły z odbioru (słupy, wejście, osłona z listew 1200, schody, deski).
 4. Wymiary pełnego profilu ze zdjęcia czoła bala (pióra, wpust, fazy).

@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_dach_aplikacja.rb
-# Zadanie: dach z aplikacji do dachów w modelu (atrapa SketchUpa i aplikacji) – połacie po budowie domu, ustawienia KROKU 1 i 2, okno KROKU 2 z licznika, przebudowa (poprzednie połacie i więźba), brak aplikacji, odmowa aplikacji, inny kontekst, dom obrócony i odbity.
-# Tematy: testy aplikacji do dachów, połacie w modelu, KROK 2 z generatora, przebudowa połaci, więźba przy przebudowie, brak aplikacji do dachów, jedno Cofnij dla domu i połaci
+# Zadanie: dach z aplikacji do dachów w modelu (atrapa SketchUpa i API aplikacji) – połacie po budowie domu, podpory z płatwi, ustawienia KROKU 2, okno KROKU 2 z licznika, więźba po OK powiązana z domem, przebudowa (poprzednie połacie i więźba), same płatwie, brak i stara aplikacja, odmowa aplikacji, inny kontekst, dom obrócony.
+# Tematy: testy aplikacji do dachów, testy API dachów, połacie w modelu, KROK 2 z generatora, podpory w modelu, więźba powiązana z domem, przebudowa połaci, więźba przy przebudowie, brak aplikacji do dachów, stara aplikacja do dachów, jedno Cofnij dla domu i połaci
 # Zależy od: testy/atrapa/sketchup.rb, testy/atrapa/aplikacja_dachow.rb, testy/pomoc.rb
 # Używają: testy/uruchom.sh
 #
@@ -59,13 +59,7 @@ def wiezba(m, x0, y0, x1, y1, z)
   g
 end
 
-def pole_ze_znakiem(pts)
-  s = 0.0
-  pts.each_with_index { |a, i| b = pts[(i + 1) % pts.length]; s += a[0] * b[1] - b[0] * a[1] }
-  s / 2.0
-end
-
-Testy.grupa('Nowy dom z krokwiami – połacie z aplikacji i okno KROKU 2')
+Testy.grupa('Nowy dom z krokwiami – połacie z API, podpory z płatwi i okno KROKU 2')
 AtrapaDachow.wyczysc
 m = model_z_liniami(prostokat(0, 0, 5000, 4000), 300.0)
 w = generuj('dach_uklad' => 'krokwie')
@@ -76,30 +70,46 @@ Testy.sprawdz(w['dach'] && w['dach']['ok'] && w['dach']['tekst'].include?('KROKU
 pg = polacie(m)
 Testy.rowne(pg.length, 1, 'jedna grupa połaci obok domu')
 Testy.rowne(pg[0].get_attribute('ArteMadera_GW', 'polacie_domu'), Atrybuty.dom_id(dom), 'połacie oznaczone id domu')
-_, fp, ust = AtrapaDachow.ostatnie(:generate)
+_, pts, z, kat, okap, sz, opc = AtrapaDachow.ostatnie(:polacie)
 oczek = pl[:polacie][:punkty].map { |x, y| [x / CAL, y / CAL] }
-Testy.sprawdz(fp.points_2d.zip(oczek).all? { |a, b| (a[0] - b[0]).abs < 1e-9 && (a[1] - b[1]).abs < 1e-9 }, 'obrys w calach układu modelu')
-Testy.rowne(fp.base_z * CAL, pl[:polacie][:z] + 300.0, 'wysokość obrysu: linia podparcia nad poziomem linii 300', 1e-6)
-Testy.rowne(fp.source, nil, 'bez ściany bazowej (obrys z planu)')
-Testy.rowne([ust[:angle_deg], ust[:overhang_mm], ust[:gable_edges], ust[:edge_angles], ust[:keep_base_face], ust[:make_group]],
-            [20.0, 500.0, '2,4', '', true, true], 'ustawienia KROKU 1: kąt, okap, krawędzie szczytowe')
-fr = AtrapaDachow.framing
-Testy.rowne([fr[:build_dir], fr[:ridge_on], fr[:seat_on], fr[:rafter_on], fr[:rafter_mode]], ['up', false, false, true, 'max'],
-            'KROK 2: w górę od połaci, bez płatwi kalenicowej i zamków dolnych')
-Testy.rowne([fr[:rafter_w_mm], fr[:rafter_h_mm], fr[:rafter_spacing_mm], fr[:timber_class], fr[:check_on]], [50.0, 150.0, 900.0, 'C24', true],
-            'KROK 2: krokiew, rozstaw i klasa drewna z generatora, kontrola nośności')
-Testy.sprawdz(m.selection.to_a == pg, 'zaznaczone połacie (dla KROKU 2)')
-Testy.sprawdz(AtrapaDachow.ostatnie(:generate_framing).nil?, 'KROK 2 dopiero po zakończeniu wywołania z okna')
+Testy.sprawdz(pts.all? { |q| q.is_a?(Geom::Point3d) } && pts.zip(oczek).all? { |a, b| (a.x - b[0]).abs < 1e-9 && (a.y - b[1]).abs < 1e-9 },
+              'punkty obrysu: Geom::Point3d w układzie modelu, kolejność planu')
+Testy.sprawdz(pts.all? { |q| (q.z * CAL - (pl[:polacie][:z] + 300.0)).abs < 1e-6 }, 'wysokość punktów: linia podparcia nad poziomem linii 300')
+Testy.rowne([z, kat, okap, sz, opc[:operacja]], [nil, 20.0, 500.0, pl[:polacie][:szczyty], false],
+            'API.polacie: z – średnia punktów, kąt, okap, szczyty w kolejności punktów, operacja generatora')
+_, gp, lista = AtrapaDachow.ostatnie(:podpory)
+Testy.sprawdz(gp == pg[0], 'podpory zapisane w grupie połaci')
+pp = Krok2.podpory(pl)
+Testy.rowne(lista.length, 3, 'podpory: 2 płatwie ścienne + kalenicowa')
+Testy.sprawdz(lista.zip(pp).all? { |a, b| (0..2).all? { |k| (a[:od][k] - b[:od][k] - [0.0, 0.0, 300.0][k]).abs < 1e-6 } && a[:nazwa] == b[:nazwa] },
+              'podpory w mm układu modelu (dom na poziomie 300)')
+Testy.sprawdz(m.selection.to_a == pg, 'zaznaczone połacie')
+Testy.sprawdz(AtrapaDachow.ostatnie(:wiezba).nil?, 'KROK 2 dopiero po zakończeniu wywołania z okna')
 Testy.rowne(m.operacje.map(&:first), [:start, :commit, :start, :commit], 'dom i połacie – dwie operacje')
 Testy.rowne(m.operacje[2], [:start, 'ArteMadera – połacie dachu', :dolaczona], 'połacie dołączone do budowy domu (jedno Cofnij)')
 Testy.rowne(UI.uruchom_liczniki, 1, 'jeden licznik')
-kr = AtrapaDachow.ostatnie(:generate_framing)
-Testy.sprawdz(kr && kr[1] == pg, 'KROK 2 otwarty na zaznaczonych połaciach')
+_, gw, fr, ow = AtrapaDachow.ostatnie(:wiezba)
+Testy.sprawdz(gw == pg[0], 'KROK 2 na połaciach domu')
+Testy.rowne([fr[:build_dir], fr[:ridge_on], fr[:seat_on], fr[:rafter_on], fr[:rafter_mode], fr[:purlin_supports_on]],
+            ['up', false, false, true, 'max', true], 'KROK 2: w górę od połaci, bez płatwi kalenicowej i zamków dolnych, płatwie jako podpory')
+Testy.rowne([fr[:rafter_w_mm], fr[:rafter_h_mm], fr[:rafter_spacing_mm], fr[:timber_class], fr[:check_on]], [50.0, 150.0, 900.0, 'C24', true],
+            'KROK 2: krokiew, rozstaw i klasa drewna z generatora, kontrola nośności')
+Testy.rowne([fr[:sheath_ceiling_on], fr[:sheath_plank_on], fr[:sheath_osb_on]], [false, true, false], 'poszycie: deskowanie (domyślnie)')
+Testy.sprawdz(ow.fetch(:okno, true) && ow[:po_generowaniu].respond_to?(:call), 'okno KROKU 2 z procedurą po OK')
 Testy.sprawdz(UI.zatrzymane.include?(1), 'licznik zatrzymany na starcie (bez powtórzeń)')
 Testy.sprawdz(dom.entities.to_a.none? { |g| g.respond_to?(:name) && g.name == 'Dach - polacie' }, 'połacie poza grupą domu (podpis domu bez zmian)')
 Testy.sprawdz(!Atrybuty.zmieniony_recznie?(dom), 'dom nie wygląda na zmieniony ręcznie')
 
-Testy.grupa('Przebudowa – poprzednie połacie znikają, więźba nad nimi po potwierdzeniu')
+Testy.grupa('Więźba po OK w KROKU 2 powiązana z domem')
+op = m.operacje.length
+wz = wiezba(m, 30_000, 0, 35_000, 4000, 3200)
+AtrapaDachow.po_ok.call(wz)
+Testy.rowne(wz.get_attribute('ArteMadera_GW', 'wiezba_domu'), Atrybuty.dom_id(dom), 'więźba oznaczona id domu')
+Testy.rowne(m.operacje[op..-1], [[:start, 'ArteMadera – więźba domu', :dolaczona], [:commit]], 'oznaczenie dołączone do operacji KROKU 2')
+AtrapaDachow.po_ok.call(nil)
+Testy.rowne(m.operacje.length, op + 2, 'Anuluj w KROKU 2 – bez zmian')
+
+Testy.grupa('Przebudowa – poprzednie połacie znikają, więźba domu po potwierdzeniu')
 stary_id = Atrybuty.dom_id(dom)
 nad = wiezba(m, -500, -500, 5500, 4500, 3200)
 obok = wiezba(m, 20_000, 0, 25_000, 4000, 3200)
@@ -114,9 +124,9 @@ pg2 = polacie(m)
 Testy.rowne(pg2.length, 1, 'jedna grupa połaci')
 Testy.sprawdz(pg2[0].get_attribute('ArteMadera_GW', 'polacie_domu') == Atrybuty.dom_id(Sterowanie.dom) &&
               Atrybuty.dom_id(Sterowanie.dom) != stary_id, 'połacie z id nowej wersji domu')
-Testy.sprawdz(UI.komunikaty.any? { |k| k.include?('więźba z aplikacji do dachów (1)') }, 'pytanie o więźbę nad domem')
-Testy.sprawdz(!nad.valid? && obok.valid?, 'więźba nad domem usunięta, więźba obok zostaje')
-Testy.rowne(AtrapaDachow.ostatnie(:generate)[2][:angle_deg], 30.0, 'nowy kąt w KROKU 1')
+Testy.sprawdz(UI.komunikaty.any? { |k| k.include?('więźba z aplikacji do dachów (2)') }, 'pytanie o więźbę domu (po id i nad połaciami)')
+Testy.sprawdz(!wz.valid? && !nad.valid? && obok.valid?, 'więźba domu usunięta – także daleko od połaci (po id); cudza zostaje')
+Testy.rowne(AtrapaDachow.ostatnie(:polacie)[3], 30.0, 'nowy kąt w KROKU 1')
 UI.uruchom_liczniki
 
 Testy.grupa('Przebudowa – odpowiedź „Nie”: więźba zostaje')
@@ -146,7 +156,38 @@ m.selection.add(Sterowanie.dom)
 w = generuj('dach_uklad' => 'krokwie', 'dach_wiezba' => 'generator')
 Testy.rowne(w['dach'], nil, 'dom bez połaci przed i po – bez komunikatu o dachu')
 
-Testy.grupa('Bez aplikacji do dachów i odmowa aplikacji')
+Testy.grupa('Same płatwie (domyślnie) – połacie na wierzchu płatwi, KROK 2 bez krokwi: deski na płatwiach')
+AtrapaDachow.wyczysc
+m = model_z_liniami(prostokat(0, 0, 6000, 4500))
+w = generuj({})
+pl = Sterowanie.plan
+Testy.sprawdz(w['dach'] && w['dach']['ok'] && w['dach']['tekst'].include?('poszycie'), "komunikat o poszyciu (#{w['dach'].inspect})")
+Testy.rowne(polacie(m).length, 1, 'połacie')
+_, _g, lista = AtrapaDachow.ostatnie(:podpory)
+Testy.rowne(lista.length, pl[:elementy].count { |e| e[:prefiks] == 'P' }, "podpory: wszystkie płatwie (#{lista.length})")
+UI.uruchom_liczniki
+fr = AtrapaDachow.ostatnie(:wiezba)[2]
+Testy.rowne([fr[:rafter_on], fr[:build_dir], fr[:sheath_plank_on], fr[:sheath_plank_t_mm], fr[:sheath_plank_len_mm]], [false, 'up', true, 25.0, 4000.0],
+            'KROK 2 bez krokwi, deskowanie z parametrów')
+
+Testy.grupa('KROK 2 – odmowa aplikacji, połacie cofnięte przed oknem')
+AtrapaDachow.wyczysc
+m = model_z_liniami(prostokat(0, 0, 5000, 4000))
+generuj('dach_uklad' => 'krokwie')
+AtrapaDachow.blad_wiezby = 'Brak połaci w zaznaczeniu.'
+UI.komunikaty.clear
+UI.uruchom_liczniki
+AtrapaDachow.blad_wiezby = nil
+Testy.sprawdz(UI.komunikaty.any? { |t| t.include?('KROK 2') && t.include?('Brak połaci w zaznaczeniu.') }, 'odmowa KROKU 2 – komunikat')
+m.selection.clear
+m.selection.add(Sterowanie.dom)
+generuj('dach_uklad' => 'krokwie')
+polacie(m).each(&:erase!)
+n = AtrapaDachow.wywolania.count { |x| x[0] == :wiezba }
+UI.uruchom_liczniki
+Testy.rowne(AtrapaDachow.wywolania.count { |x| x[0] == :wiezba }, n, 'połacie cofnięte przed oknem – bez KROKU 2')
+
+Testy.grupa('Bez aplikacji do dachów, aplikacja bez API (starsza niż 3.7.0), odmowa aplikacji')
 roof = ArteMadera::Roof
 ArteMadera.send(:remove_const, :Roof)
 m = model_z_liniami(prostokat(0, 0, 5000, 4000))
@@ -154,6 +195,14 @@ w = generuj('dach_uklad' => 'krokwie')
 ArteMadera.const_set(:Roof, roof)
 Testy.sprawdz(w['zbudowano'] && !w['dach']['ok'] && w['dach']['tekst'].include?('nie jest wczytana'), "brak aplikacji – komunikat (#{w['dach'].inspect})")
 Testy.rowne(polacie(m).length, 0, 'bez połaci')
+api = ArteMadera::Roof::API
+ArteMadera::Roof.send(:remove_const, :API)
+m = model_z_liniami(prostokat(0, 0, 5000, 4000))
+w = generuj('dach_uklad' => 'krokwie')
+ArteMadera::Roof.const_set(:API, api)
+Testy.sprawdz(!w['dach']['ok'] && w['dach']['tekst'].include?('jest za stara') && w['dach']['tekst'].include?('3.7.0 lub nowsza'),
+              "aplikacja bez API – komunikat (#{w['dach'].inspect})")
+Testy.rowne([polacie(m).length, UI.liczniki.length], [0, 0], 'bez połaci i bez KROKU 2')
 AtrapaDachow.blad = 'Okap jest zbyt duzy - obrys po odsunieciu zanika.'
 m = model_z_liniami(prostokat(0, 0, 5000, 4000))
 w = generuj('dach_uklad' => 'krokwie')
@@ -174,25 +223,22 @@ m.singleton_class.send(:remove_method, :active_entities)
 Testy.sprawdz(!w['dach']['ok'] && w['dach']['tekst'].include?('innej grupie'), 'komunikat o innym kontekście')
 Testy.rowne([polacie(m).length, inna.entities.length], [0, 0], 'bez połaci w złym miejscu')
 
-Testy.grupa('Dom obrócony o 30° i dom odbity')
+Testy.grupa('Dom obrócony o 30° – punkty, szczyty i podpory z domem')
 AtrapaDachow.wyczysc
 m = model_z_liniami(obroc_odcinki(prostokat(0, 0, 6000, 4000), 30))
 w = generuj('dach_uklad' => 'platwie_krokwie')
 pl = Sterowanie.plan
-_, fp, ust = AtrapaDachow.ostatnie(:generate)
+_, pts, _z, _k, _o, sz = AtrapaDachow.ostatnie(:polacie)
 tr = Sterowanie.dom.transformation
-oczek = pl[:polacie][:punkty].map { |x, y| q = Geom::Point3d.new(x / CAL, y / CAL, 0).transform(tr); [q.x, q.y] }
-Testy.sprawdz(w['dach']['ok'] && fp.points_2d.zip(oczek).all? { |a, b| (a[0] - b[0]).abs < 1e-6 && (a[1] - b[1]).abs < 1e-6 },
-              'obrys obrócony z domem')
-Testy.sprawdz(pole_ze_znakiem(fp.points_2d) > 0, 'obrys przeciwnie do wskazówek zegara')
-naroz = lambda { |pts, nr| [pts[nr - 1], pts[nr % pts.length]].map { |x, y| [x.round(6), y.round(6)] }.sort }
-sz = ust[:gable_edges].split(',').map(&:to_i)
-Testy.rowne(sz.map { |k| naroz.call(fp.points_2d, k) }.sort, pl[:polacie][:szczyty].map { |k| naroz.call(oczek, k) }.sort,
-            'krawędzie szczytowe te same')
+oczek = pl[:polacie][:punkty].map { |x, y| Geom::Point3d.new(x / CAL, y / CAL, 0).transform(tr) }
+Testy.sprawdz(w['dach']['ok'] && pts.zip(oczek).all? { |a, b| (a.x - b.x).abs < 1e-6 && (a.y - b.y).abs < 1e-6 }, 'obrys obrócony z domem')
+Testy.rowne(sz, pl[:polacie][:szczyty], 'krawędzie szczytowe w kolejności punktów (odwrócenie obiegu – w API)')
+_, _g, lista = AtrapaDachow.ostatnie(:podpory)
+ok = lista.zip(Krok2.podpory(pl)).all? do |a, b|
+  q = Geom::Point3d.new(b[:do][0] / CAL, b[:do][1] / CAL, b[:do][2] / CAL).transform(tr)
+  [q.x, q.y, q.z].zip(a[:do]).all? { |u, v| (u * CAL - v).abs < 1e-6 }
+end
+Testy.sprawdz(ok && lista.length > 3, "podpory obrócone z domem (#{lista.length})")
 UI.uruchom_liczniki
-obrys = [[0.0, 0.0], [0.0, 100.0], [50.0, 150.0], [200.0, 100.0], [200.0, 0.0]]
-odw, sz2 = DachAplikacja.przeciwnie_do_zegara(obrys, [1, 3])
-Testy.sprawdz(pole_ze_znakiem(odw) > 0, 'odbity: obrys odwrócony')
-Testy.rowne(sz2.map { |k| naroz.call(odw, k) }.sort, [1, 3].map { |k| naroz.call(obrys, k) }.sort, 'odbity: te same krawędzie szczytowe')
 
 Testy.koniec
