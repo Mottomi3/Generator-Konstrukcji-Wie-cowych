@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/taras_balustrada.rb
 # Zadanie: balustrada tarasu z bali (jak 1100) – w przęsłach między słupami i ścianą domu bale na przemian z rzędami przekładek (odcinków bala), w siatce wieńców ściany.
-# Tematy: balustrada, przekładka balustrady, prześwit balustrady, bale balustrady, przęsło balustrady, taras 1100 – balustrada
+# Tematy: balustrada, poręcz na jednej wysokości, poręcz bez piór, przekładka balustrady, prześwit balustrady, bale balustrady, przęsło balustrady, taras 1100 – balustrada
 # Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/taras.rb (przęsła)
 # Używają: rdzen/projekt.rb (po Bale.zbuduj)
 #
@@ -11,6 +11,8 @@
 # balustrady; najwyższy wieniec balustrady – bal, niżej na przemian przekładki i bale, najniższy wieniec zawsze bal
 # (ściana z półbalem: półbal i bal nad nim – jak 1100 W-1). taras_balustrada_bale – liczba pełnych bali. Rząd przekładek:
 # odcinki taras_przekladka przy obu końcach przęsła i równo między nimi, prześwit najwyżej taras_przekladka_odstep.
+# Poręcz (najwyższy bal) na froncie i ścianach bocznych na jednej wysokości (wyższa ścięta z góry do niższej) i bez
+# piór – wierzch płaski (wymóg użytkownika, runda 7).
 # Bale balustrady: bez zamków (końce wolne – przy słupie, ścianie domu albo dolnych balach ściany), w[:bale] ściany,
 # b[:taras] = true; dłuższe niż maksymalny bal – dzielone równo.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -28,18 +30,37 @@ module ArteMadera
         n = p['taras_balustrada_bale'].to_i
         return if n <= 0
         nr = wynik[:bale].map { |b| b[:nr] }.max || 0
+        gora = wysokosc_poreczy(przesla, n, p)
         przesla.each do |w, a, b|
-          wience(w, n, p).each do |wn, i, rodzaj|
+          lista = wience(w, n, p)
+          lista.each_with_index do |(wn, i, rodzaj), j|
             kawalki = rodzaj == :bal ? bale(a, b, p) : przekladki(a, b, p)
             kawalki.each do |s0, s1|
               nr += 1
               bal = { nr: nr, sciana: w, wieniec: wn, i: i, s0: s0, s1: s1, dl: s1 - s0, z0: wn[:z0], h: wn[:h], lvl: wn[:lvl],
-                      polbal: wn[:polbal], cechy: [], konce: [:wolny, :wolny], taras: true }
+                      polbal: wn[:polbal], cechy: j == lista.length - 1 ? porecz(wn, s1 - s0, gora) : [],
+                      konce: [:wolny, :wolny], taras: true }
               (w[:bale] ||= []) << bal
               wynik[:bale] << bal
             end
           end
         end
+      end
+
+      # Wspólna wysokość poręczy (wierzch najwyższego bala balustrady) na froncie i ścianach bocznych – najniższy z wierzchów
+      # najwyższych bali [mm]; nil – bez przęseł.
+      def wysokosc_poreczy(przesla, n, p)
+        gory = przesla.map { |w, _a, _b| wience(w, n, p).last }.compact.map { |wn, _i, _r| wn[:z0] + wn[:h] }
+        gory.min
+      end
+
+      # Obróbki poręczy (najwyższego bala balustrady) o długości dl: wierzch ścięty do wspólnej wysokości gora (front
+      # i ściany boczne mają wieńce przesunięte o pół – wyższy bal ścięty) i bez piór (pełny profil – wierzch płaski).
+      def porecz(wn, dl, gora)
+        cechy = [{ typ: 'bez_piora', x0: 0.0, x1: dl }]
+        zt = gora - wn[:z0]
+        cechy << { typ: 'skos_gora', x0: 0.0, x1: dl, z0: zt, z1: zt } if gora && zt < wn[:h] - 0.01
+        cechy
       end
 
       # Wieńce balustrady ściany w: [[wieniec, indeks, :bal | :przekladki]] – pod podciągiem tarasu, n pełnych bali.

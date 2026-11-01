@@ -29,7 +29,7 @@ module ArteMadera
         ['szczyty', 'Szczyty i dach', false],
         ['poszycie', 'Poszycie dachu (aplikacja do dachów)', false],
         ['taras', 'Taras', false],
-        ['podloga', 'Podłoga', false],
+        ['podloga', 'Podłoga i fundamenty', false],
         ['otwory', 'Okna i drzwi – stolarka i luzy', false],
         ['rysunek', 'Rozpoznanie rysunku i waga', false]
       ].freeze unless const_defined?(:SEKCJE)

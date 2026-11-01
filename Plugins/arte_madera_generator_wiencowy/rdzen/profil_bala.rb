@@ -10,7 +10,7 @@
 # Profil pozycji (poz[:profil], gdy parametr profil_bala = 'pelny'): { pioro: wys. pióra, wpust: głęb. wpustu,
 # piora: [[y0, y1]], wpusty: [[y0, y1]] } – y od lica prawego bala (0 … t). Bryła bala = bal prosty (krycie) + pióra
 # nad wierzchem − wpusty od spodu; obróbki zamka, otworów i skosu tną wszystkie pasy (pióro w gnieździe zamka znika).
-# Zamki, kolizje, pozycje i listy liczone dla bala prostego – pełny profil zmienia tylko bryłę komponentu.
+# Cecha 'bez_piora' (poręcz balustrady) – wierzch bez piór. Zamki, kolizje, pozycje i listy liczone dla bala prostego – pełny profil zmienia tylko bryłę komponentu.
 # Wynik przedziały: [{ xa:, xb:, pasy: [{ y0:, y1:, zb_a:, zb_b:, zt_a:, zt_b: }] }] – pasy rosnąco po y.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -54,13 +54,13 @@ module ArteMadera
       end
 
       # Pasy przekroju: [[y0, y1, nadwyżka wierzchu (pióro), podniesienie spodu (wpust)]] od lica prawego.
-      def pasy_przekroju(t, opis, bez_wpustu)
+      def pasy_przekroju(t, opis, bez_wpustu, bez_piora = false)
         ys = [0.0, t]
         (opis[:piora] + opis[:wpusty]).each { |a, b| ys << a << b }
         ys = ys.map { |y| y.round(6) }.uniq.sort
         ys.each_cons(2).map do |y0, y1|
           ym = (y0 + y1) / 2.0
-          gora = opis[:piora].any? { |a, b| ym > a && ym < b } ? opis[:pioro] : 0.0
+          gora = !bez_piora && opis[:piora].any? { |a, b| ym > a && ym < b } ? opis[:pioro] : 0.0
           dol = !bez_wpustu && opis[:wpusty].any? { |a, b| ym > a && ym < b } ? opis[:wpust] : 0.0
           [y0, y1, gora, dol]
         end
@@ -73,6 +73,7 @@ module ArteMadera
         boki = []
         sciecia = []
         bez_wpustu = false
+        bez_piora = false
         cechy.each do |c|
           case c[:typ]
           when 'sciecie_dachu' then sciecia << c
@@ -81,11 +82,12 @@ module ArteMadera
           when 'skos_gora' then ciecia_gora << [c[:x0], c[:x1], c[:z0], c[:z1]]
           when 'podciecie' then boki << c
           when 'bez_wpustu' then bez_wpustu = true
+          when 'bez_piora' then bez_piora = true
           end
         end
         ciecia_gora = Bryla.wyrownaj_poziomy(ciecia_gora, h, true)
         ciecia_dol = Bryla.wyrownaj_poziomy(ciecia_dol, 0.0, false)
-        pasy = pasy_przekroju(t, opis, bez_wpustu).map do |y0, y1, g, d|
+        pasy = pasy_przekroju(t, opis, bez_wpustu, bez_piora).map do |y0, y1, g, d|
           [y0, y1, [[0.0, dl, h + g, h + g]] + ciecia_gora, [[0.0, dl, d, d]] + ciecia_dol]
         end
         xs = [0.0, dl]

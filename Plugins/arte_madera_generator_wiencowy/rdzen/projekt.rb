@@ -15,8 +15,8 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience taras taras_balustrada otwory usztywnienie wegly_tabela styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
-     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka podloga kontrola].each do |plik|
+  %w[geometria parametry obrys sciany ustawienia_scian wience taras taras_balustrada taras_slupy taras_szczyt otwory usztywnienie wegly_tabela styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
+     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -82,7 +82,10 @@ module ArteMadera
       # aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
-        plan[:elementy].concat(Taras.slupy(plan[:sciany], p))
+        plan[:elementy].concat(Podbitka.elementy(dom, p, plan[:sciany]))
+        u = Podbitka.uwaga(p)
+        plan[:ostrzezenia] << u if u
+        plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
         plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]))
         pod = Podloga.zaplanuj(plan[:sciany], p)

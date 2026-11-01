@@ -4,7 +4,7 @@
 # Plik: rdzen/bale.rb
 # Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
 # Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu, odcinki nadstawki
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki)
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
@@ -20,6 +20,7 @@ require File.join(File.dirname(__FILE__), 'styki') unless defined?(ArteMadera::G
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 require File.join(File.dirname(__FILE__), 'pod_dachem') unless defined?(ArteMadera::GeneratorWiencowy::PodDachem)
 require File.join(File.dirname(__FILE__), 'dopelnienie') unless defined?(ArteMadera::GeneratorWiencowy::Dopelnienie)
+require File.join(File.dirname(__FILE__), 'taras_szczyt') unless defined?(ArteMadera::GeneratorWiencowy::TarasSzczyt)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -60,8 +61,9 @@ module ArteMadera
       def kawalki_wienca(w, wn, i, p, uwagi)
         zas = zasieg(w, wn[:z0], p)
         return [] if zas.nil?
-        bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : [zas]
-        wewn = wn[:nadstawka] ? bazy.flatten.reject { |s| (s - w[:s_od]).abs < 0.01 || (s - w[:s_do]).abs < 0.01 } : []
+        bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : TarasSzczyt.przedzialy(w, wn, zas, p)
+        wewn = bazy.flatten.reject { |s| [w[:s_od], w[:s_do], zas[0], zas[1]].any? { |x| (s - x).abs < 0.01 } }
+        wewn = bazy.flatten.reject { |s| (s - w[:s_od]).abs < 0.01 || (s - w[:s_do]).abs < 0.01 } if wn[:nadstawka]
         ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h], p['min_pasek_przy_otworze'])
         ciecia[:uwagi].each { |u| uwagi << u unless uwagi.include?(u) }
         przedzialy = bazy.map { |a, b| G.odejmij_przedzialy(a, b, ciecia[:pelne], 0.5) }.flatten(1)

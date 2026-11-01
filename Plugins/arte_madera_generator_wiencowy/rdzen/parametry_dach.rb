@@ -139,7 +139,25 @@ module ArteMadera
         { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
 
-        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Nadbitka – boazeria pióro-wpust',
+        { klucz: 'podbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Podbitka – boazeria pod konstrukcją dachu', rodzaj: :wybor,
+          sekcja: 'poszycie',
+          wybory: [['nie', 'bez podbitki'], ['pod_platwiami', 'pod płatwiami (wzdłuż spadku)'],
+                   ['pod_krokwiami', 'pod krokwiami (równolegle do okapu, między płatwiami)']],
+          wybory_gdy: { 'pod_platwiami' => { 'dach_uklad' => %w[platwie platwie_krokwie] },
+                        'pod_krokwiami' => { 'dach_uklad' => %w[krokwie platwie_krokwie] } },
+          rysunek: 'podbitka',
+          pomoc: 'Boazeria widoczna od spodu, przybita od dołu: pod płatwiami – deski wzdłuż spadku od ściany okapowej do kalenicy, ' \
+                 'przybite do spodu płatwi; pod krokwiami – deski równolegle do okapu, przybite do spodu krokwi w polach między ' \
+                 'płatwiami. Robi ją generator (grupa Dach). Ściany działowe i węgły pod połacią kończą się pod podbitką. Boazeria ' \
+                 'NA płatwiach albo NA krokwiach (od góry) to nadbitka – niżej. Wybory zależą od układu dachu.' },
+        { klucz: 'podbitka_grubosc', domyslna: 19.0, etykieta: 'Podbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
+          rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami pod_krokwiami] } },
+        { klucz: 'podbitka_krycie', domyslna: 121.0, etykieta: 'Podbitka – szerokość deski (krycie)', jednostka: 'mm', min: 50.0,
+          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami pod_krokwiami] } },
+        { klucz: 'podbitka_dlugosc', domyslna: 4000.0, etykieta: 'Podbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
+          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami pod_krokwiami] },
+          podpowiedz: 'Dłuższe deski dzielone na płatwiach (pod płatwiami) albo równo (pod krokwiami).' },
+        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Nadbitka – boazeria NA krokwiach albo NA płatwiach',
           rodzaj: :wybor, sekcja: 'poszycie', wybory: TAK_NIE,
           podpowiedz: 'Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych ' \
                       'płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja).' },

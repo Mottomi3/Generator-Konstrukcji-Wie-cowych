@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/widok.rb
 # Zadanie: widok ściany do okna – bale jako obrysy w płaszczyźnie ściany (s, z), otwory, styki, skrzyżowania, linia dachu.
-# Tematy: widok ściany, rozkład ściany, elewacja ściany, obrys bala w widoku, styki w widoku, skrzyżowania w widoku, linia dachu w widoku, ustawienia ściany w widoku, źródło węgła
-# Zależy od: rdzen/parametry.rb, rdzen/bryla.rb (profil bala), rdzen/szczyty.rb, rdzen/pod_dachem.rb (linia dachu), rdzen/ustawienia_scian.rb (stan ustawień), rdzen/wience.rb
+# Tematy: widok ściany, rozkład ściany, elewacja ściany, obrys bala w widoku, styki w widoku, skrzyżowania w widoku, linia dachu w widoku, ustawienia ściany w widoku, źródło węgła, ściany tarasu w widoku, słupy tarasu w widoku
+# Zależy od: rdzen/parametry.rb, rdzen/bryla.rb (profil bala), rdzen/szczyty.rb, rdzen/pod_dachem.rb (linia dachu), rdzen/ustawienia_scian.rb (stan ustawień), rdzen/wience.rb, rdzen/taras.rb (opis ściany tarasu)
 # Używają: sketchup/sterowanie.rb (widok dla okna), html/sciana.js (rysunek)
 #
 # Widok jak rozkład ściany w projektach producenta: patrzymy na ścianę od strony lica, s – wzdłuż osi ściany (od jej
@@ -20,16 +20,39 @@ require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera:
 require File.join(File.dirname(__FILE__), 'pod_dachem') unless defined?(ArteMadera::GeneratorWiencowy::PodDachem)
 require File.join(File.dirname(__FILE__), 'ustawienia_scian') unless defined?(ArteMadera::GeneratorWiencowy::UstawieniaScian)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
+require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 
 module ArteMadera
   module GeneratorWiencowy
     module Widok
       module_function
 
-      # Ściany do wyboru w oknie: [[id, rodzaj]] – ściany z balami bez kontrforów (węgły widać na ścianach).
+      # Ściany do wyboru w oknie: [[id, rodzaj, opis tarasu]] – ściany z balami bez kontrforów (węgły widać na ścianach);
+      # ściany tarasu z opisem roli (front, ściana domu, ściana boczna).
       def lista(plan)
         return [] if plan.nil? || plan[:sciany].nil?
-        plan[:sciany].reject { |w| w[:rodzaj] == :kontrfor || w[:bale].nil? || w[:bale].empty? }.map { |w| [w[:id], w[:rodzaj].to_s] }
+        plan[:sciany].reject { |w| w[:rodzaj] == :kontrfor || w[:bale].nil? || w[:bale].empty? }.map do |w|
+          [w[:id], w[:rodzaj].to_s, opis_tarasu(w)]
+        end
+      end
+
+      # Opis ściany tarasu do listy i widoku ('' – zwykła ściana).
+      def opis_tarasu(w)
+        return 'ściana boczna tarasu' if Taras.rola(w) == :bok
+        Taras.opis(w).to_s
+      end
+
+      # Słupy tarasu stojące w ścianie (środek słupa przy osi ściany): [[s0, s1, z0, z1]].
+      def slupy(plan, w)
+        (plan[:elementy] || []).select { |e| e[:prefiks] == 'S' }.map do |e|
+          pe = e[:polozenie]
+          c = [0, 1].map { |k| pe[:poczatek][k] + pe[:y][k] * e[:b] / 2.0 + pe[:z][k] * e[:h] / 2.0 }
+          d = [c[0] - w[:a][0], c[1] - w[:a][1]]
+          s = d[0] * w[:kier][0] + d[1] * w[:kier][1]
+          next nil if (d[0] * w[:nor][0] + d[1] * w[:nor][1]).abs > e[:h] || s < w[:s_od] || s > w[:s_do]
+          pol = (pe[:y][0] * w[:kier][0] + pe[:y][1] * w[:kier][1]).abs > 0.5 ? e[:b] / 2.0 : e[:h] / 2.0
+          [r(s - pol), r(s + pol), r(pe[:poczatek][2]), r(pe[:poczatek][2] + e[:dl])]
+        end.compact
       end
 
       # Widok jednej ściany (Hash z kluczami tekstowymi) albo nil, gdy ściany nie ma.
@@ -42,7 +65,7 @@ module ArteMadera
         bale = w[:bale].map { |b| bal(b, t) }
         { 'id' => w[:id], 'rodzaj' => w[:rodzaj].to_s, 'szczyt' => !w[:szczyt].nil?,
           'dl_osi' => r(w[:dl_osi]), 's_od' => r(w[:s_od]), 's_do' => r(w[:s_do]),
-          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w),
+          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'slupy' => slupy(plan, w), 'taras' => opis_tarasu(w),
           'skrzyzowania' => (w[:skrzyzowania] || []).map { |k| [r(k[:s]), k[:inna][:id].to_s, k[:inna][:rodzaj].to_s, k[:inna][:zrodlo].to_s] },
           'linia_dachu' => linia_dachu(w, p),
           'styki' => bale.select { |b| b['konce'].include?('styk') }.length,

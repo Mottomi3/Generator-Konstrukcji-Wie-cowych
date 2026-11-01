@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/wience.rb
 # Zadanie: poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian.
-# Tematy: wieniec, poziom wieńca, półbal, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość, wieńce szczytu, wieńce niższej działowej, nadstawka
+# Tematy: wieniec, poziom wieńca, półbal, półbal frontu tarasu, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość, wieńce szczytu, wieńce niższej działowej, nadstawka
 # Zależy od: rdzen/parametry.rb (kolumny dopełnienia w[:dopelnienie] liczy rdzen/dopelnienie.rb)
 # Używają: rdzen/bale.rb, rdzen/projekt.rb (wysokości do okna), rdzen/dopelnienie.rb, rdzen/szczyty.rb (gniazda)
 #
@@ -26,6 +26,7 @@ module ArteMadera
         z_szczytu = w[:szczyt] ? w[:szczyt][:z_max] : nil
         z_szczytu = w[:gospodarz][:szczyt][:z_max] if w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt]
         lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, z_szczytu)
+        lista = z_polbalem(lista, w[:taras][:z_polbal]) if w[:taras] && w[:taras][:z_polbal]
         return nizsza_lista(w, lista, p) if w[:nizsza] && w[:rodzaj] == :dzialowa
         return lista unless w[:rodzaj] == :kontrfor
         gosp = wlasne(w[:gospodarz], p)
@@ -33,6 +34,15 @@ module ArteMadera
         wybrane = lista.select { |k| k[:z0] + k[:h] <= gora + 0.01 }
         wybrane.each_with_index { |k, i| k[:nr] = i + 1 }
         wybrane
+      end
+
+      # Wieńce z półbalem na poziomie z (front tarasu z podciągiem): wieniec, który przechodzi przez z, zaczyna się na z
+      # (górna połowa bala – jak półbal na dole ścian wzdłuż kalenicy); niższe wieńce zostają (balustrada pod podciągiem).
+      def z_polbalem(lista, z)
+        lista.map do |k|
+          next k unless k[:z0] < z - 0.01 && k[:z0] + k[:h] > z + 0.01
+          k.merge(z0: z, h: k[:z0] + k[:h] - z, polbal: true)
+        end
       end
 
       # Wieńce według kierunku: A – półbal + n pełnych; B zewnętrzna – n + 1 (początek szczytu); B działowa i kontrfor – n;

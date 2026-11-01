@@ -4,7 +4,7 @@
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
 # Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi)
+# Zależy od: rdzen/parametry.rb, rdzen/podbitka.rb (węgły przy szczycie pod podbitką), rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
 # Szczyt ściany (w[:szczyt]): { v_a:, v_b: (osie ścian okapowych w kierunku v), v0: (v punktu a ściany), kv: (±1 – znak
@@ -16,6 +16,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
 
@@ -146,7 +147,7 @@ module ArteMadera
       # które wystają z obu stron szczytu pod połać; ściana bez szczytu – zawsze.
       def pod_podparciem?(w, s, z, p)
         return true if w[:szczyt].nil?
-        z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) + 0.01
+        z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) - Podbitka.obnizenie(p) + 0.01
       end
 
       # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek (szczyt płaski –

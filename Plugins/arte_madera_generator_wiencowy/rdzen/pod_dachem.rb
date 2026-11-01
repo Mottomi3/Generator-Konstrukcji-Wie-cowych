@@ -4,7 +4,7 @@
 # Plik: rdzen/pod_dachem.rb
 # Zadanie: bale wystające pod połać – węgły na ścianach okapowych i działowe w poprzek kalenicy ścięte linią dachu (spód krokwi / desek); ostrzeżenie o zbyt stromym dachu.
 # Tematy: pod dachem, prześwit pod połacią, węgieł pod okapem, ostatek pod dachem, linia podparcia, stromy dach, skos węgła, węgieł ściany wysokiej pod połacią
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia podparcia, załom, lico okapu), rdzen/szczyty.rb (zasieg_linii, skosy_linii)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia podparcia, załom, lico okapu), rdzen/szczyty.rb (zasieg_linii, skosy_linii), rdzen/podbitka.rb (ściany kończą się pod podbitką)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (zasięg i skos bali pod dachem)
 #
 # Dotyczy domu prostokątnego z dachem (dom ze szczytów). Ściany biegnące w poprzek kalenicy bez własnego szczytu
@@ -16,6 +16,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
+require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -49,10 +50,10 @@ module ArteMadera
         w[:a][g[:iv]] + s * w[:kier][g[:iv]]
       end
 
-      # Linia podparcia nad punktem s ściany [mm]; ściana nie pod dachem – nil.
+      # Linia podparcia nad punktem s ściany [mm] (z podbitką – jej spód, rdzen/podbitka.rb); ściana nie pod dachem – nil.
       def linia(w, s, p)
         return nil if w[:pod_dachem].nil?
-        Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p)
+        Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p) - Podbitka.obnizenie(p)
       end
 
       # Załom linii dachu nad ścianą (kalenica) – s; dach jednospadowy – nil.

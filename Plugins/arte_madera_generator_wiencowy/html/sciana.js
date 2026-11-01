@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/sciana.js
   Zadanie: widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany.
-  Tematy: widok ściany, rozkład ściany, elewacja ściany, wybór ściany w oknie, styki na widoku, numery pozycji na widoku, kliknięcie w widok ściany, węgieł ręczny na widoku
+  Tematy: widok ściany, słupy tarasu na widoku, ściany tarasu na liście, rozkład ściany, elewacja ściany, wybór ściany w oknie, styki na widoku, numery pozycji na widoku, kliknięcie w widok ściany, węgieł ręczny na widoku
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/okno.js (AMGW.widok, lista ścian po podglądzie)
 
@@ -40,7 +40,7 @@ var AMGW_SCIANA = (function () {
     var jest = false;
     wyczysc(sel);
     for (i = 0; i < (widoki || []).length; i++) {
-      var o = el('option', { value: widoki[i][0] }, widoki[i][0] + ' – ' + (RODZAJE[widoki[i][1]] || widoki[i][1]));
+      var o = el('option', { value: widoki[i][0] }, widoki[i][0] + ' – ' + (widoki[i][2] || RODZAJE[widoki[i][1]] || widoki[i][1]));
       if (widoki[i][0] === wybrana) { o.selected = true; jest = true; }
       sel.appendChild(o);
     }
@@ -60,6 +60,7 @@ var AMGW_SCIANA = (function () {
       }
     }
     for (i = 0; i < (d.linia_dachu || []).length; i++) { zmax = Math.max(zmax, d.linia_dachu[i][1]); }
+    for (i = 0; i < (d.slupy || []).length; i++) { zmin = Math.min(zmin, d.slupy[i][2]); }
     return [smin, smax, zmin, zmax];
   }
 
@@ -88,6 +89,7 @@ var AMGW_SCIANA = (function () {
     var Y = function (h) { return (z[3] - h + m).toFixed(1); };
     var px = function (n) { return (n / k).toFixed(1); };
     skrzyzowania(svg, d, z, X, Y, px);
+    slupy(svg, d, X, Y);
     bale(svg, d, X, Y, px, k);
     otwory(svg, d, X, Y, px);
     styki(svg, d, X, Y);
@@ -96,7 +98,7 @@ var AMGW_SCIANA = (function () {
     if (naKlik) { klikanie(svg, d, z, m, k, naKlik); }
     box.appendChild(svg);
     if (opis) {
-      opis.textContent = d.id + ' · ' + (RODZAJE[d.rodzaj] || d.rodzaj) + (d.szczyt ? ' ze szczytem' : '') + ' · ' +
+      opis.textContent = d.id + ' · ' + (d.taras || ((RODZAJE[d.rodzaj] || d.rodzaj) + (d.szczyt ? ' ze szczytem' : ''))) + ' · ' +
         fmt(d.dl_osi) + ' mm w osi · wieńce: ' + d.wience.length + ' · bale: ' + d.bale.length + ' · styki: ' + d.styki;
     }
   }
@@ -128,6 +130,17 @@ var AMGW_SCIANA = (function () {
                               fill: kf ? '#8a5a2b' : '#5c4a38', 'font-weight': k[3] === 'reczny' ? '700' : '400' });
       t.appendChild(document.createTextNode(k[1]));
       svg.appendChild(t);
+    }
+  }
+
+  // Słupy tarasu w ścianie: prostokąty pod balami (z zamkiem górnym i dolnym – cała długość słupa).
+  function slupy(svg, d, X, Y) {
+    var i;
+    for (i = 0; i < (d.slupy || []).length; i++) {
+      var q = d.slupy[i];
+      svg.appendChild(svgEl('rect', { x: X(q[0]), y: Y(q[3]), width: (q[1] - q[0]).toFixed(1), height: (q[3] - q[2]).toFixed(1),
+                                      fill: '#d8c3a5', stroke: '#6b5440', 'stroke-width': '1', 'vector-effect': 'non-scaling-stroke',
+                                      'class': 'slup' }));
     }
   }
 

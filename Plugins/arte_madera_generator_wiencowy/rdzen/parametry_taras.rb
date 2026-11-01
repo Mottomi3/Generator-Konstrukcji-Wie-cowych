@@ -2,7 +2,7 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_taras.rb
-# Zadanie: parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy, wejście, balustrada, szczyt nad tarasem.
+# Zadanie: parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy z zamkami, szczyt nad tarasem, wejście, balustrada.
 # Tematy: taras – parametry, słupy tarasu – parametry, balustrada – parametry, szczyt nad tarasem – parametry
 # Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
@@ -39,6 +39,24 @@ module ArteMadera
         { klucz: 'taras_slupy_rozstaw_max', domyslna: 2000.0, etykieta: 'Słupy – największy rozstaw (osiowo)', jednostka: 'mm',
           min: 800.0, max: 5000.0, rodzaj: :liczba, sekcja: 'taras',
           podpowiedz: 'Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu.' },
+        { klucz: 'taras_slup_zamek_gora', domyslna: 150.0, etykieta: 'Słup – zamek górny (wysokość obok bala)', jednostka: 'mm',
+          min: 0.0, max: 600.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },
+          podpowiedz: 'Słup licem równo z licem ściany; nad spodem podciągu część słupa za balem idzie dalej w górę, bal leży ' \
+                      'w wycięciu. 0 – słup kończy się pod balem.' },
+        { klucz: 'taras_slup_zamek_dol', domyslna: 100.0, etykieta: 'Słup – zamek dolny (obok podwaliny)', jednostka: 'mm',
+          min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },
+          podpowiedz: 'Część słupa obok podwaliny schodzi w dół (najwyżej na wysokość podwaliny). 0 – słup stoi na podwalinie. ' \
+                      'Tylko z podłogą.' },
+        { klucz: 'taras_szczyt', domyslna: 'pelny', etykieta: 'Szczyt nad tarasem', rodzaj: :wybor, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'] },
+          wybory: [['pelny', 'pełny (jak 1100)'], ['azurowy', 'ażurowy – bale na przemian z przekładkami, jak balustrada'],
+                   ['pusty', 'pusty – bale spinające nad podciągiem, wyżej słupki pod płatwiami']],
+          pomoc: 'Pełny – szczyt z bali do linii dachu. Ażurowy – co drugi wieniec szczytu to przekładki (pod płatwiami, przy ' \
+                 'końcach i co najwyżej co „największy prześwit”). Pusty – nad podciągiem tylko podana liczba bali spinających ' \
+                 'front, wyżej słupki z przekładek pod każdą płatwią (płatwie zostają podparte).' },
+        { klucz: 'taras_szczyt_bale', domyslna: 1, etykieta: 'Szczyt pusty – bale spinające', min: 0, max: 6, rodzaj: :calkowita,
+          sekcja: 'taras', gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'] },
+          podpowiedz: 'Pełne bale szczytu nad podciągiem (nad balem, który zamyka się ze ścianami bocznymi).' },
         { klucz: 'taras_wejscie', domyslna: 'srodek', etykieta: 'Wejście na taras od frontu', rodzaj: :wybor, sekcja: 'taras',
           wybory: [['srodek', 'pośrodku'], ['lewa', 'z lewej (patrząc na front z zewnątrz)'],
                    ['prawa', 'z prawej (patrząc na front z zewnątrz)'], ['brak', 'bez wejścia – balustrada na całym froncie']] },

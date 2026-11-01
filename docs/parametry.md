@@ -47,6 +47,8 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `wegly_prog_wysokosci` | Ściana wysoka od wysokości | 3000 mm | 1500 … 8000 | Wysokość ściany okapowej bez szczytu (1100: 2966 – bez węgła, 1200: 3580 – z węgłem). |
 | `wegly_rozmieszczenie` | Rozmieszczenie nowych węgłów | rowno | `rowno` – równo na długości ściany; `od_naroznikow` – od narożników o zadany odstęp (jak 1000); `tylko_narysowane` – tylko narysowane (generator tylko ostrzega) |  |
 | `wegly_odstep_od_naroznika` | Odstęp węgła od narożnika | 800 mm | 300 … 3000 | Dla rozmieszczenia „od narożników”. |
+| `wegly_srodek` | Węgieł na środku ściany – automatycznie | nie | `nie` – nie; `zewnetrzne` – na ścianach zewnętrznych; `wszystkie` – na wszystkich ścianach | Węgieł w osi ściany, gdy ściana nie jest krótsza niż podana niżej (w miejscu skrzyżowania albo otworu – obok, do pół metra). Pojedyncze węgły dodasz w tabeli „Węgły”, jak okna. |
+| `wegly_srodek_min` | Węgieł na środku – od długości ściany | 4000 mm | 1000 … 20000 |  |
 | `wegly_na_dzialowych` | Węgły także na ścianach działowych | tak | `tak` – tak; `nie` – nie |  |
 | `min_odstep_skrzyzowan` | Odstęp węgła od innego skrzyżowania | 300 mm | 150 … 3000 |  |
 | `odstep_od_otworu` | Odstęp węgła od krawędzi otworu | 150 mm | 0 … 2000 |  |
@@ -122,27 +124,37 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `taras_ostatek` | Ostatek dolnych bali ścian bocznych przy tarasie | 100 mm | 0 … 600 | Za licem ściany domu, pod podciągiem. |
 | `taras_slup_przekroj` | Słup tarasu (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Projekty: 80 × 180, 120 × 120, 140 × 140. |
 | `taras_slupy_rozstaw_max` | Słupy – największy rozstaw (osiowo) | 2000 mm | 800 … 5000 | Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu. |
+| `taras_slup_zamek_gora` | Słup – zamek górny (wysokość obok bala) | 150 mm | 0 … 600 | Słup licem równo z licem ściany; nad spodem podciągu część słupa za balem idzie dalej w górę, bal leży w wycięciu. 0 – słup kończy się pod balem. |
+| `taras_slup_zamek_dol` | Słup – zamek dolny (obok podwaliny) | 100 mm | 0 … 300 | Część słupa obok podwaliny schodzi w dół (najwyżej na wysokość podwaliny). 0 – słup stoi na podwalinie. Tylko z podłogą. |
+| `taras_szczyt` | Szczyt nad tarasem | pelny | `pelny` – pełny (jak 1100); `azurowy` – ażurowy – bale na przemian z przekładkami, jak balustrada; `pusty` – pusty – bale spinające nad podciągiem, wyżej słupki pod płatwiami |  |
+| `taras_szczyt_bale` | Szczyt pusty – bale spinające | 1 | 0 … 6 | Pełne bale szczytu nad podciągiem (nad balem, który zamyka się ze ścianami bocznymi). |
 | `taras_wejscie` | Wejście na taras od frontu | srodek | `srodek` – pośrodku; `lewa` – z lewej (patrząc na front z zewnątrz); `prawa` – z prawej (patrząc na front z zewnątrz); `brak` – bez wejścia – balustrada na całym froncie |  |
 | `taras_wejscie_szerokosc` | Wejście – szerokość w świetle słupów | 1200 mm | 600 … 4000 |  |
 | `taras_balustrada_bale` | Balustrada – liczba bali | 4 | 0 … 8 | Bale na przemian z rzędami przekładek (1100: 4 bale i 3 rzędy, ok. 1 m). 0 – bez balustrady. |
 | `taras_przekladka` | Balustrada – długość przekładki | 300 mm | 50 … 1000 | Odcinek bala między balami balustrady (1100: 300). |
 | `taras_przekladka_odstep` | Balustrada – największy prześwit między przekładkami | 600 mm | 50 … 2000 | Przekładki przy obu końcach przęsła i równo między nimi. |
 
-## Podłoga
+## Podłoga i fundamenty
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
 | `podloga` | Podłoga (podwaliny, legary, podciągi) | tak | `tak` – tak; `nie` – nie |  |
-| `podwalina_przekroj` | Podwalina pod ścianami | 100x100 mm | szer. × wys. | Projekt 900: 100 × 100. Niższa niż legar – podniesiona do wysokości legara. |
+| `podwalina_przekroj` | Podwalina pod ścianami (szer. × wys.) | 100x100 mm | szer. × wys. | Projekt 900: 100 × 100. 50 × 150 (na kant) – równo z legarami 50 × 150, łatwo skręcić śrubami bez zamków. |
+| `podwalina_laczenie` | Podwaliny w narożnikach | zaklad | `zaklad` – na zakład (pół wysokości); `sruby` – na styk, bez zamków – skręcane śrubami | Na styk: podwaliny w poprzek legarów na całą długość, pozostałe między nimi. |
 | `podwaliny_pod_dzialowymi` | Podwaliny także pod działowymi | tak | `tak` – tak; `nie` – nie |  |
 | `legary_kierunek` | Legary wzdłuż | krotszy | `krotszy` – krótszego boku; `dluzszy` – dłuższego boku; `x` – osi X obrysu; `y` – osi Y obrysu |  |
 | `legary_rozstaw` | Rozstaw legarów (osiowo) | 600 mm | 250 … 1200 | Projekt 900: 550–610. |
 | `izolacja_podlogi` | Izolacja między legarami | 100 mm | 0 … 400 | Legar nie niższy niż izolacja (0 – bez izolacji). |
 | `legary_dobor` | Dobór przekroju legara | zalecany | `zalecany` – zalecany (ugięcie ≤ L/zalecane); `minimalny` – minimalny (ugięcie ≤ L/minimalne); `reczny` – ręczny – podany niżej (tylko sprawdzenie) |  |
-| `legar_przekroj` | Legar – przekrój ręczny | 50x100 mm | szer. × wys. | Projekt 900: 50 × 100. |
-| `podpory_rozstaw_max` | Rozstaw podciągów pod legarami – największy | 0 mm | 0 … 8000 | 0 – automatycznie: podciągi tylko tam, gdzie wymaga ich przekrój legara (najmniej drewna). |
-| `podpora_przekroj` | Podciąg pod legarami (podpora pośrednia) | 100x100 mm | szer. × wys. |  |
-| `obciazenie_uzytkowe` | Obciążenie użytkowe | 2 kN/m² | 0,5 … 10 | Mieszkanie: 1,5–2,0 (PN-EN 1991-1-1, kat. A). |
+| `legar_przekroj` | Legar – przekrój do sprawdzenia | 50x100 mm | szer. × wys. | Wpisz przekrój „szer. x wys.”, np. 50x150 – wynik sprawdzenia pod polem i w podpowiedziach. Projekt 900: 50 × 100. |
+| `podciagi` | Podciągi pod legarami | auto | `auto` – gdy wymaga ich legar (najmniej drewna); `tak` – tak – co najwyżej co podany rozstaw; `nie` – nie – legary od podwaliny do podwaliny |  |
+| `podpory_rozstaw_max` | Rozstaw podciągów pod legarami – największy | 0 mm | 0 … 8000 | 0 – automatycznie: tylko tam, gdzie wymaga ich przekrój legara. Z fundamentami punktowymi podciągi leżą w ich liniach. |
+| `podpora_przekroj` | Podciąg pod legarami (podpora pośrednia) | 100x150 mm | szer. × wys. |  |
+| `fundamenty` | Fundamenty punktowe | tak | `tak` – tak; `nie` – nie |  |
+| `fundament_przekroj` | Fundament punktowy – wymiary w rzucie | 400x400 mm | szer. × wys. |  |
+| `fundament_wysokosc` | Fundament punktowy – wysokość | 400 mm | 50 … 2000 | Część nad gruntem do rysunku (bez części w gruncie). |
+| `fundamenty_rozstaw_max` | Rozstaw fundamentów – największy (osiowo) | 2500 mm | 800 … 6000 | Dom 5 × 7 m przy 2500: 3 rzędy na 5 m i 4 na 7 m. |
+| `obciazenie_uzytkowe` | Obciążenie użytkowe | 2 kN/m² | 0,5 … 10 | Ludzie i meble na podłodze. Mieszkanie: 1,5–2,0, poddasze bez mieszkania 1,0, magazyn 5,0. |
 | `obciazenie_stale` | Obciążenie stałe (deski, izolacja) | 0,5 kN/m² | 0 … 5 | Bez ciężaru legarów (liczony osobno). |
 | `drewno_klasa` | Klasa drewna konstrukcyjnego | C24 | `C18` – C18; `C24` – C24; `C30` – C30; `GL24h` – GL24h (klejone) |  |
 | `ugiecie_zalecane` | Ugięcie zalecane L / | 400 | 150 … 1000 | Sztywna podłoga bez drgań. |

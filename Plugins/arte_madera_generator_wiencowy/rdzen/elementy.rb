@@ -29,7 +29,7 @@ module ArteMadera
       # PREFIX_GROUPS), nazwy zawierają słowa, po których Dokumentacja 2D rozpoznaje grupę także bez atrybutu.
       RODZAJE = {
         'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
-        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras]
+        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras], 'F' => ['Fundament punktowy', :podloga], 'Pb' => ['Podbitka', :dach]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function
@@ -101,9 +101,9 @@ module ArteMadera
         lista
       end
 
-      # Kolejność numeracji: grupa (podłoga, dach, taras), prefiks, długość malejąco.
+      # Kolejność numeracji: grupa (podłoga, dach, taras, fundamenty), prefiks, długość malejąco.
       def posortowane(elementy)
-        kolej = %w[Pw Pd L P K S]
+        kolej = %w[Pw Pd L P K Pb S F]
         elementy.sort_by { |e| [kolej.index(e[:prefiks]) || 9, -e[:dl].round, e[:b].round, e[:h].round] }
       end
 

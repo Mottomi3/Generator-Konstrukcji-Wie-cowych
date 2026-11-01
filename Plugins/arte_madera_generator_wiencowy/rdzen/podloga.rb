@@ -2,9 +2,9 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/podloga.rb
-# Zadanie: podłoga domu prostokątnego – podwaliny pod ścianami (zakład w narożnikach), legary między podwalinami, podciągi pod legarami, dobór przekroju i podpowiedzi.
-# Tematy: podłoga, podwalina, legar, podpora legarów, rozstaw legarów, kierunek legarów, dobór przekroju legara, izolacja podłogi, podpowiedzi podłogi, zakład podwalin
-# Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb
+# Zadanie: podłoga domu prostokątnego – podwaliny pod ścianami (zakład albo styk na śruby w narożnikach), legary między podwalinami, dobór przekroju legara i podpowiedzi; podciągi i fundamenty punktowe w osobnych plikach.
+# Tematy: podłoga, podwalina, podwalina na styk, łączenie podwalin na śruby, legar, rozstaw legarów, kierunek legarów, dobór przekroju legara, izolacja podłogi, podpowiedzi podłogi, zakład podwalin
+# Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/podciagi.rb (położenia i belki podciągów), rdzen/fundamenty.rb
 # Używają: rdzen/projekt.rb
 #
 # Poziom 0 = spód pierwszego bala = wierzch podwalin i legarów (legary między podwalinami, wierzchem równo, jak 900).
@@ -16,6 +16,8 @@ require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera::GeneratorWiencowy::Statyka)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
+require File.join(File.dirname(__FILE__), 'podciagi') unless defined?(ArteMadera::GeneratorWiencowy::Podciagi)
+require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMadera::GeneratorWiencowy::Fundamenty)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -37,13 +39,35 @@ module ArteMadera
         end
         u = uklad(sciany, p)
         wynik[:elementy].concat(podwaliny(u, p))
-        przekroj, podpory = dobierz(u, p, wynik[:podpowiedzi])
+        przekroj, poz = dobierz(u, p, wynik[:podpowiedzi])
         return wynik if przekroj.nil?
         wynik[:legar] = przekroj
-        wynik[:podpory] = podpory.inject(0) { |s, n| s + n }
+        wynik[:podpory] = poz.flatten.length
         wynik[:elementy].concat(legary(u, p, przekroj))
-        wynik[:elementy].concat(podpory_elementy(u, p, przekroj, podpory))
+        wynik[:elementy].concat(Podciagi.elementy(u, p, poz, przekroj[1]) { |d, e| punkt(u, d, e) })
+        wynik[:podpowiedzi].concat(Podciagi.podpowiedzi(u, p, poz, przekroj[1], przesla(u)))
+        fundamenty(u, p, poz, przekroj[1], wynik)
         wynik
+      end
+
+      # Fundamenty punktowe (rdzen/fundamenty.rb): stopy pod podwalinami, podciągami i podwalinami działowych; podpowiedź.
+      def fundamenty(u, p, poz, h_legara, wynik)
+        return unless Fundamenty.wlaczone?(p)
+        hp = Parametry.przekroj(p, 'podpora_przekroj')[1]
+        z_pd = Podciagi.z_wierzchu(u, h_legara) - hp
+        dz = u[:dzialowe].flat_map do |w|
+          odcinki_dzialowej(u, w).map do |s0, s1|
+            [s0, s1].map { |x| q = G.add(w[:a], G.mul(w[:kier], x)); [q[u[:id]], q[u[:ie]]] }
+          end
+        end
+        stopy = Fundamenty.stopy(u, p, poz.flatten, z_pd, -u[:pw][1], dz)
+        wynik[:elementy].concat(Fundamenty.elementy(stopy.map { |d, e, z| [punkt(u, d, e), z] }, p))
+        s = Fundamenty.siatka(u, p)
+        roz = [s[:d], s[:e]].map { |l| l.each_cons(2).map { |a, b| b - a }.max || 0.0 }
+        wynik[:podpowiedzi] << { poziom: 'ok', tekst: format('Fundamenty punktowe %s: %d szt. – rzędy %d × %d (rozstaw %s × %s m), w obrysie, ' \
+                                                             'także pod podwalinami działowych.', Parametry.tekst_przekroju(Parametry.przekroj(p, 'fundament_przekroj')),
+                                                             stopy.length, s[:d].length, s[:e].length,
+                                                             format('%.2f', roz[0] / 1000.0), format('%.2f', roz[1] / 1000.0)) }
       end
 
       # Układ podłogi: kierunek legarów (id – indeks osi wzdłuż legarów), zasięgi, ściany zewnętrzne i działowe z podwalinami.
@@ -70,9 +94,18 @@ module ArteMadera
         x0, x1 = u[:ext][0]
         y0, y1 = u[:ext][1]
         wynik = []
+        sruby = p['podwalina_laczenie'] == 'sruby'
         [[[x0, y0], [x1, y0], 'wyciecie_dol'], [[x1, y0], [x1, y1], 'wyciecie_gora'],
          [[x1, y1], [x0, y1], 'wyciecie_dol'], [[x0, y1], [x0, y0], 'wyciecie_gora']].each do |a, c, zakl|
           dl = G.odl(a, c)
+          if sruby
+            # Na styk: podwaliny w poprzek legarów na całą długość, wzdłuż legarów – między nimi.
+            wzdluz = (a[u[:id]] - c[u[:id]]).abs > 0.5
+            next wynik << Elementy.pozioma('Pw', a, c, b, h, -h, :lewo) unless wzdluz
+            d = G.norm(G.sub(c, a))
+            wynik << Elementy.pozioma('Pw', G.add(a, G.mul(d, b)), G.sub(c, G.mul(d, b)), b, h, -h, :lewo)
+            next
+          end
           cechy = [{ typ: zakl, x0: 0.0, x1: b, gleb: h / 2.0 }, { typ: zakl, x0: dl - b, x1: dl, gleb: h / 2.0 }]
           wynik << Elementy.pozioma('Pw', a, c, b, h, -h, :lewo, cechy)
         end
@@ -160,6 +193,7 @@ module ArteMadera
           podp << { poziom: 'blad', tekst: 'Podłoga: brak miejsca na legary między podwalinami.' }
           return [nil, nil]
         end
+        zakresy = przesla(u)
         reczny = p['legary_dobor'] == 'reczny'
         sekcje = reczny ? [Parametry.przekroj(p, 'legar_przekroj')] : Statyka.kandydaci(p)
         if sekcje.empty?
@@ -167,31 +201,67 @@ module ArteMadera
                                                     Parametry.fmt(p['izolacja_podlogi'])) }
           return [nil, nil]
         end
-        najl = nil
-        sekcje.each do |b, h|
-          lmax = Statyka.max_rozpietosc(b, h, p, rozstaw, gr)
-          n = przes.map { |l| podpory_w_przesle(l, lmax, p) }
-          next if n.any?(&:nil?)
-          ocena = [objetosc(u, p, [b, h], przes, n), n.inject(0) { |s, x| s + x }]
-          najl = [[b, h], n, ocena] if najl.nil? || (ocena <=> najl[2]) < 0
-        end
+        najl = wybierz(u, p, sekcje, zakresy, rozstaw, gr)
+        najl = zageszczone(u, p, sekcje, zakresy, rozstaw, gr, podp) if najl.nil? && Podciagi.w_liniach_fundamentow?(p)
         if najl.nil?
-          b, h = sekcje.last
-          podp << { poziom: 'blad', tekst: format('Podłoga: legar %s nie przenosi obciążenia nawet przy gęstych podporach – zwiększ przekrój.',
-                                                    Parametry.tekst_przekroju([b, h])) }
+          podp << brak_przekroju(u, p, sekcje.last, zakresy, rozstaw, gr)
           return [nil, nil]
         end
-        podpowiedzi(u, p, najl[0], przes, najl[1], podp)
+        podpowiedzi(u, p, najl[0], zakresy, najl[1], podp)
         [najl[0], najl[1]]
       end
 
-      # Liczba podpór w przęśle długości l przy największej rozpiętości lmax legara; nil – nie da się.
-      def podpory_w_przesle(l, lmax, p)
-        return nil if lmax < 300.0
-        rmax = p['podpory_rozstaw_max'].to_f
-        n = rmax > 0 ? [(l / rmax - 1e-9).ceil - 1, 0].max : 0
-        n += 1 while n <= 30 && l / (n + 1) + OPARCIE > lmax
-        n > 30 ? nil : n
+      # Najlepszy przekrój z listy sekcje i położenia podciągów: [[b, h], [[d]], ocena] albo nil (żaden nie da rady).
+      def wybierz(u, p, sekcje, zakresy, rozstaw, gr)
+        przes = zakresy.map { |a, c| c - a }
+        najl = nil
+        sekcje.each do |b, h|
+          lmax = Statyka.max_rozpietosc(b, h, p, rozstaw, gr)
+          poz = Podciagi.polozenia(u, p, zakresy, lmax)
+          next if poz.nil?
+          n = poz.map(&:length)
+          ocena = [objetosc(u, p, [b, h], przes, n), n.inject(0) { |s, x| s + x }]
+          najl = [[b, h], poz, ocena] if najl.nil? || (ocena <=> najl[2]) < 0
+        end
+        najl
+      end
+
+      # Legar nie przenosi rozpiętości między liniami fundamentów: rzędy pod podciągami zagęszczane co 100 mm (najmniej
+      # 800), aż przekrój da radę (u[:rozstaw_d] – rozstaw rzędów wzdłuż legarów); podpowiedź o dodatkowym rzędzie.
+      def zageszczone(u, p, sekcje, zakresy, rozstaw, gr, podp)
+        r = p['fundamenty_rozstaw_max'].to_f
+        najl = nil
+        while najl.nil? && r > 800.0
+          r -= 100.0
+          u[:rozstaw_d] = r
+          najl = wybierz(u, p, sekcje, zakresy, rozstaw, gr)
+        end
+        if najl.nil?
+          u.delete(:rozstaw_d)
+          return nil
+        end
+        podp << { poziom: 'uwaga', tekst: format('Legar %s nie przenosi rozpiętości przy rozstawie fundamentów %s mm – dodano rząd: ' \
+                                                 'fundamenty i podciągi wzdłuż legarów co najwyżej %s mm.', Parametry.tekst_przekroju(najl[0]),
+                                                 Parametry.fmt(p['fundamenty_rozstaw_max']), Parametry.fmt(r)) }
+        najl
+      end
+
+      # Błąd doboru: legar (ostatni sprawdzany) nie przenosi rozpiętości – co zrobić zależnie od podciągów i fundamentów.
+      def brak_przekroju(u, p, bh, zakresy, rozstaw, gr)
+        nazwa = Parametry.tekst_przekroju(bh)
+        lmax = Statyka.max_rozpietosc(bh[0], bh[1], p, rozstaw, gr)
+        if Podciagi.w_liniach_fundamentow?(p)
+          l = Podciagi.luka(zakresy, Podciagi.stale(u, p, zakresy)) + OPARCIE
+          return { poziom: 'blad', tekst: format('Podłoga: legar %s przenosi najwyżej %s m, a między liniami fundamentów jest %s m – zmniejsz ' \
+                                                 'rozstaw fundamentów do %s mm (dodatkowy rząd) albo weź wyższy legar.', nazwa,
+                                                 format('%.2f', lmax / 1000.0), format('%.2f', l / 1000.0),
+                                                 Parametry.fmt([((lmax - OPARCIE) / 50.0).floor * 50.0, 800.0].max)) }
+        end
+        if p['podciagi'] == 'nie'
+          return { poziom: 'blad', tekst: format('Podłoga: legar %s nie przenosi rozpiętości od podwaliny do podwaliny (najwyżej %s m) – ' \
+                                                 'włącz podciągi albo weź wyższy legar.', nazwa, format('%.2f', lmax / 1000.0)) }
+        end
+        { poziom: 'blad', tekst: format('Podłoga: legar %s nie przenosi obciążenia nawet przy gęstych podciągach – zwiększ przekrój.', nazwa) }
       end
 
       # Objętość drewna legarów i podpór [m³] – kryterium wyboru między większym przekrojem a podporami.
@@ -206,11 +276,12 @@ module ArteMadera
       end
 
       # Podpowiedzi do okna: ocena legara, przekroje najmniejszy i zalecany, izolacja, wysokość podwaliny, podpory.
-      def podpowiedzi(u, p, bh, przes, n, podp)
+      def podpowiedzi(u, p, bh, zakresy, poz, podp)
         rozstaw = p['legary_rozstaw'].to_f
         g, q = Statyka.obciazenia(p, rozstaw)
         klasa = p['drewno_klasa']
-        rozp = przes.each_with_index.map { |l, i| l / (n[i] + 1) + OPARCIE }.max
+        przes = zakresy.map { |a, c| c - a }
+        rozp = Podciagi.luka(zakresy, poz) + OPARCIE
         s = Statyka.belka(rozp, bh[0], bh[1], g, q, klasa, p['ugiecie_zalecane'].to_f)
         nazwa = Parametry.tekst_przekroju(bh)
         poziom, ocena = if s[:ok] then ['ok', 'spełnia zalecane ugięcie – podłoga sztywna']
@@ -223,11 +294,13 @@ module ArteMadera
                                                  ([s[:wyk_m], s[:wyk_v]].max * 100).round, s[:l_przez_u].round,
                                                  Parametry.fmt(p['ugiecie_zalecane']), Parametry.fmt(p['ugiecie_minimalne']), ocena) }
         lmax = przes.max + OPARCIE
-        min = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_minimalne'].to_f)
-        zal = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_zalecane'].to_f)
-        podp << { poziom: 'ok', tekst: format('Bez podciągów (rozpiętość %s m): najmniejszy wystarczający przekrój %s, zalecany %s.',
-                                              format('%.2f', lmax / 1000.0), min ? Parametry.tekst_przekroju(min) : 'brak w katalogu',
-                                              zal ? Parametry.tekst_przekroju(zal) : 'brak w katalogu') }
+        unless poz.flatten.empty?
+          min = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_minimalne'].to_f)
+          zal = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_zalecane'].to_f)
+          podp << { poziom: 'ok', tekst: format('Bez podciągów (rozpiętość %s m): najmniejszy wystarczający przekrój %s, zalecany %s.',
+                                                format('%.2f', lmax / 1000.0), min ? Parametry.tekst_przekroju(min) : 'brak w katalogu',
+                                                zal ? Parametry.tekst_przekroju(zal) : 'brak w katalogu') }
+        end
         izol = p['izolacja_podlogi'].to_f
         if bh[1] < izol - 0.01
           podp << { poziom: 'blad', tekst: format('Legar %s jest niższy niż izolacja %s mm – izolacja się nie zmieści.', nazwa, Parametry.fmt(izol)) }
@@ -239,10 +312,6 @@ module ArteMadera
           podp << { poziom: 'uwaga', tekst: format('Legar (%s mm) wyższy niż podwalina (%s mm) – spód legara %s mm poniżej spodu podwaliny.',
                                                    Parametry.fmt(bh[1]), Parametry.fmt(hp), Parametry.fmt(bh[1] - hp)) }
         end
-        suma = n.inject(0) { |a, x| a + x }
-        return if suma.zero?
-        podp << { poziom: 'ok', tekst: format('Podciągi pod legarami %s: %d szt. (w przęsłach: %s) – oprzyj je na stopach fundamentowych.',
-                                              Parametry.tekst_przekroju(Parametry.przekroj(p, 'podpora_przekroj')), suma, n.join(', ')) }
       end
 
       # Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i omija podwaliny wzdłuż.
@@ -271,22 +340,6 @@ module ArteMadera
           G.odejmij_przedzialy(d0 + bp, d1 - bp, zakaz, 0.5).each do |a, c|
             next if c - a < 50.0
             wynik << Elementy.pozioma('L', punkt(u, a, e), punkt(u, c, e), b, h, -h, :os)
-          end
-        end
-        wynik
-      end
-
-      # Podpory legarów: w każdym przęśle n belek w poprzek, równo, pod legarami (między podwalinami bocznymi).
-      def podpory_elementy(u, p, bh, n)
-        bp, hp = Parametry.przekroj(p, 'podpora_przekroj')
-        b = u[:pw][0]
-        e0, e1 = u[:ext][u[:ie]]
-        wynik = []
-        przesla(u).each_with_index do |(a, c), i|
-          k = n[i]
-          (1..k).each do |j|
-            d = a + j * (c - a) / (k + 1)
-            wynik << Elementy.pozioma('Pd', punkt(u, d, e0 + b), punkt(u, d, e1 - b), bp, hp, -bh[1] - hp, :os)
           end
         end
         wynik

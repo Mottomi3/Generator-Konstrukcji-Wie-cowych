@@ -274,17 +274,17 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.mouse.click(pk[0], pk[1]);
   dp = await podgladDane();
   var wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
-  sprawdz(wl && wl.length === 3 && Math.abs(wl[0] - 1478) < 1 && Math.abs(wl[1] - 4080) < 11 && Math.abs(wl[2] - 4680) < 1,
-          'klik w widok: nowy węgieł, narysowany i pod styk zostają (' + JSON.stringify(wl) + ')');
+  sprawdz(wl && wl.length === 2 && Math.abs(wl[0] - 1478) < 1 && Math.abs(wl[1] - 4080) < 11,
+          'klik w widok: nowy węgieł, narysowany zostaje (styki w zamku działowej – bez węgła pod styk) (' + JSON.stringify(wl) + ')');
   await page.evaluate(function () { window.__wywolania = []; });
   pk = await punkt('W-6', 20);
   await page.mouse.click(pk[0], pk[1]);
   dp = await podgladDane();
   wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
-  sprawdz(wl && wl.length === 2 && Math.abs(wl[0] - 4080) < 11, 'klik przy węgle: węgieł usunięty (' + JSON.stringify(wl) + ')');
+  sprawdz(wl && wl.length === 1 && Math.abs(wl[0] - 4080) < 11, 'klik przy węgle: węgieł usunięty (' + JSON.stringify(wl) + ')');
   await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
   var st = await page.evaluate(function () { return document.querySelector('#widok-panel .wegly-stan').textContent; });
-  sprawdz(st.indexOf('ręcznie (2)') >= 0, 'panel: węgły ręczne (' + st + ')');
+  sprawdz(st.indexOf('ręcznie (1)') >= 0, 'panel: węgły ręczne (' + st + ')');
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#e-wegly-auto');
   dp = await podgladDane();

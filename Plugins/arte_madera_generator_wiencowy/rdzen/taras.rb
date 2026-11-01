@@ -5,14 +5,16 @@
 # Zadanie: taras przed ścianą szczytową domu prostokątnego – obrys przedłużony o głębokość tarasu, ściana domu jako działowa ze szczytem, wariant 1100 (górne wieńce ścian nad tarasem jako podciąg na słupach) albo 1200 (ściany boczne pełne, front otwarty), słupy tarasu.
 # Tematy: taras, wariant 1100, wariant 1200, podciąg z bali, słupy tarasu, front tarasu, ściana domu przy tarasie, głębokość tarasu, wejście na taras, ostatek przy tarasie, przęsła balustrady
 # Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/elementy.rb, rdzen/sciany.rb (oś kalenicy)
-# Używają: rdzen/projekt.rb, rdzen/sciany.rb (opis ściany), rdzen/szczyty.rb (szczyt ściany domu), rdzen/bale.rb (zasięg wieńca), rdzen/usztywnienie.rb, rdzen/taras_balustrada.rb
+# Używają: rdzen/projekt.rb, rdzen/sciany.rb (opis ściany), rdzen/szczyty.rb (szczyt ściany domu), rdzen/bale.rb (zasięg wieńca), rdzen/usztywnienie.rb, rdzen/taras_balustrada.rb, rdzen/taras_slupy.rb, rdzen/taras_szczyt.rb, rdzen/wience.rb (półbal frontu – w[:taras][:z_polbal])
 #
 # Narysowany obrys = dom. Taras (parametr taras) dokłada generator przed ścianą szczytową po stronie taras_strona
 # (wzdłuż kalenicy): bok obrysu przesunięty o taras_glebokosc, dawna ściana szczytowa zostaje jako działowa ze
 # szczytem (ostatki na zewnątrz), oś kalenicy jak dla domu bez tarasu (ob[:os_kalenicy]). Role ścian:
 # w[:taras] = { rola: :front | :dom | :bok, wariant:, … }.
 # Wariant podciag (1100): front i ściany boczne nad tarasem tylko w górnych taras_wience_gorne wieńcach ścian bocznych
-# (front od wieńca, który zamyka się z nimi w narożniku) i szczyt frontu; pod nimi słupy (narożniki frontu, wejście,
+# i szczyt frontu (rdzen/taras_szczyt.rb); front zaczyna się półbalem (górna połowa bala, spód z_polbal = spód bali ścian
+# bocznych) – bale ścian bocznych leżą na wyciętych połówkach bala frontu, naroże na jednym poziomie (wymóg
+# użytkownika, runda 7); pod nimi słupy (rdzen/taras_slupy.rb – narożniki frontu, wejście,
 # rozstaw najwyżej taras_slupy_rozstaw_max) i balustrada (rdzen/taras_balustrada.rb); dolne bale ścian bocznych kończą
 # się ostatkiem taras_ostatek za licem ściany domu. Wariant sciany (1200): ściany boczne pełne do frontu, front bez
 # bali – zostaje w planie dla obrysu dachu, płatwi i połaci.
@@ -91,10 +93,13 @@ module ArteMadera
         u_dom = info[:u_dom] - info[:znak] * t / 2.0
         boki = sciany.select { |w| w[:rodzaj] == :zewnetrzna && w[:os] == info[:os] }
         z_bok = z_podciagu(boki.first, p)
-        dane = info.merge(z_bok: z_bok, z_front: z_bok - Parametry.krycie(p) / 2.0)
+        dane = info.merge(z_bok: z_bok, z_front: z_bok)
         sciany.each do |w|
           next if w[:rodzaj] == :kontrfor || w[:os] == info[:os]
-          w[:taras] = dane.merge(rola: :front) if w[:rodzaj] == :zewnetrzna && (w[:a][iu] - u_front).abs < 1.0
+          if w[:rodzaj] == :zewnetrzna && (w[:a][iu] - u_front).abs < 1.0
+            w[:taras] = dane.merge(rola: :front)
+            w[:taras][:z_polbal] = z_bok if info[:wariant] == 'podciag'
+          end
           w[:taras] = dane.merge(rola: :dom) if w[:rodzaj] == :dzialowa && (w[:a][iu] - u_dom).abs < 1.0
         end
         boki.each do |w|
@@ -166,12 +171,13 @@ module ArteMadera
         end
       end
 
-      # Słupy pod frontem (s): narożniki, boki wejścia, pośrednie co najwyżej taras_slupy_rozstaw_max; { slupy:, wejscie:
-      # [a, b] osi słupów przy wejściu albo nil }.
+      # Słupy pod frontem (s): narożniki (licem równo z licami ścian bocznych), boki wejścia, pośrednie co najwyżej
+      # taras_slupy_rozstaw_max; { slupy:, wejscie: [a, b] osi słupów przy wejściu albo nil }.
       def slupy_frontu(front, p)
         b = Parametry.przekroj(p, 'taras_slup_przekroj')[0]
-        c1 = 0.0
-        c2 = front[:dl_osi]
+        d = [(b - Parametry.grubosc(p)) / 2.0, 0.0].max
+        c1 = d
+        c2 = front[:dl_osi] - d
         szer = p['taras_wejscie_szerokosc'].to_f + b
         wejscie = case p['taras_wejscie']
                   when 'srodek' then [(c1 + c2 - szer) / 2.0, (c1 + c2 + szer) / 2.0]
@@ -205,30 +211,6 @@ module ArteMadera
         (1...n).map { |i| a + (z - a) * i / n }
       end
 
-      # Słupy tarasu z podciągiem (elementy S): pod frontem i pośrednie pod ścianami bocznymi; od poziomu 0 do spodu
-      # podciągu (front – z_front, ściany boczne – z_bok); przekrój b wzdłuż ściany, nad którą stoi słup.
-      def slupy(sciany, p)
-        front = sciany.find { |w| front?(w) }
-        return [] if front.nil? || front[:taras][:wariant] != 'podciag'
-        b, g = Parametry.przekroj(p, 'taras_slup_przekroj')
-        wynik = slupy_frontu(front, p)[:slupy].map { |s| slup(front, s, b, g, front[:taras][:z_front]) }
-        sciany.select { |w| rola(w) == :bok }.each do |w|
-          tr = w[:taras]
-          lo, hi = [tr[:s_dom], tr[:s_front]].sort
-          posrednie(lo, hi, p).each { |s| wynik << slup(w, s, b, g, tr[:z_bok]) }
-        end
-        wynik
-      end
-
-      # Słup w osi ściany w w miejscu s: przekrój b (wzdłuż ściany) × g, od poziomu 0 do wysokości h.
-      def slup(w, s, b, g, h)
-        c = [w[:a][0] + w[:kier][0] * s, w[:a][1] + w[:kier][1] * s]
-        y = [w[:kier][0], w[:kier][1], 0.0]
-        z = [-w[:kier][1], w[:kier][0], 0.0]
-        o = [c[0] - y[0] * b / 2.0 - z[0] * g / 2.0, c[1] - y[1] * b / 2.0 - z[1] * g / 2.0, 0.0]
-        Elementy.nowy('S', h, b, g, o, [0.0, 0.0, 1.0], y, z, [])
-      end
-
       # Przęsła balustrady [[ściana, a, b]] (s między licami słupów, ściany domu i dolnych bali): ściany boczne – od końca
       # dolnych bali do słupa narożnego (podzielone słupami pośrednimi), front – między słupami poza wejściem.
       def przesla(sciany, p)
@@ -243,7 +225,7 @@ module ArteMadera
         end
         sciany.select { |w| rola(w) == :bok }.each do |w|
           tr = w[:taras]
-          naroznik = tr[:s_front] - tr[:kier] * g / 2.0
+          naroznik = tr[:s_front] - tr[:kier] * (g - Parametry.grubosc(p) / 2.0)
           lo, hi = [tr[:s_dom], tr[:s_front]].sort
           granice = ([tr[:s_dol], naroznik] + posrednie(lo, hi, p).flat_map { |s| [s - b / 2.0, s + b / 2.0] }).sort
           granice.each_slice(2) { |a, z| wynik << [w, a, z] if z && z - a > 1.0 }

@@ -30,7 +30,8 @@ def lokalnie(pol, q)
   [:x, :y, :z].map { |o| (0..2).inject(0.0) { |s, k| s + d[k] * pol[o][k] } }
 end
 
-# Liczba punktów wspólnych belek dachu (prefiks) i bali (z marginesem 0,5 mm) – 0 = bez kolizji.
+# Liczba punktów wspólnych belek (prefiks; belka z obróbkami – bryła z jej profilu, np. słup z zamkami) i bali (z marginesem
+# 0,5 mm) – 0 = bez kolizji.
 def kolizje_belek(pl, prefiks, n = 7)
   p = pl[:parametry]
   t = ArteMadera::GeneratorWiencowy::Parametry.grubosc(p)
@@ -43,11 +44,13 @@ def kolizje_belek(pl, prefiks, n = 7)
   pl[:elementy].select { |e| e[:prefiks] == prefiks }.each do |e|
     pe = e[:polozenie]
     oe = otoczka(pe, e[:dl], e[:b], e[:h])
+    prof_e = (e[:cechy] || []).empty? ? nil : ArteMadera::GeneratorWiencowy::Bryla.profil(e[:dl], e[:b], e[:h], e[:cechy])
     bale.each do |b, pol, ob, prof|
       probki(oe, ob, n).each do |q|
         le = lokalnie(pe, q)
         next unless le[0] > 0.5 && le[0] < e[:dl] - 0.5 && le[1] > 0.5 && le[1] < e[:b] - 0.5 && le[2] > 0.5 && le[2] < e[:h] - 0.5
         next if w_wrebie?(e, le)
+        next if prof_e && !ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof_e, le[0], le[1], le[2], 0.5)
         lb = lokalnie(pol, q)
         ile += 1 if ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, lb[0], lb[1], lb[2], 0.5)
       end

@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_taras.rb
 # Zadanie: taras – obrys przedłużony o głębokość, ściana domu ze szczytem, wariant 1100 (podciąg z górnych wieńców, słupy, wejście, balustrada z przekładkami) i 1200 (ściany boczne pełne, front bez bali), dach nad tarasem, strona tarasu, kiedy tarasu nie ma.
-# Tematy: testy tarasu, taras 1100 w testach, taras 1200 w testach, słupy tarasu w testach, balustrada w testach, wejście na taras w testach
-# Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, testy/losowe_domy.rb (sprawdzenie domu), Plugins/.../rdzen/taras.rb, rdzen/taras_balustrada.rb
+# Tematy: testy tarasu, szczyt nad tarasem w testach, zamki słupów w testach, taras 1100 w testach, taras 1200 w testach, słupy tarasu w testach, balustrada w testach, wejście na taras w testach
+# Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, testy/losowe_domy.rb (sprawdzenie domu), Plugins/.../rdzen/taras.rb, rdzen/taras_balustrada.rb, rdzen/taras_slupy.rb, rdzen/taras_szczyt.rb
 # Używają: testy/uruchom.sh
 
 require File.expand_path('losowe_domy', File.dirname(__FILE__))
@@ -46,8 +46,12 @@ Testy.sprawdz(front && dom && boki.length == 2, 'front, ściana domu i dwie ści
 Testy.rowne([front[:rodzaj], dom[:rodzaj], dom[:a][0].round(1)], [:zewnetrzna, :dzialowa, 3978.0], 'ściana domu – działowa w osi dawnej ściany')
 Testy.sprawdz(dom[:szczyt] && dom[:bale].any? { |b| b[:pozycja][:prefiks] == 'Sz' }, 'ściana domu ma szczyt z bali')
 z_bok = Wience.wlasne(boki[0], p)[-2][:z0]
-z_front = z_bok - Parametry.krycie(p) / 2.0
-Testy.rowne([front[:taras][:z_bok], front[:taras][:z_front]], [z_bok, z_front], 'podciąg: dwa górne wieńce ścian bocznych, front o pół wieńca niżej')
+z_front = z_bok
+Testy.rowne([front[:taras][:z_bok], front[:taras][:z_front]], [z_bok, z_front], 'podciąg: dwa górne wieńce ścian bocznych, front od tego samego poziomu')
+naj = front[:bale].reject { |b| b[:taras] }.min_by { |b| b[:z0] }
+Testy.rowne([naj[:z0], naj[:h], naj[:polbal]], [z_bok, Parametry.krycie(p) / 2.0, true],
+            'front zaczyna się półbalem na poziomie bali ścian bocznych – naroże na jednym poziomie')
+Testy.sprawdz(naj[:cechy].any? { |c| c[:typ] == 'gniazdo_gora' }, 'półbal frontu z gniazdem zamka od góry (bale ścian bocznych leżą na nim)')
 Testy.sprawdz(front[:bale].reject { |b| b[:taras] }.all? { |b| b[:z0] >= z_front - 0.01 }, 'front: bale tylko od podciągu w górę (i balustrada)')
 Testy.sprawdz(front[:szczyt] && front[:bale].any? { |b| b[:pozycja][:prefiks] == 'Sz' }, 'front ma szczyt')
 boki.each do |w|
@@ -61,14 +65,20 @@ boki.each do |w|
 end
 sl = slupy(pl)
 xs = sl.map { |e| srodek(e)[0].round(1) }.uniq
-ys_front = sl.select { |e| (srodek(e)[0] - 6378.0).abs < 0.5 }.map { |e| srodek(e)[1].round(1) }.sort
-Testy.rowne(ys_front, [22.0, 1342.0, 2660.0, 3978.0], 'słupy frontu: narożniki, wejście 1200 z lewej (od y = 0), pośredni ≤ 2000')
+ys_front = sl.select { |e| (srodek(e)[0] - 6340.0).abs < 0.5 }.map { |e| srodek(e)[1].round(1) }.sort
+Testy.rowne(ys_front, [60.0, 1380.0, 2660.0, 3940.0], 'słupy frontu licem z licami ścian: narożniki, wejście 1200 z lewej (od y = 0), pośredni ≤ 2000')
 Testy.rowne(sl.length - ys_front.length, 2, 'po jednym słupie pośrednim pod ścianami bocznymi (2444 > 2000)')
 Testy.sprawdz(xs.length == 2, "słupy tylko pod frontem i w połowie ścian bocznych (#{xs.inspect})")
 Testy.rowne(sl.map { |e| [e[:b], e[:h]] }.uniq, [[120.0, 120.0]], 'przekrój słupa 120 × 120')
-Testy.rowne(sl.select { |e| (srodek(e)[0] - 6378.0).abs < 0.5 }.map { |e| e[:dl] }.uniq, [z_front], 'słupy frontu do spodu podciągu frontu')
-Testy.rowne(sl.reject { |e| (srodek(e)[0] - 6378.0).abs < 0.5 }.map { |e| e[:dl] }.uniq, [z_bok], 'słupy boczne do spodu podciągu ścian')
-Testy.sprawdz(sl.all? { |e| e[:polozenie][:x] == [0.0, 0.0, 1.0] && e[:polozenie][:poczatek][2].zero? }, 'słupy pionowe od poziomu 0')
+Testy.rowne(sl.map { |e| e[:dl] }.uniq, [100.0 + z_bok + 150.0], 'słupy: zamek dolny 100 + do spodu podciągu + zamek górny 150')
+Testy.sprawdz(sl.all? { |e| e[:polozenie][:x] == [0.0, 0.0, 1.0] && e[:polozenie][:poczatek][2] == -100.0 }, 'słupy pionowe od −100 (zamek dolny)')
+Testy.sprawdz(sl.all? { |e| e[:cechy].count { |c| c[:typ] =~ /wyciecie/ } == 2 }, 'słupy: pas pod balem i pas podwaliny wycięte')
+Testy.rowne(sl.count { |e| e[:cechy].any? { |c| c[:typ] == 'podciecie' } }, 2, 'słupy narożne: także pasy ściany bocznej')
+Testy.sprawdz(sl.all? { |e| [0, 1].all? { |k| c = srodek(e)[k]; c >= 59.99 && c <= 6340.01 } }, 'słupy nie wychodzą przed lica ścian')
+gory = [front, boki[0]].map { |w| w[:bale].select { |b| b[:taras] }.map { |b| b[:z0] + Bryla.profil(b[:dl], t, b[:h], b[:cechy]).map { |q| q[:zt_a] }.max }.max }
+Testy.rowne(gory[0].round(2), gory[1].round(2), 'poręcz frontu i ściany bocznej na tej samej wysokości')
+Testy.sprawdz(pl[:bale].select { |b| b[:taras] }.group_by { |b| b[:sciana][:id] }.values.all? { |l| l.select { |b| b[:i] == l.map { |x| x[:i] }.max }.all? { |b| b[:cechy].any? { |c| c[:typ] == 'bez_piora' } } },
+              'poręcz bez piór')
 bal = pl[:bale].select { |b| b[:taras] }
 bok_b = bal.select { |b| b[:sciana].equal?(boki[0]) }
 Testy.rowne(bok_b.count { |b| b[:dl] > 400 }, 10, 'ściana boczna: 2 przęsła × (półbal + 4 bale)')
@@ -88,19 +98,42 @@ Testy.rowne([Sciany.opis_rodzaju(front), Sciany.opis_rodzaju(dom)], ['front tara
 
 Testy.grupa('Wejście pośrodku, z prawej, bez wejścia; bez balustrady')
 y_front = lambda do |pl_|
-  slupy(pl_).select { |e| (srodek(e)[0] - pl_[:obrys].map { |x, _y| x }.max + 22.0).abs < 0.5 }.map { |e| srodek(e)[1].round(1) }.sort
+  slupy(pl_).select { |e| (srodek(e)[0] - pl_[:obrys].map { |x, _y| x }.max + 60.0).abs < 0.5 }.map { |e| srodek(e)[1].round(1) }.sort
 end
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'srodek'))
-Testy.rowne(y_front.call(pl), [22.0, 1340.0, 2660.0, 3978.0], 'pośrodku: słupy symetrycznie, światło 1200')
+Testy.rowne(y_front.call(pl), [60.0, 1340.0, 2660.0, 3940.0], 'pośrodku: słupy symetrycznie, światło 1200')
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'prawa'))
-Testy.rowne(y_front.call(pl), [22.0, 1340.0, 2658.0, 3978.0], 'z prawej: wejście przy y = 4000')
+Testy.rowne(y_front.call(pl), [60.0, 1340.0, 2620.0, 3940.0], 'z prawej: wejście przy y = 4000')
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'brak'))
-Testy.rowne(y_front.call(pl), [22.0, 2000.0, 3978.0], 'bez wejścia: słup pośredni co ≤ 2000')
+Testy.rowne(y_front.call(pl), [60.0, 2000.0, 3940.0], 'bez wejścia: słup pośredni co ≤ 2000')
 Testy.rowne(pl[:bale].count { |b| b[:taras] && b[:sciana][:taras][:rola] == :front && b[:dl] > 400 }, 8, 'bez wejścia: balustrada na całym froncie')
 pl = plan_pelny(seg, par.merge('taras_balustrada_bale' => 0))
 Testy.rowne(pl[:bale].count { |b| b[:taras] }, 0, 'bez balustrady')
 pl = plan_pelny(seg, par.merge('taras_wience_gorne' => 3))
 Testy.rowne(role(pl, :bok)[0][:taras][:z_bok], Wience.wlasne(role(pl, :bok)[0], pl[:parametry])[-3][:z0], 'podciąg z trzech wieńców')
+
+Testy.grupa('Szczyt nad tarasem – pełny, ażurowy, pusty')
+seg = prostokat(0, 0, 4000, 5000)
+par = { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 16, 'dach_kat' => 30 }
+szczyt = lambda do |pl_|
+  f = role(pl_, :front).first
+  f[:bale].reject { |b| b[:taras] }.select { |b| b[:z0] >= Wience.wysokosci(pl_[:parametry])[:okapowa] + 69.0 }
+end
+pelny = szczyt.call(plan_pelny(seg, par))
+pl = caly(seg, par.merge('taras_szczyt' => 'azurowy'), 'szczyt ażurowy')
+az = szczyt.call(pl)
+Testy.sprawdz(az.length > 0 && az.inject(0.0) { |s_, b| s_ + b[:dl] } < pelny.inject(0.0) { |s_, b| s_ + b[:dl] } - 1000.0,
+              'ażurowy: mniej drewna w szczycie niż pełny')
+rzedy = az.group_by { |b| b[:i] }.sort.map { |_i, l| l.map { |b| b[:dl] }.max }
+Testy.sprawdz(rzedy.each_with_index.all? { |d, j| j.odd? ? d <= 300.01 : true }, 'ażurowy: co drugi wieniec szczytu – przekładki 300')
+osie = TarasSzczyt.osie_platwi(role(pl, :front).first, pl[:parametry])
+Testy.sprawdz(az.select { |b| b[:dl] <= 300.01 }.length >= osie.length, 'ażurowy: przekładki co najmniej pod płatwiami')
+pl = caly(seg, par.merge('taras_szczyt' => 'pusty', 'taras_szczyt_bale' => 1), 'szczyt pusty')
+pu = szczyt.call(pl)
+Testy.rowne(pu.select { |b| b[:dl] > 300.01 }.map { |b| b[:i] }.uniq.length, 1, 'pusty: jeden wieniec bali spinających')
+f_pu = role(pl, :front).first
+Testy.sprawdz(pu.select { |b| b[:dl] <= 300.01 }.all? { |b| TarasSzczyt.osie_platwi(f_pu, pl[:parametry]).any? { |s_| s_ > b[:s0] - 160.0 && s_ < b[:s1] + 160.0 } },
+              'pusty: wyżej tylko przekładki pod płatwiami')
 
 Testy.grupa('Taras jak 1200 – ściany boczne pełne, front otwarty, krokwie z aplikacji')
 seg = prostokat(0, 0, 7000, 4000)
