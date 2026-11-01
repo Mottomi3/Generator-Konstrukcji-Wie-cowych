@@ -39,8 +39,9 @@ module ArteMadera
         lista = prof.map { |q| [q[:xa], q[:xb], pasy(q)] }
         lista.each do |xa, xb, ps|
           ps.each do |q|
-            f << { n: normalna([[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]]]),
-                   p: [[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b]], [xa, q[:y1], q[:zt_a]]] }
+            d = (q[:kt] || 0.0) * (q[:y1] - q[:y0])
+            f << { n: normalna([[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b] + d]]),
+                   p: [[xa, q[:y0], q[:zt_a]], [xb, q[:y0], q[:zt_b]], [xb, q[:y1], q[:zt_b] + d], [xa, q[:y1], q[:zt_a] + d]] }
             f << { n: normalna([[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]]]),
                    p: [[xa, q[:y0], q[:zb_a]], [xa, q[:y1], q[:zb_a]], [xb, q[:y1], q[:zb_b]], [xb, q[:y0], q[:zb_b]]] }
           end
@@ -65,12 +66,19 @@ module ArteMadera
         wynik = []
         ys = ps.map { |q| [q[:y0], q[:y1]] }.flatten.map { |y| y.round(6) }.uniq.sort
         ys.each do |y|
-          lewy = ps.find { |q| (q[:y1] - y).abs < Bryla::EPS }
-          prawy = ps.find { |q| (q[:y0] - y).abs < Bryla::EPS }
+          lewy = na_granicy(ps.find { |q| (q[:y1] - y).abs < Bryla::EPS }, :y1)
+          prawy = na_granicy(ps.find { |q| (q[:y0] - y).abs < Bryla::EPS }, :y0)
           roznica(lewy, prawy).each { |dol, gora| wynik.concat(trapez(xa, xb, y, dol, gora, 1.0)) } if lewy
           roznica(prawy, lewy).each { |dol, gora| wynik.concat(trapez(xa, xb, y, dol, gora, -1.0)) } if prawy
         end
         wynik
+      end
+
+      # Pas widziany na swojej granicy y0 albo y1: wierzch skośny w poprzek (kt) – wartości wierzchu na tej granicy.
+      def na_granicy(q, strona)
+        return q if q.nil? || strona == :y0 || (q[:kt] || 0.0).abs < Bryla::EPS
+        d = q[:kt] * (q[:y1] - q[:y0])
+        q.merge(zt_a: q[:zt_a] + d, zt_b: q[:zt_b] + d)
       end
 
       # Część pasa a niezakryta przez pas b (nil – cały): [[spód [z_a, z_b], wierzch [z_a, z_b]]] – do dwóch trapezów.
@@ -96,35 +104,75 @@ module ArteMadera
         pkt.length >= 3 ? [{ n: [0.0, kier, 0.0], p: pkt }] : []
       end
 
-      # Czoło w płaszczyźnie x: komórki przekroju lewego bez prawego (normalna +x) i prawego bez lewego (−x); przekroje
-      # z pasów (lewy – wartości na końcu b, prawy – na początku a).
+      # Czoło w płaszczyźnie x: przekrój lewy bez prawego (normalna +x) i prawy bez lewego (−x); przekroje z pasów (lewy –
+      # wartości na końcu b, prawy – na początku a). Kolumny między granicami pasów i punktami przecięcia wierzchów /
+      # spodów (wierzch pasa może opadać w poprzek – kt); w kolumnie każda różnica to trapez o prostych bokach.
       def czolo(x, lewe, prawe)
-        pl = (lewe || []).map { |q| [q[:y0], q[:y1], q[:zb_b], q[:zt_b]] }
-        pp = (prawe || []).map { |q| [q[:y0], q[:y1], q[:zb_a], q[:zt_a]] }
-        ys = []
-        zs = []
-        (pl + pp).each do |r|
-          ys << r[0] << r[1]
-          zs << r[2] << r[3]
-        end
-        ys = ys.sort.uniq
-        zs = zs.sort.uniq
+        pl = (lewe || []).map { |q| [q[:y0], q[:y1], q[:zb_b], q[:zt_b], q[:kt] || 0.0] }
+        pp = (prawe || []).map { |q| [q[:y0], q[:y1], q[:zb_a], q[:zt_a], q[:kt] || 0.0] }
+        ys = (pl + pp).map { |r| [r[0], r[1]] }.flatten.sort.uniq
         wynik = []
-        w = lambda { |lista, ym, zm| lista.any? { |r| ym > r[0] && ym < r[1] && zm > r[2] && zm < r[3] } }
         ys.each_cons(2) do |y0, y1|
-          zs.each_cons(2) do |z0, z1|
-            ym = (y0 + y1) / 2.0
-            zm = (z0 + z1) / 2.0
-            w_l = w.call(pl, ym, zm)
-            w_p = w.call(pp, ym, zm)
-            if w_l && !w_p
-              wynik << { n: [1.0, 0.0, 0.0], p: [[x, y0, z0], [x, y1, z0], [x, y1, z1], [x, y0, z1]] }
-            elsif w_p && !w_l
-              wynik << { n: [-1.0, 0.0, 0.0], p: [[x, y0, z0], [x, y0, z1], [x, y1, z1], [x, y1, z0]] }
-            end
+          next if y1 - y0 < Bryla::EPS
+          ym = (y0 + y1) / 2.0
+          l = pl.find { |r| ym > r[0] && ym < r[1] }
+          r = pp.find { |q| ym > q[0] && ym < q[1] }
+          kolumny(y0, y1, l, r).each_cons(2) do |ya, yb|
+            wynik.concat(roznica_czola(x, ya, yb, l, r, 1.0))
+            wynik.concat(roznica_czola(x, ya, yb, r, l, -1.0))
           end
         end
         wynik
+      end
+
+      # Spód i wierzch pasa czoła [y0, y1, zb, zt, kt] w punkcie y: [zb, zt(y)].
+      def zakres_czola(r, y)
+        [r[2], r[3] + r[4] * (y - r[0])]
+      end
+
+      # Granice kolumny y0…y1 podzielone w punktach, w których wierzch albo spód jednego przekroju przecina drugi.
+      def kolumny(y0, y1, l, r)
+        wynik = [y0, y1]
+        if l && r
+          [[zakres_czola(l, y0), zakres_czola(l, y1)], [zakres_czola(r, y0), zakres_czola(r, y1)]].combination(2).each do |a, b|
+            2.times do |i|
+              2.times do |j|
+                da = a[0][i] - b[0][j]
+                db = a[1][i] - b[1][j]
+                next unless da * db < 0.0
+                wynik << y0 + (y1 - y0) * da / (da - db)
+              end
+            end
+          end
+        end
+        wynik.sort.uniq.each_with_object([]) { |y, acc| acc << y if acc.empty? || y - acc.last > Bryla::EPS }
+      end
+
+      # Część przekroju a niezakryta przez b w kolumnie ya…yb (bez przecięć wewnątrz) – trapezy czoła (kier ±x).
+      def roznica_czola(x, ya, yb, a, b, kier)
+        return [] if a.nil?
+        za = [zakres_czola(a, ya), zakres_czola(a, yb)]
+        czesci = if b.nil?
+                   [[[za[0][0], za[1][0]], [za[0][1], za[1][1]]]]
+                 else
+                   zb = [zakres_czola(b, ya), zakres_czola(b, yb)]
+                   [[[za[0][0], za[1][0]], [[za[0][1], zb[0][0]].min, [za[1][1], zb[1][0]].min]],
+                    [[[za[0][0], zb[0][1]].max, [za[1][0], zb[1][1]].max], [za[0][1], za[1][1]]]]
+                 end
+        czesci.map { |dol, gora| trapez_czola(x, ya, yb, dol, gora, kier) }.compact
+      end
+
+      # Trapez czoła w płaszczyźnie x od dol do gora ([z przy ya, z przy yb]); nil – zerowej wysokości.
+      def trapez_czola(x, ya, yb, dol, gora, kier)
+        return nil if gora[0] - dol[0] <= Bryla::EPS && gora[1] - dol[1] <= Bryla::EPS
+        return nil if gora[0] - dol[0] < -Bryla::EPS || gora[1] - dol[1] < -Bryla::EPS
+        pkt = if kier > 0
+                [[x, ya, dol[0]], [x, yb, dol[1]], [x, yb, gora[1]], [x, ya, gora[0]]]
+              else
+                [[x, ya, dol[0]], [x, ya, gora[0]], [x, yb, gora[1]], [x, yb, dol[1]]]
+              end
+        pkt = bez_powtorzen(pkt)
+        pkt.length >= 3 ? { n: [kier, 0.0, 0.0], p: pkt } : nil
       end
 
       # Normalna jednostkowa trójkąta a, b, c.

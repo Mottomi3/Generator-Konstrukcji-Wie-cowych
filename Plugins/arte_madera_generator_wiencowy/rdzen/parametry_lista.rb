@@ -4,7 +4,7 @@
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
 # Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry
-# Zależy od: –
+# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_podloga.rb (listy sekcji)
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
 # Nowy parametr = jeden wpis w LISTA (okno samo doda pole w swojej sekcji, wartość trafi do zapisanych ustawień);
@@ -12,6 +12,10 @@
 # Rodzaje pól: :liczba, :calkowita, :wybor (lista :wybory), :przekroj („50x150”), :tekst.
 # podstawowy: true – pole widoczne w trybie okna „Podstawowe” (pozostałe tylko w „Wszystkie” albo gdy zmienione).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
+
+%w[parametry_dach parametry_taras parametry_podloga].each do |plik|
+  require File.join(File.dirname(__FILE__), plik)
+end
 
 module ArteMadera
   module GeneratorWiencowy
@@ -32,8 +36,8 @@ module ArteMadera
 
       TAK_NIE = [['tak', 'tak'], ['nie', 'nie']].freeze unless const_defined?(:TAK_NIE)
 
-      # Wszystkie parametry (kolejność = kolejność w oknie w ramach sekcji).
-      LISTA = [
+      # Parametry sekcji przekroju, ścian, łączeń i węgłów (kolejność = kolejność w oknie w ramach sekcji).
+      LISTA_SCIANY = [
         { klucz: 'preset', podstawowy: true, domyslna: '44x146', etykieta: 'Przekrój bala', rodzaj: :wybor, sekcja: 'przekroj',
           wybory: nil, podpowiedz: 'Preset z kompletem wymiarów zamka; wymiary można zmienić poniżej.' },
         { klucz: 'zamek_odbicie', domyslna: 'rysunek', etykieta: 'Kierunek podcięć zamka', rodzaj: :wybor, sekcja: 'przekroj',
@@ -77,6 +81,12 @@ module ArteMadera
           podpowiedz: 'Najdłuższy bal od producenta (listy 1800 i 1200: 5044 i 5090).' },
         { klucz: 'min_odcinek', domyslna: 200.0, etykieta: 'Najkrótszy kawałek bala', jednostka: 'mm', min: 50.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'laczenia', podpowiedz: 'Krótszy kawałek – ostrzeżenie.' },
+        { klucz: 'styk_na_dzialowej', podstawowy: true, domyslna: 'wspolny', etykieta: 'Łączenie przy działowej',
+          rodzaj: :wybor, sekcja: 'laczenia',
+          wybory: [['wspolny', 'wszystkie wieńce w zamku działowej – bez węgłów i drugiego rzędu'],
+                   ['mijanka', 'jak przy węgłach – na przemian, z mijanką']],
+          podpowiedz: 'Działowa przechodzi przez ścianę w zamku – styk w jej osi trzymają bale działowej nad i pod nim, więc ' \
+                      'wszystkie wieńce łączą się w tym jednym miejscu. Działowa musi sięgać prawie do góry ściany.' },
         { klucz: 'styk_uklad', podstawowy: true, domyslna: 'na_przemian', etykieta: 'Łączenie bali na długości', rodzaj: :wybor,
           sekcja: 'laczenia',
           wybory: [['na_przemian', 'na przemian w kolejnych węgłach / działowych (jak 1200)'],
@@ -106,199 +116,23 @@ module ArteMadera
                    ['tylko_narysowane', 'tylko narysowane (generator tylko ostrzega)']] },
         { klucz: 'wegly_odstep_od_naroznika', domyslna: 800.0, etykieta: 'Odstęp węgła od narożnika', jednostka: 'mm',
           min: 300.0, max: 3000.0, rodzaj: :liczba, sekcja: 'wegly', podpowiedz: 'Dla rozmieszczenia „od narożników”.' },
+        { klucz: 'wegly_srodek', podstawowy: true, domyslna: 'nie', etykieta: 'Węgieł na środku ściany – automatycznie',
+          rodzaj: :wybor, sekcja: 'wegly',
+          wybory: [['nie', 'nie'], ['zewnetrzne', 'na ścianach zewnętrznych'], ['wszystkie', 'na wszystkich ścianach']],
+          podpowiedz: 'Węgieł w osi ściany, gdy ściana nie jest krótsza niż podana niżej (w miejscu skrzyżowania albo otworu – ' \
+                      'obok, do pół metra). Pojedyncze węgły dodasz w tabeli „Węgły”, jak okna.' },
+        { klucz: 'wegly_srodek_min', domyslna: 4000.0, etykieta: 'Węgieł na środku – od długości ściany', jednostka: 'mm',
+          min: 1000.0, max: 20_000.0, rodzaj: :liczba, sekcja: 'wegly', gdy: { 'wegly_srodek' => %w[zewnetrzne wszystkie] } },
         { klucz: 'wegly_na_dzialowych', domyslna: 'tak', etykieta: 'Węgły także na ścianach działowych', rodzaj: :wybor,
           sekcja: 'wegly', wybory: TAK_NIE },
         { klucz: 'min_odstep_skrzyzowan', domyslna: 300.0, etykieta: 'Odstęp węgła od innego skrzyżowania', jednostka: 'mm',
           min: 150.0, max: 3000.0, rodzaj: :liczba, sekcja: 'wegly' },
         { klucz: 'odstep_od_otworu', domyslna: 150.0, etykieta: 'Odstęp węgła od krawędzi otworu', jednostka: 'mm',
-          min: 0.0, max: 2000.0, rodzaj: :liczba, sekcja: 'wegly' },
+          min: 0.0, max: 2000.0, rodzaj: :liczba, sekcja: 'wegly' }
+      ].freeze unless const_defined?(:LISTA_SCIANY)
 
-        { klucz: 'szczyty', podstawowy: true, domyslna: 'tak', etykieta: 'Szczyty z bali', rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
-          podpowiedz: 'Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu.' },
-        { klucz: 'szczyty_na_dzialowych', domyslna: 'nie', etykieta: 'Szczyty także na działowych szczytowych',
-          rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Jak 1800 W-2 – ściana działowa do kalenicy.' },
-        { klucz: 'dach_rodzaj', podstawowy: true, domyslna: 'dwuspadowy', etykieta: 'Dach', rodzaj: :wybor, sekcja: 'szczyty',
-          wybory: [['dwuspadowy', 'dwuspadowy – dwa szczyty, kalenica w środku'],
-                   ['jednospadowy', 'jednospadowy – ściana niska i wysoka, szczyty skośne']],
-          podpowiedz: 'Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów ' \
-                      '(KROK 1 z obrysu).' },
-        { klucz: 'dach_spadek', podstawowy: true, domyslna: 'min', etykieta: 'Jednospadowy – spadek w stronę', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: [['min', 'dolnej albo lewej (rysunek z góry)'], ['max', 'górnej albo prawej (rysunek z góry)']],
-          podpowiedz: 'Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. Okapy ' \
-                      'wzdłuż „kalenicy”: wzdłuż X – spadek w dół / w górę rysunku, wzdłuż Y – w lewo / w prawo.' },
-        { klucz: 'dach_okap_wysoki', domyslna: 500.0, etykieta: 'Jednospadowy – okap za ścianą wysoką', jednostka: 'mm', min: 0.0,
-          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany wysokiej.' },
-        { klucz: 'jednospad_min_pasek', domyslna: 30.0, etykieta: 'Jednospadowy – najcieńszy górny bal ściany wysokiej',
-          jednostka: 'mm', min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany.' },
-        { klucz: 'dach_kat', podstawowy: true, domyslna: 20.0, etykieta: 'Kąt dachu', jednostka: '°', min: 5.0, max: 60.0, rodzaj: :liczba,
-          sekcja: 'szczyty', podpowiedz: 'Projekty 900 i 1000: 20°.' },
-        { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty',
-          wybory: [['platwie', 'same płatwie (deski na płatwiach)'], ['krokwie', 'krokwie na płatwi ściennej i kalenicowej'],
-                   ['platwie_krokwie', 'płatwie i krokwie']] },
-        { klucz: 'dach_wiezba', podstawowy: true, domyslna: 'aplikacja', etykieta: 'Krokwie i poszycie – kto je buduje',
-          rodzaj: :wybor, sekcja: 'szczyty',
-          wybory: [['aplikacja', 'aplikacja do dachów (KROK 2: krokwie, poszycie, kontrola)'],
-                   ['generator', 'generator (krokwie bez kontroli, bez poszycia)']],
-          podpowiedz: 'Dom prostokątny. Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu ' \
-                      'płatwi generatora i jego płatwie jako podpory: z krokwiami – KROK 2 liczy krokwie (przęsła między ' \
-                      'płatwiami), poszycie, łaty i nośność; same płatwie – poszycie wprost na płatwiach, wzdłuż spadku, styki ' \
-                      'na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
-        { klucz: 'dach_podniesienie', domyslna: 69.5, etykieta: 'Wierzch płatwi nad ścianą okapową (przy licu wewn.)',
-          jednostka: 'mm', min: -300.0, max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.' },
-        { klucz: 'krokwie_przy_szczycie', podstawowy: true, domyslna: 'obie_strony', etykieta: 'Krokwie przy ścianie szczytowej',
-          rodzaj: :wybor, sekcja: 'szczyty',
-          wybory: [['obie_strony', 'z obu stron szczytu'], ['wewnatrz', 'tylko od wewnątrz'], ['zewnatrz', 'tylko od zewnątrz'],
-                   ['na_szczycie', 'na szczycie (krokiew oparta na balach)']],
-          podpowiedz: 'Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod ' \
-                      'nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami.' },
-        { klucz: 'krokiew_przekroj', domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
-        { klucz: 'krokwie_rozstaw', domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
-          max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
-        { klucz: 'platwa_przekroj', domyslna: '80x180', etykieta: 'Płatew pośrednia', jednostka: 'mm', rodzaj: :przekroj,
-          sekcja: 'szczyty', podpowiedz: 'Projekt 900: 80 × 180.' },
-        { klucz: 'platwa_kalenicowa_przekroj', domyslna: '80x180', etykieta: 'Płatew kalenicowa', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty' },
-        { klucz: 'platwie_rozstaw_max', domyslna: 1000.0, etykieta: 'Największy rozstaw płatwi (w poziomie)',
-          jednostka: 'mm', min: 300.0, max: 4000.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: '900: ok. 990.' },
-        { klucz: 'platwa_na_scianie', domyslna: 'tak', etykieta: 'Płatew ścienna (przy ścianie okapowej)', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: TAK_NIE },
-        { klucz: 'platwa_scienna_polozenie', domyslna: 'przy_licu', etykieta: 'Płatew ścienna – położenie', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: [['przy_licu', 'przy licu wewnętrznym, wierzchem na linii dachu (jak 900)'],
-                                      ['na_scianie', 'stoi na ścianie okapowej, w osi']] },
-        { klucz: 'platwa_scienna_przekroj', domyslna: '60x200', etykieta: 'Płatew na ścianie', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Projekt 900: 60 × 200.' },
-        { klucz: 'gniazdo_luz', domyslna: 5.0, etykieta: 'Luz w gnieździe płatwi (każda strona)', jednostka: 'mm',
-          min: 0.0, max: 30.0, rodzaj: :liczba, sekcja: 'szczyty' },
-        { klucz: 'platwie_sciecie', domyslna: 'tak', etykieta: 'Wierzch płatwi ścięty do płaszczyzny dachu', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: TAK_NIE,
-          podpowiedz: 'Tak – płatew podniesiona, wierzch ścięty po skosie (kalenicowa z dwóch stron), krokwie i deski leżą ' \
-                      'na całej szerokości. Nie – wierzch poziomy pod dachem.' },
-        { klucz: 'szczyt_min_wysokosc', domyslna: 0.0, etykieta: 'Najniższy kawałek bala przy skosie', jednostka: 'mm',
-          min: 0.0, max: 140.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: '0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy ' \
-                      'klin pomijany (bal kończy się pionowo).' },
-        { klucz: 'zamek_min_drewno', domyslna: 20.0, etykieta: 'Drewno w zamku przy skosie dachu – najmniej', jednostka: 'mm',
-          min: 0.0, max: 100.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad ' \
-                      'gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego).' },
-        { klucz: 'szczyt_min_kawalek', domyslna: 10.0, etykieta: 'Najkrótszy kawałek bala przy skosie i gnieździe', jednostka: 'mm',
-          min: 0.0, max: 500.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; 900: najkrótszy ' \
-                      'kawałek 104).' },
-        { klucz: 'dach_elementy', domyslna: 'tak', etykieta: 'Belki dachu w modelu (płatwie, krokwie)', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Dla obrysu prostokątnego.' },
-        { klucz: 'dach_okap', podstawowy: true, domyslna: 500.0, etykieta: 'Okap – wysunięcie krokwi za ścianę', jednostka: 'mm', min: 0.0,
-          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
-        { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
-          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
-
-        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Nadbitka – boazeria pióro-wpust',
-          rodzaj: :wybor, sekcja: 'poszycie', wybory: TAK_NIE,
-          podpowiedz: 'Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych ' \
-                      'płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja).' },
-        { klucz: 'nadbitka_grubosc', domyslna: 19.0, etykieta: 'Nadbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
-          rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'nadbitka_krycie', domyslna: 121.0, etykieta: 'Nadbitka – szerokość krycia', jednostka: 'mm', min: 50.0,
-          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'nadbitka_dlugosc', domyslna: 4000.0, etykieta: 'Nadbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
-          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'tak', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
-          sekcja: 'poszycie', wybory: TAK_NIE,
-          podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (jak 900) ' \
-                      '– deski na płatwiach wzdłuż spadku, styki na płatwiach.' },
-        { klucz: 'deski_grubosc', domyslna: 25.0, etykieta: 'Deskowanie – grubość deski', jednostka: 'mm', min: 10.0, max: 80.0,
-          rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'deski_szerokosc', domyslna: 100.0, etykieta: 'Deskowanie – szerokość deski', jednostka: 'mm', min: 50.0,
-          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'deski_szczelina', domyslna: 3.0, etykieta: 'Deskowanie – szczelina między deskami', jednostka: 'mm', min: 0.0,
-          max: 30.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'deski_dlugosc', domyslna: 4000.0, etykieta: 'Deskowanie – długość handlowa', jednostka: 'mm', min: 1000.0,
-          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'poszycie_osb', podstawowy: true, domyslna: 'nie', etykieta: 'Płyty OSB', rodzaj: :wybor, sekcja: 'poszycie',
-          wybory: TAK_NIE, podpowiedz: 'Na poprzedniej warstwie (albo na krokwiach), dłuższy bok wzdłuż okapu, styki w mijance.' },
-        { klucz: 'osb_grubosc', domyslna: 18.0, etykieta: 'OSB – grubość', jednostka: 'mm', min: 6.0, max: 40.0, rodzaj: :liczba,
-          sekcja: 'poszycie', podpowiedz: 'Zwykle 18 albo 22.' },
-        { klucz: 'osb_dlugosc', domyslna: 2500.0, etykieta: 'OSB – długość płyty (wzdłuż okapu)', jednostka: 'mm', min: 500.0,
-          max: 5000.0, rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'osb_szerokosc', domyslna: 1250.0, etykieta: 'OSB – szerokość płyty', jednostka: 'mm', min: 300.0, max: 2500.0,
-          rodzaj: :liczba, sekcja: 'poszycie' },
-        { klucz: 'osb_szczelina', domyslna: 3.0, etykieta: 'OSB – szczelina przy każdej krawędzi', jednostka: 'mm', min: 0.0,
-          max: 20.0, rodzaj: :liczba, sekcja: 'poszycie' },
-
-        { klucz: 'taras', podstawowy: true, domyslna: 'nie', etykieta: 'Taras przed ścianą szczytową', rodzaj: :wybor, sekcja: 'taras',
-          wybory: [['nie', 'bez tarasu'], ['podciag', 'jak 1100 – podciąg na słupach, balustrada'],
-                   ['sciany', 'jak 1200 – ściany pełne, front otwarty']],
-          podpowiedz: 'Narysuj sam dom – taras dokłada generator: obrys dłuższy o głębokość tarasu, ściana domu zostaje ' \
-                      '(działowa ze szczytem), dach i płatwie idą nad taras. 1100: nad tarasem górne wieńce ścian na ' \
-                      'słupach, szczyt frontu, balustrada z bali; 1200: ściany boczne na całą wysokość. Tylko obrys prostokątny.' },
-        { klucz: 'taras_strona', podstawowy: true, domyslna: 'max', etykieta: 'Taras – po stronie', rodzaj: :wybor, sekcja: 'taras',
-          wybory: [['max', 'prawej albo górnej (rysunek z góry)'], ['min', 'lewej albo dolnej (rysunek z góry)']],
-          podpowiedz: 'Na końcu wzdłuż kalenicy: kalenica wzdłuż X – prawa / lewa strona rysunku, wzdłuż Y – górna / dolna.' },
-        { klucz: 'taras_glebokosc', podstawowy: true, domyslna: 2000.0, etykieta: 'Taras – głębokość', jednostka: 'mm', min: 500.0,
-          max: 6000.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Od lica ściany domu do lica frontu tarasu (1200: 2000).' },
-        { klucz: 'taras_wience_gorne', domyslna: 2, etykieta: 'Podciąg – górne wieńce ścian nad tarasem', min: 1, max: 6,
-          rodzaj: :calkowita, sekcja: 'taras', podpowiedz: 'Wariant 1100: dwa górne bale ścian bocznych (95-2372, 96-2372) ' \
-                                                          'i front od wieńca, który zamyka się z nimi w narożniku.' },
-        { klucz: 'taras_ostatek', domyslna: 100.0, etykieta: 'Ostatek dolnych bali ścian bocznych przy tarasie', jednostka: 'mm',
-          min: 0.0, max: 600.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Za licem ściany domu, pod podciągiem.' },
-        { klucz: 'taras_slup_przekroj', domyslna: '120x120', etykieta: 'Słup tarasu (wzdłuż ściany × w poprzek)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'taras', podpowiedz: 'Projekty: 80 × 180, 120 × 120, 140 × 140.' },
-        { klucz: 'taras_slupy_rozstaw_max', domyslna: 2000.0, etykieta: 'Słupy – największy rozstaw (osiowo)', jednostka: 'mm',
-          min: 800.0, max: 5000.0, rodzaj: :liczba, sekcja: 'taras',
-          podpowiedz: 'Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu.' },
-        { klucz: 'taras_wejscie', domyslna: 'srodek', etykieta: 'Wejście na taras od frontu', rodzaj: :wybor, sekcja: 'taras',
-          wybory: [['srodek', 'pośrodku'], ['lewa', 'z lewej (patrząc na front z zewnątrz)'],
-                   ['prawa', 'z prawej (patrząc na front z zewnątrz)'], ['brak', 'bez wejścia – balustrada na całym froncie']] },
-        { klucz: 'taras_wejscie_szerokosc', domyslna: 1200.0, etykieta: 'Wejście – szerokość w świetle słupów', jednostka: 'mm',
-          min: 600.0, max: 4000.0, rodzaj: :liczba, sekcja: 'taras' },
-        { klucz: 'taras_balustrada_bale', domyslna: 4, etykieta: 'Balustrada – liczba bali', min: 0, max: 8, rodzaj: :calkowita,
-          sekcja: 'taras', podpowiedz: 'Bale na przemian z rzędami przekładek (1100: 4 bale i 3 rzędy, ok. 1 m). 0 – bez balustrady.' },
-        { klucz: 'taras_przekladka', domyslna: 300.0, etykieta: 'Balustrada – długość przekładki', jednostka: 'mm', min: 50.0,
-          max: 1000.0, rodzaj: :liczba, sekcja: 'taras', podpowiedz: 'Odcinek bala między balami balustrady (1100: 300).' },
-        { klucz: 'taras_przekladka_odstep', domyslna: 600.0, etykieta: 'Balustrada – największy prześwit między przekładkami',
-          jednostka: 'mm', min: 50.0, max: 2000.0, rodzaj: :liczba, sekcja: 'taras',
-          podpowiedz: 'Przekładki przy obu końcach przęsła i równo między nimi.' },
-
-        { klucz: 'podloga', podstawowy: true, domyslna: 'tak', etykieta: 'Podłoga (podwaliny, legary, podciągi)', rodzaj: :wybor,
-          sekcja: 'podloga', wybory: TAK_NIE },
-        { klucz: 'podwalina_przekroj', domyslna: '100x100', etykieta: 'Podwalina pod ścianami', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'podloga', podpowiedz: 'Projekt 900: 100 × 100. Niższa niż legar – podniesiona do wysokości legara.' },
-        { klucz: 'podwaliny_pod_dzialowymi', domyslna: 'tak', etykieta: 'Podwaliny także pod działowymi', rodzaj: :wybor,
-          sekcja: 'podloga', wybory: TAK_NIE },
-        { klucz: 'legary_kierunek', domyslna: 'krotszy', etykieta: 'Legary wzdłuż', rodzaj: :wybor, sekcja: 'podloga',
-          wybory: [['krotszy', 'krótszego boku'], ['dluzszy', 'dłuższego boku'], ['x', 'osi X obrysu'], ['y', 'osi Y obrysu']] },
-        { klucz: 'legary_rozstaw', domyslna: 600.0, etykieta: 'Rozstaw legarów (osiowo)', jednostka: 'mm', min: 250.0,
-          max: 1200.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Projekt 900: 550–610.' },
-        { klucz: 'izolacja_podlogi', podstawowy: true, domyslna: 100.0, etykieta: 'Izolacja między legarami', jednostka: 'mm', min: 0.0,
-          max: 400.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Legar nie niższy niż izolacja (0 – bez izolacji).' },
-        { klucz: 'legary_dobor', podstawowy: true, domyslna: 'zalecany', etykieta: 'Dobór przekroju legara', rodzaj: :wybor, sekcja: 'podloga',
-          wybory: [['zalecany', 'zalecany (ugięcie ≤ L/zalecane)'], ['minimalny', 'minimalny (ugięcie ≤ L/minimalne)'],
-                   ['reczny', 'ręczny – podany niżej (tylko sprawdzenie)']] },
-        { klucz: 'legar_przekroj', domyslna: '50x100', etykieta: 'Legar – przekrój ręczny', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'podloga', podpowiedz: 'Projekt 900: 50 × 100.' },
-        { klucz: 'podpory_rozstaw_max', domyslna: 0.0, etykieta: 'Rozstaw podciągów pod legarami – największy', jednostka: 'mm',
-          min: 0.0, max: 8000.0, rodzaj: :liczba, sekcja: 'podloga',
-          podpowiedz: '0 – automatycznie: podciągi tylko tam, gdzie wymaga ich przekrój legara (najmniej drewna).' },
-        { klucz: 'podpora_przekroj', domyslna: '100x100', etykieta: 'Podciąg pod legarami (podpora pośrednia)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'podloga' },
-        { klucz: 'obciazenie_uzytkowe', domyslna: 2.0, etykieta: 'Obciążenie użytkowe', jednostka: 'kN/m²', min: 0.5,
-          max: 10.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Mieszkanie: 1,5–2,0 (PN-EN 1991-1-1, kat. A).' },
-        { klucz: 'obciazenie_stale', domyslna: 0.5, etykieta: 'Obciążenie stałe (deski, izolacja)', jednostka: 'kN/m²',
-          min: 0.0, max: 5.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Bez ciężaru legarów (liczony osobno).' },
-        { klucz: 'drewno_klasa', domyslna: 'C24', etykieta: 'Klasa drewna konstrukcyjnego', rodzaj: :wybor, sekcja: 'podloga',
-          wybory: [['C18', 'C18'], ['C24', 'C24'], ['C30', 'C30'], ['GL24h', 'GL24h (klejone)']] },
-        { klucz: 'ugiecie_zalecane', domyslna: 400.0, etykieta: 'Ugięcie zalecane L /', jednostka: '', min: 150.0,
-          max: 1000.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Sztywna podłoga bez drgań.' },
-        { klucz: 'ugiecie_minimalne', domyslna: 250.0, etykieta: 'Ugięcie dopuszczalne L /', jednostka: '', min: 100.0,
-          max: 1000.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Granica – mniej sztywna podłoga już niedopuszczalna.' },
-        { klucz: 'przekroje_katalog', domyslna: '45x95, 45x120, 45x145, 45x170, 45x195, 45x220, 50x100, 50x150, 50x175, ' \
-                                                '50x200, 50x225, 63x175, 63x200, 63x225, 75x200, 75x225, 75x250, 100x100, 100x150',
-          etykieta: 'Dostępne przekroje legarów', rodzaj: :tekst, sekcja: 'podloga',
-          podpowiedz: 'Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy spełniający warunki.' },
-
+      # Parametry sekcji okien i drzwi oraz rozpoznania rysunku.
+      LISTA_OTWORY = [
         { klucz: 'min_kawalek_przy_otworze', domyslna: 70.0, etykieta: 'Kawałek bala przy otworze – najkrótszy',
           jednostka: 'mm', min: 0.0, max: 1000.0, rodzaj: :liczba, sekcja: 'otwory' },
         { klucz: 'luz_boczny', podstawowy: true, domyslna: 10.0, etykieta: 'Luz boczny stolarki (z każdej strony)', jednostka: 'mm',
@@ -333,7 +167,11 @@ module ArteMadera
           max: 50.0, rodzaj: :liczba, sekcja: 'rysunek' },
         { klucz: 'gestosc', domyslna: 450.0, etykieta: 'Gęstość drewna (waga)', jednostka: 'kg/m³', min: 300.0, max: 900.0,
           rodzaj: :liczba, sekcja: 'rysunek' }
-      ].freeze unless const_defined?(:LISTA)
+      ].freeze unless const_defined?(:LISTA_OTWORY)
+
+      # Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu i podłogi.
+      LISTA = (LISTA_SCIANY + ParametryDach::LISTA + ParametryTaras::LISTA + ParametryPodloga::LISTA + LISTA_OTWORY).freeze unless
+        const_defined?(:LISTA)
 
       # Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych.
       SZABLONY = {

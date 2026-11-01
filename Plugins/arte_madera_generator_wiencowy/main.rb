@@ -39,9 +39,9 @@ module ArteMadera
 
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
-      rdzen/geometria rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras rdzen/taras_balustrada rdzen/stolarka rdzen/otwory
-      rdzen/usztywnienie rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/elementy rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
-      rdzen/skos_przy_narozniku
+      rdzen/geometria rdzen/parametry_dach rdzen/parametry_taras rdzen/parametry_podloga rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras rdzen/taras_balustrada rdzen/stolarka rdzen/otwory
+      rdzen/usztywnienie rdzen/wegly_tabela rdzen/styki_dzialowe rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/zamek_platwi rdzen/elementy rdzen/platwie_wience rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
+      rdzen/skos_przy_narozniku rdzen/sciecie_dachu
       rdzen/zamek
       rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie
       rdzen/przyklady sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/dach_aplikacja sketchup/eksport

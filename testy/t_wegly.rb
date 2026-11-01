@@ -97,7 +97,7 @@ Testy.rowne(wegly(pl, 'W-1', :usztywnienie).length, 1, 'zewnętrzna 6 m nadal z 
 
 Testy.grupa('Łączenie na przemian – działowe jako kotwice')
 seg = prostokat(0, 0, 9000, 6000) + [[[0, 3000], [9000, 3000]]]
-pl = plan(seg)
+pl = plan(seg, 'styk_na_dzialowej' => 'mijanka')
 w2 = sciana(pl, 'W-2')
 Testy.rowne(w2[:styki][:parzyste].map { |x| x.round }, [2978], 'W-2: styk wieńców parzystych w osi działowej')
 Testy.rowne(w2[:styki][:nowe].length, 1, 'W-2: jeden nowy węgieł')
@@ -136,5 +136,29 @@ Testy.grupa('Układy para i jeden węgieł nadal dostępne')
   Testy.sprawdz(w1[:bale].all? { |b| b[:dl] <= 5100.01 }, "#{uklad}: bale ≤ 5100")
   czysto(pl, uklad)
 end
+
+Testy.grupa('Węgły z tabeli jak okna i węgieł na środku ściany (runda 7)')
+seg = prostokat(0, 0, 7000, 5000)
+pl = ArteMadera::GeneratorWiencowy::Projekt.oblicz('segmenty' => seg, 'parametry' => { 'szczyty' => 'nie', 'podloga' => 'nie', 'max_dlugosc' => 7500 },
+                                                 'otwory' => [], 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od', 'od' => '2000' },
+                                                                             { 'sciana' => 'W-3', 'polozenie' => 'srodek', 'od' => '' }])
+kf = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek }
+Testy.rowne(kf.length, 2, 'dwa węgły z tabeli')
+w1 = sciana(pl, 'W-1')
+Testy.sprawdz(w1[:skrzyzowania].any? { |k| k[:inna][:rodzaj] == :kontrfor && (k[:s] - 1978.0).abs < 0.01 }, 'W-1: węgieł 2000 od narożnika lica (oś s = 1978)')
+w3 = sciana(pl, 'W-3')
+Testy.sprawdz(w3[:skrzyzowania].any? { |k| k[:inna][:rodzaj] == :kontrfor && (k[:s] - w3[:dl_osi] / 2.0).abs < 0.01 }, 'W-3: węgieł na środku osi')
+czysto(pl, 'węgły z tabeli')
+pl = plan(seg, 'wegly_srodek' => 'zewnetrzne', 'wegly_srodek_min' => 4500, 'max_dlugosc' => 7500)
+srodkowe = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek }
+Testy.rowne(srodkowe.map { |w| w[:gospodarz][:id] }.sort, %w[W-1 W-2 W-3 W-4], 'węgieł na środku każdej ściany ≥ 4500')
+pl = plan(seg, 'wegly_srodek' => 'zewnetrzne', 'wegly_srodek_min' => 6000, 'max_dlugosc' => 7500)
+Testy.rowne(pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek }.map { |w| w[:gospodarz][:id] }.sort, %w[W-1 W-3],
+            'tylko dłuższe ściany (7 m)')
+otw = [{ 'sciana' => 'W-1', 'od' => 3000, 'szerokosc' => 1000, 'wysokosc' => 1000, 'parapet' => 900 }]
+pl = ArteMadera::GeneratorWiencowy::Projekt.oblicz('segmenty' => seg, 'parametry' => { 'szczyty' => 'nie', 'podloga' => 'nie', 'max_dlugosc' => 7500 },
+                                                 'otwory' => otw, 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'srodek' }])
+Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('przesunięty') || u.include?('brak miejsca') }, 'okno na środku – węgieł przesunięty albo pominięty z ostrzeżeniem')
+czysto(pl, 'węgieł przy oknie')
 
 Testy.koniec

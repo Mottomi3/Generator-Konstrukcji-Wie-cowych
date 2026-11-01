@@ -4,7 +4,7 @@
 # Plik: rdzen/styki.rb
 # Zadanie: podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki.
 # Tematy: styk, łączenie bali na długość, mijanka, maksymalna długość bala, układ na przemian, para węgłów, jeden węgieł, styk w osi zamka, szczelina styku, kotwice styków
-# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce)
+# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (pozycje_w_wiencu)
 #
 # Wynik w ścianie: w[:styki] = { uklad:, parzyste: [s], nieparzyste: [s], kotwy: [s], nowe: [s] } – styki w wieńcach
@@ -19,6 +19,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'sciany') unless defined?(ArteMadera::GeneratorWiencowy::Sciany)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
 require File.join(File.dirname(__FILE__), 'usztywnienie') unless defined?(ArteMadera::GeneratorWiencowy::Usztywnienie)
+require File.join(File.dirname(__FILE__), 'styki_dzialowe') unless defined?(ArteMadera::GeneratorWiencowy::StykiDzialowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -37,10 +38,11 @@ module ArteMadera
           w[:styki] = { uklad: p['styk_uklad'], parzyste: [], nieparzyste: [], kotwy: [], nowe: [] }
           dl = w[:s_do] - w[:s_od]
           next if dl <= p['max_dlugosc'].to_f + 0.01
-          wynik = case p['styk_uklad']
-                  when 'para', 'jeden_wegiel' then z_regionow(w, p, dobierz_regiony(w, p))
-                  else na_przemian(w, p)
-                  end
+          wynik = StykiDzialowe.planuj(w, p)
+          wynik ||= case p['styk_uklad']
+                    when 'para', 'jeden_wegiel' then z_regionow(w, p, dobierz_regiony(w, p))
+                    else na_przemian(w, p)
+                    end
           if wynik.nil?
             uwagi << format('Ściana %s (%.0f mm): nie udało się dobrać miejsc styków przy maksymalnej długości bala %.0f mm ' \
                             '(otwory lub skrzyżowania zajmują miejsce) – bale dłuższe niż dopuszczalne.%s', w[:id], dl, p['max_dlugosc'],

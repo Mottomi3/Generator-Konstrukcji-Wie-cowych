@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
   Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -176,6 +176,7 @@ var AMGW = (function () {
     }
     stan.sciany = d.sciany;
     AMGW_OTWORY.sciany(d.sciany);
+    AMGW_WEGLY.sciany(d.sciany);
     if (d.widoki) {
       stan.widok = AMGW_SCIANA.lista($('widok-sciana'), d.widoki, stan.widok);
       if (stan.widok) { wywolaj('widok', stan.widok); }
@@ -209,7 +210,10 @@ var AMGW = (function () {
   // ---- wywołania ----
 
   // Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku).
-  function dane() { return JSON.stringify({ parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), sciany: AMGW_EDYCJA.dane() }); }
+  function dane() {
+    return JSON.stringify({ parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), wegly: AMGW_WEGLY.zbierz(),
+                            sciany: AMGW_EDYCJA.dane() });
+  }
 
   // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli.
   function zaplanujPodglad() {
@@ -229,11 +233,13 @@ var AMGW = (function () {
     $('plik-ustawien').textContent = d.plik_ustawien ? 'Ostatnie ustawienia zapisują się w: ' + d.plik_ustawien : '';
     AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
     AMGW_OTWORY.init(wartoscPola, zaplanujPodglad);
+    AMGW_WEGLY.init(zaplanujPodglad);
     zbudujFormularz(d.parametry || {});
     AMGW_TRYB.ustaw(d.tryb_pol, stan.opisy);
     var i;
     if (d.podsumowanie) { pokazWynik(d.podsumowanie); }
     for (i = 0; i < (d.otwory || []).length; i++) { AMGW_OTWORY.dodaj(d.otwory[i]); }
+    for (i = 0; i < (d.wegly || []).length; i++) { AMGW_WEGLY.dodaj(d.wegly[i]); }
     $('btn-generuj').textContent = d.tryb === 'edycja' ? 'Zastąp dom w modelu' : 'Generuj w modelu';
   }
 
@@ -287,6 +293,14 @@ var AMGW = (function () {
       AMGW_OTWORY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'),
                           szerokosc: wartoscPola('drzwi_szerokosc', '930'), wysokosc: wartoscPola('drzwi_wysokosc', '2100'),
                           parapet: '0', luz_gorny: '', nazwa: '' });
+      zaplanujPodglad();
+    });
+    $('btn-wegiel').addEventListener('click', function () {
+      AMGW_WEGLY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), polozenie: 'od', od: '1500' });
+      zaplanujPodglad();
+    });
+    $('btn-wegiel-srodek').addEventListener('click', function () {
+      AMGW_WEGLY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), polozenie: 'srodek', od: '' });
       zaplanujPodglad();
     });
     $('btn-szablon-wczytaj').addEventListener('click', function () {

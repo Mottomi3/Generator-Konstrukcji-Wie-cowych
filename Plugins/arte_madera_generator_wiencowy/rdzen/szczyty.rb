@@ -4,7 +4,7 @@
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
 # Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
 # Szczyt ściany (w[:szczyt]): { v_a:, v_b: (osie ścian okapowych w kierunku v), v0: (v punktu a ściany), kv: (±1 – znak
@@ -17,6 +17,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
+require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -43,15 +44,33 @@ module ArteMadera
           w[:szczyt][:z_max] = z_max(w, p)
         end
         wynik[:dom] = dom_prostokatny(sciany, szczytowe, os_kalenicy)
-        return jednospadowy(sciany, wynik, p, z_okap) if Dach.jednospadowy?(p)
-        if wynik[:dom].nil? && Parametry.tak?(p, 'dach_elementy')
+        wynik = jednospadowy(sciany, wynik, p, z_okap) if Dach.jednospadowy?(p)
+        if wynik[:dom].nil? && Parametry.tak?(p, 'dach_elementy') && !Dach.jednospadowy?(p)
           wynik[:uwagi] << 'Dach: belki dachu (płatwie, krokwie) tylko dla obrysu prostokątnego – szczyty liczone dla każdej ściany osobno.'
         end
+        dzialowe_do_dachu!(sciany, wynik[:dom], p, z_okap)
         wynik
       end
 
+      # Działowe wzdłuż kalenicy do dachu (dzialowa_wzdluz_do_dachu, dom prostokątny): szczyt płaski jak ściana wysoka
+      # dachu jednospadowego – wieńce do linii podparcia na wyższym licu, górny bal ścięty do płaszczyzny dachu
+      # (rdzen/sciecie_dachu.rb); płatew nad działową (kalenicowa) wycina gniazdo na całej długości – działowa ją podpiera.
+      def dzialowe_do_dachu!(sciany, dom, p, z_okap)
+        return if dom.nil? || !Parametry.tak?(p, 'dzialowa_wzdluz_do_dachu')
+        iv = dom[:os] == :x ? 1 : 0
+        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
+        t2 = Parametry.grubosc(p) / 2.0
+        sciany.each do |w|
+          next unless w[:rodzaj] == :dzialowa && w[:kierunek] == :A && w[:nizsza].nil? && w[:szczyt].nil?
+          v = [w[:a][iv] - t2, w[:a][iv] + t2].max_by { |x| Dach.linia_podparcia(geo, x, p) }
+          z = Dach.linia_podparcia(geo, v, p)
+          next if z <= Wience.wysokosc(w, p) + 1.0
+          w[:szczyt] = geo.merge(v0: v, kv: 0.0, z_okap: z_okap, z_max: z, plaski: true, dzialowa: true)
+        end
+      end
+
       # Dach jednospadowy (dom prostokątny): ściana wysoka dostaje szczyt płaski (do połaci); inny obrys – bez szczytów
-      # z ostrzeżeniem. Zwraca wynik przygotuj.
+      # z ostrzeżeniem. Zwraca wynik przygotuj (z uwagami).
       def jednospadowy(sciany, wynik, p, z_okap)
         return wynik if wynik[:dom] && DachJednospadowy.sciana_wysoka!(sciany, wynik[:dom], p, z_okap)
         sciany.each { |w| w.delete(:szczyt) }
@@ -186,7 +205,8 @@ module ArteMadera
         return unless Parametry.tak?(p, 'szczyty')
         if dom
           platwie = Dach.platwie({ v_a: dom[:v_a], v_b: dom[:v_b] }, p)
-          sciany.each { |w| gniazda_sciany(w, platwie, dom[:os] == :x ? 1 : 0, p) }
+          dom[:przejscia] = []
+          sciany.each { |w| gniazda_sciany(w, platwie, dom, p) }
           return
         end
         luz = p['gniazdo_luz'].to_f
@@ -199,31 +219,37 @@ module ArteMadera
         end
       end
 
-      # Gniazda jednej ściany od płatwi domu prostokątnego (iv – indeks współrzędnej v): ściana w poprzek płatwi – gniazdo
-      # na szerokości płatwi z luzem; ściana wzdłuż płatwi i pod nią – na całej długości.
-      def gniazda_sciany(w, platwie, iv, p)
+      # Gniazda jednej ściany od płatwi domu prostokątnego (dom – opis dachu, przejścia płatwi zapisywane w dom[:przejscia]):
+      # ściana w poprzek płatwi – gniazdo na szerokości płatwi w ścianie (zamek płatwi – zwężona i podcięta od spodu,
+      # rdzen/zamek_platwi.rb) z luzem; ściana wzdłuż płatwi i pod nią – na całej długości.
+      def gniazda_sciany(w, platwie, dom, p)
+        iv = dom[:os] == :x ? 1 : 0
         luz = p['gniazdo_luz'].to_f
         t = Parametry.grubosc(p)
         gora = Wience.wysokosc_calkowita(w, p)
         w_poprzek = w[:kier][iv].abs > 0.5
         platwie.each do |pl|
           next if pl[:z_spod] >= gora - 0.01
+          z0 = pl[:z_spod]
           if w_poprzek
             v0 = w[:a][iv]
-            s = [(pl[:v] - pl[:b] / 2.0 - luz - v0) * w[:kier][iv], (pl[:v] + pl[:b] / 2.0 + luz - v0) * w[:kier][iv]].sort
+            b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
+            s = [(pl[:v] - b2 - luz - v0) * w[:kier][iv], (pl[:v] + b2 + luz - v0) * w[:kier][iv]].sort
             next if s[1] <= w[:s_od] + 0.5 || s[0] >= w[:s_do] - 0.5
+            z0 = ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
+            dom[:przejscia] << { v: pl[:v], u: w[:a][1 - iv] }
           else
             next unless (w[:a][iv] - pl[:v]).abs < t / 2.0 + pl[:b] / 2.0 - 0.5
             s = [w[:s_od] - 1.0, w[:s_do] + 1.0]
           end
-          dodaj_gniazdo(w, s, pl)
+          dodaj_gniazdo(w, s, pl, z0)
         end
       end
 
-      # Gniazdo płatwi w ścianie: otwór od spodu płatwi w górę na odcinku s.
-      def dodaj_gniazdo(w, s, pl)
+      # Gniazdo płatwi w ścianie: otwór od dna z0 (spód płatwi albo jej wrębu) w górę na odcinku s.
+      def dodaj_gniazdo(w, s, pl, z0 = pl[:z_spod])
         w[:otwory] ||= []
-        w[:otwory] << { s0: s[0], s1: s[1], z0: pl[:z_spod], z1: pl[:z_spod] + 100_000.0,
+        w[:otwory] << { s0: s[0], s1: s[1], z0: z0, z1: z0 + 100_000.0,
                         nazwa: "gniazdo płatwi #{pl[:rodzaj]}", gniazdo: true }
       end
 

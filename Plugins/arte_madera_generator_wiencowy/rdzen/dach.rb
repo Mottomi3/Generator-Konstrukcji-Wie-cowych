@@ -4,7 +4,7 @@
 # Plik: rdzen/dach.rb
 # Zadanie: geometria dachu – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu; dwuspadowy tutaj, jednospadowy w rdzen/dach_jednospadowy.rb.
 # Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów, rodzaj dachu, załom linii dachu, lico okapu
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb, rdzen/dach_jednospadowy.rb
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb, rdzen/dach_jednospadowy.rb, rdzen/platwie_wience.rb (obniżenie dachu, położenia płatwi pośrednich, przekroje płatwi)
 # Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu), rdzen/polacie.rb (linia podparcia), rdzen/pod_dachem.rb, rdzen/dach_jednospadowy.rb
 #
 # Przekrój poprzeczny dachu opisuje „geo” = { v_a:, v_b: } – osie ścian okapowych w kierunku v (prostopadle do kalenicy);
@@ -21,6 +21,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'dach_jednospadowy') unless defined?(ArteMadera::GeneratorWiencowy::DachJednospadowy)
+require File.join(File.dirname(__FILE__), 'platwie_wience') unless defined?(ArteMadera::GeneratorWiencowy::PlatwieWience)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -68,18 +69,25 @@ module ArteMadera
         krokwie_generatora?(p) && p['krokwie_przy_szczycie'] != 'na_szczycie'
       end
 
-      # Wysokość linii podparcia na licu wewnętrznym ściany okapowej [mm] (płatew ścienna na ścianie albo podniesienie).
-      # Płatew stojąca na ścianie: bez ścięcia linia przechodzi przez jej wierzch przy krawędzi od okapu, ze ścięciem – przy
-      # krawędzi od kalenicy (płatew stoi na ścianie, wierzch ścięty pod dach).
+      # Wysokość linii podparcia na licu wewnętrznym ściany okapowej [mm] (bez obniżenia dachu): płatew ścienna przy licu –
+      # podniesienie; płatew stojąca na ścianie – bez ścięcia linia przechodzi przez jej wierzch przy krawędzi od okapu,
+      # ze ścięciem – przy krawędzi od kalenicy; bez płatwi ściennej (ściana nośna) – wierzch ściany okapowej (górny bal
+      # ścięty do płaszczyzny dachu, rdzen/sciecie_dachu.rb).
       def z_ref(p)
         z_okap = Wience.wysokosci(p)[:okapowa]
-        if Parametry.tak?(p, 'platwa_na_scianie') && p['platwa_scienna_polozenie'] == 'na_scianie'
-          b, h = Parametry.przekroj(p, 'platwa_scienna_przekroj')
+        return z_okap unless Parametry.tak?(p, 'platwa_na_scianie')
+        if p['platwa_scienna_polozenie'] == 'na_scianie'
+          b, h = PlatwieWience.przekroj(p, 'scienna')
           t2 = Parametry.grubosc(p) / 2.0
           return z_okap + h + tg(p) * (t2 - b / 2.0) if Parametry.tak?(p, 'platwie_sciecie')
           return z_okap + h + tg(p) * (b / 2.0 + t2)
         end
         z_okap + p['dach_podniesienie'].to_f
+      end
+
+      # Wysokość linii podparcia na licu wewnętrznym ściany okapowej po obniżeniu dachu (płatwie na pełnym balu) [mm].
+      def z_ref_geo(geo, p)
+        z_ref(p) - PlatwieWience.obnizenie(geo, p)
       end
 
       # Linia podparcia w punkcie v przekroju [mm].
@@ -88,7 +96,7 @@ module ArteMadera
         t = Parametry.grubosc(p)
         pol = (geo[:v_b] - geo[:v_a]) / 2.0
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
-        z_ref(p) + tg(p) * (pol - t / 2.0 - (v - vk).abs)
+        z_ref_geo(geo, p) + tg(p) * (pol - t / 2.0 - (v - vk).abs)
       end
 
       # Linia szczytu (wierzch bali szczytu) w punkcie v [mm].
@@ -122,7 +130,7 @@ module ArteMadera
         wynik = []
         oparcia = [[geo[:v_a], 1.0], [geo[:v_b], -1.0]].map do |vs, kier|
           if Parametry.tak?(p, 'platwa_na_scianie')
-            b, h = Parametry.przekroj(p, 'platwa_scienna_przekroj')
+            b, h = PlatwieWience.przekroj(p, 'scienna')
             v = p['platwa_scienna_polozenie'] == 'na_scianie' ? vs : vs + kier * (t / 2.0 + b / 2.0)
             wynik << platwa(geo, p, 'scienna', v, b, h, kier)
             v
@@ -130,16 +138,18 @@ module ArteMadera
             vs + kier * t / 2.0
           end
         end
-        b, h = Parametry.przekroj(p, 'platwa_przekroj')
+        b, h = PlatwieWience.przekroj(p, 'posrednia')
         if platwie_posrednie?(p)
           oparcia.each_with_index do |ve, i|
             kier = i.zero? ? 1.0 : -1.0
             dl = (vk - ve).abs
             n = (dl / p['platwie_rozstaw_max'].to_f - 1e-9).ceil - 1
-            (1..n).each { |j| wynik << platwa(geo, p, 'posrednia', ve + kier * j * dl / (n + 1), b, h, kier) }
+            PlatwieWience.polozenia(ve, vk, n, p, kier) { |v| platwa(geo, p, 'posrednia', v, b, h, kier)[:z_spod] }.each do |v|
+              wynik << platwa(geo, p, 'posrednia', v, b, h, kier)
+            end
           end
         end
-        bk, hk = Parametry.przekroj(p, 'platwa_kalenicowa_przekroj')
+        bk, hk = PlatwieWience.przekroj(p, 'kalenicowa')
         wynik << platwa(geo, p, 'kalenicowa', vk, bk, hk, 1.0)
         wynik.sort_by { |x| x[:v] }
       end
@@ -224,11 +234,24 @@ module ArteMadera
         u0 = dom[:u1] - wys
         u3 = dom[:u2] + wys
         wynik = platwie(geo, p).map do |pl|
-          Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
-                           przekroj_platwi(dom, pl))
+          e = Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
+                               przekroj_platwi(dom, pl))
+          wreby_platwi!(e, dom, pl, u0, p)
+          e
         end
         wynik.concat(krokwie(dom, geo, p))
         wynik
+      end
+
+      # Zamki płatwi (rdzen/zamek_platwi.rb): wręby w ścianach, przez które płatew przechodzi w poprzek (dom[:przejscia]
+      # z gniazd), x wzdłuż belki od u0; belka z wrębami ma zawsze przekrój (prostokąt, gdy bez ścięcia).
+      def wreby_platwi!(e, dom, pl, u0, p)
+        u = (dom[:przejscia] || []).select { |x| (x[:v] - pl[:v]).abs < 0.5 }.map { |x| x[:u] - u0 }
+        wr = ZamekPlatwi.wreby(e[:dl], u, Parametry.grubosc(p), p)
+        return if wr.empty?
+        e[:wreby] = wr
+        e[:wrab] = ZamekPlatwi.wrab(p)
+        e[:przekroj] ||= [[0.0, 0.0], [pl[:b], 0.0], [pl[:b], pl[:h]], [0.0, pl[:h]]]
       end
 
       # Przekrój płatwi ściętej w układzie belki (y – szerokość: przy osi kalenicy x rośnie z v, przy osi y maleje), nil –

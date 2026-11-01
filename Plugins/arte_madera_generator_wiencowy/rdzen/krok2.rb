@@ -79,12 +79,23 @@ module ArteMadera
         platwie + sciany_wysokie(plan[:sciany] || [], plan[:parametry])
       end
 
-      # Ściana wysoka dachu jednospadowego (szczyt płaski): górny bal pod połacią – wierzch w osi ściany, grubość bala.
+      # Ściany pod połacią jako podpory: ściana wysoka dachu jednospadowego (szczyt płaski) i ściany okapowe przy ścianie
+      # nośnej (bez płatwi ściennej) – górny bal ścięty do połaci, wierzch w osi ściany, grubość bala.
       def sciany_wysokie(sciany, p)
-        sciany.select { |w| w[:szczyt] && w[:szczyt][:plaski] }.map do |w|
-          z = w[:szczyt][:z_max]
+        szczyt = sciany.map { |w| w[:szczyt] }.compact.first
+        return [] if szczyt.nil?
+        geo = { v_a: szczyt[:v_a], v_b: szczyt[:v_b] }
+        nosne = Parametry.tak?(p, 'platwa_na_scianie') ? [] : sciany.select { |w| w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A && w[:szczyt].nil? }
+        pod_platwia = lambda { |w| (w[:otwory] || []).any? { |o| o[:gniazdo] && o[:s0] < w[:s_od] + 0.5 } }
+        (sciany.select { |w| w[:szczyt] && w[:szczyt][:plaski] && !pod_platwia.call(w) } + nosne).map do |w|
+          iv = (w[:a][0] - w[:b][0]).abs < 0.5 ? 0 : 1
+          z = Dach.linia_podparcia(geo, w[:a][iv], p)
+          nazwa = if w[:rodzaj] == :dzialowa then 'Działowa'
+                  elsif w[:szczyt] then 'Ściana wysoka'
+                  else 'Ściana okapowa'
+                  end
           { od: [w[:a][0], w[:a][1], z], do: [w[:b][0], w[:b][1], z], szerokosc: Parametry.grubosc(p),
-            wysokosc: Parametry.krycie(p), nazwa: "Ściana wysoka #{w[:id]}" }
+            wysokosc: Parametry.krycie(p), nazwa: "#{nazwa} #{w[:id]}" }
         end
       end
 

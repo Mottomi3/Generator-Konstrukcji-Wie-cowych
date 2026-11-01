@@ -71,9 +71,11 @@ module ArteMadera
         ciecia_gora = []
         ciecia_dol = []
         boki = []
+        sciecia = []
         bez_wpustu = false
         cechy.each do |c|
           case c[:typ]
+          when 'sciecie_dachu' then sciecia << c
           when 'gniazdo_gora', 'wyciecie_gora' then ciecia_gora << [c[:x0], c[:x1], h - c[:gleb], h - c[:gleb]]
           when 'gniazdo_dol', 'wyciecie_dol' then ciecia_dol << [c[:x0], c[:x1], c[:gleb], c[:gleb]]
           when 'skos_gora' then ciecia_gora << [c[:x0], c[:x1], c[:z0], c[:z1]]
@@ -88,9 +90,13 @@ module ArteMadera
         end
         xs = [0.0, dl]
         (ciecia_gora + ciecia_dol).each { |c| xs << c[0] << c[1] }
-        boki.each { |c| xs << c[:x0] << c[:x1] }
+        (boki + sciecia).each { |c| xs << c[:x0] << c[:x1] }
         linie = pasy.map { |pas| pas[2] + pas[3] }.flatten(1).uniq
-        Bryla.punkty_podzialu(xs, dl, Bryla.przeciecia(linie)).each_cons(2).map { |xa, xb| przedzial(xa, xb, t, pasy, boki) }.compact
+        Bryla.punkty_podzialu(xs, dl, Bryla.przeciecia(linie)).each_cons(2).map do |xa, xb|
+          q = przedzial(xa, xb, t, pasy, boki)
+          sc = q && sciecia.find { |c| c[:x0] < (xa + xb) / 2.0 && c[:x1] > (xa + xb) / 2.0 }
+          sc ? q.merge(pasy: Bryla.sciecie_pasow(q[:pasy], sc, t)) : q
+        end.compact
       end
 
       # Jeden przedział xa…xb: pasy z wierzchem i spodem (ograniczenia pasa w środku przedziału), zwężone podcięciami.
@@ -129,7 +135,7 @@ module ArteMadera
       def objetosc(prof)
         prof.inject(0.0) do |suma, q|
           (q[:pasy] || [q]).inject(suma) do |s, c|
-            s + (q[:xb] - q[:xa]) * (c[:y1] - c[:y0]) * ((c[:zt_a] - c[:zb_a]) + (c[:zt_b] - c[:zb_b])) / 2.0
+            s + (q[:xb] - q[:xa]) * (Bryla.pole_pasa(c, :a) + Bryla.pole_pasa(c, :b)) / 2.0
           end
         end
       end

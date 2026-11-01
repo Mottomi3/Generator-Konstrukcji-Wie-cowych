@@ -102,13 +102,14 @@ module ArteMadera
 
       # Naruszenia mijanki: [{ sciana:, wieniec:, odstep: }] – styki w sąsiednich wieńcach bliżej niż MIJANKA_MIN.
       def mijanka(plan)
+        p = plan[:parametry]
         wynik = []
         plan[:sciany].each do |w|
           next if w[:rodzaj] == :kontrfor
           wg = {}
           w[:bale].each do |b|
             wg[b[:i]] ||= []
-            wg[b[:i]] << b[:s1] if b[:konce][1] == :styk
+            wg[b[:i]] << b[:s1] if b[:konce][1] == :styk && !StykiDzialowe.wspolny?(w, b[:s1] + p['szczelina_styku'].to_f / 2.0)
           end
           wg.keys.sort.each do |i|
             nast = wg[i + 1]
@@ -142,10 +143,17 @@ module ArteMadera
               k2 = k[:inna][:skrzyzowania].find { |x| x[:inna].equal?(w) && Zamek.odl2(x[:punkt], k[:punkt]) < 0.01 }
               k2 && Zamek.bale_w_zamku(k[:inna], k2[:s], t).any? { |x| (x[:lvl] - b[:lvl]).abs == 1 }
             end
+            ok ||= pod_platwia?(w, b, s)
             wynik << { sciana: w[:id], wieniec: b[:i] + 1, s: s.round(1) } unless ok
           end
         end
         wynik
+      end
+
+      # Czy styk w s bala b leży pod płatwią, która biegnie wzdłuż ściany (gniazdo na całej długości – działowa pod
+      # kalenicową): górny bal ścięty gniazdem, płatew dociska styk z góry.
+      def pod_platwia?(w, b, s)
+        (w[:otwory] || []).any? { |o| o[:gniazdo] && o[:s0] <= s && o[:s1] >= s && o[:s0] < w[:s_od] + 0.5 && o[:z0] < b[:z0] + b[:h] }
       end
 
       # Bale dłuższe od maksymalnej długości: [{ sciana:, nazwa:, dl: }].

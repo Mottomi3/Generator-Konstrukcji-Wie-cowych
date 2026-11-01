@@ -107,4 +107,27 @@ otw = [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 101
 sprawdz_pozycje(plan_pelny(seg, { 'profil_bala' => 'pelny', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, otw), 'pełny profil: szczyty, otwory, węgły')
 Testy.rowne(Kontrola.kolizje(pp).length, 0, 'zamki bez kolizji (pióro w gnieździe zamka wycięte)')
 
+Testy.grupa('Siatka – górny bal ścięty do płaszczyzny dachu w poprzek (runda 7)')
+[[139.0, 123.0], [123.0, 139.0], [139.0, 100.0], [110.0, 150.0]].each do |z0, z1|
+  cechy = [{ typ: 'sciecie_dachu', x0: 0.0, x1: 1200.0, z0: z0, z1: z1 },
+           { typ: 'gniazdo_gora', x0: 100.0, x1: 140.0, gleb: 36.0 },
+           { typ: 'gniazdo_dol', x0: 100.0, x1: 140.0, gleb: 36.0 },
+           { typ: 'podciecie', strona: 0, x0: 98.0, x1: 142.0, gleb: 2.5 },
+           { typ: 'podciecie', strona: 1, x0: 98.0, x1: 142.0, gleb: 2.5 },
+           { typ: 'wyciecie_gora', x0: 600.0, x1: 680.0, gleb: 20.0 },
+           { typ: 'skos_gora', x0: 1000.0, x1: 1200.0, z0: 139.0, z1: 60.0 }]
+  prof = Bryla.profil(1200.0, 44.0, 139.0, cechy)
+  s = Siatka.z_profilu(prof)
+  k = Siatka.sprawdz(s[:sciany])
+  Testy.sprawdz(k[:zamknieta], "ścięcie #{z0} → #{z1}: bryła zamknięta")
+  Testy.rowne(k[:objetosc].round(2), Bryla.objetosc(prof).round(2), "ścięcie #{z0} → #{z1}: objętość siatki = profilu")
+  u = Siatka.uprosc(s[:sciany])
+  Testy.sprawdz(Siatka.sprawdz(u)[:zamknieta], "ścięcie #{z0} → #{z1}: po uproszczeniu zamknięta")
+  zmin = [z0, z1].min
+  Testy.sprawdz(Bryla.zawiera?(prof, 300.0, 22.0, zmin - 1.0) && !Bryla.zawiera?(prof, 300.0, z0 < z1 ? 1.0 : 43.0, zmin + 2.0),
+                "ścięcie #{z0} → #{z1}: punkt pod i nad płaszczyzną")
+  ob = Bryla.obrocone(1200.0, cechy)
+  Testy.rowne(Bryla.objetosc(Bryla.profil(1200.0, 44.0, 139.0, ob)).round(2), Bryla.objetosc(prof).round(2), "ścięcie #{z0} → #{z1}: obrócony – ta sama objętość")
+end
+
 Testy.koniec

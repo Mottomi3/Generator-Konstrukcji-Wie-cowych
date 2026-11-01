@@ -9,7 +9,8 @@
 #
 # Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie, S słupy), rodzaj
 # (tekst do nazwy komponentu), tag (:podloga | :dach | :taras), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
-# cechy (obróbki jak u bali), przekroj (opcjonalnie – wielokąt [[y, z]], np. płatew ścięta; rdzen/pryzmat.rb),
+# cechy (obróbki jak u bali), przekroj (opcjonalnie – wielokąt [[y, z]], np. płatew ścięta; rdzen/pryzmat.rb), wreby i wrab
+# (zamki płatwi – rdzen/zamek_platwi.rb),
 # polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -17,6 +18,7 @@ require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'pryzmat') unless defined?(ArteMadera::GeneratorWiencowy::Pryzmat)
+require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -72,9 +74,11 @@ module ArteMadera
         posortowane(elementy).each do |e|
           podpis, obrot = Bryla.podpis_kanoniczny(e[:dl], e[:b], e[:h], e[:cechy])
           przekroj = nil
+          wreby = e[:wreby] || []
           if e[:przekroj]
             przekroj, obrot = Pryzmat.kanoniczny(e[:przekroj], e[:b])
-            podpis = "#{podpis}|#{Pryzmat.podpis(przekroj)}"
+            wreby = ZamekPlatwi.obrocone(e[:dl], wreby) if obrot
+            podpis = "#{podpis}|#{Pryzmat.podpis(przekroj)}|#{ZamekPlatwi.podpis(wreby, e[:wrab] || {})}"
           end
           klucz = "#{e[:prefiks]}##{podpis}"
           poz = wg[klucz]
@@ -85,6 +89,7 @@ module ArteMadera
                     cechy: cechy, podpis: podpis, ilosc: 0, bale: [], polbal: false, element: true,
                     nazwa: "#{nr}-#{e[:dl].round}" }
             poz[:przekroj] = przekroj if przekroj
+            poz.merge!(wreby: wreby, wrab: e[:wrab]) unless wreby.empty?
             wg[klucz] = poz
             lista << poz
           end

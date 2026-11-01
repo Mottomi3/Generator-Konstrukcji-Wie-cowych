@@ -88,6 +88,21 @@
         </div>
       </div>
       <div class="karta">
+        <h2>Węgły (kontrfory)</h2>
+        <table class="tabela" id="tab-wegly">
+          <thead>
+            <tr><th>Ściana</th><th title="Od narożnika (oś węgła od lica zewnętrznego) albo na środku ściany">Położenie</th><th title="Oś węgła od narożnika lica zewnętrznego (działowa – od początku osi)">Od [mm]</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="przyciski-male">
+          <button type="button" id="btn-wegiel">+ węgieł</button>
+          <button type="button" id="btn-wegiel-srodek" title="Węgieł w osi wybranej ściany">+ węgieł na środku</button>
+        </div>
+        <p class="drobny">Węgły z tabeli są jak narysowane – styki i węgły usztywniające biorą je pod uwagę. Węgieł na środku każdej
+          ściany – parametr „Węgieł na środku ściany” w sekcji Węgły.</p>
+      </div>
+      <div class="karta">
         <h2>Wynik</h2>
         <div id="liczby" class="liczby"></div>
         <div id="lista-bledow"></div>
@@ -120,6 +135,7 @@
   <script src="tryb.js"></script>
   <script src="edycja.js"></script>
   <script src="otwory.js"></script>
+  <script src="wegly.js"></script>
   <script src="wyniki.js"></script>
   <script src="okno.js"></script>
 </body>

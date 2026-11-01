@@ -151,12 +151,12 @@ bez_kolizji(pl, 'ściana 12 m')
 
 Testy.grupa('Długa ściana z działowymi – styki przy działowych')
 seg = prostokat(0, 0, 9000, 4000) + [[[4400, 0], [4400, 4000]], [[4800, 0], [4800, 4000]]]
-pl = plan(seg)
+pl = plan(seg, 'styk_na_dzialowej' => 'mijanka')
 w1 = sciana(pl, 'W-1')
 st = w1[:styki]
 Testy.rowne(st[:nowe], [], 'bez nowych węgłów – styki w osiach działowych')
 Testy.rowne(st[:kotwy].map { |s| s.round }, [4378, 4778], 'styki w osiach działowych')
-pl = plan(seg, 'styk_uklad' => 'para')
+pl = plan(seg, 'styk_uklad' => 'para', 'styk_na_dzialowej' => 'mijanka')
 r = sciana(pl, 'W-1')[:styki]
 Testy.rowne([r[:parzyste][0].round, r[:nieparzyste][0].round], [4378, 4778], 'układ para – też w osiach działowych')
 Testy.rowne(r[:nowe], [], 'układ para – bez nowych węgłów')
@@ -190,11 +190,27 @@ Testy.sprawdz(kf[:bale].none? { |b| b[:z0] < 2000 && b[:z0] + b[:h] > 1000 }, '�
 
 Testy.grupa('Dom 6000 × 4000, maks. 5100 – styk przy działowej + nowy węgieł')
 seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]]
-pl = plan(seg)
+pl = plan(seg, 'styk_na_dzialowej' => 'mijanka')
 r = sciana(pl, 'W-1')[:styki]
 Testy.rowne(r[:nowe].length, 1, 'jeden nowy węgieł do pary z działową')
 Testy.sprawdz(r[:kotwy].any? { |x| (x - 2978.0).abs < 0.01 }, 'jedna kotwica w osi działowej')
 bez_kolizji(pl, 'działowa + kontrfor')
+
+Testy.grupa('Styki wspólne w zamku działowej – bez węgłów i drugiego rzędu (runda 7)')
+pl = plan(seg)
+r = sciana(pl, 'W-1')[:styki]
+Testy.rowne([r[:parzyste].map(&:round), r[:nieparzyste].map(&:round), r[:nowe]], [[2978], [2978], []], 'wszystkie wieńce w osi działowej, bez nowych węgłów')
+Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :kontrfor }, 0, 'dom 6 × 4 z działową – bez węgłów')
+Testy.rowne(Kontrola.styki_bez_zamka(pl), [], 'każdy styk w zamku działowej')
+k = Kontrola.wszystko(pl)
+Testy.rowne([k[:kolizje].length, k[:mijanka].length, k[:za_dlugie].length], [0, 0, 0], 'zamki, mijanka (bez styków wspólnych), długości')
+seg2 = prostokat(0, 0, 12_000, 4000) + [[[3000, 0], [3000, 4000]]]
+pl = plan(seg2)
+r = sciana(pl, 'W-1')[:styki]
+Testy.sprawdz(r[:wspolne].map(&:round) == [2978] && r[:nowe].length >= 1, "12 m z działową przy 3 m: wspólny w działowej + reszta na przemian (#{r[:parzyste].map(&:round)} / #{r[:nieparzyste].map(&:round)})")
+Testy.sprawdz((r[:parzyste] + r[:nieparzyste]).reject { |s| (s - 2978.0).abs < 1 }.all? { |s| (s - 2978.0).abs >= 300.0 }, 'mijanka ≥ 300 od styku wspólnego')
+k = Kontrola.wszystko(pl)
+Testy.rowne([k[:kolizje].length, k[:mijanka].length, k[:za_dlugie].length, Kontrola.styki_bez_zamka(pl).length], [0, 0, 0, 0], '12 m: kontrola czysta')
 bez_kolizji(pl, 'kontrfor przerwany')
 
 Testy.grupa('Otwór za blisko skrzyżowania – ostrzeżenie')

@@ -4,7 +4,7 @@
 # Plik: rdzen/dach_jednospadowy.rb
 # Zadanie: dach jednospadowy – ściana niska i wysoka, linia podparcia od ściany niskiej w górę, płatwie bez kalenicowej, krokwie w jednym kawałku, ściana wysoka do połaci.
 # Tematy: dach jednospadowy, spadek dachu, ściana niska, ściana wysoka, szczyt skośny, okap za ścianą wysoką, płatwie dachu jednospadowego, krokwie dachu jednospadowego, górny bal ściany wysokiej
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (z_ref, tg, płatew, krokwie przy szczycie), rdzen/elementy.rb
+# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (z_ref_geo, tg, płatew, krokwie przy szczycie), rdzen/elementy.rb, rdzen/platwie_wience.rb
 # Używają: rdzen/dach.rb (wybór dachu), rdzen/szczyty.rb (ściana wysoka), rdzen/polacie.rb, rdzen/pod_dachem.rb
 #
 # Ściany okapowe (wzdłuż „kalenicy” – parametr kalenica) to ściana niska (po stronie spadku, dach_spadek: min – mniejsze
@@ -48,7 +48,7 @@ module ArteMadera
       # Linia podparcia w punkcie v [mm]: z_ref na licu wewnętrznym ściany niskiej, w górę o tg(kąt) w stronę wysokiej.
       def linia_podparcia(geo, v, p)
         vn, kier = niska(geo, p)
-        Dach.z_ref(p) + Dach.tg(p) * ((v - vn) * kier - Parametry.grubosc(p) / 2.0)
+        Dach.z_ref_geo(geo, p) + Dach.tg(p) * ((v - vn) * kier - Parametry.grubosc(p) / 2.0)
       end
 
       # Płatwie: ścienna przy ścianie niskiej (płatwa_na_scianie), pośrednie równo do lica ściany wysokiej (układ
@@ -59,15 +59,18 @@ module ArteMadera
         wynik = []
         oparcie = vn + kier * t / 2.0
         if Parametry.tak?(p, 'platwa_na_scianie')
-          b, h = Parametry.przekroj(p, 'platwa_scienna_przekroj')
+          b, h = PlatwieWience.przekroj(p, 'scienna')
           oparcie = p['platwa_scienna_polozenie'] == 'na_scianie' ? vn : vn + kier * (t / 2.0 + b / 2.0)
           wynik << Dach.platwa(geo, p, 'scienna', oparcie, b, h, kier)
         end
         if Dach.platwie_posrednie?(p)
-          b, h = Parametry.przekroj(p, 'platwa_przekroj')
-          dl = (lico_wysokie_v(geo, p) - oparcie).abs
+          b, h = PlatwieWience.przekroj(p, 'posrednia')
+          koniec = lico_wysokie_v(geo, p)
+          dl = (koniec - oparcie).abs
           n = (dl / p['platwie_rozstaw_max'].to_f - 1e-9).ceil - 1
-          (1..n).each { |j| wynik << Dach.platwa(geo, p, 'posrednia', oparcie + kier * j * dl / (n + 1), b, h, kier) }
+          PlatwieWience.polozenia(oparcie, koniec, n, p, kier) { |v| Dach.platwa(geo, p, 'posrednia', v, b, h, kier)[:z_spod] }.each do |v|
+            wynik << Dach.platwa(geo, p, 'posrednia', v, b, h, kier)
+          end
         end
         wynik.sort_by { |x| x[:v] }
       end
@@ -89,15 +92,17 @@ module ArteMadera
         end
       end
 
-      # Szczyt płaski ściany wysokiej (wzdłuż okapu, v stałe – lico wewnętrzne): linia = linia podparcia przy licu
-      # wewnętrznym; dom = { v_a:, v_b:, os: } (Szczyty.dom_prostokatny). Zwraca ścianę wysoką albo nil.
+      # Szczyt płaski ściany wysokiej (wzdłuż okapu, v stałe – lico zewnętrzne, najwyższe miejsce połaci nad ścianą):
+      # wieńce do linii podparcia przy licu zewnętrznym, górny bal ścięty skośnie do płaszczyzny dachu w poprzek
+      # (rdzen/sciecie_dachu.rb); dom = { v_a:, v_b:, os: } (Szczyty.dom_prostokatny). Zwraca ścianę wysoką albo nil.
       def sciana_wysoka!(sciany, dom, p, z_okap)
         iv = dom[:os] == :x ? 1 : 0
         geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         vw = wysoka_v(geo, p)
         w = sciany.find { |x| x[:rodzaj] == :zewnetrzna && x[:kierunek] == :A && (x[:a][iv] - vw).abs < 1.0 }
         return nil if w.nil?
-        v = lico_wysokie_v(geo, p)
+        _vn, kier = niska(geo, p)
+        v = vw + kier * Parametry.grubosc(p) / 2.0
         w[:szczyt] = geo.merge(v0: v, kv: 0.0, z_okap: z_okap, z_max: linia_podparcia(geo, v, p), plaski: true)
         w
       end

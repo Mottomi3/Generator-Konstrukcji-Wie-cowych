@@ -36,7 +36,7 @@ module ArteMadera
         end
         z_lico = Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p)
         z_okap = Wience.wysokosci(p)[:okapowa]
-        if z_lico < z_okap - 0.5
+        if z_lico < z_okap - 0.5 && Parametry.tak?(p, 'platwa_na_scianie')
           uwagi << format('Dach: przy zewnętrznym licu ściany okapowej spód krokwi / desek jest %.0f mm poniżej wierzchu ściany ' \
                           '– zmniejsz kąt dachu albo podnieś płatwie (wierzch płatwi nad ścianą okapową).', z_okap - z_lico)
         end

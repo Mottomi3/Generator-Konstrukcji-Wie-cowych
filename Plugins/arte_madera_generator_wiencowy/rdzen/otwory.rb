@@ -82,7 +82,8 @@ module ArteMadera
           dol = [z0, o[:z0]].max
           gora = [z1, o[:z1]].min
           next if gora - dol <= TOL_Z
-          od_dolu = o[:z0] <= z0 + pasek
+          # Gniazdo płatwi: pasek pod płatwią zostaje (płatew leży na nim, bez przerwy – rdzen/platwie_wience.rb).
+          od_dolu = o[:z0] <= z0 + (o[:gniazdo] ? TOL_Z : pasek)
           do_gory = o[:z1] >= z1 - pasek
           if !o[:gniazdo] && ((od_dolu && o[:z0] > z0 + TOL_Z) || (do_gory && o[:z1] < z1 - TOL_Z))
             wynik[:uwagi] << format('Otwór %s (%s): pasek bala cieńszy niż %.0f mm przy otworze usunięty – otwór sięga do ' \

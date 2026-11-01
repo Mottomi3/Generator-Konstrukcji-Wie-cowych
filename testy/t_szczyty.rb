@@ -85,12 +85,12 @@ end
 
 Testy.grupa('Same krokwie – bez płatwi pośrednich')
 pl = plan_pelny(prostokat(0, 0, 5000, 4000), 'dach_uklad' => 'krokwie')
-Testy.rowne(pl[:elementy].select { |e| e[:prefiks] == 'P' }.map { |e| e[:b] }.sort, [60.0, 60.0, 80.0], 'płatwie: 2 ścienne + kalenicowa')
+Testy.rowne(pl[:elementy].select { |e| e[:prefiks] == 'P' }.map { |e| e[:b] }.sort, [80.0, 80.0, 80.0], 'płatwie: 2 ścienne + kalenicowa (jeden przekrój)')
 Testy.rowne(sciana(pl, 'W-2')[:otwory].count { |o| o[:gniazdo] }, 3, 'trzy gniazda w szczycie')
 
 Testy.grupa('Węgły i działowe pod płatwią ścienną – gniazda')
 seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]]
-pl = plan_pelny(seg)
+pl = plan_pelny(seg, 'styk_na_dzialowej' => 'mijanka')
 dz = pl[:sciany].find { |w| w[:rodzaj] == :dzialowa }
 Testy.rowne(dz[:otwory].count { |o| o[:gniazdo] }, 2, 'działowa (do okapu): gniazda pod obie płatwie ścienne')
 kf = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:kierunek] == :A }
@@ -132,5 +132,95 @@ Testy.sprawdz(pl[:sciany].count { |w| w[:szczyt] } >= 2, 'szczyty na ścianach s
 Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('tylko dla obrysu prostokątnego') }, 'ostrzeżenie o dachu')
 Testy.rowne(pl[:elementy].count { |e| %w[P K].include?(e[:prefiks]) }, 0, 'bez belek dachu')
 czysto(pl, 'obrys L')
+
+Testy.grupa('Płatwie oparte na pełnym balu – bez przerwy pod gniazdem (runda 7)')
+# Drewno tuż pod spodem płatwi w środku każdego gniazda ściany.
+def pod_platwia_drewno?(pl, w)
+  t = ArteMadera::GeneratorWiencowy::Parametry.grubosc(pl[:parametry])
+  (w[:otwory] || []).select { |o| o[:gniazdo] && o[:s0] > w[:s_od] && o[:s1] < w[:s_do] }.all? do |o|
+    s = (o[:s0] + o[:s1]) / 2.0 + 1.3
+    z = o[:z0] - 0.5
+    w[:bale].any? do |b|
+      next false unless s > b[:s0] && s < b[:s1] && z > b[:z0] && z < b[:z0] + b[:h]
+      prof = ArteMadera::GeneratorWiencowy::Bryla.profil(b[:dl], t, b[:h], b[:cechy])
+      ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, s - b[:s0], t / 2.0, z - b[:z0], 0.01)
+    end
+  end
+end
+[[7000, 5000, 20, {}], [7000, 5000, 14, {}], [6000, 4400, 35, {}], [7000, 5000, 20, { 'platwie_jeden_przekroj' => 'nie', 'platwa_przekroj' => '80x180', 'platwa_kalenicowa_przekroj' => '80x180', 'platwa_scienna_przekroj' => '60x200' }],
+ [6000, 4500, 12, { 'dach_rodzaj' => 'jednospadowy' }]].each do |dx, dy, kat, ex|
+  pl = plan_pelny(prostokat(0, 0, dx, dy), { 'dach_kat' => kat }.merge(ex))
+  zle = pl[:elementy].select { |e| e[:prefiks] == 'P' }.length
+  Testy.sprawdz(zle > 0, "#{dx} × #{dy}, #{kat}°: płatwie są")
+  gable = pl[:sciany].select { |w| w[:kierunek] == :B && w[:rodzaj] == :zewnetrzna }
+  Testy.sprawdz(gable.all? { |w| pod_platwia_drewno?(pl, w) }, "#{dx} × #{dy}, #{kat}° #{ex.keys.first}: pod każdą płatwią drewno")
+end
+p0, = ArteMadera::GeneratorWiencowy::Parametry.normalizuj('platwie_zamki' => 'nie', 'platwie_jeden_przekroj' => 'nie', 'platwa_przekroj' => '80x180', 'platwa_kalenicowa_przekroj' => '80x180', 'platwa_scienna_przekroj' => '60x200')
+geo = { v_a: 22.0, v_b: 4978.0 }
+ArteMadera::GeneratorWiencowy::Dach.platwie(geo, p0).each do |pl0|
+  Testy.sprawdz(ArteMadera::GeneratorWiencowy::PlatwieWience.pasek_ok?(pl0[:z_spod], p0),
+                "dom 7 × 5 z rundy 6 (80 × 180): płatew #{pl0[:rodzaj]} – pasek #{ArteMadera::GeneratorWiencowy::PlatwieWience.pasek(pl0[:z_spod], p0).round(1)} mm")
+end
+Testy.sprawdz(ArteMadera::GeneratorWiencowy::PlatwieWience.obnizenie(geo, p0) > 15.0, 'kalenicowa 18,9 mm nad wieńcem – dach obniżony')
+p1, = ArteMadera::GeneratorWiencowy::Parametry.normalizuj({})
+Testy.rowne(ArteMadera::GeneratorWiencowy::Dach.platwie(geo, p1).map { |x| x[:h] }.uniq, [200.0], 'jeden przekrój – wszystkie płatwie 200')
+Testy.sprawdz(ArteMadera::GeneratorWiencowy::Dach.platwie(geo, p1).all? { |x| x[:gora].map { |q| q[1] }.max == 200.0 },
+              'pełna wysokość płatwi po wyższej stronie')
+
+Testy.grupa('Ściana nośna – bez płatwi ściennej, górny bal ścięty do płaszczyzny dachu (runda 7)')
+[{}, { 'dach_rodzaj' => 'jednospadowy' }, { 'dach_kat' => 35 }].each do |ex|
+  pl = plan_pelny(prostokat(0, 0, 7000, 5000), { 'platwa_na_scianie' => 'nie' }.merge(ex))
+  Testy.rowne(pl[:bledy], [], "#{ex.inspect}: bez błędów")
+  Testy.sprawdz(pl[:ostrzezenia].none? { |u| u.include?('poniżej wierzchu ściany') }, "#{ex.inspect}: bez ostrzeżenia o stromym dachu")
+  okapowe = pl[:sciany].select { |w| w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A }
+  sciete = okapowe.map { |w| w[:bale].count { |b| b[:cechy].any? { |c| c[:typ] == 'sciecie_dachu' } } }
+  Testy.sprawdz(sciete.all? { |n| n > 0 }, "#{ex.inspect}: górne bale obu ścian okapowych ścięte (#{sciete.inspect})")
+  Testy.rowne(pl[:elementy].count { |e| e[:prefiks] == 'P' && e[:b] && e[:polozenie][:poczatek][2] < Wience.wysokosci(pl[:parametry])[:okapowa] }, 0,
+              "#{ex.inspect}: bez płatwi ściennej przy ścianie")
+  wz = wzgledem_polaci(pl)
+  Testy.sprawdz(wz[:bale] <= 0.01, format('%s: bale pod połacią (%.3f)', ex.inspect, wz[:bale]))
+  podp = Krok2.podpory(pl)
+  Testy.sprawdz(podp.count { |x| x[:nazwa].start_with?('Ściana') } >= (ex.empty? || ex.key?('dach_kat') ? 2 : 1), "#{ex.inspect}: ściany okapowe jako podpory krokwi")
+  czysto(pl, "ściana nośna #{ex.inspect}")
+end
+
+Testy.grupa('Zamki w płatwiach – wręby w ścianach (runda 7)')
+pl = plan_pelny(prostokat(0, 0, 7000, 5000) + [[[3500, 0], [3500, 5000]]], 'szczyty_na_dzialowych' => 'tak')
+pp = pl[:elementy].select { |e| e[:prefiks] == 'P' }
+Testy.sprawdz(pp.all? { |e| e[:wreby] && e[:wreby].length >= 3 }, "każda płatew ma wręby w obu szczytach i działowej (#{pp.map { |e| (e[:wreby] || []).length }.inspect})")
+e = pp.find { |x| x[:wreby] }
+Testy.rowne(e[:wreby].map { |a, b| (b - a).round(1) }.uniq, [46.0], 'wrąb = grubość ściany + 2 × luz 1')
+Testy.rowne(e[:wrab], { bok: 5.0, dol: 8.0 }, 'wrąb 5 z boku, 8 od spodu')
+w2 = sciana(pl, 'W-2')
+g = w2[:otwory].select { |o| o[:gniazdo] }
+Testy.rowne(g.map { |o| (o[:s1] - o[:s0]).round(1) }.uniq, [80.0], 'gniazdo w szczycie: 80 − 2 × 5 + 2 × luz 5')
+Testy.rowne(kolizje_belek(pl, 'P'), 0, 'płatwie z wrębami bez kolizji z balami')
+poz = pl[:pozycje_elementow].find { |x| x[:wreby] }
+k = Siatka.sprawdz(Projekt.siatka_pozycji(poz)[:sciany])
+Testy.sprawdz(k[:zamknieta], 'bryła płatwi z wrębami zamknięta')
+Testy.rowne(k[:objetosc].round(1), Projekt.objetosc_pozycji(poz).round(1), 'objętość płatwi z wrębami')
+pl2 = plan_pelny(prostokat(0, 0, 7000, 5000), 'platwie_zamki' => 'nie')
+Testy.sprawdz(pl2[:elementy].none? { |x| x[:wreby] }, 'bez zamków – płatwie bez wrębów')
+
+Testy.grupa('Działowa wzdłuż kalenicy do dachu (runda 7)')
+seg = prostokat(0, 0, 7000, 5000) + [[[0, 2500], [7000, 2500]], [[0, 1600], [3500, 1600]]]
+pl = plan_pelny(seg)
+dz = pl[:sciany].select { |w| w[:rodzaj] == :dzialowa && w[:kierunek] == :A }
+Testy.rowne(dz.length, 2, 'dwie działowe wzdłuż kalenicy')
+pod = dz.find { |w| (w[:a][1] - 2500).abs < 1 }
+boczna = dz.find { |w| (w[:a][1] - 1600).abs < 1 }
+okap = Wience.wysokosci(pl[:parametry])[:okapowa]
+Testy.sprawdz(Wience.wysokosc(pod, pl[:parametry]) > okap + 700, 'działowa pod kalenicą wyżej niż ściany okapowe')
+Testy.sprawdz(pod[:otwory].any? { |o| o[:gniazdo] && o[:s0] < pod[:s_od] + 1 }, 'płatew kalenicowa w gnieździe na całej długości działowej')
+Testy.sprawdz(boczna[:bale].any? { |b| b[:cechy].any? { |c| c[:typ] == 'sciecie_dachu' } }, 'działowa boczna – górny bal ścięty pod dach')
+wz = wzgledem_polaci(pl)
+Testy.sprawdz(wz[:bale] <= 0.01, format('działowe pod połacią (%.3f)', wz[:bale]))
+w2 = sciana(pl, 'W-2')
+Testy.sprawdz((w2[:styki][:wspolne] || []).any? { |c| (c - 2478.0).abs < 1.0 }, 'szczyt łączony w zamku działowej pod kalenicą')
+Testy.rowne(Kontrola.styki_bez_zamka(pl), [], 'styki w zamkach')
+czysto(pl, 'działowe do dachu')
+pl = plan_pelny(seg, 'dzialowa_wzdluz_do_dachu' => 'nie')
+Testy.rowne(Wience.wysokosc(pl[:sciany].find { |w| w[:rodzaj] == :dzialowa && (w[:a][1] - 2500).abs < 1 }, pl[:parametry]), okap,
+            'nie – działowa do wysokości ścian okapowych')
 
 Testy.koniec

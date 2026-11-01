@@ -34,9 +34,11 @@ w1 = sciana(pl, 'W-1')
 w3 = sciana(pl, 'W-3')
 Testy.rowne(Wience.wysokosc(w1, p), Wience.wysokosci(p)[:okapowa], 'ściana niska – wysokość ścian okapowych')
 Testy.sprawdz(w3[:szczyt][:plaski] && w3[:szczyt][:kv].zero?, 'ściana wysoka – szczyt płaski')
-z_w3 = Dach.z_ref(p) + Dach.tg(p) * (3978.0 - 22.0 - t / 2.0 - t / 2.0)
-Testy.rowne(w3[:szczyt][:z_max], z_w3, 'linia przy licu wewnętrznym ściany wysokiej: z_ref + tg × (oś − oś − grubość)', 0.001)
-Testy.rowne(gora_bali(w3), z_w3, 'ściana wysoka sięga połaci (górny bal przycięty wzdłuż)', 0.01)
+z_w3 = Dach.z_ref_geo({ v_a: 22.0, v_b: 3978.0 }, p) + Dach.tg(p) * (3978.0 - 22.0 - t / 2.0 + t / 2.0)
+Testy.rowne(w3[:szczyt][:z_max], z_w3, 'linia przy licu zewnętrznym ściany wysokiej: z_ref + tg × (oś − oś − grubość / 2 + grubość / 2)', 0.001)
+Testy.rowne(gora_bali(w3), z_w3, 'ściana wysoka sięga połaci (najwyższy punkt górnego bala – lico zewnętrzne)', 0.01)
+gorny = w3[:bale].max_by { |b| b[:z0] }
+Testy.sprawdz(gorny[:cechy].any? { |c| c[:typ] == 'sciecie_dachu' && (c[:z0] - c[:z1]).abs > 10.0 }, 'górny bal ściany wysokiej ścięty skośnie w poprzek (runda 7)')
 Testy.rowne(pl[:podsumowanie][:wysokosci][:wysoka], z_w3.round(1), 'wysokość ściany wysokiej w podsumowaniu', 0.05)
 Testy.sprawdz(w3[:bale].none? { |b| b[:pozycja][:prefiks] == 'Sz' }, 'bale ściany wysokiej – Bs (nie bale szczytu)')
 Testy.sprawdz(sciana(pl, 'W-2')[:bale].any? { |b| b[:pozycja][:prefiks] == 'Sz' }, 'bale szczytu skośnego – Sz')
@@ -46,7 +48,7 @@ w2 = sciana(pl, 'W-2')
 Testy.rowne([Szczyty.linia(w2, w2[:s_od], p) < Szczyty.linia(w2, w2[:s_do], p), Szczyty.zalom(w2, p)], [true, nil],
             'szczyt skośny rośnie od ściany niskiej, bez załomu')
 pp = pl[:elementy].select { |e| e[:prefiks] == 'P' }
-Testy.rowne(pp.map { |e| e[:b] }, [60.0, 80.0, 80.0, 80.0], 'płatwie: ścienna przy ścianie niskiej + 3 pośrednie, bez kalenicowej')
+Testy.rowne(pp.map { |e| e[:b] }, [80.0, 80.0, 80.0, 80.0], 'płatwie (jeden przekrój): ścienna przy ścianie niskiej + 3 pośrednie, bez kalenicowej')
 osie = pp.map { |e| e[:polozenie][:poczatek][1] + e[:b] / 2.0 }
 Testy.sprawdz(osie.each_cons(2).all? { |a, b| b - a <= 1000.01 } && 3956.0 - osie.last <= 1000.01, "rozstaw płatwi ≤ 1000 do lica ściany wysokiej (#{osie.map(&:round).inspect})")
 Testy.rowne(kolizje_belek(pl, 'P'), 0, 'płatwie bez kolizji z balami')
@@ -98,7 +100,7 @@ Testy.sprawdz(wz[:bale] <= 0.01 && wz[:platwie] <= 0.01 && wz[:dotyk] >= -0.5,
 
 Testy.grupa('Działowa ze szczytem skośnym, węgły na ścianie wysokiej, płatew na ścianie niskiej')
 seg = prostokat(0, 0, 9000, 4500) + [[[4500, 0], [4500, 4500]]]
-pl = plan_pelny(seg, JEDNO.merge('szczyty_na_dzialowych' => 'tak', 'platwa_scienna_polozenie' => 'na_scianie', 'dach_kat' => 30,
+pl = plan_pelny(seg, JEDNO.merge('styk_na_dzialowej' => 'mijanka', 'szczyty_na_dzialowych' => 'tak', 'platwa_scienna_polozenie' => 'na_scianie', 'dach_kat' => 30,
                                  'dach_uklad' => 'krokwie'))
 Testy.rowne(pl[:bledy], [], 'bez błędów')
 dz = pl[:sciany].find { |w| w[:rodzaj] == :dzialowa }

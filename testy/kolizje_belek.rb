@@ -47,12 +47,21 @@ def kolizje_belek(pl, prefiks, n = 7)
       probki(oe, ob, n).each do |q|
         le = lokalnie(pe, q)
         next unless le[0] > 0.5 && le[0] < e[:dl] - 0.5 && le[1] > 0.5 && le[1] < e[:b] - 0.5 && le[2] > 0.5 && le[2] < e[:h] - 0.5
+        next if w_wrebie?(e, le)
         lb = lokalnie(pol, q)
         ile += 1 if ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, lb[0], lb[1], lb[2], 0.5)
       end
     end
   end
   ile
+end
+
+# Czy punkt lokalny belki le leży poza przekrojem jej wrębu (zamek płatwi) – w wrębie belka jest węższa i wyżej od spodu.
+def w_wrebie?(e, le)
+  w = e[:wrab]
+  (e[:wreby] || []).any? do |x0, x1|
+    le[0] > x0 - 0.5 && le[0] < x1 + 0.5 && (le[1] < w[:bok] + 0.5 || le[1] > e[:b] - w[:bok] - 0.5 || le[2] < w[:dol] + 0.5)
+  end
 end
 
 # Największe wystawanie bali ściany ponad linię szczytu [mm] (≤ 0 – wszystko pod linią).
@@ -97,7 +106,12 @@ def wzgledem_polaci(pl)
     pol_b = g::Bale.polozenie(b, p)
     osie = [pol_b[:x], pol_b[:y], [0.0, 0.0, 1.0]]
     g::Bryla.profil(b[:dl], t, b[:h], b[:cechy]).map do |q|
-      [[q[:xa], q[:zt_a]], [q[:xb], q[:zt_b]]].product([0.0, t]).map { |(x, z), y| nad.call(punkt.call(pol_b[:poczatek], osie, x, y, z)) }.max
+      (q[:pasy] || [q]).map do |c|
+        d = (c[:kt] || 0.0) * (c[:y1] - c[:y0])
+        [[q[:xa], c[:zt_a]], [q[:xb], c[:zt_b]]].product([[c[:y0], 0.0], [c[:y1], d]]).map do |(x, z), (y, dz)|
+          nad.call(punkt.call(pol_b[:poczatek], osie, x, y, z + dz))
+        end.max
+      end.max
     end.max
   end.compact.max
   platwie = pl[:elementy].select { |e| e[:prefiks] == 'P' }.map do |e|

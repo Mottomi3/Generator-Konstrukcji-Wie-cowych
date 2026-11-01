@@ -84,7 +84,8 @@ Testy.sprawdz(w['podpowiedzi'].is_a?(Array) && !w['podpowiedzi'].empty?, 'podpow
 
 Testy.grupa('Generowanie')
 otw = [{ 'sciana' => 'W-1', 'od' => '1500', 'szerokosc' => '1020', 'wysokosc' => '1010', 'parapet' => '900' }]
-dane = { 'parametry' => { 'liczba_wiencow' => '12', 'max_dlugosc' => '5000' }, 'otwory' => otw }
+dane = { 'parametry' => { 'liczba_wiencow' => '12', 'max_dlugosc' => '5000' }, 'otwory' => otw,
+         'wegly' => [{ 'sciana' => 'W-2', 'polozenie' => 'srodek', 'od' => '' }] }
 dlg.wywolaj('generuj', JSON.generate(dane))
 w = ostatni_wynik(dlg)
 Testy.sprawdz(w['zbudowano'], 'zbudowano')

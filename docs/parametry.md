@@ -32,6 +32,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `max_dlugosc` | Maksymalna długość bala | 5100 mm | 1000 … 13000 | Najdłuższy bal od producenta (listy 1800 i 1200: 5044 i 5090). |
 | `min_odcinek` | Najkrótszy kawałek bala | 200 mm | 50 … 2000 | Krótszy kawałek – ostrzeżenie. |
+| `styk_na_dzialowej` | Łączenie przy działowej | wspolny | `wspolny` – wszystkie wieńce w zamku działowej – bez węgłów i drugiego rzędu; `mijanka` – jak przy węgłach – na przemian, z mijanką | Działowa przechodzi przez ścianę w zamku – styk w jej osi trzymają bale działowej nad i pod nim, więc wszystkie wieńce łączą się w tym jednym miejscu. Działowa musi sięgać prawie do góry ściany. |
 | `styk_uklad` | Łączenie bali na długości | na_przemian | `na_przemian` – na przemian w kolejnych węgłach / działowych (jak 1200); `para` – para węgłów w odstępie mijanki, styk w osi zamka (jak 900 W-2); `jeden_wegiel` – jeden węgieł, styki ± połowa mijanki |  |
 | `mijanka` | Mijanka styków w sąsiednich wieńcach | 400 mm | 300 … 3000 | Najmniejszy odstęp styków w sąsiednich wieńcach – nie mniej niż 300. |
 | `szczelina_styku` | Szczelina na styku | 0 mm | 0 … 30 |  |
@@ -56,6 +57,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 |---|---|---|---|---|
 | `szczyty` | Szczyty z bali | tak | `tak` – tak; `nie` – nie | Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu. |
 | `szczyty_na_dzialowych` | Szczyty także na działowych szczytowych | nie | `tak` – tak; `nie` – nie | Jak 1800 W-2 – ściana działowa do kalenicy. |
+| `dzialowa_wzdluz_do_dachu` | Działowe wzdłuż kalenicy – do dachu | tak | `tak` – tak; `nie` – nie | Działowa równoległa do kalenicy (dom prostokątny) rośnie do płaszczyzny dachu, górny bal ścięty pod dach; pod kalenicą podpiera płatew kalenicową (gniazdo na całej długości), w szczytach daje miejsce na styki. Nie – kończy się na wysokości ścian okapowych. |
 | `dach_rodzaj` | Dach | dwuspadowy | `dwuspadowy` – dwuspadowy – dwa szczyty, kalenica w środku; `jednospadowy` – jednospadowy – ściana niska i wysoka, szczyty skośne | Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów (KROK 1 z obrysu). |
 | `dach_spadek` | Jednospadowy – spadek w stronę | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry) | Po stronie spadku ściana niska (wysokość ścian okapowych), naprzeciw – ściana wysoka, do połaci. Okapy wzdłuż „kalenicy”: wzdłuż X – spadek w dół / w górę rysunku, wzdłuż Y – w lewo / w prawo. |
 | `dach_okap_wysoki` | Jednospadowy – okap za ścianą wysoką | 500 mm | 0 … 1500 | W poziomie, od lica ściany wysokiej. |
@@ -67,12 +69,20 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
 | `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
 | `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 | Z aplikacją do dachów – wartość na start KROKU 2. |
-| `platwa_przekroj` | Płatew pośrednia | 80x180 mm | szer. × wys. | Projekt 900: 80 × 180. |
-| `platwa_kalenicowa_przekroj` | Płatew kalenicowa | 80x180 mm | szer. × wys. |  |
+| `platwie_jeden_przekroj` | Jeden przekrój wszystkich płatwi | tak | `tak` – tak; `nie` – nie | Tak – ścienna, pośrednie i kalenicowa z przekroju „Płatew” (wszystkie tej samej wysokości). Nie – osobne przekroje płatwi ściennej i kalenicowej. |
+| `platwa_przekroj` | Płatew (pośrednia) | 80x200 mm | szer. × wys. | Wysokość płatwi zostaje w całości po wyższej stronie; wierzch ścięty pod dach tylko od strony okapu (projekt 900: 80 × 180). |
+| `platwa_kalenicowa_przekroj` | Płatew kalenicowa | 80x200 mm | szer. × wys. |  |
 | `platwie_rozstaw_max` | Największy rozstaw płatwi (w poziomie) | 1000 mm | 300 … 4000 | 900: ok. 990. |
-| `platwa_na_scianie` | Płatew ścienna (przy ścianie okapowej) | tak | `tak` – tak; `nie` – nie |  |
-| `platwa_scienna_polozenie` | Płatew ścienna – położenie | przy_licu | `przy_licu` – przy licu wewnętrznym, wierzchem na linii dachu (jak 900); `na_scianie` – stoi na ścianie okapowej, w osi |  |
-| `platwa_scienna_przekroj` | Płatew na ścianie | 60x200 mm | szer. × wys. | Projekt 900: 60 × 200. |
+| `platwa_na_scianie` | Oparcie dachu przy ścianie okapowej | tak | `tak` – płatew ścienna – osobna belka przy ścianie albo na ścianie; `nie` – ściana nośna – bez płatwi, górny bal ścięty do płaszczyzny dachu | Ściana nośna: dach (krokwie albo deski) leży wprost na ścianie okapowej – jej górny bal jest ścięty pod kątem dachu na całej długości (dach jednospadowy – także ściana wysoka). |
+| `platwa_scienna_polozenie` | Płatew ścienna – położenie | przy_licu | `przy_licu` – przy licu wewnętrznym, wierzchem na linii dachu (jak 900); `na_scianie` – stoi na ścianie okapowej, w osi – ścięta pod dach |  |
+| `platwa_scienna_przekroj` | Płatew ścienna | 80x200 mm | szer. × wys. | Projekt 900: 60 × 200. |
+| `platwie_na_wiencach` | Płatwie oparte na pełnym balu | tak | `tak` – tak; `nie` – nie | Pod gniazdem płatwi nie zostaje pasek bala cieńszy niż „Najcieńszy pasek bala nad / pod otworem”: dach obniżony o kilkanaście mm (płatew ścienna i kalenicowa), płatwie pośrednie przesunięte o kilka cm – płatew leży na całym balu albo na grubszym pasku, bez przerwy pod spodem. |
+| `dach_obnizenie_max` | Dopasowanie płatwi – największe obniżenie dachu | 60 mm | 0 … 139 |  |
+| `platwie_przesuniecie_max` | Dopasowanie płatwi – największe przesunięcie pośredniej | 150 mm | 0 … 500 | W poziomie, w stronę okapu albo kalenicy; rozstaw płatwi zostaje nie większy niż największy. |
+| `platwie_zamki` | Zamki w płatwiach (wręby w ścianach) | tak | `tak` – tak; `nie` – nie | Płatew w każdej ścianie, przez którą przechodzi (szczyt, działowa, węgieł), zwężona z boków i podcięta od spodu – barki po obu stronach ściany trzymają szczyt na miejscu. |
+| `platwa_zamek_bok` | Zamek płatwi – wrąb z każdego boku | 5 mm | 0 … 30 |  |
+| `platwa_zamek_dol` | Zamek płatwi – wrąb od spodu | 8 mm | 0 … 40 | Zalecane 5–10 mm. |
+| `platwa_zamek_luz` | Zamek płatwi – luz wzdłuż (z każdej strony ściany) | 1 mm | 0 … 20 | Wrąb dłuższy od grubości ściany o tyle z każdej strony. |
 | `gniazdo_luz` | Luz w gnieździe płatwi (każda strona) | 5 mm | 0 … 30 |  |
 | `platwie_sciecie` | Wierzch płatwi ścięty do płaszczyzny dachu | tak | `tak` – tak; `nie` – nie | Tak – płatew podniesiona, wierzch ścięty po skosie (kalenicowa z dwóch stron), krokwie i deski leżą na całej szerokości. Nie – wierzch poziomy pod dachem. |
 | `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 0 mm | 0 … 140 | 0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy klin pomijany (bal kończy się pionowo). |

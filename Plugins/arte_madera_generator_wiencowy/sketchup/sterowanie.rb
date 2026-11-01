@@ -32,14 +32,14 @@ module ArteMadera
           else
             @dom = nil
             ostatnie = Ustawienia.ostatnie
-            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [], 'sciany' => {} }
+            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [], 'wegly' => [], 'sciany' => {} }
             info = format('Zaznaczono %d linii na wysokości %.0f mm.', z[:segmenty].length, z[:z0])
             info += ' Parametry z ostatniego użycia.' unless ostatnie.empty?
             tryb = 'nowy'
           end
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
           @plan = plan
-          Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'],
+          Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'wegly' => @wejscie['wegly'] || [],
                      'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan))
         rescue => e
           Log.error('Sterowanie.start', e)
@@ -114,7 +114,7 @@ module ArteMadera
         def scal(dane)
           baza = @wejscie || {}
           { 'segmenty' => baza['segmenty'] || [], 'z0' => baza['z0'].to_f,
-            'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [],
+            'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [], 'wegly' => dane['wegly'] || [],
             'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}) }
         end
 
