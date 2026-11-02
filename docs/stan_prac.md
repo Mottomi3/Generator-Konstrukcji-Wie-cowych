@@ -1,11 +1,45 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 6, kompilacja 6 (2026-10-26), wersja 1.0.0. Testy: `bash testy/uruchom.sh` – 22 zestawy (w tym
-15 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 przez jej API na jej
-atrapie), 1119 sprawdzeń, FAILURES 0; poza zestawem: 400 losowych domów na końcowym kodzie (ziarna 1–200 i 2001–2200;
-z połaciami i podporami dla aplikacji do dachów także przy samych płatwiach, od ziarna 2000 z tarasem) bez problemów.
-Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, pełna historia rund 1–6; publiczne) + kopia
-`repozytorium_r6.bundle` na dysku.
+Stan na: runda 7, kompilacja 7 (2026-11-02), wersja 1.0.0. Poprzednio: runda 6, kompilacja 6 (2026-10-26). Testy: `bash testy/uruchom.sh` – 23 zestawy (w tym
+16 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 przez jej API na jej
+atrapie), 1284 sprawdzenia, FAILURES 0; poza zestawem: 160 losowych domów z nowościami rundy 7 (ziarna 3001–3160:
+podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku,
+podwalina 50 × 150, fundamenty, szczyt tarasu) – bez problemów po poprawce sprawdzenia (płatew pod połacią o grubość
+deski przy podbitce na płatwiach – zamierzone). Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź
+`main`, pełna historia rund 1–7; publiczne) + kopia `repozytorium_r7.bundle` na dysku.
+
+## 1a. Nowe w kompilacji 7 (uwagi z odbioru kompilacji 6, 2026-11-01)
+
+- **Płatwie**: jeden przekrój wszystkich płatwi (domyślnie 80 × 200, `platwie_jeden_przekroj`); pełna wysokość po
+  wyższej stronie, ścięcie pod dach tylko od strony okapu; płatew ścienna stojąca na ścianie też ścięta do dachu.
+- **Płatwie na pełnym balu** (`rdzen/platwie_wience.rb`): dach obniżony (≤ `dach_obnizenie_max` 60) i płatwie
+  pośrednie przesunięte (≤ `platwie_przesuniecie_max` 150), żeby pod gniazdem nie zostawał pasek cieńszy niż 20 mm –
+  koniec przerw pod płatwiami; czego się nie da – pasek zostaje (bez przerwy).
+- **Ściana nośna** zamiast płatwi ściennej (`platwa_na_scianie` = nie): górny bal ściany okapowej **ścięty w poprzek do
+  płaszczyzny dachu** (`rdzen/sciecie_dachu.rb`, obróbka `sciecie_dachu`), ściana jako podpora krokwi w KROKU 2; tak samo
+  ściana wysoka dachu jednospadowego i działowa wzdłużna pod dachem.
+- **Zamki w płatwiach** (`rdzen/zamek_platwi.rb`): wrąb 5 z boku i 8 od spodu (parametry, luz 1 wzdłuż) w każdej ścianie,
+  przez którą płatew przechodzi – płatwie trzymają szczyty.
+- **Działowa wzdłuż kalenicy do dachu** (`dzialowa_wzdluz_do_dachu`): pod kalenicą do płatwi kalenicowej (gniazdo na
+  całej długości), boczne – górny bal ścięty do dachu.
+- **Styki w zamku działowej** (`rdzen/styki_dzialowe.rb`, `styk_na_dzialowej` = wspolny): wszystkie wieńce łączone
+  w osi działowej – bez węgłów i drugiego rzędu; reszta ściany na przemian z mijanką ≥ 300 od styku wspólnego.
+- **Węgły jak okna** (`rdzen/wegly_tabela.rb`, `html/wegly.js`): tabela (ściana, od narożnika albo na środku) i węgieł
+  automatycznie na środku ścian (`wegly_srodek`, od `wegly_srodek_min` 4000).
+- **Taras jak 1100**: słupy licem z licami ścian, zamek górny 150 i dolny 100 (`rdzen/taras_slupy.rb`); naroże na
+  jednym poziomie – bale ścian bocznych na półbalu frontu z gniazdem; poręcz frontu i boku na tej samej wysokości,
+  ostatni bal bez piór; szczyt nad tarasem pełny / ażurowy / pusty (`rdzen/taras_szczyt.rb`); widoki ścian tarasu.
+- **Podłoga**: podwalina z wyboru (np. 50 × 150 na kant, łączenie na zakład albo na śruby bez zamków), podciągi
+  z wyboru (auto / tak / nie), od lica do lica podwalin i pod nimi (`rdzen/podciagi.rb`), **fundamenty punktowe**
+  w obrysie (siatka ≤ 2500, skrajne licem z licem, pod podwalinami działowych; `rdzen/fundamenty.rb`), legar ręczny do
+  sprawdzenia z wynikiem przy polu, dodatkowy rząd fundamentów z podpowiedzią, gdy legar za słaby.
+- **Podbitka** (`rdzen/podbitka.rb`): pod płatwiami, na płatwiach, pod krokwiami, na krokwiach – wybory zależne od
+  układu dachu; na płatwiach krokwie leżą na deskach (uniesione o grubość deski), na krokwiach – na wierzchu krokwi;
+  na krokwiach (i na samych płatwiach) z aplikacją do dachów – nadbitka KROKU 2 z wymiarami podbitki.
+- **Okno**: pola i wybory zależne pokazują się / znikają (`html/zalezne.js`), pytajniki z objaśnieniem i rysunkiem
+  (`html/pomoc.js` – obciążenie, ugięcie, podbitka, płatew ścienna, układ dachu), przeliczenia przy sekcjach i „co się
+  zmieniło” po podglądzie (`html/przeliczenia.js`), „Spód okna (od podwaliny)” zamiast „parapet”; parametry podzielone
+  na pliki sekcji (`rdzen/parametry_dach.rb`, `parametry_podloga.rb`, `parametry_taras.rb`).
 
 ## 1. Co działa (kompilacja 6)
 
@@ -219,6 +253,25 @@ krokwi (przęsła między płatwiami zamiast okap–kalenica), a poszycie na pł
   podpory w granicy aplikacji.
 - Uwagi dla aplikacji do dachów – `docs/zadanie_aplikacja_dachow.md`, część 2.
 
+### Runda 7 (kompilacja 7) – uwagi z odbioru kompilacji 6
+
+Wiadomość użytkownika (2026-11-01 12:36): 26 uwag po budowie domów kompilacją 6 (podpowiedzi i podgląd zmian,
+płatwie w powietrzu i różnej wysokości, przekrój płatwi w całości, ściana jako element nośny, bale ścięte do dachu,
+zamki w płatwiach, pola zależne, legar ręczny, przeliczenia, podbitka, obciążenie użytkowe z rysunkiem, taras – poręcz,
+szczyt, słupy z zamkami, naroże, widok; podciągi pod podwaliną, podwalina 50 × 150, fundamenty punktowe, „parapet”,
+działowa zamiast węgłów, działowa wzdłużna do szczytu, płatew nad balem okapowym nieścięta, węgły jak okna). Odpowiedzi
+(2026-11-01): płatew – 200 zostaje od wyższej strony, reszta ścięta; podbitka – do wyboru w ustawieniach; węgły – opcja
+węgła automatycznie na środku ściany. 2026-11-02: „podbitka z opcjami, by powstała pod konstrukcją poszycia np.
+płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależności od rodzaju konstrukcji”.
+- Wykonanie – §1a. Nowe pliki: `rdzen/platwie_wience.rb`, `sciecie_dachu.rb`, `zamek_platwi.rb`, `styki_dzialowe.rb`,
+  `wegly_tabela.rb`, `taras_slupy.rb`, `taras_szczyt.rb`, `fundamenty.rb`, `podciagi.rb`, `podbitka.rb`,
+  `parametry_dach.rb`, `parametry_podloga.rb`, `parametry_taras.rb`; `html/wegly.js`, `zalezne.js`, `pomoc.js`,
+  `przeliczenia.js`; testy `t_podbitka.rb` i grupy rundy 7 w `t_szczyty`, `t_rdzen`, `t_wegly`, `t_taras`, `t_podloga`,
+  `t_siatka`, `t_jednospadowy`, `t_okno.js`; losowe domy od ziarna 3000 z nowościami rundy 7 (`losowe_domy.rb#dodatki_r7`).
+- Podbitka „na płatwiach” z krokwiami: połać dla aplikacji do dachów i podpory wyżej o grubość deski (krokwie leżą na
+  deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
+  wchodziły 0,6 mm w deski pod płatwiami.
+
 ## 6. Otwarte pytania (przyjęte wartości domyślne – do potwierdzenia)
 
 | # | Pytanie | Przyjęto |
@@ -249,15 +302,21 @@ krokwi (przęsła między płatwiami zamiast okap–kalenica), a poszycie na pł
 | T2 | Taras jak 1100 | 2 górne wieńce, słupy 120 × 120 co ≤ 2000, wejście 1200 pośrodku, balustrada 4 bale i przekładki 300 (prześwit ≤ 600), dolne bale ścian bocznych 100 za licem ściany domu |
 | T3 | Taras jak 1200 | ściany boczne pełne do frontu, front otwarty – bez słupów i listew pionowych z projektu (osłona z listew 45 × 45 – do decyzji) |
 | Z1 | Drewno w zamku przy skosie | co najmniej 20 mm nad gniazdem, inaczej bal kończy się przy licu ściany poprzecznej |
+| P3 | Płatwie na pełnym balu | obniżenie dachu ≤ 60, przesunięcie pośredniej ≤ 150, pasek pod gniazdem ≥ 20 albo 0 |
+| P4 | Zamek płatwi | wrąb 5 z boku, 8 od spodu (zalecane 5–10), luz 1 wzdłuż |
+| F1 | Fundamenty punktowe | 400 × 400, wysokość 400, rozstaw ≤ 2500 (dom 5 × 7: 3 × 4 rzędy), skrajne licem z obrysem |
+| T4 | Słupy tarasu | lico z licem ścian, zamek górny 150, dolny 100 (najwyżej wysokość podwaliny) |
+| B1 | Podbitka | 19 × 121, długość 4000; na krokwiach / na samych płatwiach z aplikacją – nadbitka KROKU 2 |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
+`docs/scenariusz_odbioru.md` – kompilacja 7 (kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 6)
+## 8. Ograniczenia (kompilacja 7)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach (belki, połacie, dach jednospadowy, taras) i podłoga tylko dla obrysu prostokątnego; szczyty dla innych obrysów
@@ -274,14 +333,15 @@ dach jednospadowy, taras).
 - Działowa niższa: tylko działowe (ściany zewnętrzne zawsze pełnej wysokości), bez szczytu; strop / antresola to
   ustawienie – belek stropu generator nie rysuje.
 - Węgły ręczne wyłączają automat tej ściany – łączenia muszą trafić w węgły ręczne (inaczej ostrzeżenie).
-- Poszycie dachu tylko z aplikacji do dachów (KROK 2); krokwie z generatora – bez poszycia.
+- Poszycie dachu tylko z aplikacji do dachów (KROK 2); krokwie z generatora – bez poszycia (podbitkę rysuje generator).
+- Podbitka, fundamenty i podciągi tylko dla domu prostokątnego.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Brak odbioru w prawdziwym SketchUpie (kompilacje 1–6) – stąd test działania z raportem.
+- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7); kompilacja 7 – do sprawdzenia.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 6 (z aplikacją do dachów 3.7.0): raport z testu działania (JSON) + scenariusz → poprawki.
+1. Odbiór kompilacji 7: raport z testu działania (JSON) + scenariusz → poprawki.
 2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
    (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po
    zmianach tam: osie krokwi z generatora, kalenicowa wprost w grzbiecie.

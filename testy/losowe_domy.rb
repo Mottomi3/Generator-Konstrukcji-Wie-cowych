@@ -20,6 +20,8 @@ module LosoweDomy
   MIN_KRAWEDZ = 0.1
   # Ziarna od tego numeru dostają losowy taras (runda 5).
   ZIARNA_Z_TARASEM = 2000
+  # Ziarna od tego numeru dostają losowe nowości rundy 7 (podbitka, zamki płatwi, styki w zamku działowej, fundamenty…).
+  ZIARNA_R7 = 3000
 
   module_function
 
@@ -74,6 +76,7 @@ module LosoweDomy
     sciany = dodatki(Random.new(ziarno * 7919 + 13), p, prostokat_dom ? w : w - cw, opis)
     dodatki_r5(Random.new(ziarno * 104_729 + 31), p, opis)
     taras(Random.new(ziarno * 15_485_863 + 7), p, opis) if ziarno >= ZIARNA_Z_TARASEM
+    dodatki_r7(Random.new(ziarno * 2_750_159 + 3), p, opis) if ziarno >= ZIARNA_R7
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -139,6 +142,26 @@ module LosoweDomy
     p['taras_slup_przekroj'] = wybierz(r, %w[120x120 80x180 140x140])
     p['taras_slupy_rozstaw_max'] = wybierz(r, %w[1500 2000 2500])
     opis << "taras #{p['taras']} #{p['taras_strona']} #{p['taras_glebokosc']}"
+  end
+
+  # Dodatki rundy 7 (osobne losowanie, ziarna od ZIARNA_R7): podbitka w czterech położeniach, zamki płatwi, płatwie na
+  # pełnym balu, styki w zamku działowej, węgieł na środku, działowa do dachu, podwalina 50 × 150 na śruby, fundamenty,
+  # szczyt nad tarasem.
+  def dodatki_r7(r, p, opis)
+    p['podbitka'] = wybierz(r, %w[nie pod_platwiami na_platwiach pod_krokwiami na_krokwiach])
+    p['platwie_zamki'] = wybierz(r, %w[tak tak nie])
+    p['platwie_na_wiencach'] = wybierz(r, %w[tak tak nie])
+    p['styk_na_dzialowej'] = wybierz(r, %w[wspolny mijanka])
+    p['wegly_srodek'] = wybierz(r, %w[nie nie zewnetrzne wszystkie])
+    p['dzialowa_wzdluz_do_dachu'] = wybierz(r, %w[tak nie])
+    if r.rand < 0.4
+      p['podwalina_przekroj'] = '50x150'
+      p['podwalina_laczenie'] = 'sruby'
+    end
+    p['fundamenty'] = wybierz(r, %w[tak nie])
+    p['taras_szczyt'] = wybierz(r, %w[pelny azurowy pusty])
+    opis << "r7: podbitka #{p['podbitka']}, zamki płatwi #{p['platwie_zamki']}, styk #{p['styk_na_dzialowej']}, " \
+            "węgieł środek #{p['wegly_srodek']}, podwalina #{p['podwalina_przekroj'] || '100x100'}, szczyt tarasu #{p['taras_szczyt']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
@@ -209,7 +232,7 @@ module LosoweDomy
     nazwy = (pl[:pozycje] + pl[:pozycje_elementow]).map { |x| x[:nazwa] }
     problemy << 'powtórzone nazwy pozycji' unless nazwy.uniq.length == nazwy.length
     if belki
-      %w[P K S].each do |pr|
+      %w[P K S Pb].each do |pr|
         n = kolizje_belek(pl, pr, 4)
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end
@@ -241,7 +264,10 @@ module LosoweDomy
     wynik = podpory_poza(pl)
     wynik << format('bale ponad połacią o %.2f mm', wz[:bale]) if wz[:bale] && wz[:bale] > 0.01
     wynik << format('płatwie ponad połacią o %.2f mm', wz[:platwie]) if wz[:platwie] && wz[:platwie] > 0.01
-    wynik << format('płatew %.2f mm pod połacią – nie podpiera krokwi', -wz[:dotyk]) if wz[:dotyk] && wz[:dotyk] < -0.5
+    # Podbitka na płatwiach – krokwie leżą na deskach: płatew pod połacią dokładnie o grubość deski w pionie.
+    deska = G::Dach.uniesienie_krokwi(pl[:parametry])
+    wynik << format('płatew %.2f mm pod połacią – nie podpiera krokwi', -wz[:dotyk]) if wz[:dotyk] && wz[:dotyk] + deska < -0.5
+    wynik << format('płatew %.2f mm pod połacią, a deski podbitki mają %.2f', -wz[:dotyk], deska) if wz[:dotyk] && deska > 0 && (wz[:dotyk] + deska).abs > 0.5
     wynik << "krokwie generatora przy krokwiach z aplikacji: #{wz[:krokwie]}" if wz[:krokwie] > 0
     wynik
   end

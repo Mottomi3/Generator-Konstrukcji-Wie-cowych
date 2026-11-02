@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
   Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -55,11 +55,13 @@ var AMGW = (function () {
       dodajPole(stan.opisy[i], parametry);
     }
     zbudujZamek(parametry);
+    AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
     AMGW_ZMIANY.oznacz(stan.opisy);
     AMGW_TRYB.zastosuj(stan.opisy);
   }
 
-  // Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst) i podpowiedź pod nim.
+  // Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst), podpowiedź pod nim i pytajnik
+  // z objaśnieniem; zmiana pola – pola zależne, wyróżnienie zmienionych, widoczność i podgląd.
   function dodajPole(opis, parametry) {
     var sekcja = $('pola-' + opis.sekcja) || $('pola-rysunek');
     var wartosc = parametry[opis.klucz] !== undefined && parametry[opis.klucz] !== null ? parametry[opis.klucz] : opis.domyslna;
@@ -97,9 +99,15 @@ var AMGW = (function () {
         if (opis.min !== null && opis.max !== null) { pole.title = 'od ' + fmt(opis.min) + ' do ' + fmt(opis.max); }
       }
     }
-    pole.addEventListener('change', function () { AMGW_ZMIANY.oznacz(stan.opisy); zaplanujPodglad(); });
+    pole.addEventListener('change', function () {
+      AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
+      AMGW_ZMIANY.oznacz(stan.opisy);
+      AMGW_TRYB.zastosuj(stan.opisy);
+      zaplanujPodglad();
+    });
     sekcja.appendChild(pole);
     if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp', id: 'h-' + opis.klucz }, opis.podpowiedz)); }
+    AMGW_POMOC.dodaj(sekcja, etykieta, opis);
   }
 
   // Wartość pola parametru z formularza (gdy brak pola – domyślna).
@@ -168,6 +176,7 @@ var AMGW = (function () {
   // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów (html/otwory.js) i odświeżenie widoku ściany.
   function pokazWynik(d) {
     AMGW_WYNIKI.pokaz(d, wybierzSciane);
+    AMGW_PRZELICZENIA.pokaz(d);
     if (!d.sciany) {
       AMGW_SCIANA.lista($('widok-sciana'), [], '');
       AMGW_SCIANA.rysuj($('widok'), null, $('widok-opis'));

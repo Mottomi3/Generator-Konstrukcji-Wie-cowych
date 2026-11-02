@@ -218,6 +218,35 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   w jednym kawałku od okapu do okapu za ścianą wysoką (`dach_okap_wysoki`); połać dla aplikacji do dachów – jedna,
   z trzema krawędziami szczytowymi. Tylko dom prostokątny.
 
+## 8b. Płatwie, oparcie dachu, podbitka (runda 7 – uwagi z odbioru kompilacji 6)
+
+Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
+- **Przekrój płatwi w całości** (wymóg użytkownika): jeden przekrój wszystkich płatwi (`platwie_jeden_przekroj`,
+  domyślnie 80 × 200); pełna wysokość zostaje po wyższej stronie, wierzch ścięty pod dach tylko od strony okapu
+  (kalenicowa – grzbiet = pełna wysokość). Płatew ścienna stojąca na ścianie też ścięta do dachu.
+- **Płatwie na pełnym balu** (`rdzen/platwie_wience.rb`): pod gniazdem płatwi nie może zostać pasek bala cieńszy niż
+  `min_pasek_przy_otworze` (20) – dach obniżony o najmniejsze d ≤ `dach_obnizenie_max` (60), żeby płatwie o stałym
+  położeniu (ścienna przy licu, kalenicowa) leżały na pełnym balu albo na pasku ≥ 20, potem pośrednie przesunięte
+  (≤ `platwie_przesuniecie_max` 150, bez przekroczenia rozstawu); czego się nie da – pasek zostaje (nie ma przerwy).
+- **Ściana nośna** (`platwa_na_scianie` = nie): bez płatwi ściennej, krokwie / deski na ścianie okapowej – jej górny bal
+  ścięty w poprzek do płaszczyzny dachu (`rdzen/sciecie_dachu.rb`); ściana jest podporą w KROKU 2.
+- **Zamki w płatwiach** (`platwie_zamki`): w każdej ścianie, przez którą przechodzi płatew – wrąb `platwa_zamek_bok` (5)
+  z każdego boku i `platwa_zamek_dol` (8) od spodu, dłuższy od grubości ściany o `platwa_zamek_luz` (1) z każdej strony;
+  gniazdo w ścianie węższe o 2 × wrąb boczny.
+- **Działowa wzdłuż kalenicy** (`dzialowa_wzdluz_do_dachu`): do płatwi kalenicowej (pod kalenicą) albo do płaszczyzny
+  dachu (górny bal ścięty).
+- **Podbitka** (`podbitka`, `rdzen/podbitka.rb`): boazeria widoczna od spodu – pod płatwiami (wzdłuż spadku, wierzch na
+  spodzie płatwi), na płatwiach (wzdłuż spadku, spód na wierzchu płatwi; krokwie leżą na deskach – wyżej o grubość
+  deski / cos kąta, także połać i podpory dla aplikacji), pod krokwiami (wzdłuż okapu, między płatwiami), na krokwiach
+  (wzdłuż okapu, spód na wierzchu krokwi). Wybory zależą od układu dachu (płatwie pośrednie / krokwie). Na krokwiach
+  i na samych płatwiach z aplikacją do dachów – nadbitka KROKU 2 (wymiary podbitki), generator jej nie rysuje. Ściany
+  pod połacią kończą się pod podbitką „pod” (obniżenie w pionie). Deski dłuższe niż handlowe – dzielone na płatwiach
+  (wzdłuż spadku) albo równo (wzdłuż okapu); prefiks Pb, grupa Dach.
+- **Styki w zamku działowej** (`styk_na_dzialowej` = wspolny): wszystkie wieńce łączone w osi skrzyżowania z działową
+  sięgającą co najmniej wieniec poniżej wierzchu ściany – bez węgłów i drugiego rzędu.
+- **Węgły z tabeli** (`rdzen/wegly_tabela.rb`): ściana + od narożnika albo na środku; `wegly_srodek` – węgieł na
+  środku ścian od `wegly_srodek_min`; miejsce zajęte – najbliższe wolne do 500 mm, z ostrzeżeniem.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):
@@ -254,6 +283,15 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
   najmniejszy i zalecany przekrój bez podciągów, izolacja (mieści się / za niski legar), legar wyższy niż podwalina,
   liczba podciągów. To podpowiedź – nie zastępuje projektu konstruktora.
 - Tylko dla obrysu prostokątnego (inny – podpowiedź, bez podłogi).
+
+## 9a. Podłoga i fundamenty (runda 7)
+
+- Podwalina z wyboru (`podwalina_przekroj`, np. 50 × 150 na kant), w narożnikach na zakład albo na śruby bez zamków
+  (`podwalina_laczenie`).
+- Podciągi (`podciagi` auto / tak / nie) od lica do lica zewnętrznego podwalin, **pod podwalinami** (wymóg użytkownika).
+- Fundamenty punktowe (`fundamenty`): siatka rzędów co ≤ `fundamenty_rozstaw_max` (2500) w obu kierunkach, skrajne
+  licem z licem obrysu (nie wychodzą poza dom), stopy pod podwalinami, podciągami i podwalinami działowych; wierzch
+  stopy = spód tego, co na niej leży. Legar za słaby na rozstaw – dodatkowy rząd z podpowiedzią.
 
 ## 10. Okno, ustawienia, szablony
 

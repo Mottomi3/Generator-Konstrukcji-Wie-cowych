@@ -58,10 +58,18 @@ module ArteMadera
         %w[platwie platwie_krokwie].include?(p['dach_uklad'])
       end
 
-      # Grubość krokwi w pionie (h / cos kąta) – o tyle wierzch krokwi jest nad linią podparcia [mm].
+      # Grubość krokwi w pionie (h / cos kąta) z uniesieniem nad podbitką na płatwiach – o tyle wierzch krokwi jest nad
+      # linią podparcia [mm].
       def dodatek_krokwi(p)
         return 0.0 unless krokwie?(p)
-        Parametry.przekroj(p, 'krokiew_przekroj')[1] / Math.cos(kat(p))
+        Parametry.przekroj(p, 'krokiew_przekroj')[1] / Math.cos(kat(p)) + uniesienie_krokwi(p)
+      end
+
+      # O ile krokwie leżą wyżej niż linia podparcia [mm]: podbitka na płatwiach (deski między płatwiami a krokwiami) –
+      # grubość deski w pionie; inaczej 0.
+      def uniesienie_krokwi(p)
+        return 0.0 unless krokwie?(p) && platwie_posrednie?(p) && p['podbitka'] == 'na_platwiach'
+        p['podbitka_grubosc'].to_f / Math.cos(kat(p))
       end
 
       # Czy szczyt dochodzi do wierzchu krokwi (krokwie z generatora obok szczytu), a nie do linii podparcia.
@@ -277,7 +285,7 @@ module ArteMadera
             dl = (vk - v0).abs / Math.cos(a)
             q = xy(dom, u, v0)
             d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
-            wynik << Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p)], d, a, dl, bk, hk)
+            wynik << Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p) + uniesienie_krokwi(p)], d, a, dl, bk, hk)
           end
         end
         wynik

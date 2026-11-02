@@ -88,6 +88,56 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
   await page.click('#btn-tryb-wszystkie');
 
+  // Pola zależne (runda 7): kierunek spadku tylko przy dachu jednospadowym, przekrój legara tylko przy doborze ręcznym,
+  // wybory podbitki zależne od układu dachu; pytajnik z objaśnieniem i rysunkiem.
+  // Sekcje rozwinięte jak przez użytkownika (zwinięte – pola niewidoczne, nie da się ich zmienić).
+  await page.evaluate(function () { var d = document.querySelectorAll('#sekcje details'); for (var i = 0; i < d.length; i++) { d[i].open = true; } });
+  var vis = function (id) { return page.evaluate(function (i) { var e = document.getElementById(i); return !!e && e.offsetParent !== null; }, id); };
+  sprawdz(!(await vis('p-dach_spadek')) && !(await vis('p-legar_przekroj')), 'pola zależne ukryte przy dachu dwuspadowym i doborze zalecanym');
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.selectOption('#p-dach_rodzaj', 'jednospadowy');
+  await page.selectOption('#p-legary_dobor', 'reczny');
+  sprawdz((await vis('p-dach_spadek')) && (await vis('l-dach_spadek')) && (await vis('p-legar_przekroj')),
+          'po wyborze: kierunek spadku i przekrój legara widoczne');
+  await page.selectOption('#p-dach_rodzaj', 'dwuspadowy');
+  await page.selectOption('#p-legary_dobor', 'zalecany');
+  sprawdz(!(await vis('p-dach_spadek')), 'powrót do dwuspadowego – kierunek spadku znowu ukryty');
+  await page.selectOption('#p-dach_uklad', 'platwie');
+  var pk7 = await page.evaluate(function () {
+    var o = document.querySelector('#p-podbitka option[value="pod_krokwiami"]');
+    var o2 = document.querySelector('#p-podbitka option[value="pod_platwiami"]');
+    var o3 = document.querySelector('#p-podbitka option[value="na_platwiach"]');
+    var o4 = document.querySelector('#p-podbitka option[value="na_krokwiach"]');
+    return [o.disabled, o2.disabled, o3.disabled, o4.disabled];
+  });
+  sprawdz(pk7[0] === true && pk7[1] === false && pk7[2] === false && pk7[3] === true,
+          'podbitka przy samych płatwiach: pod i na płatwiach, bez krokwi (' + pk7.join(',') + ')');
+  await page.selectOption('#p-dach_uklad', 'platwie_krokwie');
+  var pk8 = await page.evaluate(function () {
+    return Array.prototype.filter.call(document.querySelectorAll('#p-podbitka option'), function (o) { return !o.disabled; }).length;
+  });
+  sprawdz(pk8 === 5, 'podbitka przy płatwiach i krokwiach: wszystkie cztery położenia (' + pk8 + ')');
+  await page.selectOption('#p-dach_uklad', 'platwie');
+  await page.click('#q-obciazenie_uzytkowe');
+  var pm = await page.evaluate(function () { var m = document.getElementById('m-obciazenie_uzytkowe'); return [m.style.display, !!m.querySelector('svg'), m.textContent.length]; });
+  sprawdz(pm[0] === '' && pm[1] && pm[2] > 100, 'pytajnik: objaśnienie obciążenia z rysunkiem (' + pm.join(',') + ')');
+  await page.click('#q-obciazenie_uzytkowe');
+  await page.evaluate(function (d) {
+    var a = JSON.parse(JSON.stringify(d));
+    a.podpowiedzi = [{ poziom: 'blad', tekst: 'Podciąg za słaby', sekcja: 'podloga' }];
+    AMGW.wynik(a);
+    var b = JSON.parse(JSON.stringify(a));
+    b.liczby.bale = Number(b.liczby.bale) + 12;
+    AMGW.wynik(b);
+  }, dane.wynik);
+  var prz = await page.evaluate(function () {
+    var e = document.getElementById('przel-podloga');
+    return [e ? e.textContent : '', document.getElementById('zmiana-podgladu').textContent];
+  });
+  sprawdz(prz[0].indexOf('Podciąg za słaby') >= 0, 'przeliczenia w sekcji podłogi');
+  sprawdz(prz[1].indexOf('bale') >= 0 && prz[1].indexOf('+12') >= 0, 'co się zmieniło po podglądzie (' + prz[1] + ')');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-okno');
   await page.waitForTimeout(500);
@@ -103,7 +153,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(opcje.indexOf('W-6') < 0 && opcje.indexOf('W-5') >= 0, 'lista ścian otworu bez kontrforów');
 
   await page.evaluate(function () { window.__wywolania = []; });
-  await page.click('#sekcja-otwory summary');
+  await page.evaluate(function () { document.getElementById('sekcja-otwory').open = true; });
   await page.fill('#p-drzwi_szerokosc', '1000');
   await page.click('#btn-drzwi');
   await page.waitForTimeout(500);

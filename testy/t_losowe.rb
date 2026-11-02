@@ -31,7 +31,9 @@ ZIARNA = {
   2130 => 'r5: dno gniazda płatwi 0,095 mm nad dnem gniazda zamka (krótka krawędź)',
   2002 => 'r5: taras jak 1100, krokwie z aplikacji, luzy stolarki', 2005 => 'r5: taras jak 1200 przy dachu jednospadowym',
   2183 => 'r5: taras jak 1100 od strony min, pełny profil',
-  2348 => 'r5: koniec podcięcia zamka 0,13 mm za przecięciem skosu z wierzchem bala (kolizja z węgłem)'
+  2348 => 'r5: koniec podcięcia zamka 0,13 mm za przecięciem skosu z wierzchem bala (kolizja z węgłem)',
+  3035 => 'r7: podbitka na płatwiach, krokwie z aplikacji, jednospadowy – połać wyżej o deski',
+  3054 => 'r7: podbitka na płatwiach, ściana nośna, działowa do dachu, szczyt tarasu ażurowy'
 }.freeze
 
 ZIARNA.each do |z, opis|

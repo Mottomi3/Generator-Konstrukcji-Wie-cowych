@@ -3,7 +3,7 @@
   Plik: html/tryb.js
   Zadanie: tryb pól okna – „Podstawowe” (tylko najczęściej zmieniane parametry i te zmienione względem fabrycznych) albo „Wszystkie”.
   Tematy: tryb podstawowe / zaawansowane, pola podstawowe, ukrywanie pól, przełącznik pól, zapamiętany tryb okna
-  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (klasa „zmieniony” na etykiecie)
+  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (klasa „zmieniony” na etykiecie), html/zalezne.js (pola zależne – ukryte, gdy pole nadrzędne ma inną wartość)
   Używają: html/okno.js (po zbudowaniu formularza, po zmianie pola, przełącznik w nagłówku formularza)
 
   Pole podstawowe: opis.podstawowy (ParametryLista w Ruby, podstawowy: true). Pole zmienione względem fabrycznych jest
@@ -21,7 +21,8 @@ var AMGW_TRYB = (function () {
     if (e) { e.style.display = widoczny ? '' : 'none'; }
   }
 
-  // Widoczność pól według trybu: w trybie podstawowym pola podstawowe i zmienione, sekcje bez widocznych pól ukryte,
+  // Widoczność pól według trybu: w trybie podstawowym pola podstawowe i zmienione, pola zależne tylko przy spełnionym
+  // warunku (AMGW_ZALEZNE), sekcje bez widocznych pól ukryte,
   // wymiary zamka tylko w trybie „Wszystkie”.
   function zastosuj(opisy) {
     var wszystkie = stan.tryb === 'wszystkie';
@@ -31,10 +32,11 @@ var AMGW_TRYB = (function () {
       var o = opisy[i];
       var lab = $('l-' + o.klucz);
       var zmienione = lab && /(^|\s)zmieniony(\s|$)/.test(lab.className);
-      var widoczne = wszystkie || o.podstawowy || zmienione;
+      var widoczne = (wszystkie || o.podstawowy || zmienione) && AMGW_ZALEZNE.spelnione(o, opisy);
       pokaz(lab, widoczne);
       pokaz($('p-' + o.klucz), widoczne);
       pokaz($('h-' + o.klucz), widoczne);
+      if (!widoczne) { pokaz($('m-' + o.klucz), false); }
       if (widoczne) { widoczneWSekcji[o.sekcja] = true; }
     }
     pokaz($('pola-zamek'), wszystkie);

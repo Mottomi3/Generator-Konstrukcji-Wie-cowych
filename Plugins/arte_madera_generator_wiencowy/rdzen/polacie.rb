@@ -51,7 +51,7 @@ module ArteMadera
         uv = [[u0, v0], [u3, v0], [u3, v3], [u0, v3]]
         punkty = uv.map { |u, v| dom[:os] == :x ? [u, v] : [v, u] }
         punkty.reverse! if pole(punkty) < 0.0
-        { punkty: punkty, z: Dach.linia_podparcia(geo, v_okap, p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
+        { punkty: punkty, z: Dach.linia_podparcia(geo, v_okap, p) + Dach.uniesienie_krokwi(p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
           szczyty: szczytowe(punkty, dom[:os] == :x ? 1 : 0, Dach.jednospadowy?(p) ? [v_okap] : [v0, v3]) }
       end
 

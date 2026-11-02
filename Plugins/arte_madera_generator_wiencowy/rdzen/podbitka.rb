@@ -2,10 +2,10 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/podbitka.rb
-# Zadanie: podbitka – boazeria przybita od spodu pod płatwiami (deski wzdłuż spadku) albo pod krokwiami (deski równolegle do okapu w polach między płatwiami); wybór zależny od układu dachu; obniżenie linii, pod którą kończą się ściany pod połacią.
-# Tematy: podbitka, podbitka pod płatwiami, podbitka pod krokwiami, boazeria od spodu, deska podbitki, obniżenie ścian pod podbitką, wybór podbitki a układ dachu
+# Zadanie: podbitka – boazeria widoczna od spodu pod albo na płatwiach (deski wzdłuż spadku), pod albo na krokwiach (deski równolegle do okapu); wybór zależny od układu dachu; co robi aplikacja do dachów (nadbitka KROKU 2); obniżenie linii, pod którą kończą się ściany pod połacią.
+# Tematy: podbitka, podbitka pod płatwiami, podbitka na płatwiach, podbitka pod krokwiami, podbitka na krokwiach, boazeria od spodu, deska podbitki, obniżenie ścian pod podbitką, wybór podbitki a układ dachu, podbitka z aplikacji do dachów
 # Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, płatwie, kąt, jednospadowy), rdzen/elementy.rb
-# Używają: rdzen/projekt.rb (belki – elementy Pb), rdzen/pod_dachem.rb i rdzen/szczyty.rb (obniżenie linii pod podbitką)
+# Używają: rdzen/projekt.rb (belki – elementy Pb), rdzen/pod_dachem.rb i rdzen/szczyty.rb (obniżenie linii pod podbitką), rdzen/krok2.rb (podbitka jako nadbitka KROKU 2)
 #
 # Dom prostokątny (dom = Szczyty.dom_prostokatny: os, v_a, v_b, u1, u2, wewn). Pola wzdłuż kalenicy (u) – między licami
 # wewnętrznymi szczytów (także na działowych); w poprzek (v) – od lica wewnętrznego ściany okapowej do kalenicy
@@ -13,8 +13,10 @@
 # Pod płatwiami: płaszczyzna spodu płatwi = linia podparcia − wysokość płatwi pośredniej (krawędzie spodu płatwi od strony
 # kalenicy leżą na jednej prostej), deski wzdłuż spadku, szerokość krycia, ostatnia węższa; dłuższe niż długość handlowa
 # – dzielone na osiach płatwi. Pod krokwiami: płaszczyzna = linia podparcia (spód krokwi), deski wzdłuż okapu w pasach
-# między płatwiami (płatwie wystają pod krokwie). Ściany pod połacią (działowe w poprzek kalenicy, węgły) kończą się pod
-# podbitką: linia o obnizenie niżej.
+# między płatwiami (płatwie wystają pod krokwie). Na płatwiach: deski wzdłuż spadku spodem na linii podparcia (krokwie
+# leżą na nich – Dach.uniesienie_krokwi). Na krokwiach: deski wzdłuż okapu spodem na wierzchu krokwi. Na krokwiach
+# i na samych płatwiach z aplikacją do dachów – nadbitka KROKU 2 (przez_aplikacje?), generator jej nie rysuje.
+# Ściany pod połacią (działowe w poprzek kalenicy, węgły) kończą się pod podbitką „pod”: linia o obnizenie niżej.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -26,27 +28,37 @@ module ArteMadera
     module Podbitka
       module_function
 
-      # Rodzaj podbitki dopuszczalny przy układzie dachu: 'pod_platwiami', 'pod_krokwiami' albo 'nie'.
+      # Rodzaj podbitki dopuszczalny przy układzie dachu: 'pod_platwiami', 'na_platwiach', 'pod_krokwiami', 'na_krokwiach'
+      # albo 'nie'.
       def rodzaj(p)
         r = p['podbitka']
-        return r if r == 'pod_platwiami' && Dach.platwie_posrednie?(p)
-        return r if r == 'pod_krokwiami' && Dach.krokwie?(p)
+        return r if %w[pod_platwiami na_platwiach].include?(r) && Dach.platwie_posrednie?(p)
+        return r if %w[pod_krokwiami na_krokwiach].include?(r) && Dach.krokwie?(p)
         'nie'
+      end
+
+      # Czy podbitkę robi aplikacja do dachów jako nadbitkę (pierwszą warstwę poszycia KROKU 2): krokwie i poszycie
+      # z aplikacji, podbitka na krokwiach albo na samych płatwiach (bez krokwi).
+      def przez_aplikacje?(p)
+        return false if p['dach_wiezba'] == 'generator' || !Parametry.tak?(p, 'dach_elementy')
+        r = rodzaj(p)
+        r == 'na_krokwiach' || (r == 'na_platwiach' && !Dach.krokwie?(p))
       end
 
       # Uwaga, gdy wybrana podbitka nie pasuje do układu dachu (nil – pasuje).
       def uwaga(p)
         return nil if p['podbitka'].to_s == 'nie' || rodzaj(p) != 'nie'
-        'Podbitka: wybrane położenie nie pasuje do układu dachu (pod płatwiami – układ z płatwiami pośrednimi, pod krokwiami – ' \
-          'układ z krokwiami) – pominięta.'
+        'Podbitka: wybrane położenie nie pasuje do układu dachu (pod / na płatwiach – układ z płatwiami pośrednimi, pod / na ' \
+          'krokwiach – układ z krokwiami) – pominięta.'
       end
 
-      # O ile niżej od linii podparcia kończą się ściany pod połacią [mm]: grubość podbitki (pod krokwiami) albo wysokość
-      # płatwi + grubość (pod płatwiami); bez podbitki 0.
+      # O ile niżej od linii podparcia kończą się ściany pod połacią [mm]: grubość podbitki w pionie (pod krokwiami) albo
+      # wysokość płatwi + grubość w pionie (pod płatwiami); bez podbitki i podbitka „na” – 0.
       def obnizenie(p)
+        g = p['podbitka_grubosc'].to_f / Math.cos(Dach.kat(p))
         case rodzaj(p)
-        when 'pod_krokwiami' then p['podbitka_grubosc'].to_f
-        when 'pod_platwiami' then wysokosc_platwi(p) + p['podbitka_grubosc'].to_f
+        when 'pod_krokwiami' then g
+        when 'pod_platwiami' then wysokosc_platwi(p) + g
         else 0.0
         end
       end
@@ -59,17 +71,18 @@ module ArteMadera
       # Deski podbitki (elementy Pb) domu prostokątnego; sciany – do działowych wzdłuż kalenicy.
       def elementy(dom, p, sciany)
         r = rodzaj(p)
-        return [] if dom.nil? || r == 'nie'
+        return [] if dom.nil? || r == 'nie' || przez_aplikacje?(p)
         geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         przerwy = dzialowe_wzdluz(dom, sciany, p)
         wynik = []
         pola_u(dom, p).each do |u0, u1|
           spadki(geo, p).each do |v0, v1|
-            if r == 'pod_platwiami'
-              wynik.concat(pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy))
-            else
-              wynik.concat(pod_krokwiami(dom, geo, p, u0, u1, v0, v1, przerwy))
-            end
+            wynik.concat(case r
+                         when 'pod_platwiami' then pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy)
+                         when 'na_platwiach' then na_platwiach(dom, geo, p, u0, u1, v0, v1)
+                         when 'pod_krokwiami' then pod_krokwiami(dom, geo, p, u0, u1, v0, v1, przerwy)
+                         else na_krokwiach(dom, geo, p, u0, u1, v0, v1)
+                         end)
           end
         end
         wynik
@@ -133,6 +146,54 @@ module ArteMadera
               wynik << deska_ukosna(dom, q, d, a, (xb - xa).abs / Math.cos(a), ub - ua, g, z)
             end
           end
+        end
+        wynik
+      end
+
+      # Na płatwiach: deski wzdłuż spadku spodem na linii podparcia (wierzch płatwi), od lica ściany okapowej do kalenicy
+      # (ściany wysokiej), kolejne w u co krycie, podzielone na osiach płatwi, gdy dłuższe niż długość handlowa.
+      def na_platwiach(dom, geo, p, u0, u1, v0, v1)
+        g = p['podbitka_grubosc'].to_f
+        kr = p['podbitka_krycie'].to_f
+        a = Dach.kat(p)
+        osie = Dach.platwie(geo, p).map { |pl| pl[:v] }
+        kier = v1 >= v0 ? 1.0 : -1.0
+        if Dach.krokwie?(p) && !Parametry.tak?(p, 'platwa_na_scianie')
+          # Ściana nośna (górny bal ścięty do dachu) – deski aż do lica zewnętrznego, krokwie leżą na nich także nad ścianą.
+          t = Parametry.grubosc(p)
+          v0 -= kier * t
+          v1 += kier * t if Dach.jednospadowy?(p)
+        end
+        d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
+        wynik = []
+        kawalki(v0, v1, osie, p['podbitka_dlugosc'].to_f * Math.cos(a)).each do |xa, xb|
+          pasy(u0, u1, kr).each do |ua, ub|
+            q = Dach.xy(dom, ua, xa)
+            wynik << deska_ukosna(dom, q, d, a, (xb - xa).abs / Math.cos(a), ub - ua, g, Dach.linia_podparcia(geo, xa, p))
+          end
+        end
+        wynik
+      end
+
+      # Na krokwiach: deski wzdłuż okapu spodem na wierzchu krokwi, od lica ściany okapowej w górę spadku co krycie
+      # (ostatnia węższa); dłuższe niż długość handlowa – dzielone równo.
+      def na_krokwiach(dom, geo, p, u0, u1, v0, v1)
+        g = p['podbitka_grubosc'].to_f
+        kr = p['podbitka_krycie'].to_f
+        a = Dach.kat(p)
+        nad = Dach.dodatek_krokwi(p)
+        n = [((u1 - u0) / p['podbitka_dlugosc'].to_f - 1e-9).ceil, 1].max
+        kier = v1 >= v0 ? 1.0 : -1.0
+        dl_spadku = (v1 - v0).abs / Math.cos(a)
+        wynik = []
+        s = 0.0
+        while s < dl_spadku - 20.0
+          szer = ([kr, dl_spadku - s].min * 10.0).floor / 10.0
+          vs = v0 + kier * s * Math.cos(a)
+          (0...n).each do |i|
+            wynik << deska_wzdluz(dom, geo, p, u0 + (u1 - u0) * i / n, u0 + (u1 - u0) * (i + 1) / n, vs, kier, a, szer, g, nad)
+          end
+          s += kr
         end
         wynik
       end
@@ -207,8 +268,9 @@ module ArteMadera
         wynik
       end
 
-      # Deska wzdłuż okapu u0…u1, dolna krawędź w vs (rzut), szerokość szer w górę spadku, wierzch na spodzie krokwi.
-      def deska_wzdluz(dom, geo, p, u0, u1, vs, kier, a, szer, g)
+      # Deska wzdłuż okapu u0…u1, dolna krawędź w vs (rzut), szerokość szer w górę spadku; wierzch na spodzie krokwi albo
+      # (nad – wysokość płaszczyzny nad linią podparcia) spód na wierzchu krokwi.
+      def deska_wzdluz(dom, geo, p, u0, u1, vs, kier, a, szer, g, nad = nil)
         dv = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
         uo = dom[:os] == :x ? [1.0, 0.0] : [0.0, 1.0]
         y = [dv[0] * Math.cos(a), dv[1] * Math.cos(a), Math.sin(a)]
@@ -216,11 +278,16 @@ module ArteMadera
         x = [uo[0], uo[1], 0.0]
         q0 = Dach.xy(dom, u0, vs)
         zs = Dach.linia_podparcia(geo, vs, p)
-        o = [q0[0] - z[0] * g, q0[1] - z[1] * g, zs - z[2] * g]
+        gp = g
+        if nad
+          zs += nad
+          gp = 0.0
+        end
+        o = [q0[0] - z[0] * gp, q0[1] - z[1] * gp, zs - z[2] * gp]
         cross = [x[1] * y[2] - x[2] * y[1], x[2] * y[0] - x[0] * y[2], x[0] * y[1] - x[1] * y[0]]
         if cross[0] * z[0] + cross[1] * z[1] + cross[2] * z[2] < 0
           q1 = Dach.xy(dom, u1, vs)
-          o = [q1[0] - z[0] * g, q1[1] - z[1] * g, zs - z[2] * g]
+          o = [q1[0] - z[0] * gp, q1[1] - z[1] * gp, zs - z[2] * gp]
           x = x.map { |c| -c }
         end
         Elementy.nowy('Pb', u1 - u0, szer, g, o, x, y, z, [])

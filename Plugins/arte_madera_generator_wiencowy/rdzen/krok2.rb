@@ -4,14 +4,15 @@
 # Plik: rdzen/krok2.rb
 # Zadanie: co generator przekazuje KROKOWI 2 aplikacji do dachów – ustawienia początkowe (kierunek, krokwie albo poszycie na samych płatwiach, warstwy poszycia, klasa drewna) i płatwie generatora jako podpory krokwi i poszycia.
 # Tematy: ustawienia KROKU 2, KROK 2 z generatora, poszycie dachu, nadbitka, deskowanie pełne, płyty OSB, deski na płatwiach, dach na samych płatwiach, podpory krokwi, płatwie jako podpory, przęsła krokwi, podpowiedź KROKU 2
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (układ z krokwiami)
+# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (układ z krokwiami, uniesienie krokwi), rdzen/podbitka.rb (podbitka jako nadbitka)
 # Używają: rdzen/polacie.rb (podpowiedzi), sketchup/dach_aplikacja.rb
 #
 # Ustawienia – klucze KROKU 2 aplikacji (jej 01_config.rb, DEFAULTS_FRAMING, mm). Połać leży na wierzchu płatwi
 # generatora: kierunek „w górę” (build_dir up – połać to spód krokwi), bez płatwi kalenicowej aplikacji (płatew
 # kalenicowa leży w szczytach z bali) i bez zamków dolnych. Układ „same płatwie” – bez krokwi (rafter_on false):
 # poszycie leży wprost na płatwiach, wzdłuż spadku, styki na płatwiach. Warstwy poszycia (sheath_*) – sekcja
-# „Poszycie dachu”; każda leży na poprzedniej włączonej (nadbitka → deskowanie → OSB).
+# „Poszycie dachu”; każda leży na poprzedniej włączonej (nadbitka → deskowanie → OSB). Podbitka na krokwiach (albo na
+# samych płatwiach) to nadbitka KROKU 2 – włączona z wymiarami podbitki (Podbitka.przez_aplikacje?).
 # Podpory: płatwie (elementy z prefiksem P) – wierzch w osi płatwi na obu końcach (płatew ścięta – na połaci,
 # kalenicowa – grzbiet, bez ścięcia – poziomy wierzch), szerokość i wysokość przekroju, nazwa pozycji; dach
 # jednospadowy – także ściana wysoka (górny bal płasko pod połacią, wierzch w osi ściany); mm układu
@@ -24,6 +25,7 @@
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -55,10 +57,12 @@ module ArteMadera
         u.merge(poszycie(p))
       end
 
-      # Warstwy poszycia KROKU 2 (sheath_*) z sekcji „Poszycie dachu”.
+      # Warstwy poszycia KROKU 2 (sheath_*) z sekcji „Poszycie dachu”; podbitka na krokwiach (na samych płatwiach) –
+      # nadbitka z wymiarami podbitki.
       def poszycie(p)
-        { sheath_ceiling_on: Parametry.tak?(p, 'poszycie_nadbitka'), sheath_ceiling_t_mm: p['nadbitka_grubosc'].to_f,
-          sheath_ceiling_w_mm: p['nadbitka_krycie'].to_f, sheath_ceiling_len_mm: p['nadbitka_dlugosc'].to_f,
+        nb = Podbitka.przez_aplikacje?(p) ? 'podbitka' : 'nadbitka'
+        { sheath_ceiling_on: nadbitka?(p), sheath_ceiling_t_mm: p["#{nb}_grubosc"].to_f,
+          sheath_ceiling_w_mm: p["#{nb}_krycie"].to_f, sheath_ceiling_len_mm: p["#{nb}_dlugosc"].to_f,
           sheath_plank_on: Parametry.tak?(p, 'poszycie_deski'), sheath_plank_t_mm: p['deski_grubosc'].to_f,
           sheath_plank_w_mm: p['deski_szerokosc'].to_f, sheath_plank_gap_mm: p['deski_szczelina'].to_f,
           sheath_plank_len_mm: p['deski_dlugosc'].to_f,
@@ -67,16 +71,25 @@ module ArteMadera
           sheath_osb_gap_mm: p['osb_szczelina'].to_f }
       end
 
+      # Czy KROK 2 kładzie nadbitkę: parametr nadbitki albo podbitka na krokwiach (na samych płatwiach).
+      def nadbitka?(p)
+        Parametry.tak?(p, 'poszycie_nadbitka') || Podbitka.przez_aplikacje?(p)
+      end
+
       # Nazwy włączonych warstw poszycia (od spodu).
       def warstwy(p)
-        WARSTWY.select { |k, _n| Parametry.tak?(p, k) }.map { |_k, n| n }
+        WARSTWY.select { |k, _n| k == 'poszycie_nadbitka' ? nadbitka?(p) : Parametry.tak?(p, k) }.map { |_k, n| n }
       end
 
       # Podpory krokwi i poszycia z planu: płatwie i ściana wysoka dachu jednospadowego – [{ od:, do: (wierzch w osi na
       # końcach, mm układu domu), szerokosc:, wysokosc:, nazwa: }].
       def podpory(plan)
+        dz = Dach.uniesienie_krokwi(plan[:parametry])
         platwie = (plan[:elementy] || []).select { |e| e[:prefiks] == 'P' }.map { |e| podpora(e) }
-        platwie + sciany_wysokie(plan[:sciany] || [], plan[:parametry])
+        (platwie + sciany_wysokie(plan[:sciany] || [], plan[:parametry])).map do |q|
+          # Podbitka na płatwiach – krokwie leżą na deskach: podpora na wierzchu desek.
+          dz.zero? ? q : q.merge(od: [q[:od][0], q[:od][1], q[:od][2] + dz], do: [q[:do][0], q[:do][1], q[:do][2] + dz])
+        end
       end
 
       # Ściany pod połacią jako podpory: ściana wysoka dachu jednospadowego (szczyt płaski) i ściany okapowe przy ścianie

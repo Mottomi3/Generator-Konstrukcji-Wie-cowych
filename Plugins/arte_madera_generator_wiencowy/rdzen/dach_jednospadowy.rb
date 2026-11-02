@@ -88,7 +88,7 @@ module ArteMadera
         d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
         Dach.krokwie_u(dom[:u1], dom[:u2], p, dom[:wewn] || []).map do |u|
           q = Dach.xy(dom, u, v0)
-          Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p)], d, a, dl, bk, hk)
+          Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p) + Dach.uniesienie_krokwi(p)], d, a, dl, bk, hk)
         end
       end
 

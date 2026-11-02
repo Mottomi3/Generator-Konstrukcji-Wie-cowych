@@ -60,7 +60,8 @@ module ArteMadera
           ParametryLista::LISTA.map do |w|
             { 'klucz' => w[:klucz], 'etykieta' => w[:etykieta], 'jednostka' => w[:jednostka].to_s, 'min' => w[:min],
               'max' => w[:max], 'rodzaj' => w[:rodzaj].to_s, 'domyslna' => w[:domyslna], 'sekcja' => w[:sekcja],
-              'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false }
+              'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false,
+              'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek] }
           end
         end
 

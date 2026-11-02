@@ -78,8 +78,8 @@ module ArteMadera
         plan
       end
 
-      # Belki dachu (dom prostokątny) i podłogi: elementy, pozycje (numery po balach), podpowiedzi podłogi; połacie dla
-      # aplikacji do dachów (plan[:polacie]).
+      # Belki dachu (dom prostokątny), podbitka i podłoga: elementy, pozycje (numery po balach), podpowiedzi z sekcją okna
+      # (szczyty, podloga – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
         plan[:elementy].concat(Podbitka.elementy(dom, p, plan[:sciany]))
@@ -87,10 +87,10 @@ module ArteMadera
         plan[:ostrzezenia] << u if u
         plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
-        plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]))
+        plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]).map { |h| h.merge(sekcja: 'szczyty') })
         pod = Podloga.zaplanuj(plan[:sciany], p)
         plan[:elementy].concat(pod[:elementy])
-        plan[:podpowiedzi].concat(pod[:podpowiedzi])
+        plan[:podpowiedzi].concat(pod[:podpowiedzi].map { |h| h.merge(sekcja: 'podloga') })
         plan[:podloga] = { legar: pod[:legar], podpory: pod[:podpory] }
         plan[:pozycje_elementow] = Elementy.numeruj(plan[:elementy], plan[:pozycje].length + 1)
       end

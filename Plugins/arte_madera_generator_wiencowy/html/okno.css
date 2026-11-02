@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.css
   Zadanie: wygląd okna parametrów.
-  Tematy: wygląd okna, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany, przełącznik pól, panel ustawień ściany
+  Tematy: wygląd okna, pytajnik i objaśnienie, rysunki objaśniające, przeliczenia przy sekcji, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany, przełącznik pól, panel ustawień ściany
   Zależy od: –
   Używają: html/okno.html
 */
@@ -140,3 +140,50 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .przelacznik button:first-of-type { border-radius: 4px 0 0 4px; }
 .przelacznik button:last-of-type { border-radius: 0 4px 4px 0; border-left: none; }
 .przelacznik button.wybrany { background: var(--akcent-jasny); border-color: var(--akcent); color: var(--akcent); font-weight: 600; }
+
+/* Pytajnik przy polu i ramka objaśnienia z rysunkiem (html/pomoc.js). */
+.pyt {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-left: 6px;
+  border: 1px solid var(--akcent);
+  border-radius: 50%;
+  color: var(--akcent);
+  font-size: 10px;
+  line-height: 13px;
+  text-align: center;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.pyt:hover { background: var(--akcent-jasny); }
+.pomoc {
+  grid-column: 1 / -1;
+  margin: 2px 0 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--linia);
+  border-left: 3px solid var(--akcent);
+  border-radius: 4px;
+  background: var(--akcent-jasny);
+  font-size: 12px;
+}
+.pomoc p { margin: 4px 0 0; }
+.rys { width: 100%; max-width: 420px; height: auto; display: block; }
+.rys .drewno { fill: #e8cfa8; stroke: var(--tekst); stroke-width: 1; }
+.rys .mebel { fill: #d9d2c7; stroke: var(--szary); stroke-width: 1; }
+.rys .kreska { fill: none; stroke: var(--tekst); stroke-width: 1.5; }
+.rys .gruba { stroke-width: 3; }
+.rys .akcent { stroke: var(--akcent); fill: var(--akcent); }
+.rys path.akcent, .rys line.akcent, .rys polyline.akcent { fill: none; }
+.rys .podpora { fill: var(--szary); }
+.rys .strzalki line { stroke: var(--akcent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.rys .podpis { font-size: 10px; text-anchor: middle; fill: var(--tekst); stroke: none; }
+.rys .podpis.lewy { text-anchor: start; }
+.rys text.akcent { fill: var(--akcent); stroke: none; }
+/* Przeliczenia przy sekcji (html/przeliczenia.js) i zmiana po podglądzie. */
+.przeliczenia { grid-column: 1 / -1; margin: 6px 0 2px; }
+.przeliczenia div { margin: 3px 0; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+.przeliczenia .ok { background: #eef6ee; color: var(--ok); }
+.przeliczenia .uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
+.przeliczenia .blad { background: var(--blad-tlo); color: var(--blad); }
+#zmiana-podgladu { font-size: 12px; color: var(--szary); margin: 4px 0; min-height: 16px; }

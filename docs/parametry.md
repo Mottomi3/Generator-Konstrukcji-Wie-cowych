@@ -98,7 +98,11 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
-| `poszycie_nadbitka` | Nadbitka – boazeria pióro-wpust | nie | `tak` – tak; `nie` – nie | Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja). |
+| `podbitka` | Podbitka – boazeria widoczna od spodu | nie | `nie` – bez podbitki; `pod_platwiami` – pod płatwiami (wzdłuż spadku); `na_platwiach` – na płatwiach (wzdłuż spadku); `pod_krokwiami` – pod krokwiami (równolegle do okapu, między płatwiami); `na_krokwiach` – na krokwiach (równolegle do okapu) |  |
+| `podbitka_grubosc` | Podbitka – grubość | 19 mm | 10 … 60 |  |
+| `podbitka_krycie` | Podbitka – szerokość deski (krycie) | 121 mm | 50 … 300 |  |
+| `podbitka_dlugosc` | Podbitka – długość handlowa | 4000 mm | 1000 … 8000 | Dłuższe deski dzielone na płatwiach (pod i na płatwiach) albo równo (pod i na krokwiach). |
+| `poszycie_nadbitka` | Nadbitka – pierwsza warstwa poszycia (aplikacja do dachów) | nie | `tak` – tak; `nie` – nie | Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja). |
 | `nadbitka_grubosc` | Nadbitka – grubość | 19 mm | 10 … 60 |  |
 | `nadbitka_krycie` | Nadbitka – szerokość krycia | 121 mm | 50 … 300 |  |
 | `nadbitka_dlugosc` | Nadbitka – długość handlowa | 4000 mm | 1000 … 8000 |  |
@@ -172,7 +176,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
 | `okno_szerokosc` | Nowe okno – szerokość stolarki | 1020 mm | 100 … 6000 | Wymiary stolarki wstawiane przyciskiem „+ okno” (900: 1020 × 1010). |
 | `okno_wysokosc` | Nowe okno – wysokość stolarki | 1010 mm | 100 … 4000 |  |
-| `okno_parapet` | Nowe okno – parapet (spód stolarki) | 900 mm | 0 … 4000 |  |
+| `okno_parapet` | Nowe okno – spód okna (od podwaliny) | 900 mm | 0 … 4000 |  |
 | `drzwi_szerokosc` | Nowe drzwi – szerokość stolarki | 930 mm | 300 … 6000 |  |
 | `drzwi_wysokosc` | Nowe drzwi – wysokość stolarki | 2100 mm | 1000 … 4000 |  |
 | `nowy_otwor_od` | Nowy otwór – odległość od narożnika | 1000 mm | 0 … 30000 |  |
