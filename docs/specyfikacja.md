@@ -247,6 +247,35 @@ Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
 - **Węgły z tabeli** (`rdzen/wegly_tabela.rb`): ściana + od narożnika albo na środku; `wegly_srodek` – węgieł na
   środku ścian od `wegly_srodek_min`; miejsce zajęte – najbliższe wolne do 500 mm, z ostrzeżeniem.
 
+## 8c. Runda 8 – węgły, wypusty, taras, typy
+
+- Zamek płatwi: gniazdo w ścianie = szerokość wrębu (bez `gniazdo_luz`), dno na spodzie wrębu.
+- Węgieł przy szczycie (wzdłuż kalenicy): górny wieniec może wystawać nad płaszczyznę dachu, gdy pod nią zostaje
+  `gniazdo_gleb` + `zamek_min_drewno`; ścina go `rdzen/sciecie_dachu.rb` (pod podbitką „pod” – niżej o jej obniżenie).
+  Węgieł na ścianie bez szczytu: dodatkowy wieniec nad górą ściany (na jej górnym balu), ścięty linią dachu.
+- Węgieł: wypust wewnątrz domu `wegiel_wypust_wewn`, na zewnątrz `wegiel_wypust_zewn` (przy działowej obie strony
+  wewnątrz); wiersz tabeli węgłów może podać własne.
+- Symetria (`rdzen/symetria_wegly.rb`): ściana bliźniacza – ten sam kierunek, oś równoległa, ten sam zasięg w świecie;
+  styki i węgły usztywniające przenoszone przez współrzędną świata, gdy pasują (otwory, długości). „Równo”: nowe węgły
+  pod styki w punktach podziału odcinków między skrzyżowaniami na 2…8 części; układ wybierany po najmniejszej liczbie
+  węgłów razem (szacunek usztywniających z limitu światła).
+- Wypusty (`rdzen/wypusty_okapu.rb`): `okap_wience_wypust` górnych wieńców własnych ściany okapowej kończy się
+  `dach_okap_szczyt` za licem szczytu (na końcach z narożnikiem ze szczytem); styki tej ściany liczone na zasięgu
+  z wypustami. `wegly_wypust_okap`: `wegly_okap_wience` górnych bali węgła na ścianie okapowej wysuniętych na zewnątrz do
+  `dach_okap`, zasięg pod linią dachu.
+- Podłoga: rzędy fundamentów przez osie działowych, odcinki równo; stopa okrągła – graniastosłup 24 boki;
+  `podciag_poziom` = rowno – wierzch podciągu 0, między licami wewnętrznymi podwalin (przerwany na podwalinach
+  działowych wzdłuż legarów), legary przerwane na podciągu.
+- Taras (`rdzen/taras_sciany.rb`): balustrada z wieńców ścian – wieńce frontu i ścian bocznych z wierzchem nie wyżej
+  niż `taras_balustrada_wysokosc` pełne, koniec przy narożniku frontu z wypustem `taras_zakladka_wypust` albo równo
+  z licem; front z przerwą między licami słupów wejścia; poręcz wspólna (wyższa ścięta, bez piór); słupy z wyciętym pasem
+  ściany do wierzchu balustrady; węgły nie stają w strefach słupów. Szczyt pusty – `taras_wieniec`: dwie belki Wt
+  (graniastosłupy wzdłuż kalenicy, przekrój w płaszczyźnie frontu) od wierzchu bali spinających do kalenicy, wierzch na
+  linii spodu płatwi.
+- Szablony wbudowane – typy bazowe 100 (domek na samych płatwiach), 200 (parterowy wysoki, taras na słupach), 300
+  (1,5 kondygnacji ze stropem, taras między ścianami), 400 (dach jednospadowy); wersje użytkownika – 101, 102… (szablony
+  zapisane w oknie).
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

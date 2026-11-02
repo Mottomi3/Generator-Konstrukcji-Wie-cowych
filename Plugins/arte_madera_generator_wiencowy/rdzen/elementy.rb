@@ -29,7 +29,8 @@ module ArteMadera
       # PREFIX_GROUPS), nazwy zawierają słowa, po których Dokumentacja 2D rozpoznaje grupę także bez atrybutu.
       RODZAJE = {
         'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
-        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras], 'F' => ['Fundament punktowy', :podloga], 'Pb' => ['Podbitka', :dach]
+        'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras], 'F' => ['Fundament punktowy', :podloga], 'Pb' => ['Podbitka', :dach],
+        'Wt' => ['Wieniec trójkątny szczytu tarasu', :taras]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function

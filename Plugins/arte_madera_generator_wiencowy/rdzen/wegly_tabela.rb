@@ -7,7 +7,8 @@
 # Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce)
 # Używają: rdzen/projekt.rb (po otworach, przed stykami i węgłami usztywniającymi)
 #
-# Wejście domu 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od' | 'srodek', 'od' => mm }]: od – oś węgła od narożnika
+# Wejście domu 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od' | 'srodek', 'od' => mm, 'wewn' => mm, 'zewn' => mm
+# (wypusty – puste: z parametrów) }]: od – oś węgła od narożnika
 # lica zewnętrznego (jak „od” okna; działowa – od początku osi), srodek – na środku osi ściany. Parametr wegly_srodek
 # (zewnętrzne / wszystkie) dostawia węgieł na środku każdej ściany o osi nie krótszej niż wegly_srodek_min. Miejsce
 # zajęte (skrzyżowanie, otwór) – najbliższe wolne w odległości do pół metra, z ostrzeżeniem; dalej – pominięty.
@@ -43,7 +44,7 @@ module ArteMadera
             uwagi << "Węgieł z tabeli (#{w[:id]}): niepoprawne położenie „#{x['od']}” – pominięty."
             next
           end
-          wstaw(sciany, w, s, p, os_kalenicy, uwagi, 'z tabeli')
+          wstaw(sciany, w, s, p, os_kalenicy, uwagi, 'z tabeli', 'wewn' => x['wewn'], 'zewn' => x['zewn'])
         end
         uwagi
       end
@@ -69,7 +70,7 @@ module ArteMadera
       end
 
       # Wstawia węgieł w s albo w najbliższym wolnym miejscu (do PRZESUNIECIE); ostrzeżenie o przesunięciu lub pominięciu.
-      def wstaw(sciany, w, s, p, os_kalenicy, uwagi, skad)
+      def wstaw(sciany, w, s, p, os_kalenicy, uwagi, skad, ostatki = nil)
         ok = lambda { |x| Usztywnienie.miejsce_ok?(w.merge(wegly_reczne: nil), p, x, []) }
         x = ok.call(s) ? s : Usztywnienie.wolne_miejsce(w, s, s - PRZESUNIECIE, s + PRZESUNIECIE) { |y| ok.call(y) }
         if x.nil?
@@ -79,7 +80,7 @@ module ArteMadera
         if (x - s).abs > 0.5
           uwagi << format('Węgieł %s (%s): przesunięty o %.0f mm – w miejscu %.0f mm jest skrzyżowanie albo otwór.', skad, w[:id], x - s, s)
         end
-        Sciany.dodaj_kontrfor(sciany, w, x, p, :rysunek, os_kalenicy)
+        Sciany.dodaj_kontrfor(sciany, w, x, p, :rysunek, os_kalenicy, ostatki)
       end
     end
   end

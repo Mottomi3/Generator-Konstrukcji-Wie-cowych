@@ -8,9 +8,20 @@
 # Używają: testy/uruchom.sh
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
+require File.expand_path('kolizje_belek', File.dirname(__FILE__))
 include ArteMadera::GeneratorWiencowy
 
 # Elementy planu o prefiksie.
+# Liczba par elementów (prefiksy z listy) zachodzących na siebie – prostopadłościany otaczające, zapas 0,5 mm (belki
+# podłogi są równoległe do osi; podwaliny między sobą pominięte).
+def kolizje_elementow(pl, prefiksy)
+  boks = pl[:elementy].select { |e| prefiksy.include?(e[:prefiks]) }.map { |e| [e[:prefiks], otoczka(e[:polozenie], e[:dl], e[:b], e[:h])] }
+  boks.combination(2).count do |(pa, a), (pb, b)|
+    # Podwaliny w narożnikach na zakład zachodzą na siebie z wycięciami – pomijane.
+    !(pa == 'Pw' && pb == 'Pw') && (0..2).all? { |k| [a[1][k], b[1][k]].min - [a[0][k], b[0][k]].max > 0.5 }
+  end
+end
+
 def el(pl, prefiks)
   pl[:elementy].select { |e| e[:prefiks] == prefiks }
 end
@@ -138,5 +149,25 @@ pl = plan_pelny(prostokat(0, 0, 6000, 4000), 'podwalina_przekroj' => '50x150', '
 pw = el(pl, 'Pw')
 Testy.sprawdz(pw.all? { |e| e[:cechy].empty? }, 'podwaliny na śruby – bez zamków')
 Testy.rowne(pw.map { |e| e[:dl].round }.sort, [3900, 3900, 6000, 6000], 'dwie na całą długość, dwie między nimi')
+
+
+Testy.grupa('Fundament okrągły, podciąg na równo z podwaliną, fundamenty w osi działowych (runda 8)')
+pl = plan_pelny(prostokat(0, 0, 4000, 4000), 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20,
+                'fundament_ksztalt' => 'okragly', 'fundament_srednica' => 300, 'podciag_poziom' => 'rowno', 'podciagi' => 'tak')
+f = el(pl, 'F')
+Testy.sprawdz(f.all? { |e| e[:przekroj] && e[:przekroj].length == 24 && e[:b] == 300.0 }, 'stopy okrągłe ⌀ 300 (wielokąt 24 boki)')
+srodki_x = f.map { |e| (e[:polozenie][:poczatek][0] + e[:b] / 2.0).round }.uniq.sort
+Testy.sprawdz(srodki_x.include?(3978), "rząd stóp w osi ściany domu przy tarasie x = 3978 (#{srodki_x.inspect})")
+Testy.sprawdz(f.all? { |e| e[:polozenie][:poczatek][0] >= -0.01 && e[:polozenie][:poczatek][0] + e[:b] <= 6000.01 }, 'stopy w obrysie')
+pd = el(pl, 'Pd')
+Testy.sprawdz(!pd.empty? && pd.all? { |e| (e[:polozenie][:poczatek][2] + e[:h]).abs < 0.01 }, 'podciąg na równo – wierzch na 0 (jak podwalina)')
+Testy.sprawdz(pd.all? { |e| e[:polozenie][:poczatek][0] >= 99.99 && e[:polozenie][:poczatek][0] + e[:dl] <= 5900.01 }, 'podciąg między licami wewnętrznymi podwalin')
+l = el(pl, 'L')
+Testy.sprawdz(l.all? { |e| e[:dl] < 1900.0 }, "legary dzielone na podciągu (najdłuższy #{l.map { |e| e[:dl].round }.max})")
+Testy.rowne(kolizje_elementow(pl, %w[L Pd Pw]), 0, 'legary, podciągi, podwaliny bez kolizji')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('⌀ 300') }, 'podpowiedź z średnicą')
+pl = plan_pelny(prostokat(0, 0, 7000, 5000) + [[[3500, 0], [3500, 5000]]])
+f = el(pl, 'F')
+Testy.sprawdz(f.map { |e| (e[:polozenie][:poczatek][0] + e[:b] / 2.0).round }.include?(3500), 'działowa w środku domu – stopy w jej osi')
 
 Testy.koniec

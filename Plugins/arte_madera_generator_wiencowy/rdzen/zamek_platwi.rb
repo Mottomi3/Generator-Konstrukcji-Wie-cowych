@@ -9,7 +9,7 @@
 #
 # Płatew przechodzi przez ścianę w poprzek (szczyt, działowa, węgieł): na grubości ściany + luz (platwa_zamek_luz z każdej
 # strony) jest zwężona o platwa_zamek_bok z każdego boku i podcięta od spodu o platwa_zamek_dol. Gniazdo w ścianie ma
-# szerokość wrębu (+ luz gniazda) i dno na spodzie wrębu – barki płatwi po obu stronach ściany nie dają szczytowi
+# szerokość wrębu (bez luzu gniazda – bal dochodzi do dna wrębu, wymóg użytkownika z rundy 8) i dno na spodzie wrębu – barki płatwi po obu stronach ściany nie dają szczytowi
 # odjechać wzdłuż płatwi. Wręby belki: e[:wreby] = [[x0, x1]] wzdłuż belki, e[:wrab] = { bok:, dol: }.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 

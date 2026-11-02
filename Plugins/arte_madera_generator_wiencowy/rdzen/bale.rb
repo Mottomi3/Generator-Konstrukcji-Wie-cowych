@@ -4,7 +4,7 @@
 # Plik: rdzen/bale.rb
 # Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
 # Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu, odcinki nadstawki
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki)
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
@@ -21,6 +21,7 @@ require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera:
 require File.join(File.dirname(__FILE__), 'pod_dachem') unless defined?(ArteMadera::GeneratorWiencowy::PodDachem)
 require File.join(File.dirname(__FILE__), 'dopelnienie') unless defined?(ArteMadera::GeneratorWiencowy::Dopelnienie)
 require File.join(File.dirname(__FILE__), 'taras_szczyt') unless defined?(ArteMadera::GeneratorWiencowy::TarasSzczyt)
+require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -59,9 +60,9 @@ module ArteMadera
       # minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal; pomija okruchy
       # przy skosie i gniazdach płatwi.
       def kawalki_wienca(w, wn, i, p, uwagi)
-        zas = zasieg(w, wn[:z0], p)
+        zas = WypustyOkapu.zasieg(w, wn, i, zasieg(w, wn[:z0], p), p, uwagi)
         return [] if zas.nil?
-        bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : TarasSzczyt.przedzialy(w, wn, zas, p)
+        bazy = wn[:nadstawka] ? Dopelnienie.przedzialy(w, wn, zas) : TarasSciany.przedzialy(w, wn, TarasSzczyt.przedzialy(w, wn, zas, p), p)
         wewn = bazy.flatten.reject { |s| [w[:s_od], w[:s_do], zas[0], zas[1]].any? { |x| (s - x).abs < 0.01 } }
         wewn = bazy.flatten.reject { |s| (s - w[:s_od]).abs < 0.01 || (s - w[:s_do]).abs < 0.01 } if wn[:nadstawka]
         ciecia = Otwory.dla_wienca(w, wn[:z0], wn[:h], p['min_pasek_przy_otworze'])
@@ -139,19 +140,41 @@ module ArteMadera
       end
 
       # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu, pod linią szczytu,
-      # w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu.
+      # w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu. Przy szczycie górny bal może
+      # wystawać nad płaszczyznę dachu (ścina go rdzen/sciecie_dachu.rb), gdy pod nią zostaje drewna na zamek (gniazdo od
+      # spodu + najmniej drewna w zamku) – słupek węgła dochodzi do dachu (wymóg użytkownika, runda 8).
       def kontrfor_obecny?(kf, wn, p)
         gosp = kf[:gospodarz]
         s = G.dot(G.sub(kf[:a], gosp[:a]), gosp[:kier])
         t = Parametry.grubosc(p)
-        return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, wn[:z0] + wn[:h], p) }
+        zmin = wn[:z0] + [wn[:h], p['zamek']['gniazdo_gleb'].to_f + p['zamek_min_drewno'].to_f].min
+        return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, zmin, p) }
+        return nad_gospodarzem?(kf, wn, gosp, s, zmin, p) if wn[:nad_gospodarzem]
         sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
         return false if sasiedzi.any? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
         sasiedzi.all? do |g|
           z = zasieg(gosp, g[:z0], p)
-          z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
+          next false unless z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
+          # Szczyt ażurowy / pusty nad tarasem – wieniec przekładek albo bez bali: węgieł nie ma oparcia.
+          TarasSzczyt.przedzialy(gosp, g, z, p).any? { |a, c| a < s - t / 2.0 + 0.01 && c > s + t / 2.0 - 0.01 }
         end
+      end
+
+      # Wieniec węgła nad górą ściany bez szczytu: tylko pod dachem domu prostokątnego (ścina go linia dachu), gdy w osi
+      # ściany pod nim jest jej górny bal i nad zamkiem zostaje drewna (linia dachu nad zmin – także na obu licach węgła
+      # biegnącego wzdłuż kalenicy).
+      def nad_gospodarzem?(kf, wn, gosp, s, zmin, p)
+        return false unless Parametry.tak?(p, 'szczyty') && (kf[:pod_dachem] || kf[:pod_dachem_wzdluz])
+        pod = Wience.wlasne(gosp, p).find { |g| g[:lvl] == wn[:lvl] - 1 }
+        return false if pod.nil? || Otwory.w_otworze?(gosp, s, pod[:z0], pod[:z0] + pod[:h])
+        z = zasieg(gosp, pod[:z0], p)
+        t = Parametry.grubosc(p)
+        return false unless z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
+        return PodDachem.linia(kf, 0.0, p) >= zmin - 0.01 if kf[:pod_dachem]
+        g = kf[:pod_dachem_wzdluz]
+        v = kf[:a][g[:iv]]
+        [v - t / 2.0, v + t / 2.0].all? { |x| Dach.linia_podparcia(g, x, p) - Podbitka.obnizenie(p) >= zmin - 0.01 }
       end
 
       # Ostrzeżenia o długościach: kawałek krótszy od najkrótszego, bal dłuższy od maksymalnego.

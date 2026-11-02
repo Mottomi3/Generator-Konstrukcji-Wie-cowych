@@ -21,7 +21,7 @@ module ArteMadera
         { klucz: 'szczyty', podstawowy: true, domyslna: 'tak', etykieta: 'Szczyty z bali', rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu.' },
         { klucz: 'szczyty_na_dzialowych', domyslna: 'nie', etykieta: 'Szczyty także na działowych szczytowych',
-          rodzaj: :wybor, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] }, wybory: TAK_NIE, podpowiedz: 'Jak 1800 W-2 – ściana działowa do kalenicy.' },
+          rodzaj: :wybor, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] }, wybory: TAK_NIE, podpowiedz: 'Ściana działowa w poprzek kalenicy dochodzi do dachu (ze szczytem).' },
         { klucz: 'dzialowa_wzdluz_do_dachu', podstawowy: true, domyslna: 'tak', etykieta: 'Działowe wzdłuż kalenicy – do dachu',
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Działowa równoległa do kalenicy (dom prostokątny) rośnie do płaszczyzny dachu, górny bal ścięty pod dach; ' \
@@ -42,7 +42,7 @@ module ArteMadera
           jednostka: 'mm', min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_rodzaj' => ['jednospadowy'] },
           podpowiedz: 'Ściana wysoka sięga połaci, górny bal przycięty wzdłuż; cieńszy pasek jest pomijany.' },
         { klucz: 'dach_kat', podstawowy: true, domyslna: 20.0, etykieta: 'Kąt dachu', jednostka: '°', min: 5.0, max: 60.0, rodzaj: :liczba,
-          sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] }, podpowiedz: 'Projekty 900 i 1000: 20°.' },
+          sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] }, podpowiedz: 'Typ 100: 20°.' },
         { klucz: 'dach_uklad', podstawowy: true, domyslna: 'platwie', etykieta: 'Układ dachu', rodzaj: :wybor, sekcja: 'szczyty', rysunek: 'uklad_dachu', gdy: { 'szczyty' => ['tak'] },
           wybory: [['platwie', 'same płatwie (deski na płatwiach)'], ['krokwie', 'krokwie na płatwi ściennej i kalenicowej'],
                    ['platwie_krokwie', 'płatwie i krokwie']] },
@@ -56,7 +56,7 @@ module ArteMadera
                       'na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
         { klucz: 'dach_podniesienie', domyslna: 69.5, etykieta: 'Wierzch płatwi nad ścianą okapową (przy licu wewn.)',
           jednostka: 'mm', min: -300.0, max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Projekt 900: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.',
+          podpowiedz: 'Typ 100: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie.',
           gdy: { 'platwa_na_scianie' => ['tak'], 'platwa_scienna_polozenie' => ['przy_licu'] } },
         { klucz: 'krokwie_przy_szczycie', podstawowy: true, domyslna: 'obie_strony', etykieta: 'Krokwie przy ścianie szczytowej',
           rodzaj: :wybor, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'dach_wiezba' => ['generator'] },
@@ -75,11 +75,11 @@ module ArteMadera
         { klucz: 'platwa_przekroj', podstawowy: true, domyslna: '80x200', etykieta: 'Płatew (pośrednia)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty',
           podpowiedz: 'Wysokość płatwi zostaje w całości po wyższej stronie; wierzch ścięty pod dach tylko od strony okapu ' \
-                      '(projekt 900: 80 × 180).' },
+                      '(typ 100: 80 × 200).' },
         { klucz: 'platwa_kalenicowa_przekroj', domyslna: '80x200', etykieta: 'Płatew kalenicowa', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_jeden_przekroj' => ['nie'] } },
         { klucz: 'platwie_rozstaw_max', domyslna: 1000.0, etykieta: 'Największy rozstaw płatwi (w poziomie)',
-          jednostka: 'mm', min: 300.0, max: 4000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[platwie platwie_krokwie] }, podpowiedz: '900: ok. 990.' },
+          jednostka: 'mm', min: 300.0, max: 4000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[platwie platwie_krokwie] }, podpowiedz: 'Typ 100: ok. 990.' },
         { klucz: 'platwa_na_scianie', podstawowy: true, domyslna: 'tak', etykieta: 'Oparcie dachu przy ścianie okapowej',
           rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['tak', 'płatew ścienna – osobna belka przy ścianie albo na ścianie'],
@@ -87,11 +87,11 @@ module ArteMadera
           podpowiedz: 'Ściana nośna: dach (krokwie albo deski) leży wprost na ścianie okapowej – jej górny bal jest ścięty pod ' \
                       'kątem dachu na całej długości (dach jednospadowy – także ściana wysoka).' },
         { klucz: 'platwa_scienna_polozenie', domyslna: 'przy_licu', etykieta: 'Płatew ścienna – położenie', rodzaj: :wybor,
-          sekcja: 'szczyty', rysunek: 'platwa_scienna', wybory: [['przy_licu', 'przy licu wewnętrznym, wierzchem na linii dachu (jak 900)'],
+          sekcja: 'szczyty', rysunek: 'platwa_scienna', wybory: [['przy_licu', 'przy licu wewnętrznym, wierzchem na linii dachu (typ 100)'],
                                       ['na_scianie', 'stoi na ścianie okapowej, w osi – ścięta pod dach']],
           gdy: { 'platwa_na_scianie' => ['tak'] } },
         { klucz: 'platwa_scienna_przekroj', domyslna: '80x200', etykieta: 'Płatew ścienna', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Projekt 900: 60 × 200.',
+          rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Typ 100: 60 × 200.',
           gdy: { 'platwa_na_scianie' => ['tak'], 'platwie_jeden_przekroj' => ['nie'] } },
         { klucz: 'platwie_na_wiencach', domyslna: 'tak', etykieta: 'Płatwie oparte na pełnym balu', rodzaj: :wybor,
           sekcja: 'szczyty', wybory: TAK_NIE,
@@ -130,15 +130,26 @@ module ArteMadera
                       'gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego).' },
         { klucz: 'szczyt_min_kawalek', domyslna: 10.0, etykieta: 'Najkrótszy kawałek bala przy skosie i gnieździe', jednostka: 'mm',
           min: 0.0, max: 500.0, rodzaj: :liczba, sekcja: 'szczyty',
-          podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; 900: najkrótszy ' \
+          podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; typ 100: najkrótszy ' \
                       'kawałek 104).' },
         { klucz: 'dach_elementy', domyslna: 'tak', etykieta: 'Belki dachu w modelu (płatwie, krokwie)', rodzaj: :wybor,
           sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Dla obrysu prostokątnego.' },
         { klucz: 'dach_okap', podstawowy: true, domyslna: 500.0, etykieta: 'Okap – wysunięcie krokwi za ścianę', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
         { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
-          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (900: płatwie 6082).' },
+          max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'Od lica szczytu (typ 100: płatwie 6082).' },
 
+        { klucz: 'okap_wience_wypust', domyslna: 2, etykieta: 'Górne wieńce ścian okapowych wypuszczone za szczyt', jednostka: 'szt.',
+          min: 0, max: 6, rodzaj: :calkowita, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'Tyle górnych wieńców ścian okapowych kończy się tak jak płatwie (wysunięcie płatwi za szczyt) – oparcie ' \
+                      'dachu nad szczytem. 0 – zwykły ostatek.' },
+        { klucz: 'wegly_wypust_okap', domyslna: 'nie', etykieta: 'Węgły pod okapem – górne bale do nawisu okapu', rodzaj: :wybor,
+          sekcja: 'szczyty', wybory: TAK_NIE, gdy: { 'szczyty' => ['tak'] },
+          pomoc: 'Górne bale węgłów na ścianach okapowych wysunięte na zewnątrz aż do nawisu okapu i ścięte linią dachu – ' \
+                 'wsporniki pod płatew okapową albo krokwie. Ma sens z płatwią okapową na wypustach (krótsze krokwie, nawis ' \
+                 'bez zastrzałów); przy zwykłym okapie zbędne – więcej drewna i czoła bali na deszczu.' },
+        { klucz: 'wegly_okap_wience', domyslna: 3, etykieta: 'Węgły pod okapem – liczba górnych bali', jednostka: 'szt.',
+          min: 1, max: 8, rodzaj: :calkowita, sekcja: 'szczyty', gdy: { 'wegly_wypust_okap' => ['tak'] } },
         { klucz: 'podbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Podbitka – boazeria widoczna od spodu', rodzaj: :wybor,
           sekcja: 'poszycie',
           wybory: [['nie', 'bez podbitki'], ['pod_platwiami', 'pod płatwiami (wzdłuż spadku)'],
@@ -176,7 +187,7 @@ module ArteMadera
           max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
         { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'tak', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
           sekcja: 'poszycie', wybory: TAK_NIE,
-          podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (jak 900) ' \
+          podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (typ 100) ' \
                       '– deski na płatwiach wzdłuż spadku, styki na płatwiach.' },
         { klucz: 'deski_grubosc', domyslna: 25.0, etykieta: 'Deskowanie – grubość deski', jednostka: 'mm', min: 10.0, max: 80.0,
           rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_deski' => ['tak'] } },

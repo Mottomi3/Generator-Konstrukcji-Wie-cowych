@@ -27,10 +27,13 @@ module ArteMadera
       def przygotuj(sciany, p, dom)
         uwagi = []
         sciany.each { |w| w.delete(:pod_dachem) }
+        sciany.each { |w| w.delete(:pod_dachem_wzdluz) }
         return uwagi if dom.nil?
         iv = dom[:os] == :x ? 1 : 0
         geo = { v_a: dom[:v_a], v_b: dom[:v_b], iv: iv }
         sciany.each do |w|
+          # Węgieł wzdłuż kalenicy na ścianie bez szczytu – górny bal ścina rdzen/sciecie_dachu.rb (w poprzek).
+          w[:pod_dachem_wzdluz] = geo if w[:rodzaj] == :kontrfor && w[:kier][iv].abs < 0.5 && w[:gospodarz][:szczyt].nil?
           next if w[:szczyt] || w[:kier][iv].abs < 0.5
           next if w[:rodzaj] == :zewnetrzna
           w[:pod_dachem] = geo

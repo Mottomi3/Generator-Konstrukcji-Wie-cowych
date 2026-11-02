@@ -193,7 +193,9 @@ Testy.rowne(e[:wreby].map { |a, b| (b - a).round(1) }.uniq, [46.0], 'wrąb = gru
 Testy.rowne(e[:wrab], { bok: 5.0, dol: 8.0 }, 'wrąb 5 z boku, 8 od spodu')
 w2 = sciana(pl, 'W-2')
 g = w2[:otwory].select { |o| o[:gniazdo] }
-Testy.rowne(g.map { |o| (o[:s1] - o[:s0]).round(1) }.uniq, [80.0], 'gniazdo w szczycie: 80 − 2 × 5 + 2 × luz 5')
+Testy.rowne(g.map { |o| (o[:s1] - o[:s0]).round(1) }.uniq, [70.0], 'gniazdo w szczycie = wrąb 80 − 2 × 5, bez luzu – bal dochodzi do dna wrębu (runda 8)')
+zs = pl[:elementy].select { |x| x[:prefiks] == 'P' }.map { |x| x[:polozenie][:poczatek][2] }
+Testy.sprawdz(g.all? { |o| zs.any? { |z| (o[:z0] - z - 8.0).abs < 0.01 } }, 'dno gniazda na spodzie wrębu (spód płatwi + 8)')
 Testy.rowne(kolizje_belek(pl, 'P'), 0, 'płatwie z wrębami bez kolizji z balami')
 poz = pl[:pozycje_elementow].find { |x| x[:wreby] }
 k = Siatka.sprawdz(Projekt.siatka_pozycji(poz)[:sciany])
@@ -222,5 +224,48 @@ czysto(pl, 'działowe do dachu')
 pl = plan_pelny(seg, 'dzialowa_wzdluz_do_dachu' => 'nie')
 Testy.rowne(Wience.wysokosc(pl[:sciany].find { |w| w[:rodzaj] == :dzialowa && (w[:a][1] - 2500).abs < 1 }, pl[:parametry]), okap,
             'nie – działowa do wysokości ścian okapowych')
+
+Testy.grupa('Węgły pod dachem: słupek przy szczycie do płaszczyzny dachu, przy okapie – wieniec nad ścianą (runda 8)')
+pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator')
+p = pl[:parametry]
+geo = { v_a: 22.0, v_b: 6378.0 }
+przy_szczycie = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt] }
+Testy.sprawdz(przy_szczycie.length >= 2, "węgły przy szczytach (#{przy_szczycie.length})")
+luki = przy_szczycie.map do |w|
+  b = w[:bale].max_by { |x| x[:z0] }
+  gora = Bryla.profil(b[:dl], 44.0, b[:h], b[:cechy]).map { |q| [q[:zt_a], q[:zt_b]].max }.max + b[:z0]
+  lin = [Dach.linia_podparcia(geo, w[:a][1] - 22.0, p), Dach.linia_podparcia(geo, w[:a][1] + 22.0, p)]
+  [gora - lin.min, lin.max - gora]
+end
+Testy.sprawdz(luki.all? { |a, b| a > -0.5 && b > -0.01 }, "górny bal słupka sięga płaszczyzny dachu, nie wyżej (#{luki.map { |x| x.map { |y| y.round(1) } }.inspect})")
+Testy.sprawdz(przy_szczycie.all? { |w| w[:bale].any? { |b| b[:cechy].any? { |c| c[:typ] == 'sciecie_dachu' } } }, 'ścięcie w poprzek')
+przy_okapie = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt].nil? }
+okap = Wience.wysokosci(p)[:okapowa]
+Testy.sprawdz(!przy_okapie.empty? && przy_okapie.all? { |w| w[:bale].any? { |b| b[:z0] < okap && b[:z0] + b[:h] > okap } },
+              'węgły na ścianach okapowych – wieniec nad górą ściany (do dachu)')
+Testy.rowne([kolizje_belek(pl, 'P', 5), kolizje_belek(pl, 'K', 5)], [0, 0], 'płatwie i krokwie bez kolizji z węgłami')
+k = Kontrola.wszystko(pl)
+Testy.rowne([k[:kolizje].length, k[:mijanka].length], [0, 0], 'zamki i mijanka')
+wz = nad_linia(pl, 'W-2')
+Testy.sprawdz(wz <= 0.01, format('szczyt pod linią (%.3f)', wz))
+
+Testy.grupa('Górne wieńce okapowe wypuszczone jak płatwie, węgły pod okapem do nawisu (runda 8)')
+pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'wegly_wypust_okap' => 'tak')
+p = pl[:parametry]
+w1 = sciana(pl, 'W-1')
+gorne = w1[:wience].last(2).map { |wn| w1[:bale].select { |b| (b[:z0] - wn[:z0]).abs < 0.01 } }
+Testy.sprawdz(gorne.all? { |l| l.map { |b| b[:s0] }.min < -521.99 && l.map { |b| b[:s1] }.max > 8477.99 },
+              'dwa górne wieńce W-1 od −522 do 8478 (500 za licem szczytów, jak płatwie)')
+nizej = w1[:bale].select { |b| (b[:z0] - w1[:wience][-3][:z0]).abs < 0.01 }
+Testy.rowne([nizej.map { |b| b[:s0] }.min, nizej.map { |b| b[:s1] }.max], [-122.0, 8078.0], 'trzeci od góry – zwykły ostatek')
+Testy.sprawdz(pl[:ostrzezenia].none? { |u| u.include?('skrócone') }, 'styki liczone z wypustami – bez skracania')
+Testy.sprawdz(w1[:bale].all? { |b| b[:dl] <= 5100.01 }, 'bale ≤ 5100')
+kf = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:id] == 'W-1' }
+Testy.sprawdz(kf.all? { |w| w[:bale].map { |b| b[:s0] }.min < -300.0 }, 'węgły pod okapem: górne bale wysunięte na zewnątrz (wspornik)')
+Testy.rowne([kolizje_belek(pl, 'P', 5), kolizje_belek(pl, 'K', 5)], [0, 0], 'płatwie i krokwie bez kolizji z wypustami')
+k = Kontrola.wszystko(pl)
+Testy.rowne([k[:kolizje].length, k[:mijanka].length, k[:za_dlugie].length], [0, 0, 0], 'zamki, mijanka, długości')
+pl0 = plan_pelny(prostokat(0, 0, 8000, 6400), 'okap_wience_wypust' => 0)
+Testy.rowne(sciana(pl0, 'W-1')[:bale].map { |b| b[:s0] }.min, -122.0, 'okap_wience_wypust = 0 – bez wypustów')
 
 Testy.koniec

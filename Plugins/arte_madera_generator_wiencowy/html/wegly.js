@@ -1,12 +1,12 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/wegly.js
-  Zadanie: tabela węgłów (kontrforów) w oknie – jak okna i drzwi: ściana, położenie (od narożnika albo na środku ściany), od [mm].
+  Zadanie: tabela węgłów (kontrforów) w oknie – jak okna i drzwi: ściana, położenie (od narożnika albo na środku ściany), od [mm], wypust wewnątrz i na zewnątrz [mm].
   Tematy: tabela węgłów, węgieł z tabeli, kontrfor w oknie, węgieł na środku ściany, nowy węgieł
   Zależy od: html/wspolne.js (AMGW_DOM), html/okno.html (tabela #tab-wegly)
   Używają: html/okno.js (init, dodaj, zbierz, sciany)
 
-  Wiersz = { sciana, polozenie: 'od' | 'srodek', od } – te same klucze co wejście 'wegly' w Ruby (rdzen/wegly_tabela.rb).
+  Wiersz = { sciana, polozenie: 'od' | 'srodek', od, wewn, zewn (puste – z parametrów) } – te same klucze co wejście 'wegly' w Ruby (rdzen/wegly_tabela.rb).
   Pole „od” przy położeniu „na środku” jest nieaktywne.
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
 */
@@ -53,7 +53,17 @@ var AMGW_WEGLY = (function () {
     od.title = pol === 'srodek' ? 'Węgieł w osi ściany – odległość liczy się sama' : 'Oś węgła od narożnika lica zewnętrznego';
   }
 
-  // Nowy wiersz tabeli z danymi węgła x (sciana, polozenie, od).
+  // Pole wypustu węgła (wewn / zewn) w wierszu tr; puste – z parametrów.
+  function poleWypustu(tr, klucz, wartosc, opis) {
+    var td = el('td');
+    var pole = el('input', { type: 'text', 'data-w': klucz, title: opis, placeholder: 'param.' });
+    pole.value = wartosc === undefined || wartosc === null ? '' : String(wartosc);
+    pole.addEventListener('change', function () { stan.zmiana(); });
+    td.appendChild(pole);
+    tr.appendChild(td);
+  }
+
+  // Nowy wiersz tabeli z danymi węgła x (sciana, polozenie, od, wewn, zewn).
   function dodaj(x) {
     var tr = el('tr');
     var td = el('td');
@@ -76,6 +86,8 @@ var AMGW_WEGLY = (function () {
     od.addEventListener('change', function () { stan.zmiana(); });
     td.appendChild(od);
     tr.appendChild(td);
+    poleWypustu(tr, 'wewn', x.wewn, 'Wypust wewnątrz domu [mm]; puste – z parametru „Węgieł – wypust wewnątrz domu”');
+    poleWypustu(tr, 'zewn', x.zewn, 'Wypust na zewnątrz [mm]; puste – z parametru „Węgieł – wypust na zewnątrz”');
     td = el('td');
     var usun = el('button', { type: 'button', title: 'Usuń węgieł' }, '×');
     usun.addEventListener('click', function () { tr.parentNode.removeChild(tr); stan.zmiana(); });

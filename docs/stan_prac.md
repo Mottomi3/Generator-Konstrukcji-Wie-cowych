@@ -1,12 +1,39 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 7, kompilacja 7 (2026-11-02), wersja 1.0.0. Poprzednio: runda 6, kompilacja 6 (2026-10-26). Testy: `bash testy/uruchom.sh` – 23 zestawy (w tym
-16 na Ruby 2.7.8, jak w SketchUpie 2023, i sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 przez jej API na jej
-atrapie), 1284 sprawdzenia, FAILURES 0; poza zestawem: 160 losowych domów z nowościami rundy 7 (ziarna 3001–3160:
-podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku,
-podwalina 50 × 150, fundamenty, szczyt tarasu) – bez problemów po poprawce sprawdzenia (płatew pod połacią o grubość
-deski przy podbitce na płatwiach – zamierzone). Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź
-`main`, pełna historia rund 1–7; publiczne) + kopia `repozytorium_r7.bundle` na dysku.
+Stan na: runda 8, kompilacja 8 (2026-11-02, wieczór), wersja 1.0.0. Poprzednio: runda 7, kompilacja 7 (2026-11-02). Testy: `bash testy/uruchom.sh` – 23 zestawy (16 także
+na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0), 1331 sprawdzeń, FAILURES 0; poza zestawem:
+140 losowych domów z nowościami rundy 8 (ziarna 4001–4140) bez problemów po poprawkach. Repozytorium:
+`Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–8) + kopia `repozytorium_r8.bundle` na dysku.
+
+## 1b. Nowe w kompilacji 8 (uwagi z 2026-11-02 21:17)
+
+- **Zamek płatwi bez szczeliny**: gniazdo w ścianie = szerokość wrębu (bez luzu gniazda), dno na spodzie wrębu – bal
+  dochodzi do końca zamka z boków i od spodu, ściana zablokowana w płatwiach.
+- **Węgły pod dachem**: słupek węgła przy szczycie dochodzi do płaszczyzny dachu (górny bal ścięty w poprzek, gdy nad
+  zamkiem zostaje drewna: gniazdo + `zamek_min_drewno`); węgły na ścianach okapowych dostają wieniec nad górą ściany,
+  ścięty linią dachu – podpierają płatwie i krokwie.
+- **Węgły niesymetryczne**: `wegiel_wypust_wewn` / `wegiel_wypust_zewn` (domyślnie 100 / 100) i kolumny „Wewn.”, „Zewn.”
+  w tabeli węgłów (pojedynczy węgieł).
+- **Węgły symetrycznie** (`rdzen/symetria_wegly.rb`): ściana równoległa o tym samym zasięgu dostaje styki i węgły
+  w tych samych miejscach; przy „równo” nowe węgły w punktach równego podziału odcinków między ścianami / działowymi,
+  wybór układu po najmniejszej liczbie węgłów razem (pod styki + usztywniające).
+- **Wypusty pod dachem** (`rdzen/wypusty_okapu.rb`): `okap_wience_wypust` (2) górnych wieńców ścian okapowych wypuszczonych
+  za szczyty jak płatwie (styki liczone z wypustami); opcja `wegly_wypust_okap` (domyślnie nie) – górne bale węgłów na
+  ścianach okapowych wysunięte do nawisu okapu, ścięte linią dachu (wsporniki).
+- **Podłoga**: fundament okrągły (`fundament_ksztalt`, `fundament_srednica`, wielokąt 24 boki); rzędy fundamentów
+  przechodzą przez osie działowych (stopa zawsze w osi działowej, także przy tarasie), odcinki między nimi równo;
+  podciąg obniżony albo na równo z podwaliną (`podciag_poziom` – między licami wewnętrznymi podwalin, legary dzielone na
+  podciągu).
+- **Taras**: balustrada z wieńców ścian (`taras_balustrada_rodzaj` = sciany, `rdzen/taras_sciany.rb`) – ściany boczne
+  ciągle przez cały taras do wysokości balustrady, front w tych wieńcach z przerwą na wejście, zamki w narożnikach frontu
+  z zakładką (co druga belka wysunięta o `taras_zakladka_wypust` 100) albo równo z licem, poręcz na jednej wysokości,
+  słupy z wyciętym pasem; szczyt pusty – trójkątny wieniec (`taras_wieniec`: z przekroju płatwi albo podanego, prefiks
+  Wt) – dwie belki od bali spinających do kalenicy, płatwie na nich.
+- **Typy 100–400** zamiast numerów projektów: szablony wbudowane „Typ 100 – domek parterowy na samych płatwiach”,
+  „Typ 200 – … taras na słupach”, „Typ 300 – 1,5 kondygnacji ze stropem, taras między ścianami”, „Typ 400 – dach
+  jednospadowy”; opisy pól i wybory bez „jak 900 / 1100 / 1200 / 1800” (wersje użytkownika: 101, 102…).
+- Poprawki geometrii: ścięcie w poprzek bliskie granicy pasa – płaszczyzna dosunięta do granicy; koniec klina szczytu
+  niżej niż 0,2 mm – ostrze na spodzie (krawędzie krótsze niż tolerancja SketchUpa).
 
 ## 1a. Nowe w kompilacji 7 (uwagi z odbioru kompilacji 6, 2026-11-01)
 
@@ -272,6 +299,22 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
 
+### Runda 8 (kompilacja 8) – uwagi z 2026-11-02 21:17
+
+Wiadomość użytkownika (13 punktów): fundament okrągły, podciągi równomiernie, podciąg obniżony albo na równo z podwaliną,
+fundamenty w osi działowych (przesunięcia przy tarasie), deski tarasu ze ścian albo dołożone, górne wieńce pod okapem
+wypuszczone jak płatwie, opcja górnych węgłów pod okapem do nawisu, węgły pod płatwią mają ją podpierać, słupek węgła
+przy szczycie nie dochodzi do dachu (zdjęcie), węgły niesymetryczne 100 / 200, bal ma wchodzić do końca zamka płatwi
+(szczelina 5 mm), typy zamiast „jak 900 / 1100”, szczyt pusty – trójkątny wieniec, węgły symetrycznie i równy podział.
+Odpowiedzi (2026-11-02 21:2x): podciąg na równo – kończy się przy licu wewnętrznym podwaliny; typy 100–400; wypusty
+węgłów pod okapem – opcja, domyślnie wyłączona; taras: „belki ścian kontynuowane na długość tarasu (bez krótkich
+kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zakładki do wysokości tarasu”.
+- Wykonanie – §1b. Nowe pliki: `rdzen/symetria_wegly.rb`, `rdzen/wypusty_okapu.rb`, `rdzen/taras_sciany.rb`; testy:
+  grupy rundy 8 w `t_szczyty`, `t_wegly`, `t_podloga`, `t_taras`; losowe domy od ziarna 4000 (`dodatki_r8`).
+- Znalezione losowymi domami i poprawione: węgieł na froncie tarasu z pustym szczytem w belce wieńca (węgieł bez
+  oparcia w wieńcu bez bali – pominięty), węgieł styku w miejscu słupa tarasu (strefy słupów zakazane dla węgłów),
+  krawędzie 0,03–0,05 mm (ścięcie w poprzek przy granicy pasa, klin szczytu 0,025 mm nad spodem).
+
 ## 6. Otwarte pytania (przyjęte wartości domyślne – do potwierdzenia)
 
 | # | Pytanie | Przyjęto |
@@ -307,16 +350,20 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
 | F1 | Fundamenty punktowe | 400 × 400, wysokość 400, rozstaw ≤ 2500 (dom 5 × 7: 3 × 4 rzędy), skrajne licem z obrysem |
 | T4 | Słupy tarasu | lico z licem ścian, zamek górny 150, dolny 100 (najwyżej wysokość podwaliny) |
 | B1 | Podbitka | 19 × 121, długość 4000; na krokwiach / na samych płatwiach z aplikacją – nadbitka KROKU 2 |
+| W3 | Węgły symetryczne | ściana równoległa o tym samym zasięgu – te same miejsca; „równo” – punkty równego podziału, gdy nie zwiększa liczby węgłów |
+| O1 | Wypuszczone wieńce okapowe | 2 górne wieńce, do wysunięcia płatwi za szczyt (500); węgły pod okapem do nawisu – opcja (3 górne bale) |
+| T5 | Balustrada z wieńców | do 1000 mm, zakładka 100 w narożnikach frontu |
+| T6 | Trójkątny wieniec | przekrój płatwi (80 × 200) albo podany (80 × 160) |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 7 (kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 8 (kroki 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 7)
+## 8. Ograniczenia (kompilacja 8)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach (belki, połacie, dach jednospadowy, taras) i podłoga tylko dla obrysu prostokątnego; szczyty dla innych obrysów
@@ -337,11 +384,12 @@ dach jednospadowy, taras).
 - Podbitka, fundamenty i podciągi tylko dla domu prostokątnego.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7); kompilacja 7 – do sprawdzenia.
+- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7) i 7 (runda 8); kompilacja 8 – do sprawdzenia.
+- Balustrada z wieńców ścian tylko przy tarasie na słupach (typ 200); trójkątny wieniec tylko przy dachu dwuspadowym.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 7: raport z testu działania (JSON) + scenariusz → poprawki.
+1. Odbiór kompilacji 8: raport z testu działania (JSON) + scenariusz → poprawki.
 2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
    (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po
    zmianach tam: osie krokwi z generatora, kalenicowa wprost w grzbiecie.

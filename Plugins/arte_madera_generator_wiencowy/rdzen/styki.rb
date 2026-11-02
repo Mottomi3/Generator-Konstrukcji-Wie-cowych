@@ -4,7 +4,7 @@
 # Plik: rdzen/styki.rb
 # Zadanie: podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki.
 # Tematy: styk, łączenie bali na długość, mijanka, maksymalna długość bala, układ na przemian, para węgłów, jeden węgieł, styk w osi zamka, szczelina styku, kotwice styków
-# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej)
+# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (pozycje_w_wiencu)
 #
 # Wynik w ścianie: w[:styki] = { uklad:, parzyste: [s], nieparzyste: [s], kotwy: [s], nowe: [s] } – styki w wieńcach
@@ -19,6 +19,8 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'sciany') unless defined?(ArteMadera::GeneratorWiencowy::Sciany)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
 require File.join(File.dirname(__FILE__), 'usztywnienie') unless defined?(ArteMadera::GeneratorWiencowy::Usztywnienie)
+require File.join(File.dirname(__FILE__), 'symetria_wegly') unless defined?(ArteMadera::GeneratorWiencowy::SymetriaWegly)
+require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
 require File.join(File.dirname(__FILE__), 'styki_dzialowe') unless defined?(ArteMadera::GeneratorWiencowy::StykiDzialowe)
 
 module ArteMadera
@@ -34,11 +36,18 @@ module ArteMadera
       # Miejsca styków dla wszystkich ścian (zewnętrznych i działowych); dostawia węgły pod styki. Zwraca ostrzeżenia.
       def planuj(sciany, p, os_kalenicy)
         uwagi = []
-        sciany.select { |w| w[:rodzaj] != :kontrfor }.each do |w|
-          w[:styki] = { uklad: p['styk_uklad'], parzyste: [], nieparzyste: [], kotwy: [], nowe: [] }
+        gotowe = []
+        sciany.select { |w| w[:rodzaj] != :kontrfor }.each do |gosp|
+          gosp[:styki] = { uklad: p['styk_uklad'], parzyste: [], nieparzyste: [], kotwy: [], nowe: [] }
+          # Górne wieńce wypuszczone za szczyty (rdzen/wypusty_okapu.rb) – styki liczone na dłuższym zasięgu.
+          w = WypustyOkapu.do_stykow(gosp, p)
           dl = w[:s_do] - w[:s_od]
+          gotowe << w
           next if dl <= p['max_dlugosc'].to_f + 0.01
-          wynik = StykiDzialowe.planuj(w, p)
+          # Ściana równoległa policzona wcześniej (ten sam zasięg) – styki i węgły w tych samych miejscach (symetria).
+          bl = w[:wegly_reczne] ? nil : SymetriaWegly.blizniak(w, gotowe)
+          wynik = bl ? SymetriaWegly.styki(w, bl, p) : nil
+          wynik ||= StykiDzialowe.planuj(w, p)
           wynik ||= case p['styk_uklad']
                     when 'para', 'jeden_wegiel' then z_regionow(w, p, dobierz_regiony(w, p))
                     else na_przemian(w, p)
@@ -49,8 +58,8 @@ module ArteMadera
                             w[:wegly_reczne] ? ' Węgły tej ściany ustawione ręcznie – dodaj węgieł w widoku ściany.' : '')
             next
           end
-          wynik[:nowe].each { |s| Sciany.dodaj_kontrfor(sciany, w, s, p, :styk, os_kalenicy) }
-          w[:styki] = wynik.merge(uklad: p['styk_uklad'])
+          wynik[:nowe].each { |s| Sciany.dodaj_kontrfor(sciany, gosp, s, p, :styk, os_kalenicy) }
+          gosp[:styki] = w[:styki] = wynik.merge(uklad: p['styk_uklad'])
         end
         uwagi
       end
@@ -95,15 +104,44 @@ module ArteMadera
       def na_przemian(w, p)
         lmax = p['max_dlugosc'].to_f
         dl = w[:s_do] - w[:s_od]
-        kmin = 2 * ((dl / lmax).ceil - 1)
         kotwy = kotwice(w, p)
         siatka = wolna_siatka(w, p)
+        wolny = przemian_siatka(w, p, kotwy, siatka, dl, lmax)
+        return wolny unless p['wegly_rozmieszczenie'] == 'rowno'
+        # Równo: nowe węgły w punktach równego podziału odcinków między ścianami, gdy nie trzeba ich przez to więcej.
+        r = przemian_siatka(w, p, kotwy, SymetriaWegly.podzialy(w, p), dl, lmax)
+        return wolny if r.nil?
+        return r if wolny.nil? || razem_wegli(w, p, r[:nowe]) <= razem_wegli(w, p, wolny[:nowe])
+        wolny
+      end
+
+      # Ile węgłów będzie na ścianie z nowymi węgłami pod styki: nowe + usztywniające, których wymagają światła dłuższe
+      # niż limit (szacunek do wyboru między równym podziałem a dowolnym miejscem).
+      def razem_wegli(w, p, nowe)
+        t = Parametry.grubosc(p)
+        limit = Usztywnienie.limit_swiatla(p)
+        osie = (w[:skrzyzowania].map { |k| k[:s] } + nowe).sort
+        osie.each_cons(2).inject(nowe.length) do |n, (a, b)|
+          swiatlo = b - a - t
+          swiatlo > limit + 0.5 ? n + ((swiatlo - limit) / (limit + t) - 1e-9).ceil : n
+        end
+      end
+
+      # Układ na przemian z nowymi węgłami z listy miejsc siatka: najmniej nowych węgłów, potem najmniej kotwic; nil – nie da się.
+      def przemian_siatka(w, p, kotwy, siatka, dl, lmax)
+        kmin = 2 * ((dl / lmax).ceil - 1)
         najl = nil
+        ocena = nil
         (kmin..(kmin + 4)).each do |k|
           r = przemian_k(w, p, k, kotwy, siatka)
           next if r.nil?
-          najl = r if najl.nil? || r[:nowe].length < najl[:nowe].length
-          break if najl[:nowe].empty?
+          # Najmniej węgłów razem (pod styki + usztywniające, które będą potrzebne), potem najmniej nowych.
+          o = [razem_wegli(w, p, r[:nowe]), r[:nowe].length]
+          if najl.nil? || (o <=> ocena) < 0
+            najl = r
+            ocena = o
+          end
+          break if ocena[0].zero?
         end
         return nil if najl.nil?
         a = najl[:kotwy]

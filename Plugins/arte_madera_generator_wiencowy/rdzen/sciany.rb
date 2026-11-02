@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/sciany.rb
 # Zadanie: ściany z rozpoznanego obrysu – osie, zasięgi bali z ostatkami, skrzyżowania, kontrfory, kierunek względem kalenicy, numeracja W-n.
-# Tematy: ściana, oś ściany, ostatek, narożnik L, połączenie T, skrzyżowanie X, kontrfor, wolny koniec, numeracja ścian, kierunek A/B, kalenica, narożnik wklęsły
+# Tematy: ściana, oś ściany, ostatek, wypust węgła wewnątrz i na zewnątrz, narożnik L, połączenie T, skrzyżowanie X, kontrfor, wolny koniec, numeracja ścian, kierunek A/B, kalenica, narożnik wklęsły
 # Zależy od: rdzen/geometria.rb, rdzen/parametry.rb
 # Używają: rdzen/projekt.rb, rdzen/styki.rb (dodaj_kontrfor), rdzen/wience.rb, rdzen/bale.rb, rdzen/zamek.rb
 #
@@ -189,21 +189,34 @@ module ArteMadera
         nil
       end
 
-      # Nowy kontrfor (słupek z odcinków 2 × ostatek + grubość) w miejscu s ściany-gospodarza; zwraca ścianę kontrforu.
-      def dodaj_kontrfor(sciany, gosp, s, p, zrodlo, os_kalenicy)
+      # Nowy kontrfor (słupek: wypust wewnątrz + grubość + wypust na zewnątrz) w miejscu s ściany-gospodarza; ostatki –
+      # { wewn:, zewn: } z wiersza tabeli węgłów (nil – z parametrów); zwraca ścianę kontrforu.
+      def dodaj_kontrfor(sciany, gosp, s, p, zrodlo, os_kalenicy, ostatki = nil)
         t = Parametry.grubosc(p)
-        o = p['ostatek'].to_f
         c = G.add(gosp[:a], G.mul(gosp[:kier], s))
         d = gosp[:nor].dup
         d = G.mul(d, -1.0) if d[0] < -0.5 || d[1] < -0.5
+        o_od, o_do = wypusty_kontrforu(sciany, gosp, c, d, p, ostatki || {})
         licznik = [sciany.map { |w| w[:k] }.max.to_i]
-        kf = sciana(licznik, :kontrfor, c, c, d).merge(s_od: -(t / 2.0 + o), s_do: t / 2.0 + o, ref: -(t / 2.0 + o),
+        kf = sciana(licznik, :kontrfor, c, c, d).merge(s_od: -(t / 2.0 + o_od), s_do: t / 2.0 + o_do, ref: -(t / 2.0 + o_od),
                                                        gospodarz: gosp, zrodlo: zrodlo)
         kf[:kierunek] = kf[:os] == os_kalenicy ? :A : :B
         sciany << kf
         polacz(gosp, kf, c)
         gosp[:skrzyzowania].sort_by! { |k| k[:s] }
         kf
+      end
+
+      # Wypusty kontrforu [na początku osi (−d), na końcu (+d)] [mm]: przy ścianie zewnętrznej strona wewnątrz domu dostaje
+      # wypust wewnętrzny, druga – zewnętrzny (wegiel_wypust_wewn / _zewn albo z wiersza tabeli); przy działowej obie
+      # strony są wewnątrz.
+      def wypusty_kontrforu(sciany, gosp, c, d, p, ostatki)
+        wewn = Parametry.liczba(ostatki['wewn']) || p['wegiel_wypust_wewn'].to_f
+        zewn = Parametry.liczba(ostatki['zewn']) || p['wegiel_wypust_zewn'].to_f
+        return [wewn, wewn] unless gosp[:rodzaj] == :zewnetrzna
+        obrys = sciany.select { |w| w[:rodzaj] == :zewnetrzna }.sort_by { |w| w[:k] }.map { |w| w[:a] }
+        do_wewnatrz = obrys.length >= 3 && G.wewnatrz?(G.add(c, G.mul(d, Parametry.grubosc(p))), obrys)
+        do_wewnatrz ? [zewn, wewn] : [wewn, zewn]
       end
 
       # Numeracja W-n: zewnętrzne od dolnego lewego narożnika przeciwnie do wskazówek zegara, potem działowe, potem kontrfory.

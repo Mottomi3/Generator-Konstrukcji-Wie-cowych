@@ -4,7 +4,7 @@
 # Plik: rdzen/taras.rb
 # Zadanie: taras przed ścianą szczytową domu prostokątnego – obrys przedłużony o głębokość tarasu, ściana domu jako działowa ze szczytem, wariant 1100 (górne wieńce ścian nad tarasem jako podciąg na słupach) albo 1200 (ściany boczne pełne, front otwarty), słupy tarasu.
 # Tematy: taras, wariant 1100, wariant 1200, podciąg z bali, słupy tarasu, front tarasu, ściana domu przy tarasie, głębokość tarasu, wejście na taras, ostatek przy tarasie, przęsła balustrady
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/elementy.rb, rdzen/sciany.rb (oś kalenicy)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/elementy.rb, rdzen/sciany.rb (oś kalenicy), rdzen/taras_sciany.rb (balustrada z wieńców ścian)
 # Używają: rdzen/projekt.rb, rdzen/sciany.rb (opis ściany), rdzen/szczyty.rb (szczyt ściany domu), rdzen/bale.rb (zasięg wieńca), rdzen/usztywnienie.rb, rdzen/taras_balustrada.rb, rdzen/taras_slupy.rb, rdzen/taras_szczyt.rb, rdzen/wience.rb (półbal frontu – w[:taras][:z_polbal])
 #
 # Narysowany obrys = dom. Taras (parametr taras) dokłada generator przed ścianą szczytową po stronie taras_strona
@@ -24,6 +24,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'sciany') unless defined?(ArteMadera::GeneratorWiencowy::Sciany)
+require File.join(File.dirname(__FILE__), 'taras_sciany') unless defined?(ArteMadera::GeneratorWiencowy::TarasSciany)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -45,7 +46,7 @@ module ArteMadera
         pts = ob[:obrys]
         return ['Taras: tylko przy obrysie prostokątnym – pominięty.'] unless prostokat?(pts)
         if p['taras'] == 'podciag' && p['dach_rodzaj'] == 'jednospadowy'
-          return ['Taras z podciągiem (jak 1100) tylko przy dachu dwuspadowym – pominięty (ściany pełne – jak 1200 – działają).']
+          return ['Taras na słupach (typ 200) tylko przy dachu dwuspadowym – pominięty (ściany pełne – typ 300 – działają).']
         end
         os = Sciany.os_kalenicy(pts, p['kalenica'])
         iu = os == :x ? 0 : 1
@@ -153,6 +154,11 @@ module ArteMadera
       def zasieg(w, z0, zas, p)
         tr = w[:taras]
         return zas if tr.nil? || zas.nil?
+        if TarasSciany.wlaczona?(p) && %i[front bok].include?(tr[:rola]) && z0 < TarasSciany.limit(w) - 0.01
+          kurs = Wience.dla_sciany(w, p).find { |k| (k[:z0] - z0).abs < 0.01 }
+          r = TarasSciany.zasieg(w, z0, kurs ? kurs[:h] : Parametry.krycie(p), zas, p)
+          return r if r
+        end
         case tr[:rola]
         when :front
           return nil if tr[:wariant] == 'sciany'
@@ -205,6 +211,22 @@ module ArteMadera
         przy_c1 ? [c1, c1 + szer] : [c2 - szer, c2]
       end
 
+      # Strefy ściany tarasu (s), w których nie może stanąć węgieł – słupy (front i ściany boczne nad tarasem) z zapasem
+      # pół grubości ściany i odstępu skrzyżowań: [[lo, hi]].
+      def strefy_slupow(w, p)
+        tr = w[:taras]
+        return [] unless tr && tr[:wariant] == 'podciag' && %i[front bok].include?(tr[:rola])
+        b = Parametry.przekroj(p, 'taras_slup_przekroj')[0]
+        zapas = b / 2.0 + Parametry.grubosc(p) / 2.0 + p['min_odstep_skrzyzowan'].to_f
+        osie = if tr[:rola] == :front
+                 slupy_frontu(w, p)[:slupy]
+               else
+                 lo, hi = [tr[:s_dom], tr[:s_front]].sort
+                 posrednie(lo, hi, p) + [tr[:s_front]]
+               end
+        osie.map { |s| [s - zapas, s + zapas] }
+      end
+
       # Słupy pośrednie między osiami a…z (równo, rozstaw nie większy niż taras_slupy_rozstaw_max).
       def posrednie(a, z, p)
         n = ((z - a) / p['taras_slupy_rozstaw_max'].to_f - 1e-9).ceil
@@ -215,7 +237,7 @@ module ArteMadera
       # dolnych bali do słupa narożnego (podzielone słupami pośrednimi), front – między słupami poza wejściem.
       def przesla(sciany, p)
         front = sciany.find { |w| front?(w) }
-        return [] if front.nil? || front[:taras][:wariant] != 'podciag'
+        return [] if front.nil? || front[:taras][:wariant] != 'podciag' || TarasSciany.wlaczona?(p)
         b, g = Parametry.przekroj(p, 'taras_slup_przekroj')
         wynik = []
         sf = slupy_frontu(front, p)

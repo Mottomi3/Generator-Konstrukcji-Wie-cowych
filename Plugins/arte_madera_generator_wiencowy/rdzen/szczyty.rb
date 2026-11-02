@@ -14,6 +14,7 @@
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
@@ -192,8 +193,11 @@ module ArteMadera
         punkty.insert(1, sk) if sk && sk > s0 + 0.5 && sk < s1 - 0.5
         wynik = []
         punkty.each_cons(2) do |a, b|
-          za = yield(a) - z0
-          zb = yield(b) - z0
+          # Koniec klina wyżej od spodu o mniej niż 0,2 mm – ostrze na spodzie (bez krawędzi krótszej niż tolerancja SketchUpa).
+          za = [yield(a) - z0, 0.0].max
+          zb = [yield(b) - z0, 0.0].max
+          za = 0.0 if za < Bryla::SCAL
+          zb = 0.0 if zb < Bryla::SCAL
           next if za >= h - 0.01 && zb >= h - 0.01
           wynik << { typ: 'skos_gora', x0: a - s0, x1: b - s0, z0: za, z1: zb }
         end
@@ -235,7 +239,9 @@ module ArteMadera
           if w_poprzek
             v0 = w[:a][iv]
             b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
-            s = [(pl[:v] - b2 - luz - v0) * w[:kier][iv], (pl[:v] + b2 + luz - v0) * w[:kier][iv]].sort
+            # Z zamkiem bal dochodzi do dna wrębu z boków (bez luzu gniazda) – ściana zablokowana w płatwi.
+            lz = ZamekPlatwi.wlaczone?(p) ? 0.0 : luz
+            s = [(pl[:v] - b2 - lz - v0) * w[:kier][iv], (pl[:v] + b2 + lz - v0) * w[:kier][iv]].sort
             next if s[1] <= w[:s_od] + 0.5 || s[0] >= w[:s_do] - 0.5
             z0 = ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
             dom[:przejscia] << { v: pl[:v], u: w[:a][1 - iv] }

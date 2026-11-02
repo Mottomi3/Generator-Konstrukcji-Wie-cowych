@@ -22,7 +22,7 @@ module ArteMadera
           sekcja: 'podloga', wybory: TAK_NIE },
         { klucz: 'podwalina_przekroj', podstawowy: true, domyslna: '100x100', etykieta: 'Podwalina pod ścianami (szer. × wys.)',
           jednostka: 'mm', rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'] },
-          podpowiedz: 'Projekt 900: 100 × 100. 50 × 150 (na kant) – równo z legarami 50 × 150, łatwo skręcić śrubami bez zamków.' },
+          podpowiedz: 'Typ 100: 100 × 100. 50 × 150 (na kant) – równo z legarami 50 × 150, łatwo skręcić śrubami bez zamków.' },
         { klucz: 'podwalina_laczenie', domyslna: 'zaklad', etykieta: 'Podwaliny w narożnikach', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'] },
           wybory: [['zaklad', 'na zakład (pół wysokości)'], ['sruby', 'na styk, bez zamków – skręcane śrubami']],
@@ -44,7 +44,7 @@ module ArteMadera
                    ['reczny', 'ręczny – podany niżej (tylko sprawdzenie)']] },
         { klucz: 'legar_przekroj', podstawowy: true, domyslna: '50x100', etykieta: 'Legar – przekrój do sprawdzenia', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'legary_dobor' => ['reczny'] },
-          podpowiedz: 'Wpisz przekrój „szer. x wys.”, np. 50x150 – wynik sprawdzenia pod polem i w podpowiedziach. Projekt 900: 50 × 100.' },
+          podpowiedz: 'Wpisz przekrój „szer. x wys.”, np. 50x150 – wynik sprawdzenia pod polem i w podpowiedziach. Typ 100: 50 × 100.' },
         { klucz: 'podciagi', podstawowy: true, domyslna: 'auto', etykieta: 'Podciągi pod legarami', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'] },
           wybory: [['auto', 'gdy wymaga ich legar (najmniej drewna)'], ['tak', 'tak – co najwyżej co podany rozstaw'],
@@ -58,13 +58,27 @@ module ArteMadera
                       'w ich liniach.' },
         { klucz: 'podpora_przekroj', domyslna: '100x150', etykieta: 'Podciąg pod legarami (podpora pośrednia)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] } },
+        { klucz: 'podciag_poziom', domyslna: 'pod', etykieta: 'Podciąg – poziom', rodzaj: :wybor, sekcja: 'podloga',
+          gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] },
+          wybory: [['pod', 'obniżony – pod podwalinami, legary w całości na nim'],
+                   ['rowno', 'na równo z podwaliną – między podwalinami, legary dzielone na podciągu']],
+          pomoc: 'Obniżony: podciąg biegnie pod podwalinami od lica do lica obrysu, legary leżą na nim w całości. Na równo: ' \
+                 'wierzch podciągu równo z wierzchem podwalin, podciąg między licami wewnętrznymi podwalin (skręcony), legary ' \
+                 'dzielone na podciągu – każdy kawałek o połowę krótszy, od podwaliny do podciągu; podłoga niżej o wysokość ' \
+                 'podciągu.' },
         { klucz: 'fundamenty', podstawowy: true, domyslna: 'tak', etykieta: 'Fundamenty punktowe', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'] }, wybory: TAK_NIE,
           pomoc: 'Stopy (bloczki, słupki betonowe) pod podwalinami i podciągami, w siatce: rzędy równo co najwyżej „rozstaw ' \
                  'fundamentów” w obu kierunkach, skrajne licem z licem podwalin – nic nie wychodzi poza obrys. Dodatkowe stopy pod ' \
-                 'podwalinami działowych w liniach siatki. Podciągi leżą w liniach fundamentów.' },
+                 'podwalinami działowych – zawsze w osi działowej (rzędy siatki przechodzą przez osie działowych, odcinki między nimi dzielone ' \
+                 'równo). Podciągi leżą w liniach fundamentów.' },
+        { klucz: 'fundament_ksztalt', domyslna: 'kwadrat', etykieta: 'Fundament punktowy – kształt w rzucie', rodzaj: :wybor,
+          sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'fundamenty' => ['tak'] },
+          wybory: [['kwadrat', 'prostokątny – wymiary niżej'], ['okragly', 'okrągły – średnica niżej (np. bloczek w rurze)']] },
         { klucz: 'fundament_przekroj', domyslna: '400x400', etykieta: 'Fundament punktowy – wymiary w rzucie', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'fundamenty' => ['tak'] } },
+          rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'fundamenty' => ['tak'], 'fundament_ksztalt' => ['kwadrat'] } },
+        { klucz: 'fundament_srednica', domyslna: 400.0, etykieta: 'Fundament punktowy – średnica', jednostka: 'mm', min: 100.0,
+          max: 1500.0, rodzaj: :liczba, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'fundamenty' => ['tak'], 'fundament_ksztalt' => ['okragly'] } },
         { klucz: 'fundament_wysokosc', domyslna: 400.0, etykieta: 'Fundament punktowy – wysokość', jednostka: 'mm', min: 50.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'fundamenty' => ['tak'] },
           podpowiedz: 'Część nad gruntem do rysunku (bez części w gruncie).' },

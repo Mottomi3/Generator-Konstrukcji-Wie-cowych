@@ -22,6 +22,8 @@ module LosoweDomy
   ZIARNA_Z_TARASEM = 2000
   # Ziarna od tego numeru dostają losowe nowości rundy 7 (podbitka, zamki płatwi, styki w zamku działowej, fundamenty…).
   ZIARNA_R7 = 3000
+  # Ziarna od tego numeru dostają losowe nowości rundy 8 (wypusty pod okapem, węgły niesymetryczne, podłoga, taras…).
+  ZIARNA_R8 = 4000
 
   module_function
 
@@ -77,6 +79,7 @@ module LosoweDomy
     dodatki_r5(Random.new(ziarno * 104_729 + 31), p, opis)
     taras(Random.new(ziarno * 15_485_863 + 7), p, opis) if ziarno >= ZIARNA_Z_TARASEM
     dodatki_r7(Random.new(ziarno * 2_750_159 + 3), p, opis) if ziarno >= ZIARNA_R7
+    dodatki_r8(Random.new(ziarno * 3_331_333 + 11), p, opis) if ziarno >= ZIARNA_R8
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -164,6 +167,25 @@ module LosoweDomy
             "węgieł środek #{p['wegly_srodek']}, podwalina #{p['podwalina_przekroj'] || '100x100'}, szczyt tarasu #{p['taras_szczyt']}"
   end
 
+  # Dodatki rundy 8 (osobne losowanie, ziarna od ZIARNA_R8): wypuszczone górne wieńce okapowe, węgły pod okapem do
+  # nawisu, węgły niesymetryczne, podciąg na równo, fundament okrągły, balustrada z wieńców ścian, trójkątny wieniec.
+  def dodatki_r8(r, p, opis)
+    p['okap_wience_wypust'] = wybierz(r, %w[0 1 2 2 3])
+    p['wegly_wypust_okap'] = wybierz(r, %w[nie nie tak])
+    p['wegly_okap_wience'] = wybierz(r, %w[2 3 4])
+    p['wegiel_wypust_zewn'] = wybierz(r, %w[100 100 200])
+    p['wegiel_wypust_wewn'] = wybierz(r, %w[100 100 150])
+    p['podciag_poziom'] = wybierz(r, %w[pod rowno])
+    p['podciagi'] = wybierz(r, %w[auto tak tak])
+    p['fundament_ksztalt'] = wybierz(r, %w[kwadrat okragly])
+    p['taras_balustrada_rodzaj'] = wybierz(r, %w[przesla sciany])
+    p['taras_zakladka'] = wybierz(r, %w[tak nie])
+    p['taras_wieniec'] = wybierz(r, %w[platwa wlasny brak])
+    opis << "r8: wypust okapu #{p['okap_wience_wypust']}, węgły pod okapem #{p['wegly_wypust_okap']}, węgieł zewn. " \
+            "#{p['wegiel_wypust_zewn']}, podciąg #{p['podciag_poziom']}, fundament #{p['fundament_ksztalt']}, balustrada " \
+            "#{p['taras_balustrada_rodzaj']}, wieniec szczytu #{p['taras_wieniec']}"
+  end
+
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
@@ -232,7 +254,7 @@ module LosoweDomy
     nazwy = (pl[:pozycje] + pl[:pozycje_elementow]).map { |x| x[:nazwa] }
     problemy << 'powtórzone nazwy pozycji' unless nazwy.uniq.length == nazwy.length
     if belki
-      %w[P K S Pb].each do |pr|
+      %w[P K S Pb Wt].each do |pr|
         n = kolizje_belek(pl, pr, 4)
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end

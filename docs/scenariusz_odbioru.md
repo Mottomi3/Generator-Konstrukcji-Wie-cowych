@@ -1,14 +1,33 @@
-# Scenariusz odbioru – kompilacja 7
+# Scenariusz odbioru – kompilacja 8
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 6). Uruchom SketchUpa ponownie. W opisie rozszerzenia „Kompilacja 7 (2026-11-02)”.
+   (zastępuje kompilację 7). Uruchom SketchUpa ponownie. W opisie rozszerzenia „Kompilacja 8 (2026-11-02)”.
    Aplikacja do dachów (ArteMadera Roof) **3.7.0** zainstalowana – do kroków 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
    i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 9 domów „w porządku” (ósmy: dach
    jednospadowy, dziewiąty: taras jak 1100). **Prześlij ten plik.** Model po teście pusty.
+**Nowe w kompilacji 8 (uwagi z 2 listopada wieczorem):**
+
+2i. **Zamek płatwi.** Dom 7000 × 5000 → w modelu płatew w szczycie: bal dochodzi do dna wrębu z obu boków i od spodu,
+   bez szczeliny 5 mm.
+2j. **Słupek węgła przy szczycie.** Prostokąt 8000 × 6400 (węgły na szczytach): górny bal słupka ścięty skośnie do
+   płaszczyzny dachu, bez przerwy pod dachem; węgły na ścianach okapowych – wieniec nad ścianą, ścięty linią dachu.
+2k. **Węgły symetryczne i równo.** Prostokąt 12000 × 6000: węgły na W-1 i W-3 w tych samych miejscach, odstępy równe;
+   „Węgieł – wypust na zewnątrz” 200 → słupki 100 w środku, 200 na zewnątrz; w tabeli węgłów kolumny Wewn. / Zewn.
+2l. **Wypuszczone wieńce.** Dwa górne wieńce ścian okapowych wychodzą za szczyty tak jak płatwie (500). „Węgły pod
+   okapem – górne bale do nawisu okapu”: tak → górne bale węgłów na ścianach okapowych wysunięte i ścięte dachem.
+2m. **Podłoga.** „Fundament – kształt”: okrągły, średnica 300 → stopy okrągłe. Dom z tarasem: stopy pod ścianą domu
+   w jej osi. „Podciąg – poziom”: na równo → podciąg między podwalinami, wierzch równo z nimi, legary podzielone.
+2n. **Balustrada z wieńców ścian.** Taras na słupach, „Balustrada – z czego”: z wieńców ścian → ściany boczne ciągłe
+   do frontu (do 1 m), front z przerwą na wejście, w narożnikach frontu co druga belka wysunięta 100; zakładka „nie” →
+   końce równo z licem.
+2o. **Szczyt pusty.** „Szczyt nad tarasem”: pusty → nad balem spinającym dwie belki (trójkątny wieniec) aż do kalenicy,
+   płatwie leżą na nich.
+2p. **Typy.** Lista szablonów: Typ 100, 200, 300, 400 – wczytaj kolejno; w opisach pól nie ma „jak 900 / 1100”.
+
 **Nowe w kompilacji 7 (Twoje uwagi do kompilacji 6):**
 
 2a. **Okno.** Generuj dom… → „Dach”: dwuspadowy – pola „Jednospadowy – …” ukryte; jednospadowy – pokazują się.

@@ -35,7 +35,7 @@ module ArteMadera
       def lista
         [
           dom('Domek 4 × 4 – bez łączeń i węgłów', prostokat(0, 0, 4000, 4000), {}, []),
-          dom('Jak 900 – 4 × 3, okno i drzwi', prostokat(0, 0, 4000, 3000), { 'liczba_wiencow' => 16 },
+          dom('Typ 100 – 4 × 3, okno i drzwi', prostokat(0, 0, 4000, 3000), { 'liczba_wiencow' => 16 },
               [otwor('W-1', 1000, 1020, 1010, 900, 'O1'), otwor('W-3', 1500, 930, 2100, 0, 'D1')]),
           dom('Dom 7 × 4,5 – działowa, węgieł, bale do 5 m',
               prostokat(0, 0, 7000, 4500) + [[[3500, 0], [3500, 4500]], [[1500, -150], [1500, 150]]],
@@ -53,7 +53,7 @@ module ArteMadera
           dom('Dach jednospadowy 15°, szczyt na działowej, krokwie w jednym kawałku', prostokat(0, 0, 6000, 4500) + [[[3000, 0], [3000, 4500]]],
               { 'dach_rodzaj' => 'jednospadowy', 'dach_kat' => 15, 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator',
                 'szczyty_na_dzialowych' => 'tak' }, [otwor('W-1', 1200, 1020, 1010, 900, 'O1')]),
-          dom('Taras jak 1100 – podciąg na słupach, balustrada, wejście z lewej', prostokat(0, 0, 4000, 4000),
+          dom('Typ 200 – taras na słupach, balustrada, wejście z lewej', prostokat(0, 0, 4000, 4000),
               { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'taras_wejscie' => 'lewa', 'liczba_wiencow' => 20 },
               [otwor('W-5', 1000, 930, 2100, 0, 'D1')])
         ]

@@ -4,7 +4,7 @@
 # Plik: rdzen/taras_slupy.rb
 # Zadanie: słupy tarasu z podciągiem – licem równo z licami ścian zewnętrznych, zamek górny (część słupa za balem idzie w górę obok bala) i zamek dolny (część słupa obok podwaliny schodzi w dół).
 # Tematy: słupy tarasu, słup pod węgłem, słup licem z lica ściany, zamek górny słupa, zamek dolny słupa, słup na podwalinie, słup narożny tarasu
-# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie)
+# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie), rdzen/taras_sciany.rb (balustrada z wieńców – pas słupa)
 # Używają: rdzen/projekt.rb (belki – słupy S)
 #
 # Słup stoi pod podciągiem (spód bali frontu i ścian bocznych nad tarasem – ten sam poziom, Taras.z_podciagu). Zewnętrzne
@@ -87,6 +87,12 @@ module ArteMadera
         if dol
           cechy << pas_lica(0.0, ld, dol[1], do_srodka)
           cechy << pas_boku(0.0, ld, dol[1], naroznik) if naroznik
+        end
+        # Balustrada z wieńców ścian: bale biegną przed słupem (pas ściany wycięty do wierzchu balustrady).
+        bal = TarasSciany.wlaczona?(p) ? TarasSciany.gora_sciany(w, p) : nil
+        if bal
+          cechy << pas_lica(ld, ld + bal, t, do_srodka)
+          cechy << pas_boku(ld, ld + bal, t, naroznik) if naroznik
         end
         Elementy.nowy('S', dl, b, g, poczatek(w, s, b, g, t, do_srodka, -ld), [0.0, 0.0, 1.0],
                       [w[:kier][0], w[:kier][1], 0.0], [w[:nor][0], w[:nor][1], 0.0], cechy)

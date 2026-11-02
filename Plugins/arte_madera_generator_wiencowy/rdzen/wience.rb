@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/wience.rb
 # Zadanie: poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian.
-# Tematy: wieniec, poziom wieńca, półbal, półbal frontu tarasu, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość, wieńce szczytu, wieńce niższej działowej, nadstawka
+# Tematy: wieniec, wieniec węgła nad ścianą, poziom wieńca, półbal, półbal frontu tarasu, pierwszy wieniec, wysokość ściany, przesunięcie o pół wieńca, góra ścian, kontrfor – wysokość, wieńce szczytu, wieńce niższej działowej, nadstawka
 # Zależy od: rdzen/parametry.rb (kolumny dopełnienia w[:dopelnienie] liczy rdzen/dopelnienie.rb)
 # Używają: rdzen/bale.rb, rdzen/projekt.rb (wysokości do okna), rdzen/dopelnienie.rb, rdzen/szczyty.rb (gniazda)
 #
@@ -32,6 +32,11 @@ module ArteMadera
         gosp = wlasne(w[:gospodarz], p)
         gora = gosp.last[:z0] + gosp.last[:h]
         wybrane = lista.select { |k| k[:z0] + k[:h] <= gora + 0.01 }
+        # Ściana bez szczytu: jeszcze wieniec nad górą gospodarza (na jego górnym balu) – pod dachem ścięty linią dachu,
+        # podpiera płatwie i krokwie (rdzen/bale.rb#kontrfor_obecny? decyduje, czy powstaje; runda 8).
+        dalsze = w[:gospodarz][:szczyt].nil? ? pelna_lista(w[:kierunek], false, p, gora + Parametry.krycie(p)) : []
+        nad = dalsze.find { |k| k[:z0] < gora - 0.01 && k[:z0] + k[:h] > gora + 0.01 }
+        wybrane << nad.merge(nad_gospodarzem: true) if nad
         wybrane.each_with_index { |k, i| k[:nr] = i + 1 }
         wybrane
       end

@@ -15,7 +15,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience taras taras_balustrada taras_slupy taras_szczyt otwory usztywnienie wegly_tabela styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
+  %w[geometria parametry obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt otwory usztywnienie wegly_tabela symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
@@ -63,11 +63,13 @@ module ArteMadera
         plan[:ostrzezenia].concat(PodDachem.przygotuj(sciany, p, sz[:dom]))
         bale = Bale.zbuduj(sciany, p)
         TarasBalustrada.dodaj!(Taras.przesla(sciany, p), bale, p)
+        TarasSciany.porecz!(sciany, p)
         SkosPrzyNarozniku.przytnij!(sciany, bale, p)
         SciecieDachu.przytnij!(bale[:bale], p, sz[:dom])
         plan[:ostrzezenia].concat(bale[:ostrzezenia])
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
         ProfilBala.oznacz(bale[:bale], p)
+        SciecieDachu.wyrownaj!(bale[:bale], p)
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
@@ -86,6 +88,7 @@ module ArteMadera
         u = Podbitka.uwaga(p)
         plan[:ostrzezenia] << u if u
         plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
+        plan[:elementy].concat(TarasSzczyt.wience(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
         plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]).map { |h| h.merge(sekcja: 'szczyty') })
         pod = Podloga.zaplanuj(plan[:sciany], p)

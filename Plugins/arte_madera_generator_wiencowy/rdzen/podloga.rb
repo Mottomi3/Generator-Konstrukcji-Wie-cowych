@@ -43,7 +43,7 @@ module ArteMadera
         return wynik if przekroj.nil?
         wynik[:legar] = przekroj
         wynik[:podpory] = poz.flatten.length
-        wynik[:elementy].concat(legary(u, p, przekroj))
+        wynik[:elementy].concat(legary(u, p, przekroj, Podciagi.rowno?(p) ? poz.flatten : []))
         wynik[:elementy].concat(Podciagi.elementy(u, p, poz, przekroj[1]) { |d, e| punkt(u, d, e) })
         wynik[:podpowiedzi].concat(Podciagi.podpowiedzi(u, p, poz, przekroj[1], przesla(u)))
         fundamenty(u, p, poz, przekroj[1], wynik)
@@ -54,7 +54,7 @@ module ArteMadera
       def fundamenty(u, p, poz, h_legara, wynik)
         return unless Fundamenty.wlaczone?(p)
         hp = Parametry.przekroj(p, 'podpora_przekroj')[1]
-        z_pd = Podciagi.z_wierzchu(u, h_legara) - hp
+        z_pd = Podciagi.z_wierzchu(u, h_legara, p) - hp
         dz = u[:dzialowe].flat_map do |w|
           odcinki_dzialowej(u, w).map do |s0, s1|
             [s0, s1].map { |x| q = G.add(w[:a], G.mul(w[:kier], x)); [q[u[:id]], q[u[:ie]]] }
@@ -65,7 +65,7 @@ module ArteMadera
         s = Fundamenty.siatka(u, p)
         roz = [s[:d], s[:e]].map { |l| l.each_cons(2).map { |a, b| b - a }.max || 0.0 }
         wynik[:podpowiedzi] << { poziom: 'ok', tekst: format('Fundamenty punktowe %s: %d szt. – rzędy %d × %d (rozstaw %s × %s m), w obrysie, ' \
-                                                             'także pod podwalinami działowych.', Parametry.tekst_przekroju(Parametry.przekroj(p, 'fundament_przekroj')),
+                                                             'także pod podwalinami działowych (w ich osi).', Fundamenty.opis(p),
                                                              stopy.length, s[:d].length, s[:e].length,
                                                              format('%.2f', roz[0] / 1000.0), format('%.2f', roz[1] / 1000.0)) }
       end
@@ -314,14 +314,17 @@ module ArteMadera
         end
       end
 
-      # Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i omija podwaliny wzdłuż.
-      def legary(u, p, bh)
+      # Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i podciągów na równo
+      # z podwaliną (podciagi – ich osie d), omija podwaliny wzdłuż.
+      def legary(u, p, bh, podciagi = [])
         b, h = bh
         bp = u[:pw][0]
+        bd = Parametry.przekroj(p, 'podpora_przekroj')[0]
         d0, d1 = u[:ext][u[:id]]
         wynik = []
         linie_legarow(u, p).each do |e|
-          zakaz = []
+          # Podciąg na równo z podwaliną – legar dzielony na nim (kawałki od podwaliny do podciągu).
+          zakaz = podciagi.map { |d| [d - bd / 2.0, d + bd / 2.0] }
           u[:dzialowe].each do |w|
             odcinki_dzialowej(u, w).each do |s0, s1|
               pa = G.add(w[:a], G.mul(w[:kier], s0))

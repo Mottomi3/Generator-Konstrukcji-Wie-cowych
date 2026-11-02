@@ -99,7 +99,7 @@ Testy.grupa('Łączenie na przemian – działowe jako kotwice')
 seg = prostokat(0, 0, 9000, 6000) + [[[0, 3000], [9000, 3000]]]
 pl = plan(seg, 'styk_na_dzialowej' => 'mijanka')
 w2 = sciana(pl, 'W-2')
-Testy.rowne(w2[:styki][:parzyste].map { |x| x.round }, [2978], 'W-2: styk wieńców parzystych w osi działowej')
+Testy.sprawdz(w2[:styki][:kotwy].map { |x| x.round }.include?(2978), 'W-2: styk jednej parzystości w osi działowej')
 Testy.rowne(w2[:styki][:nowe].length, 1, 'W-2: jeden nowy węgieł')
 Testy.sprawdz((w2[:styki][:nieparzyste][0] - w2[:styki][:parzyste][0]).abs >= 400.0 - 0.01, 'mijanka ≥ 400')
 w1 = sciana(pl, 'W-1')
@@ -160,5 +160,29 @@ pl = ArteMadera::GeneratorWiencowy::Projekt.oblicz('segmenty' => seg, 'parametry
                                                  'otwory' => otw, 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'srodek' }])
 Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('przesunięty') || u.include?('brak miejsca') }, 'okno na środku – węgieł przesunięty albo pominięty z ostrzeżeniem')
 czysto(pl, 'węgieł przy oknie')
+
+Testy.grupa('Węgły symetrycznie na ścianach równoległych, równy podział (runda 8)')
+# Współrzędne węgłów w świecie wzdłuż osi gospodarza, ściana → posortowana lista.
+x_wegli = lambda do |pl, id|
+  pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:id] == id }.map { |w| w[:a][0].round }.sort
+end
+pl = plan(prostokat(0, 0, 12_000, 6000))
+Testy.rowne(x_wegli.call(pl, 'W-1'), x_wegli.call(pl, 'W-3'), 'W-1 i W-3 – węgły w tych samych miejscach')
+Testy.rowne(x_wegli.call(pl, 'W-1'), [2413, 4804, 7196, 9587], '12 m – odcinek między narożnikami dzielony równo na 5')
+pl = plan(prostokat(0, 0, 12_000, 6000), 'max_dlugosc' => 7000)
+Testy.rowne(x_wegli.call(pl, 'W-1'), [3011, 6000, 8989], 'bal 7 m – 3 węgły równo zamiast 2 pod styki + 2 usztywniające')
+Testy.rowne(x_wegli.call(pl, 'W-1'), x_wegli.call(pl, 'W-3'), 'bal 7 m – symetrycznie')
+pl = plan(prostokat(0, 0, 10_000, 8000) + [[[0, 4000], [10_000, 4000]]], 'liczba_wiencow' => 20)
+Testy.rowne([x_wegli.call(pl, 'W-3'), x_wegli.call(pl, 'W-5')], [x_wegli.call(pl, 'W-1')] * 2, 'działowa równoległa – te same miejsca')
+czysto(pl, 'symetria z działową')
+
+Testy.grupa('Węgieł niesymetryczny – wypust wewnątrz i na zewnątrz (runda 8)')
+pl = Projekt.oblicz('segmenty' => prostokat(0, 0, 8000, 6400), 'parametry' => { 'wegiel_wypust_zewn' => 200, 'szczyty' => 'nie', 'podloga' => 'nie' },
+                    'otwory' => [], 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od', 'od' => '2000', 'wewn' => '300', 'zewn' => '' }])
+kf = pl[:sciany].find { |w| w[:rodzaj] == :kontrfor && (w[:a][0] - 2000.0).abs < 1 }
+Testy.rowne([kf[:s_od], kf[:s_do]], [-222.0, 322.0], 'z tabeli: na zewnątrz 200 (parametr), wewnątrz 300 (wiersz)')
+w3 = pl[:sciany].find { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:id] == 'W-3' }
+Testy.rowne([w3[:s_od], w3[:s_do]], [-122.0, 222.0], 'ściana naprzeciwko: na zewnątrz (+y) 200, wewnątrz 100')
+czysto(pl, 'węgły niesymetryczne')
 
 Testy.koniec

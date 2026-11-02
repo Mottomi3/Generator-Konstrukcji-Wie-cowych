@@ -4,7 +4,7 @@
 # Plik: rdzen/usztywnienie.rb
 # Zadanie: węgły 244 usztywniające ściany – limit światła ściany (zwykłej i wysokiej), rozmieszczenie nowych węgłów, miejsce, w którym węgieł może stanąć.
 # Tematy: węgieł, wzmocnienie ściany, światło ściany, ściana wysoka, rozmieszczenie węgłów, węgieł od narożnika, miejsce na węgieł, kontrfor
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian), rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/taras.rb (front i przęsła tarasu bez węgłów)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian), rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/taras.rb (front i przęsła tarasu bez węgłów), rdzen/symetria_wegly.rb (węgły jak na ścianie równoległej)
 # Używają: rdzen/projekt.rb, rdzen/styki.rb (miejsce_ok?, wolne_miejsce)
 #
 # Światło = odległość między licami sąsiednich podparć ściany (narożnik, działowa, węgieł) – oś do osi minus grubość.
@@ -17,6 +17,7 @@ require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::
 require File.join(File.dirname(__FILE__), 'sciany') unless defined?(ArteMadera::GeneratorWiencowy::Sciany)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
+require File.join(File.dirname(__FILE__), 'symetria_wegly') unless defined?(ArteMadera::GeneratorWiencowy::SymetriaWegly)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -41,7 +42,10 @@ module ArteMadera
           next false if Taras.front?(w)
           w[:rodzaj] == :zewnetrzna || (w[:rodzaj] == :dzialowa && Parametry.tak?(p, 'wegly_na_dzialowych'))
         end
+        gotowe = []
         do_sprawdzenia.each do |w|
+          gotowe << w
+          bl = SymetriaWegly.blizniak(w, gotowe)
           przeslony(w).each do |a, b|
             next if Taras.przeslona_tarasu?(w, a, b)
             swiatlo = b - a - t
@@ -56,7 +60,8 @@ module ArteMadera
                               w[:id], swiatlo, limit)
               next
             end
-            pozycje = rozmiesc(w, p, a, b, limit)
+            pozycje = bl ? z_blizniaka(w, bl, p, a, b, limit) : nil
+            pozycje ||= rozmiesc(w, p, a, b, limit)
             if pozycje.nil?
               uwagi << format('Ściana %s: światło %.0f mm dłuższe niż %.0f mm, a otwory nie zostawiają miejsca na węgieł.',
                               w[:id], swiatlo, limit)
@@ -66,6 +71,15 @@ module ArteMadera
           end
         end
         uwagi
+      end
+
+      # Węgły w odcinku a…b w tych samych miejscach co na ścianie równoległej bl (symetria); nil – nie da się (miejsce zajęte,
+      # światło dłuższe niż limit).
+      def z_blizniaka(w, bl, p, a, b, limit)
+        t = Parametry.grubosc(p)
+        lista = SymetriaWegly.usztywnienie(w, bl, a, b) { |s, wybrane| miejsce_ok?(w, p, s, wybrane) }
+        return nil if lista.nil?
+        ([a] + lista + [b]).each_cons(2).all? { |x0, x1| x1 - x0 - t <= limit + 0.5 } ? lista : nil
       end
 
       # Odcinki ściany między kolejnymi podparciami: [[s_a, s_b, narożnik_a?, narożnik_b?], …] (osie skrzyżowań).
@@ -141,6 +155,7 @@ module ArteMadera
         return false if s < w[:s_od] + t + o + min || s > w[:s_do] - t - o - min
         return false if w[:skrzyzowania].any? { |k| (k[:s] - s).abs < min - 0.01 }
         return false if zajete.any? { |z| (z - s).abs < min - 0.01 }
+        return false if Taras.strefy_slupow(w, p).any? { |z| s > z[0] && s < z[1] }
         Otwory.strefy_zakazane(w, p['odstep_od_otworu'].to_f + t / 2.0).none? { |z| s > z[0] && s < z[1] }
       end
 

@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/podciagi.rb
 # Zadanie: podciągi pod legarami – położenia w przęsłach (automatycznie, co najwyżej rozstaw, w liniach fundamentów albo bez podciągów), belki do lica zewnętrznego podwalin pod podwalinami, sprawdzenie podciągu między fundamentami.
-# Tematy: podciąg, podpora legarów, położenie podciągów, podciągi w liniach fundamentów, podciąg pod podwaliną, podciąg do lica podwalin, wybór podciągów, sprawdzenie podciągu, rozpiętość podciągu
+# Tematy: podciąg na równo z podwaliną, legary dzielone na podciągu, podciąg, podpora legarów, położenie podciągów, podciągi w liniach fundamentów, podciąg pod podwaliną, podciąg do lica podwalin, wybór podciągów, sprawdzenie podciągu, rozpiętość podciągu
 # Zależy od: rdzen/parametry.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/fundamenty.rb (linie i rzędy)
 # Używają: rdzen/podloga.rb (dobór legara, elementy, podpowiedzi)
 #
@@ -15,6 +15,7 @@
 # runda 7): wierzch na spodzie wyższego z legara i podwaliny.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
+require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera::GeneratorWiencowy::Statyka)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
@@ -23,6 +24,7 @@ require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMade
 module ArteMadera
   module GeneratorWiencowy
     module Podciagi
+      G = Geometria unless const_defined?(:G)
       # Zapas oparcia doliczany do światła przęsła w obliczeniach [mm] (jak w rdzen/podloga.rb).
       OPARCIE = 50.0 unless const_defined?(:OPARCIE)
 
@@ -74,17 +76,38 @@ module ArteMadera
         end.max || 0.0
       end
 
-      # Wierzch podciągu [mm] (spód wyższego z legara i podwaliny – podciąg pod podwalinami).
-      def z_wierzchu(u, h_legara)
+      # Czy podciąg na równo z podwaliną (między podwalinami, legary dzielone na nim).
+      def rowno?(p)
+        p['podciag_poziom'] == 'rowno'
+      end
+
+      # Wierzch podciągu [mm]: obniżony – spód wyższego z legara i podwaliny (pod podwalinami); na równo – 0 (wierzch podwalin).
+      def z_wierzchu(u, h_legara, p = {})
+        return 0.0 if rowno?(p)
         -[h_legara, u[:pw][1]].max
       end
 
-      # Belki podciągów (Pd): w każdej linii d od lica do lica obrysu w poprzek legarów; punkt – blok (d, e) → rzut.
+      # Belki podciągów (Pd) w liniach d w poprzek legarów: obniżony – od lica do lica obrysu; na równo – między licami
+      # wewnętrznymi podwalin, przerwany na podwalinach działowych wzdłuż legarów; punkt – blok (d, e) → rzut.
       def elementy(u, p, poz, h_legara)
         bp, hp = Parametry.przekroj(p, 'podpora_przekroj')
         e0, e1 = u[:ext][u[:ie]]
-        z = z_wierzchu(u, h_legara)
-        poz.flatten.map { |d| Elementy.pozioma('Pd', yield(d, e0), yield(d, e1), bp, hp, z - hp, :os) }
+        z = z_wierzchu(u, h_legara, p)
+        poz.flatten.flat_map do |d|
+          odcinki(u, p, d, e0, e1).map { |a, c| Elementy.pozioma('Pd', yield(d, a), yield(d, c), bp, hp, z - hp, :os) }
+        end
+      end
+
+      # Odcinki podciągu w linii d: obniżony – cały obrys; na równo – między podwalinami (zewnętrznymi i działowymi
+      # wzdłuż legarów, które linia przecina).
+      def odcinki(u, p, d, e0, e1)
+        return [[e0, e1]] unless rowno?(p)
+        b = u[:pw][0]
+        zakaz = (u[:dzialowe] || []).select { |w| (w[:a][u[:ie]] - w[:b][u[:ie]]).abs < 0.5 }.select do |w|
+          lo, hi = [w[:a][u[:id]], w[:b][u[:id]]].sort
+          d > lo && d < hi
+        end.map { |w| [w[:a][u[:ie]] - b / 2.0, w[:a][u[:ie]] + b / 2.0] }
+        G.odejmij_przedzialy(e0 + b, e1 - b, zakaz, 0.5).select { |a, c| c - a > 50.0 }
       end
 
       # Podpowiedzi o podciągach: liczba, odstęp od legarów (podwalina wyższa), sprawdzenie między fundamentami.
@@ -93,9 +116,10 @@ module ArteMadera
         suma = poz.flatten.length
         return wynik if suma.zero?
         nazwa = Parametry.tekst_przekroju(Parametry.przekroj(p, 'podpora_przekroj'))
-        wynik << { poziom: 'ok', tekst: format('Podciągi %s pod legarami: %d szt. – od lica do lica podwalin, pod podwalinami%s.', nazwa,
-                                               suma, Fundamenty.wlaczone?(p) ? ', na fundamentach punktowych' : ' – oprzyj je na stopach fundamentowych') }
-        if u[:pw][1] > h_legara + 0.01
+        gdzie = rowno?(p) ? 'na równo z podwalinami, między nimi – legary dzielone na podciągach' : 'od lica do lica podwalin, pod podwalinami'
+        wynik << { poziom: 'ok', tekst: format('Podciągi %s pod legarami: %d szt. – %s%s.', nazwa, suma, gdzie,
+                                               Fundamenty.wlaczone?(p) ? ', na fundamentach punktowych' : ' – oprzyj je na stopach fundamentowych') }
+        if u[:pw][1] > h_legara + 0.01 && !rowno?(p)
           wynik << { poziom: 'uwaga', tekst: format('Podwalina (%s mm) wyższa niż legar (%s mm) – pod legarami nad podciągiem %s mm ' \
                                                     'podkładki albo wyższy legar.', Parametry.fmt(u[:pw][1]), Parametry.fmt(h_legara),
                                                     Parametry.fmt(u[:pw][1] - h_legara)) }

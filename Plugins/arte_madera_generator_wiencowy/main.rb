@@ -21,7 +21,7 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '7'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD      = '8'.freeze unless const_defined?(:PLUGIN_BUILD)
     PLUGIN_BUILD_DATE = '2026-11-02'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
@@ -39,8 +39,8 @@ module ArteMadera
 
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
-      rdzen/geometria rdzen/parametry_dach rdzen/parametry_taras rdzen/parametry_podloga rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras rdzen/taras_balustrada rdzen/taras_slupy rdzen/taras_szczyt rdzen/stolarka rdzen/otwory
-      rdzen/usztywnienie rdzen/wegly_tabela rdzen/styki_dzialowe rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/zamek_platwi rdzen/elementy rdzen/platwie_wience rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/podbitka rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
+      rdzen/geometria rdzen/parametry_dach rdzen/parametry_taras rdzen/parametry_podloga rdzen/parametry_lista rdzen/parametry rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras_sciany rdzen/taras rdzen/taras_balustrada rdzen/taras_slupy rdzen/taras_szczyt rdzen/stolarka rdzen/otwory
+      rdzen/usztywnienie rdzen/wegly_tabela rdzen/symetria_wegly rdzen/wypusty_okapu rdzen/styki_dzialowe rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/zamek_platwi rdzen/elementy rdzen/platwie_wience rdzen/dach_jednospadowy rdzen/dach rdzen/szczyty rdzen/podbitka rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
       rdzen/skos_przy_narozniku rdzen/sciecie_dachu
       rdzen/zamek
       rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/fundamenty rdzen/podciagi rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie

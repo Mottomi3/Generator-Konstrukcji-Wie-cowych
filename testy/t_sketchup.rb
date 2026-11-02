@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '7', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '8', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -268,7 +268,7 @@ Testy.sprawdz(sz['lista'].include?('Mój domek') && sz['komunikat'].include?('Za
 dlg.wywolaj('szablon_wczytaj', 'Mój domek')
 u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
 Testy.rowne([u['parametry']['liczba_wiencow'], u['parametry']['dach_kat']], %w[18 30], 'szablon wczytany')
-nazwa = Ustawienia.nazwy_szablonow.find { |x| x.start_with?('Dom 1,5 kondygnacji') }
+nazwa = Ustawienia.nazwy_szablonow.find { |x| x.start_with?('Typ 300') }
 dlg.wywolaj('szablon_wczytaj', nazwa)
 u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
 Testy.rowne(u['parametry']['liczba_wiencow'], 25, 'szablon wbudowany: 25 wieńców')

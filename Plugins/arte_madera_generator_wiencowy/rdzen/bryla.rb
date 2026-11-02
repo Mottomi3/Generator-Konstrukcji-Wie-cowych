@@ -114,6 +114,12 @@ module ArteMadera
             plaski = q.merge(zt_a: zt, zt_b: zt)
             next [plaski] if zt <= gmin + EPS
             yk = (zt - c[:z0]) / kt
+            # Granica bliżej niż SCAL od brzegu pasa – bez podziału (krawędź krótsza niż tolerancja SketchUpa).
+            if yk - q[:y0] < SCAL
+              next [kt > 0 ? plaski : plaski.merge(zt_a: ga, zt_b: ga, kt: kt)]
+            elsif q[:y1] - yk < SCAL
+              next [kt > 0 ? plaski.merge(zt_a: ga, zt_b: ga, kt: kt) : plaski]
+            end
             lewy = plaski.merge(y1: yk)
             prawy = plaski.merge(y0: yk)
             kt > 0 ? [lewy.merge(zt_a: ga, zt_b: ga, kt: kt), prawy] : [lewy, prawy.merge(zt_a: zt, zt_b: zt, kt: kt)]

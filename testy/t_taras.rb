@@ -165,4 +165,44 @@ Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('Taras: tylko przy obrysie 
 pl = plan_pelny(prostokat(0, 0, 5000, 4000))
 Testy.sprawdz(pl[:sciany].none? { |w| w[:taras] } && slupy(pl).empty? && pl[:obrys].map { |x, _y| x }.max == 5000.0, 'domyślnie bez tarasu')
 
+Testy.grupa('Szczyt pusty – trójkątny wieniec pod płatwiami (runda 8)')
+d = { segmenty: prostokat(0, 0, 4000, 4000), otwory: [],
+      parametry: { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20, 'taras_szczyt' => 'pusty' } }
+problemy, pl = LosoweDomy.sprawdz(d)
+Testy.rowne(problemy, [], 'dom z pustym szczytem – kontrola losowych domów bez problemów')
+wt = pl[:elementy].select { |e| e[:prefiks] == 'Wt' }
+Testy.rowne(wt.length, 2, 'dwie belki trójkątnego wieńca')
+Testy.sprawdz(wt.all? { |e| e[:dl] == 80.0 && e[:przekroj] }, 'szerokość jak płatew (80), przekrój w płaszczyźnie frontu')
+front = pl[:sciany].find { |w| Taras.front?(w) }
+z_t = front[:bale].map { |b| b[:z0] + b[:h] }.max
+Testy.sprawdz(wt.all? { |e| (e[:polozenie][:poczatek][2] - z_t).abs < 0.01 }, 'belki leżą na balach spinających')
+geo = front[:szczyt]
+platwie = Dach.platwie(geo, pl[:parametry])
+Testy.sprawdz(platwie.select { |x| x[:z_spod] > z_t }.all? { |x| x[:z_spod] >= z_t }, 'płatwie nad balami leżą na wieńcu')
+Testy.rowne(front[:bale].count { |b| !b[:taras] && b[:konce] == %i[wolny wolny] }, 0, 'w szczycie bez słupków z przekładek')
+_pr, pl2 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wieniec' => 'wlasny', 'taras_wieniec_przekroj' => '100x120')))
+Testy.sprawdz(pl2[:elementy].select { |e| e[:prefiks] == 'Wt' }.all? { |e| e[:dl] == 100.0 }, 'przekrój podany – 100 szerokości')
+
+Testy.grupa('Balustrada z wieńców ścian – ciągłe ściany boczne, zakładki w narożnikach frontu (runda 8)')
+d = { segmenty: prostokat(0, 0, 4000, 4000), otwory: [],
+      parametry: { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20, 'taras_balustrada_rodzaj' => 'sciany',
+                   'taras_wejscie' => 'srodek' } }
+problemy, pl = LosoweDomy.sprawdz(d)
+Testy.rowne(problemy, [], 'kontrola losowych domów bez problemów')
+w1 = sciana(pl, 'W-1')
+dolne = w1[:bale].select { |b| b[:z0] + b[:h] <= 1000.01 }
+Testy.rowne(dolne.map { |b| b[:s1] }.max, 6078.0, 'ściana boczna do frontu z zakładką 100 (5956 + 22 + 100)')
+Testy.sprawdz(dolne.all? { |b| b[:dl] > 1000.0 }, "bez krótkich kawałków (#{dolne.map { |b| b[:dl].round }.min})")
+Testy.rowne(pl[:bale].count { |b| b[:taras] }, 0, 'bez bali i przekładek dołożonych w przęsłach')
+front = pl[:sciany].find { |w| Taras.front?(w) }
+fb = front[:bale].select { |b| b[:z0] < 900.0 }
+Testy.sprawdz(fb.map { |b| b[:s0] }.min < -121.99, 'front z zakładką w narożniku')
+we = Taras.slupy_frontu(front, pl[:parametry])[:wejscie]
+Testy.sprawdz(fb.none? { |b| b[:s0] < we[1] - 60.0 && b[:s1] > we[0] + 60.0 }, 'przerwa na wejście')
+gory = [w1, front].map { |w| w[:bale].select { |b| b[:cechy].any? { |c| c[:typ] == 'bez_piora' } }.map { |b| b[:z0] + b[:cechy].find { |c| c[:typ] == 'skos_gora' }.to_h.fetch(:z0, b[:h]) }.max }
+Testy.rowne(gory[0].round(2), gory[1].round(2), 'poręcz frontu i boku na jednej wysokości')
+Testy.rowne(kolizje_belek(pl, 'S', 5), 0, 'słupy z wyciętym pasem – bez kolizji z balami')
+_pr, pl = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_zakladka' => 'nie')))
+Testy.rowne(sciana(pl, 'W-1')[:bale].select { |b| b[:z0] < 900.0 }.map { |b| b[:s1] }.max, 5978.0, 'bez zakładki – koniec równo z licem frontu')
+
 Testy.koniec
