@@ -4,7 +4,7 @@
   Zadanie: tabela węgłów (kontrforów) w oknie – jak okna i drzwi: ściana, położenie (od narożnika albo na środku ściany), od [mm], wypust wewnątrz i na zewnątrz [mm].
   Tematy: tabela węgłów, węgieł z tabeli, kontrfor w oknie, węgieł na środku ściany, nowy węgieł
   Zależy od: html/wspolne.js (AMGW_DOM), html/okno.html (tabela #tab-wegly)
-  Używają: html/okno.js (init, dodaj, zbierz, sciany)
+  Używają: html/okno.js (init, dodaj, zbierz, sciany), html/wegly_przesun.js (ustawOd – przesunięcie węgła z tabeli)
 
   Wiersz = { sciana, polozenie: 'od' | 'srodek', od, wewn, zewn (puste – z parametrów) } – te same klucze co wejście 'wegly' w Ruby (rdzen/wegly_tabela.rb).
   Pole „od” przy położeniu „na środku” jest nieaktywne.
@@ -120,5 +120,15 @@ var AMGW_WEGLY = (function () {
     for (i = 0; i < sel.length; i++) { wypelnijSciany(sel[i], sel[i].value); }
   }
 
-  return { init: init, dodaj: dodaj, zbierz: zbierz, sciany: sciany };
+  // Nowe położenie węgła z wiersza nr i (przesunięcie z listy węgłów – html/wegly_przesun.js): od narożnika, od [mm].
+  function ustawOd(i, od) {
+    var tr = tbody().getElementsByTagName('tr')[i];
+    if (!tr) { return; }
+    tr.querySelector('[data-w="polozenie"]').value = 'od';
+    tr.querySelector('[data-w="od"]').value = String(Math.round(od));
+    odswiezWiersz(tr);
+    stan.zmiana();
+  }
+
+  return { init: init, dodaj: dodaj, zbierz: zbierz, sciany: sciany, ustawOd: ustawOd };
 }());

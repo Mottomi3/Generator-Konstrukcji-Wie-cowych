@@ -9,7 +9,8 @@
 #
 # Ściana (Hash): k (klucz), id ('W-n'), rodzaj (:zewnetrzna | :dzialowa | :kontrfor), kierunek (:A wzdłuż kalenicy –
 # półbal na dole | :B szczytowa), a, b (oś), kier, nor (normalna w lewo), dl_osi, s_od, s_do (zasięg bali wzdłuż osi
-# z ostatkami, s liczone od a), ref (s punktu odniesienia otworów), skrzyzowania [{s:, inna:, punkt:, typ:}], gospodarz.
+# z ostatkami, s liczone od a), ref (s punktu odniesienia otworów), skrzyzowania [{s:, inna:, punkt:, typ:}], gospodarz,
+# ostatki_param ([początek, koniec] – ostatek z parametrów przed ustawieniami ściany; nil – wolny koniec).
 # Ściana zewnętrzna: lico zewnętrzne po prawej stronie kier (obrys przeciwnie do wskazówek zegara).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -88,14 +89,16 @@ module ArteMadera
           end
           sciana(licznik, :zewnetrzna, a, b, d).merge(
             s_od: -(t / 2.0 + o), s_do: G.odl(a, b) + t / 2.0 + o,
-            ref: G.dot(G.sub(boki[i][0], a), d), bok: boki[i]
+            ref: G.dot(G.sub(boki[i][0], a), d), bok: boki[i], ostatki_param: [o, o]
           )
         end
       end
 
-      # Ściany działowe: końce na obrysie lub na innej działowej = połączenie T (ostatek), pozostałe = wolny koniec.
+      # Ściany działowe: końce na obrysie = przez ścianę zewnętrzną na zewnątrz o wypust węgła na zewnątrz (jak słupek węgła,
+      # runda 9), na innej działowej = połączenie T (ostatek), pozostałe = wolny koniec.
       def dzialowe(linie, zewn, t, p, licznik, wynik, tol)
         o = p['ostatek'].to_f
+        oz = p['wegiel_wypust_zewn'].to_f
         lista = linie.map do |s|
           a, b = s
           a, b = b, a if (b[0] - a[0]).abs >= (b[1] - a[1]).abs ? b[0] < a[0] : b[1] < a[1]
@@ -112,12 +115,13 @@ module ArteMadera
             if zew
               c = G.przeciecie_prostych(a, b, zew[:a], zew[:b])
               koniec == 0 ? a = c : b = c
-              wydl[koniec] = t / 2.0 + o
+              wydl[koniec] = t / 2.0 + oz
             elsif lista.any? { |m| !m.equal?(l) && G.na_odcinku?(pt, m[:a], m[:b], t / 2.0 + tol) }
               wydl[koniec] = t / 2.0 + o
             end
           end
-          sciana(licznik, :dzialowa, a, b, d).merge(s_od: -wydl[0], s_do: G.odl(a, b) + wydl[1], ref: 0.0)
+          sciana(licznik, :dzialowa, a, b, d).merge(s_od: -wydl[0], s_do: G.odl(a, b) + wydl[1], ref: 0.0,
+                                                    ostatki_param: wydl.map { |x| x > 0.0 ? x - t / 2.0 : nil })
         end
       end
 
@@ -209,10 +213,13 @@ module ArteMadera
 
       # Wypusty kontrforu [na początku osi (−d), na końcu (+d)] [mm]: przy ścianie zewnętrznej strona wewnątrz domu dostaje
       # wypust wewnętrzny, druga – zewnętrzny (wegiel_wypust_wewn / _zewn albo z wiersza tabeli); przy działowej obie
-      # strony są wewnątrz.
+      # strony są wewnątrz, przy ścianie domu przy tarasie strona tarasu jest na zewnątrz.
       def wypusty_kontrforu(sciany, gosp, c, d, p, ostatki)
         wewn = Parametry.liczba(ostatki['wewn']) || p['wegiel_wypust_wewn'].to_f
         zewn = Parametry.liczba(ostatki['zewn']) || p['wegiel_wypust_zewn'].to_f
+        tr = gosp[:taras]
+        # Ściana domu przy tarasie: strona tarasu jak na zewnątrz (runda 9).
+        return d[tr[:iu]] * tr[:znak] > 0 ? [wewn, zewn] : [zewn, wewn] if tr && tr[:rola] == :dom
         return [wewn, wewn] unless gosp[:rodzaj] == :zewnetrzna
         obrys = sciany.select { |w| w[:rodzaj] == :zewnetrzna }.sort_by { |w| w[:k] }.map { |w| w[:a] }
         do_wewnatrz = obrys.length >= 3 && G.wewnatrz?(G.add(c, G.mul(d, Parametry.grubosc(p))), obrys)

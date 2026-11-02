@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_wegly.rb
 # Zadanie: testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory.
-# Tematy: testy węgłów, światło ściany, ściana wysoka, węgieł od narożnika, tylko narysowane, łączenie na przemian, styk przy otworze, dom 4 × 4
+# Tematy: testy węgłów, węgieł pod płatwią w testach, wolny koniec w testach, światło ściany, ściana wysoka, węgieł od narożnika, tylko narysowane, łączenie na przemian, styk przy otworze, dom 4 × 4
 # Zależy od: testy/pomoc.rb
 # Używają: testy/uruchom.sh
 
@@ -184,5 +184,38 @@ Testy.rowne([kf[:s_od], kf[:s_do]], [-222.0, 322.0], 'z tabeli: na zewnątrz 200
 w3 = pl[:sciany].find { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:id] == 'W-3' }
 Testy.rowne([w3[:s_od], w3[:s_do]], [-122.0, 222.0], 'ściana naprzeciwko: na zewnątrz (+y) 200, wewnątrz 100')
 czysto(pl, 'węgły niesymetryczne')
+
+Testy.grupa('Węgły pod płatwiami, wypust końców działowych, wolny koniec ściany (runda 9)')
+require File.expand_path('kolizje_belek', File.dirname(__FILE__))
+pl = plan_pelny(prostokat(0, 0, 6000, 8000) + [[[3000, 0], [3000, 8000]]], 'wegiel_wypust_zewn' => 200, 'platwie_rozstaw_max' => 900)
+p = pl[:parametry]
+w6 = pl[:sciany].find { |w| w[:rodzaj] == :dzialowa }
+Testy.rowne([w6[:s_od], w6[:s_do] - w6[:dl_osi]], [-222.0, 222.0], 'działowa przez ścianę zewnętrzną – na zewnątrz 200 (jak węgieł)')
+szczyty = pl[:sciany].select { |w| w[:szczyt] && w[:rodzaj] == :zewnetrzna }
+platwie = Dach.platwie({ v_a: 22.0, v_b: 5978.0 }, p)
+szczyty.each do |w|
+  pod = pl[:sciany].select { |k| k[:rodzaj] == :kontrfor && k[:gospodarz].equal?(w) && k[:pod_platwia] }
+  Testy.rowne(pod.length, platwie.count { |x| x[:rodzaj] == 'posrednia' }, "#{w[:id]}: węgieł pod każdą płatwią pośrednią (kalenicowa nad działową, ścienne przy narożnikach)")
+  Testy.sprawdz(pod.all? { |k| (k[:s_do] - k[:s_od] - 344.0).abs < 0.01 }, "#{w[:id]}: węgły 100 + 44 + 200")
+  luki = pod.map do |k|
+    b = k[:bale].max_by { |x| x[:z0] }
+    c = b[:cechy].select { |x| x[:typ] == 'wyciecie_gora' }.map { |x| b[:z0] + b[:h] - x[:gleb] }
+    k[:pod_platwia][:z_spod] - (c.empty? ? b[:z0] + b[:h] : c.min)
+  end
+  Testy.sprawdz(luki.all? { |x| x > -0.01 && x < 20.0 }, "#{w[:id]}: górny bal węgła pod spodem płatwi, luka < 20 (#{luki.map { |x| x.round(1) }.inspect})")
+  Testy.sprawdz(luki.count { |x| x < 1.1 } >= 2, "#{w[:id]}: węgły dochodzą do spodu płatwi (bal ścięty albo cały)")
+end
+Testy.rowne([kolizje_belek(pl, 'P', 5)], [0], 'płatwie bez kolizji z węgłami pod nimi')
+czysto(pl, 'węgły pod płatwiami')
+bez = plan_pelny(prostokat(0, 0, 6000, 8000) + [[[3000, 0], [3000, 8000]]], 'wegly_pod_platwiami' => 'nie')
+Testy.rowne(bez[:sciany].count { |k| k[:pod_platwia] }, 0, 'wegly_pod_platwiami = nie – bez węgłów pod płatwiami')
+pb = plan_pelny(prostokat(0, 0, 6000, 8000), 'podbitka' => 'pod_platwiami')
+Testy.rowne(kolizje_belek(pb, 'Pb', 5), 0, 'podbitka pod płatwiami – węgły kończą się pod deskami')
+wolny = plan(prostokat(0, 0, 6000, 8000) + [[[0, 4000], [2500, 4000]]])
+kf = wolny[:sciany].find { |k| k[:wolny_koniec] }
+Testy.sprawdz(kf && (kf[:a][0] - (2500.0 - 122.0)).abs < 0.01, 'wolny koniec 2500 – węgieł 122 od końca (ostatek 100 za węgłem)')
+czysto(wolny, 'węgieł na wolnym końcu')
+krotki = plan(prostokat(0, 0, 6000, 8000) + [[[0, 4000], [900, 4000]]])
+Testy.rowne(krotki[:sciany].count { |k| k[:wolny_koniec] }, 0, 'wolny odcinek krótszy niż 1000 – bez węgła')
 
 Testy.koniec

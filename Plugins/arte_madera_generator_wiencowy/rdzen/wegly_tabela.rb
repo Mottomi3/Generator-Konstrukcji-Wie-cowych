@@ -3,9 +3,9 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/wegly_tabela.rb
 # Zadanie: węgły (kontrfory) wstawiane jak okna i drzwi – z tabeli w oknie (ściana, od narożnika albo na środku) i automatycznie na środku ścian (parametr).
-# Tematy: tabela węgłów, węgieł z tabeli, kontrfor z tabeli, węgieł na środku ściany, węgły na środku automatycznie, położenie węgła od narożnika
+# Tematy: tabela węgłów, lista węgłów do okna, przesuwanie węgłów, węgieł z tabeli, kontrfor z tabeli, węgieł na środku ściany, węgły na środku automatycznie, położenie węgła od narożnika
 # Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce)
-# Używają: rdzen/projekt.rb (po otworach, przed stykami i węgłami usztywniającymi)
+# Używają: rdzen/projekt.rb (po otworach, przed stykami i węgłami usztywniającymi), sketchup/sterowanie.rb (lista węgłów do okna)
 #
 # Wejście domu 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od' | 'srodek', 'od' => mm, 'wewn' => mm, 'zewn' => mm
 # (wypusty – puste: z parametrów) }]: od – oś węgła od narożnika
@@ -31,8 +31,11 @@ module ArteMadera
       def dodaj(sciany, lista, p, os_kalenicy)
         uwagi = []
         glowne = sciany.reject { |w| w[:rodzaj] == :kontrfor }
-        na_srodku(glowne, p).each { |w| wstaw(sciany, w, srodek(w), p, os_kalenicy, uwagi, 'na środku') }
-        (lista.is_a?(Array) ? lista : []).each do |x|
+        na_srodku(glowne, p).each do |w|
+          kf = wstaw(sciany, w, srodek(w), p, os_kalenicy, uwagi, 'na środku')
+          kf[:srodek] = true if kf
+        end
+        (lista.is_a?(Array) ? lista : []).each_with_index do |x, i|
           next unless x.is_a?(Hash)
           w = glowne.find { |s| s[:id] == x['sciana'].to_s }
           if w.nil?
@@ -44,9 +47,31 @@ module ArteMadera
             uwagi << "Węgieł z tabeli (#{w[:id]}): niepoprawne położenie „#{x['od']}” – pominięty."
             next
           end
-          wstaw(sciany, w, s, p, os_kalenicy, uwagi, 'z tabeli', 'wewn' => x['wewn'], 'zewn' => x['zewn'])
+          kf = wstaw(sciany, w, s, p, os_kalenicy, uwagi, 'z tabeli', 'wewn' => x['wewn'], 'zewn' => x['zewn'])
+          kf[:tabela] = i if kf
         end
         uwagi
+      end
+
+      # Skąd jest węgieł (do listy w oknie): tabela, srodek, rysunek, reczny, styk, usztywnienie, platwa, koniec.
+      def skad(kf)
+        return 'tabela' if kf[:tabela]
+        return 'srodek' if kf[:srodek]
+        kf[:zrodlo].to_s
+      end
+
+      # Wszystkie węgły domu do listy w oknie (przesuwanie w karcie okien i drzwi): [{ 'id', 'sciana', 's' (oś na osi
+      # gospodarza), 'od' (jak w tabeli: ściana zewnętrzna – od narożnika lica zewnętrznego), 'skad', 'tabela' (wiersz albo
+      # nil) }], po ścianach i położeniu.
+      def lista(sciany, p)
+        t2 = Parametry.grubosc(p) / 2.0
+        sciany.select { |w| w[:rodzaj] == :kontrfor }.map do |kf|
+          g = kf[:gospodarz]
+          k = g[:skrzyzowania].find { |x| x[:inna].equal?(kf) }
+          next nil if k.nil?
+          { 'id' => kf[:id].to_s, 'sciana' => g[:id].to_s, 's' => k[:s].round(1),
+            'od' => (g[:rodzaj] == :zewnetrzna ? k[:s] + t2 : k[:s]).round(1), 'skad' => skad(kf), 'tabela' => kf[:tabela] }
+        end.compact.sort_by { |x| [x['sciana'][2..-1].to_i, x['s']] }
       end
 
       # Ściany, które dostają węgieł na środku (parametr wegly_srodek, oś nie krótsza niż wegly_srodek_min).

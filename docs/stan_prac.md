@@ -1,9 +1,25 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 8, kompilacja 8 (2026-11-02, wieczór), wersja 1.0.0. Poprzednio: runda 7, kompilacja 7 (2026-11-02). Testy: `bash testy/uruchom.sh` – 23 zestawy (16 także
-na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0), 1331 sprawdzeń, FAILURES 0; poza zestawem:
-140 losowych domów z nowościami rundy 8 (ziarna 4001–4140) bez problemów po poprawkach. Repozytorium:
-`Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–8) + kopia `repozytorium_r8.bundle` na dysku.
+Stan na: runda 9, kompilacja 9 (2026-11-03), wersja 1.0.0. Poprzednio: runda 8, kompilacja 8 (2026-11-02, wieczór). Testy: `bash testy/uruchom.sh` – 23 zestawy (16 także
+na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0), 1367 sprawdzeń, FAILURES 0; poza zestawem:
+430 losowych domów (ziarna 1–60, 4001–4040, 4141–4200, 5001–5270 z nowościami rundy 9) bez problemów po poprawkach. Repozytorium:
+`Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–9) + kopia `repozytorium_r9.bundle` na dysku.
+
+## 1c. Nowe w kompilacji 9 (uwagi z 2026-11-02 23:24)
+
+- **Węgły pod płatwiami** (`rdzen/wegly_konstrukcyjne.rb`, `wegly_pod_platwiami`, domyślnie na szczytach zewnętrznych
+  i ścianie domu przy tarasie): pod każdą płatwią przechodzącą przez szczyt węgieł do spodu płatwi – płatew na nim leży,
+  w słupie zamka czop we wrębie płatwi; przy narożniku, skrzyżowaniu (np. działowa pod kalenicą) i na ścianie z węgłami
+  ręcznymi – bez.
+- **Wypust 200 na zewnątrz wszędzie**: końce działowych przechodzące przez ścianę zewnętrzną (i ściana domu przy tarasie)
+  wychodzą o „Węgieł – wypust na zewnątrz”; węgły na ścianie domu przy tarasie – 200 od strony tarasu.
+- **Węgieł na wolnym końcu** niepełnej ściany (`wegly_wolny_koniec`, od wolnego odcinka `wegly_wolny_koniec_min` 1000).
+- **Przesuwanie węgłów** w karcie „Okna i drzwi” (`html/wegly_przesun.js`): lista wszystkich węgłów z „od” i strzałkami ±50.
+- **Wiązar nad tarasem** (`rdzen/taras_wiazar.rb`): licem z frontem, krokwie z gniazdami pod płatwie (płatwie z wrębem
+  5 / 10 na grubości wiązara), belka dolna, słupek, opcja zastrzałów (`taras_wiazar`), opcja „na słupach” – szczyt bez
+  bali, z przodu sam trójkąt (`taras_wiazar_podparcie`).
+- Poprawki znalezione losowymi domami: ścięcie dachu ze stopniem 0,077 mm przy granicy pióra (płaszczyzna tylko w dół),
+  węgieł ręczny w miejscu słupa tarasu (pominięty z ostrzeżeniem).
 
 ## 1b. Nowe w kompilacji 8 (uwagi z 2026-11-02 21:17)
 
@@ -299,6 +315,18 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
 
+### Runda 9 (kompilacja 9) – uwagi z 2026-11-02 23:24
+
+Wiadomość użytkownika (8 punktów, zrzut z SketchUpa i okna): brak węgła pod płatwią na ścianie zewnętrznej; węgieł
+z działowej wychodzi 100 zamiast 200 („sprawdzić wszystkie”); niepełna ściana wewnętrzna bez węgła na końcu – dodawać
+automatycznie powyżej długości; przesuwanie węgłów w części z oknami i drzwiami; trójkąt nad tarasem – zamki pod płatwie,
+płatwie z zamkami 5 / 10, belka dolna, słupek; trójkąt licem ze ścianą zewnętrzną; opcja dwóch zastrzałów; czy szczyt
+może być bez bala (sam trójkąt).
+- Wykonanie – §1c. Nowe pliki: `rdzen/wegly_konstrukcyjne.rb`, `rdzen/taras_wiazar.rb`, `html/wegly_przesun.js`; testy:
+  grupy rundy 9 w `t_wegly`, `t_taras`, `t_okno.js`; `kolizje_elementow` (belka z belką) w `testy/kolizje_belek.rb`;
+  losowe domy od ziarna 5000 (`dodatki_r9`), kolizje Wt z P, S i Wt w każdym losowym domu.
+- Szczyt bez bala – tak: „Wiązar – na czym stoi” = na słupach (belka dolna wiązara zamiast podciągu frontu).
+
 ### Runda 8 (kompilacja 8) – uwagi z 2026-11-02 21:17
 
 Wiadomość użytkownika (13 punktów): fundament okrągły, podciągi równomiernie, podciąg obniżony albo na równo z podwaliną,
@@ -354,16 +382,19 @@ kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zak
 | O1 | Wypuszczone wieńce okapowe | 2 górne wieńce, do wysunięcia płatwi za szczyt (500); węgły pod okapem do nawisu – opcja (3 górne bale) |
 | T5 | Balustrada z wieńców | do 1000 mm, zakładka 100 w narożnikach frontu |
 | T6 | Trójkątny wieniec | przekrój płatwi (80 × 200) albo podany (80 × 160) |
+| W4 | Węgły pod płatwiami | na szczytach zewnętrznych i ścianie domu przy tarasie (domyślnie), pod każdą płatwią pośrednią; luka pod płatwią < 20 mm, gdy bal węgła wypada tuż pod nią |
+| W5 | Węgieł na wolnym końcu | od wolnego odcinka 1000 mm (parametr), oś 122 mm od końca (ostatek 100) |
+| T7 | Wiązar nad tarasem | słupek 120, zastrzał 100 (opcja), na balach frontu (domyślnie) albo na słupach |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 8 (kroki 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 9 (kroki 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 8)
+## 8. Ograniczenia (kompilacja 9)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach (belki, połacie, dach jednospadowy, taras) i podłoga tylko dla obrysu prostokątnego; szczyty dla innych obrysów
@@ -384,12 +415,13 @@ dach jednospadowy, taras).
 - Podbitka, fundamenty i podciągi tylko dla domu prostokątnego.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7) i 7 (runda 8); kompilacja 8 – do sprawdzenia.
+- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7), 7 (runda 8) i 8 (runda 9); kompilacja 9 – do sprawdzenia.
+- Węgły pod płatwiami tylko dla domu prostokątnego z dachem z generatora; przesunięty węgieł automatyczny zmienia całą ścianę na węgły ręczne.
 - Balustrada z wieńców ścian tylko przy tarasie na słupach (typ 200); trójkątny wieniec tylko przy dachu dwuspadowym.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 8: raport z testu działania (JSON) + scenariusz → poprawki.
+1. Odbiór kompilacji 9: raport z testu działania (JSON) + scenariusz (kroki 2q–2u) → poprawki.
 2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
    (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po
    zmianach tam: osie krokwi z generatora, kalenicowa wprost w grzbiecie.

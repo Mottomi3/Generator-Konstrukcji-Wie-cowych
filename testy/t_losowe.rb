@@ -33,7 +33,10 @@ ZIARNA = {
   2183 => 'r5: taras jak 1100 od strony min, pełny profil',
   2348 => 'r5: koniec podcięcia zamka 0,13 mm za przecięciem skosu z wierzchem bala (kolizja z węgłem)',
   3035 => 'r7: podbitka na płatwiach, krokwie z aplikacji, jednospadowy – połać wyżej o deski',
-  3054 => 'r7: podbitka na płatwiach, ściana nośna, działowa do dachu, szczyt tarasu ażurowy'
+  3054 => 'r7: podbitka na płatwiach, ściana nośna, działowa do dachu, szczyt tarasu ażurowy',
+  16 => 'r9: ścięcie dachu węgła 0,077 mm nad wierzchem przy granicy pióra (krótka krawędź), ściana wysoka 0,03 mm nad dachem',
+  5063 => 'r9: węgły pod płatwiami przy podbitce pod płatwiami – deski w spadku (kolizja z deskami)',
+  5083 => 'r9: węgieł ręczny w miejscu słupa tarasu (kolizja ze słupem)'
 }.freeze
 
 ZIARNA.each do |z, opis|

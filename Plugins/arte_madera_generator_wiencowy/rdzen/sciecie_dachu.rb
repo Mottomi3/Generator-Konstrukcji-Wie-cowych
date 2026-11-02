@@ -69,12 +69,16 @@ module ArteMadera
       end
 
       # Przesunięcie płaszczyzny ścięcia c (nachylenie kt w poprzek) do najbliższej granicy pasa dla pierwszego poziomu,
-      # którego przecięcie wypada bliżej niż Bryla::SCAL od granicy.
+      # którego przecięcie wypada bliżej niż Bryla::SCAL od granicy albo nad którym płaszczyzna na granicy jest niżej niż
+      # Bryla::SCAL (stopień krótszy niż tolerancja – runda 9); płaszczyzna zawsze w dół.
       def przesun!(c, kt, t, poziomy, granice)
         poziomy.each do |z|
           yk = (z - c[:z0]) / kt
           next if yk <= 0.0 || yk >= t
-          yb = granice.find { |y| (y - yk).abs > 1e-6 && (y - yk).abs < Bryla::SCAL }
+          # Krawędź za krótka w poziomie (przecięcie przy granicy) albo w pionie (płaszczyzna tuż nad poziomem na granicy pasa).
+          next unless granice.any? { |y| (y - yk).abs > 1e-6 && [(y - yk).abs, (kt * (y - yk)).abs].min < Bryla::SCAL }
+          # Płaszczyzna tylko w dół (bal nie wychodzi ponad dach): przecięcie przesuwa się do granicy po stronie wyższej płaszczyzny.
+          yb = granice.select { |y| (y - yk) * kt > 1e-6 }.min_by { |y| (y - yk).abs }
           next if yb.nil?
           dz = z - kt * yb - c[:z0]
           c[:z0] += dz

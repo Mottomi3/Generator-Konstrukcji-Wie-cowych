@@ -30,7 +30,7 @@ module ArteMadera
       RODZAJE = {
         'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
         'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras], 'F' => ['Fundament punktowy', :podloga], 'Pb' => ['Podbitka', :dach],
-        'Wt' => ['Wieniec trójkątny szczytu tarasu', :taras]
+        'Wt' => ['Wiązar szczytu tarasu', :taras]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function

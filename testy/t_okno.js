@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy – testy
   Plik: testy/t_okno.js
   Zadanie: okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
-  Tematy: test okna, Playwright, formularz, sekcje, podpowiedzi, szablony, wywołania Ruby, zrzut okna
+  Tematy: test okna, przesuwanie węgłów w teście okna, Playwright, formularz, sekcje, podpowiedzi, szablony, wywołania Ruby, zrzut okna
   Zależy od: testy/okno_dane.rb, Plugins/.../html/okno.html
   Używają: testy/uruchom.sh
 
@@ -349,6 +349,29 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(dp && dp.sciany['W-5'] && dp.sciany['W-5'].nad === 'antresola', 'działowa pod antresolą w danych podglądu');
   await page.selectOption('#widok-sciana', 'W-1');
   await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+
+  // Przesuwanie węgłów w karcie okien i drzwi (runda 9): lista z podglądu, zmiana „od” węgła automatycznego – węgły
+  // ściany jako ręczne z nowym położeniem; węgieł z tabeli – zmiana wiersza tabeli.
+  await page.evaluate(function (d) { AMGW.wynik(d); }, dane.wynik);
+  var wiersze = await page.evaluate(function () { return document.querySelectorAll('#tab-wegly-przesun tbody tr').length; });
+  sprawdz(wiersze > 0 && wiersze === dane.wynik.wegly_lista.length, 'lista węgłów do przesuwania (' + wiersze + ')');
+  var auto = dane.wynik.wegly_lista.filter(function (x) { return x.tabela === null && x.skad !== 'srodek'; })[0];
+  await page.evaluate(function () { window.__wywolania = []; });
+  await page.fill('#tab-wegly-przesun input[data-wegiel="' + auto.id + '"]', String(auto.od + 120));
+  await page.dispatchEvent('#tab-wegly-przesun input[data-wegiel="' + auto.id + '"]', 'change');
+  dp = await podgladDane();
+  wl = dp && dp.sciany[auto.sciana] ? dp.sciany[auto.sciana].wegly : null;
+  sprawdz(wl && wl.some(function (x) { return Math.abs(x - (auto.s + 120)) < 0.2; }) && !wl.some(function (x) { return Math.abs(x - auto.s) < 1; }),
+          'przesunięty węgieł ' + auto.id + ' o 120 mm – węgły ściany ręczne (' + JSON.stringify(wl) + ')');
+  await page.evaluate(function () {
+    AMGW_WEGLY.dodaj({ sciana: 'W-3', polozenie: 'srodek', od: '' });
+    AMGW_PRZESUN.pokaz([{ id: 'W-9', sciana: 'W-3', s: 3478, od: 3500, skad: 'tabela', tabela: 0 }]);
+    window.__wywolania = [];
+  });
+  await page.click('#tab-wegly-przesun button[title^="W prawo"]');
+  dp = await podgladDane();
+  sprawdz(dp && dp.wegly && dp.wegly[0] && dp.wegly[0].polozenie === 'od' && dp.wegly[0].od === '3550',
+          'węgieł z tabeli przesunięty strzałką o 50 mm (' + JSON.stringify(dp && dp.wegly) + ')');
 
   // Zestawienie CSV: przycisk woła Ruby, komunikat z wynikiem zapisu.
   await page.evaluate(function () { window.__wywolania = []; });

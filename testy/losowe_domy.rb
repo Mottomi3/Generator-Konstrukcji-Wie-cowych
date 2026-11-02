@@ -24,6 +24,8 @@ module LosoweDomy
   ZIARNA_R7 = 3000
   # Ziarna od tego numeru dostają losowe nowości rundy 8 (wypusty pod okapem, węgły niesymetryczne, podłoga, taras…).
   ZIARNA_R8 = 4000
+  # Ziarna od tego numeru dostają losowe nowości rundy 9 (węgły pod płatwiami i na wolnym końcu, wiązar nad tarasem).
+  ZIARNA_R9 = 5000
 
   module_function
 
@@ -80,6 +82,7 @@ module LosoweDomy
     taras(Random.new(ziarno * 15_485_863 + 7), p, opis) if ziarno >= ZIARNA_Z_TARASEM
     dodatki_r7(Random.new(ziarno * 2_750_159 + 3), p, opis) if ziarno >= ZIARNA_R7
     dodatki_r8(Random.new(ziarno * 3_331_333 + 11), p, opis) if ziarno >= ZIARNA_R8
+    dodatki_r9(Random.new(ziarno * 4_256_249 + 17), p, opis) if ziarno >= ZIARNA_R9
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -186,6 +189,21 @@ module LosoweDomy
             "#{p['taras_balustrada_rodzaj']}, wieniec szczytu #{p['taras_wieniec']}"
   end
 
+  # Dodatki rundy 9 (osobne losowanie, ziarna od ZIARNA_R9): węgły pod płatwiami, węgieł na wolnym końcu, wiązar nad
+  # tarasem (rodzaj, na balach albo na słupach, słupek, zastrzał); szczyt pusty częściej.
+  def dodatki_r9(r, p, opis)
+    p['wegly_pod_platwiami'] = wybierz(r, %w[zewnetrzne zewnetrzne wszystkie nie])
+    p['wegly_wolny_koniec'] = wybierz(r, %w[tak tak nie])
+    p['wegly_wolny_koniec_min'] = wybierz(r, %w[0 600 1000 2000])
+    p['taras_szczyt'] = wybierz(r, %w[pusty pusty pelny azurowy]) if p['taras'] == 'podciag'
+    p['taras_wiazar'] = wybierz(r, %w[slupek zastrzaly])
+    p['taras_wiazar_podparcie'] = wybierz(r, %w[bale slupy])
+    p['taras_wiazar_slupek'] = wybierz(r, %w[80 120 160])
+    p['taras_wiazar_zastrzal'] = wybierz(r, %w[60 100 140])
+    opis << "r9: węgły pod płatwiami #{p['wegly_pod_platwiami']}, wolny koniec #{p['wegly_wolny_koniec']} od " \
+            "#{p['wegly_wolny_koniec_min']}, wiązar #{p['taras_wiazar']} na #{p['taras_wiazar_podparcie']}"
+  end
+
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
@@ -257,6 +275,10 @@ module LosoweDomy
       %w[P K S Pb Wt].each do |pr|
         n = kolizje_belek(pl, pr, 4)
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
+      end
+      [%w[Wt P], %w[Wt S], %w[Wt Wt]].each do |a, b|
+        n = kolizje_elementow(pl, a, b, 4)
+        problemy << "#{a} z #{b}: kolizje (#{n} punktów)" if n > 0
       end
     end
     problemy.concat(problemy_polaci(pl))

@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
-# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
+# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, gniazdo płatwi w węgle pod nią, czop węgła we wrębie płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
 # Zależy od: rdzen/parametry.rb, rdzen/podbitka.rb (węgły przy szczycie pod podbitką), rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
@@ -20,6 +20,7 @@ require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::Ge
 require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
+require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -248,9 +249,31 @@ module ArteMadera
           else
             next unless (w[:a][iv] - pl[:v]).abs < t / 2.0 + pl[:b] / 2.0 - 0.5
             s = [w[:s_od] - 1.0, w[:s_do] + 1.0]
+            if w[:pod_platwia] && (w[:pod_platwia][:v] - pl[:v]).abs < 0.5
+              gniazda_wegla(w, pl, p)
+              next
+            end
           end
           dodaj_gniazdo(w, s, pl, z0)
         end
+      end
+
+      # Gniazda płatwi w węgle pod nią (rdzen/wegly_konstrukcyjne.rb): od spodu płatwi (albo desek podbitki pod nią) na całej
+      # długości węgła, w słupie zamka (grubość ściany + luz zamka płatwi) wyżej o wrąb od spodu – czop węgła wchodzi we
+      # wrąb płatwi, płatew leży na węgle. Gdy górny bal węgła nie ma w słupie zamka drewna nad gniazdem dolnym (gniazdo +
+      # najcieńszy pasek), słup zamka jest otwarty od jego spodu – bal dzieli się na kawałek wewnątrz i na zewnątrz ściany
+      # (oba leżą na niższym balu węgła), w słupie płatew opiera się na balu ściany.
+      def gniazda_wegla(w, pl, p)
+        z = w[:pod_platwia][:z_wegla]
+        dol = Podbitka.pod_spodem_platwi(p) > 0.0 ? 0.0 : ZamekPlatwi.wrab(p)[:dol]
+        pol = Parametry.grubosc(p) / 2.0 + p['platwa_zamek_luz'].to_f
+        pasek = [p['min_pasek_przy_otworze'].to_f, Otwory::TOL_Z].max
+        gorny = Wience.dla_sciany(w, p).select { |k| k[:z0] + pasek <= z + 0.01 }.max_by { |k| k[:z0] }
+        z_slup = z + dol
+        z_slup = gorny[:z0] if gorny && z_slup - gorny[:z0] < p['zamek']['gniazdo_gleb'].to_f + pasek - 0.01
+        dodaj_gniazdo(w, [w[:s_od] - 1.0, -pol], pl, z)
+        dodaj_gniazdo(w, [-pol, pol], pl, z_slup)
+        dodaj_gniazdo(w, [pol, w[:s_do] + 1.0], pl, z)
       end
 
       # Gniazdo płatwi w ścianie: otwór od dna z0 (spód płatwi albo jej wrębu) w górę na odcinku s.

@@ -96,6 +96,8 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .tabela td.liczba { text-align: right; }
 .przyciski-male { display: flex; gap: 6px; margin-top: 6px; }
 .przyciski-male button { padding: 3px 8px; }
+.przyciski-wiersza { white-space: nowrap; }
+.przyciski-wiersza button { padding: 1px 6px; margin-right: 2px; }
 .liczby { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 6px; }
 .liczby span b { color: var(--akcent); }
 .komunikat { margin: 10px 16px 0; padding: 8px 12px; border-radius: 6px; }
@@ -187,3 +189,4 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .przeliczenia .uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
 .przeliczenia .blad { background: var(--blad-tlo); color: var(--blad); }
 #zmiana-podgladu { font-size: 12px; color: var(--szary); margin: 4px 0; min-height: 16px; }
+#tab-wegly-przesun input { width: 90px; }

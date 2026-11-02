@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
   Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -177,6 +177,7 @@ var AMGW = (function () {
   function pokazWynik(d) {
     AMGW_WYNIKI.pokaz(d, wybierzSciane);
     AMGW_PRZELICZENIA.pokaz(d);
+    AMGW_PRZESUN.pokaz(d.wegly_lista || []);
     if (!d.sciany) {
       AMGW_SCIANA.lista($('widok-sciana'), [], '');
       AMGW_SCIANA.rysuj($('widok'), null, $('widok-opis'));

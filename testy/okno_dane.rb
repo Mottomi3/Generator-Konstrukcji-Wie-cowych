@@ -26,7 +26,7 @@ seg.each do |a, b|
 end
 Sterowanie.start
 init = Okno.dane_startowe
-wynik = Sterowanie.podglad('parametry' => { 'max_dlugosc' => '5000' },
+wynik = Sterowanie.podglad('parametry' => { 'max_dlugosc' => '5000', 'wegly_pod_platwiami' => 'nie' },
                            'otwory' => [{ 'sciana' => 'W-1', 'od' => '800', 'szerokosc' => '1020', 'wysokosc' => '1010', 'parapet' => '900' }])
 widok = Sterowanie.widok('W-1')
 widok_szczytu = Sterowanie.widok('W-2')

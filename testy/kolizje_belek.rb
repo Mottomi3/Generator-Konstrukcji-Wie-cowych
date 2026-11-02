@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/kolizje_belek.rb
 # Zadanie: wspólne sprawdzenia przestrzenne testów – kolizje belek dachu z balami (punkty próbne), bale ponad linią szczytu, bale i płatwie względem połaci dla aplikacji do dachów.
-# Tematy: kolizje belek, punkty próbne, prostopadłościan otaczający, układ lokalny belki, bale nad linią dachu, płaszczyzna połaci w testach, płatwie pod połacią
+# Tematy: kolizje belek, kolizje belek między sobą, punkt w przekroju belki, punkty próbne, prostopadłościan otaczający, układ lokalny belki, bale nad linią dachu, płaszczyzna połaci w testach, płatwie pod połacią
 # Zależy od: testy/pomoc.rb (rdzeń wtyczki)
 # Używają: testy/t_szczyty.rb, testy/t_losowe.rb, testy/t_polacie.rb
 
@@ -51,6 +51,7 @@ def kolizje_belek(pl, prefiks, n = 7)
         next unless le[0] > 0.5 && le[0] < e[:dl] - 0.5 && le[1] > 0.5 && le[1] < e[:b] - 0.5 && le[2] > 0.5 && le[2] < e[:h] - 0.5
         next if w_wrebie?(e, le)
         next if prof_e && !ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof_e, le[0], le[1], le[2], 0.5)
+        next if e[:przekroj] && !w_belce?(e, q)
         lb = lokalnie(pol, q)
         ile += 1 if ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, lb[0], lb[1], lb[2], 0.5)
       end
@@ -65,6 +66,58 @@ def w_wrebie?(e, le)
   (e[:wreby] || []).any? do |x0, x1|
     le[0] > x0 - 0.5 && le[0] < x1 + 0.5 && (le[1] < w[:bok] + 0.5 || le[1] > e[:b] - w[:bok] - 0.5 || le[2] < w[:dol] + 0.5)
   end
+end
+
+# Czy punkt [y, z] leży wewnątrz wielokąta (z marginesem m od krawędzi).
+def w_wielokacie?(pts, y, z, m)
+  wewn = false
+  pts.each_with_index do |a, i|
+    b = pts[(i + 1) % pts.length]
+    if (a[1] > z) != (b[1] > z)
+      x = a[0] + (z - a[1]) * (b[0] - a[0]) / (b[1] - a[1])
+      wewn = !wewn if y < x
+    end
+  end
+  return false unless wewn
+  pts.each_with_index.all? do |a, i|
+    b = pts[(i + 1) % pts.length]
+    dl = Math.hypot(b[0] - a[0], b[1] - a[1])
+    next true if dl < 1e-9
+    t = [[((y - a[0]) * (b[0] - a[0]) + (z - a[1]) * (b[1] - a[1])) / (dl * dl), 0.0].max, 1.0].min
+    Math.hypot(y - a[0] - t * (b[0] - a[0]), z - a[1] - t * (b[1] - a[1])) > m
+  end
+end
+
+# Czy punkt q (układ domu) leży w belce e (przekrój, wręby zamka płatwi, obróbki) z marginesem m.
+def w_belce?(e, q, m = 0.5)
+  g = ArteMadera::GeneratorWiencowy
+  le = lokalnie(e[:polozenie], q)
+  return false unless le[0] > m && le[0] < e[:dl] - m
+  if e[:przekroj]
+    przekroj = e[:przekroj]
+    if (e[:wreby] || []).any? { |x0, x1| le[0] > x0 - m && le[0] < x1 + m }
+      przekroj = g::ZamekPlatwi.przekroj_wrebu(przekroj, e[:b], e[:wrab])
+    end
+    return w_wielokacie?(przekroj, le[1], le[2], m)
+  end
+  return false unless le[1] > m && le[1] < e[:b] - m && le[2] > m && le[2] < e[:h] - m
+  return true if (e[:cechy] || []).empty?
+  g::Bryla.zawiera?(g::Bryla.profil(e[:dl], e[:b], e[:h], e[:cechy]), le[0], le[1], le[2], m)
+end
+
+# Liczba punktów wspólnych belek o prefiksach a i b (punkty próbne n × n × n we wspólnej części otoczek) – 0 = bez kolizji.
+def kolizje_elementow(pl, a, b, n = 6)
+  lista_a = pl[:elementy].select { |e| e[:prefiks] == a }
+  lista_b = pl[:elementy].select { |e| e[:prefiks] == b }
+  ile = 0
+  lista_a.each do |ea|
+    oa = otoczka(ea[:polozenie], ea[:dl], ea[:b], ea[:h])
+    lista_b.each do |eb|
+      next if ea.equal?(eb)
+      probki(oa, otoczka(eb[:polozenie], eb[:dl], eb[:b], eb[:h]), n).each { |q| ile += 1 if w_belce?(ea, q) && w_belce?(eb, q) }
+    end
+  end
+  ile
 end
 
 # Największe wystawanie bali ściany ponad linię szczytu [mm] (≤ 0 – wszystko pod linią).

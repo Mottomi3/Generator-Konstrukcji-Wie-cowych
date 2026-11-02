@@ -252,10 +252,13 @@ module ArteMadera
       end
 
       # Zamki płatwi (rdzen/zamek_platwi.rb): wręby w ścianach, przez które płatew przechodzi w poprzek (dom[:przejscia]
-      # z gniazd), x wzdłuż belki od u0; belka z wrębami ma zawsze przekrój (prostokąt, gdy bez ścięcia).
+      # z gniazd, t – grubość, np. wiązara nad tarasem; brak – grubość ściany), x wzdłuż belki od u0; belka z wrębami ma
+      # zawsze przekrój (prostokąt, gdy bez ścięcia).
       def wreby_platwi!(e, dom, pl, u0, p)
-        u = (dom[:przejscia] || []).select { |x| (x[:v] - pl[:v]).abs < 0.5 }.map { |x| x[:u] - u0 }
-        wr = ZamekPlatwi.wreby(e[:dl], u, Parametry.grubosc(p), p)
+        t = Parametry.grubosc(p)
+        wr = ZamekPlatwi.scal((dom[:przejscia] || []).select { |x| (x[:v] - pl[:v]).abs < 0.5 }.flat_map do |x|
+          ZamekPlatwi.wreby(e[:dl], [x[:u] - u0], x[:t] || t, p)
+        end)
         return if wr.empty?
         e[:wreby] = wr
         e[:wrab] = ZamekPlatwi.wrab(p)

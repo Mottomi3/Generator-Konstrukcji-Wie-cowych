@@ -15,7 +15,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt otwory usztywnienie wegly_tabela symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
+  %w[geometria parametry obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
@@ -55,6 +55,8 @@ module ArteMadera
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
         plan[:ostrzezenia].concat(WeglyTabela.dodaj(sciany, wej['wegly'], p, sc[:os_kalenicy]))
+        plan[:ostrzezenia].concat(WeglyKonstrukcyjne.dodaj(sciany, p, sc[:os_kalenicy], sz[:dom]))
+        plan[:ostrzezenia].concat(Taras.wegly_przy_slupach!(sciany, p))
         plan[:ostrzezenia].concat(Styki.planuj(sciany, p, sc[:os_kalenicy]))
         plan[:ostrzezenia].concat(Usztywnienie.planuj(sciany, p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
@@ -83,12 +85,13 @@ module ArteMadera
       # Belki dachu (dom prostokątny), podbitka i podłoga: elementy, pozycje (numery po balach), podpowiedzi z sekcją okna
       # (szczyty, podloga – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]).
       def belki(plan, dom, p)
+        TarasWiazar.przejscia!(plan[:sciany], dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
         plan[:elementy].concat(Podbitka.elementy(dom, p, plan[:sciany]))
         u = Podbitka.uwaga(p)
         plan[:ostrzezenia] << u if u
         plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
-        plan[:elementy].concat(TarasSzczyt.wience(plan[:sciany], p))
+        plan[:elementy].concat(TarasWiazar.elementy(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
         plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]).map { |h| h.merge(sekcja: 'szczyty') })
         pod = Podloga.zaplanuj(plan[:sciany], p)
@@ -128,6 +131,7 @@ module ArteMadera
           kontrfory_nowe: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :styk },
           wegly_usztywniajace: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :usztywnienie },
           wegly_narysowane: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && w[:zrodlo] == :rysunek },
+          wegly_konstrukcyjne: plan[:sciany].count { |w| w[:rodzaj] == :kontrfor && %i[platwa koniec].include?(w[:zrodlo]) },
           limit_swiatla: Usztywnienie.limit_swiatla(p).round }
       end
 

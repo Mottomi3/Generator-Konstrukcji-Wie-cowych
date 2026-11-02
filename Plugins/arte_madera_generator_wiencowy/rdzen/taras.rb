@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/taras.rb
 # Zadanie: taras przed ścianą szczytową domu prostokątnego – obrys przedłużony o głębokość tarasu, ściana domu jako działowa ze szczytem, wariant 1100 (górne wieńce ścian nad tarasem jako podciąg na słupach) albo 1200 (ściany boczne pełne, front otwarty), słupy tarasu.
-# Tematy: taras, wariant 1100, wariant 1200, podciąg z bali, słupy tarasu, front tarasu, ściana domu przy tarasie, głębokość tarasu, wejście na taras, ostatek przy tarasie, przęsła balustrady
+# Tematy: taras, węgieł w miejscu słupa tarasu, wariant 1100, wariant 1200, podciąg z bali, słupy tarasu, front tarasu, ściana domu przy tarasie, głębokość tarasu, wejście na taras, ostatek przy tarasie, przęsła balustrady
 # Zależy od: rdzen/parametry.rb, rdzen/wience.rb, rdzen/elementy.rb, rdzen/sciany.rb (oś kalenicy), rdzen/taras_sciany.rb (balustrada z wieńców ścian)
 # Używają: rdzen/projekt.rb, rdzen/sciany.rb (opis ściany), rdzen/szczyty.rb (szczyt ściany domu), rdzen/bale.rb (zasięg wieńca), rdzen/usztywnienie.rb, rdzen/taras_balustrada.rb, rdzen/taras_slupy.rb, rdzen/taras_szczyt.rb, rdzen/wience.rb (półbal frontu – w[:taras][:z_polbal])
 #
@@ -225,6 +225,20 @@ module ArteMadera
                  posrednie(lo, hi, p) + [tr[:s_front]]
                end
         osie.map { |s| [s - zapas, s + zapas] }
+      end
+
+      # Węgły (z rysunku, ręczne, z tabeli) w strefie słupa tarasu usunięte – słup stoi w ich miejscu; zwraca ostrzeżenia.
+      def wegly_przy_slupach!(sciany, p)
+        uwagi = []
+        sciany.select { |w| w[:rodzaj] == :kontrfor }.each do |kf|
+          g = kf[:gospodarz]
+          k = g[:skrzyzowania].find { |x| x[:inna].equal?(kf) }
+          next if k.nil? || strefy_slupow(g, p).none? { |z| k[:s] > z[0] && k[:s] < z[1] }
+          sciany.delete(kf)
+          g[:skrzyzowania].delete(k)
+          uwagi << format('Ściana %s: węgieł w %.0f mm stoi w miejscu słupa tarasu – pominięty.', g[:id], k[:s])
+        end
+        uwagi
       end
 
       # Słupy pośrednie między osiami a…z (równo, rozstaw nie większy niż taras_slupy_rozstaw_max).

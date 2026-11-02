@@ -71,7 +71,9 @@ module ArteMadera
           'styki' => bale.select { |b| b['konce'].include?('styk') }.length,
           'dzialowa' => w[:rodzaj] == :dzialowa, 'wysokosc_wlasna' => r(Wience.wysokosc(w, p)),
           'ustawienia' => UstawieniaScian.stan(w, p),
-          'domyslne' => { 'ostatek' => p['ostatek'], 'wysokosc' => p['dzialowa_nizsza_wysokosc'], 'strop' => p['strop'] } }
+          'domyslne' => { 'ostatek' => p['ostatek'], 'ostatek_od' => (w[:ostatki_param] || [])[0],
+                          'ostatek_do' => (w[:ostatki_param] || [])[1], 'wysokosc' => p['dzialowa_nizsza_wysokosc'],
+                          'strop' => p['strop'] } }
       end
 
       # Bal w widoku: obrys [[s, z]], pozycja, wieniec, końce.

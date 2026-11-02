@@ -49,8 +49,12 @@ module ArteMadera
       def wreby(dl, u_scian, t, p)
         return [] unless wlaczone?(p)
         pol = t / 2.0 + p['platwa_zamek_luz'].to_f
-        lista = u_scian.map { |u| [[u - pol, 0.0].max, [u + pol, dl].min] }.select { |a, b| b - a > 1.0 }.sort
-        lista.each_with_object([]) do |(a, b), acc|
+        scal(u_scian.map { |u| [[u - pol, 0.0].max, [u + pol, dl].min] }.select { |a, b| b - a > 1.0 })
+      end
+
+      # Wręby posortowane, nachodzące na siebie scalone w jeden.
+      def scal(lista)
+        lista.sort.each_with_object([]) do |(a, b), acc|
           if !acc.empty? && a <= acc.last[1] + EPS
             acc.last[1] = [acc.last[1], b].max
           else

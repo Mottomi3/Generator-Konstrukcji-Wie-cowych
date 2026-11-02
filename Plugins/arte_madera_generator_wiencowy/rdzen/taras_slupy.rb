@@ -4,7 +4,7 @@
 # Plik: rdzen/taras_slupy.rb
 # Zadanie: słupy tarasu z podciągiem – licem równo z licami ścian zewnętrznych, zamek górny (część słupa za balem idzie w górę obok bala) i zamek dolny (część słupa obok podwaliny schodzi w dół).
 # Tematy: słupy tarasu, słup pod węgłem, słup licem z lica ściany, zamek górny słupa, zamek dolny słupa, słup na podwalinie, słup narożny tarasu
-# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie), rdzen/taras_sciany.rb (balustrada z wieńców – pas słupa)
+# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie), rdzen/taras_sciany.rb (balustrada z wieńców – pas słupa), rdzen/taras_wiazar.rb (front bez bali – lico wiązara)
 # Używają: rdzen/projekt.rb (belki – słupy S)
 #
 # Słup stoi pod podciągiem (spód bali frontu i ścian bocznych nad tarasem – ten sam poziom, Taras.z_podciagu). Zewnętrzne
@@ -22,6 +22,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
+require File.join(File.dirname(__FILE__), 'taras_wiazar') unless defined?(ArteMadera::GeneratorWiencowy::TarasWiazar)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -37,7 +38,7 @@ module ArteMadera
         lista = Taras.slupy_frontu(front, p)[:slupy]
         wynik = lista.each_with_index.map do |s, i|
           naroznik = i.zero? ? 0 : (i == lista.length - 1 ? 1 : nil)
-          slup(front, s, front[:taras][:z_front], srodek, naroznik, p)
+          slup(front, s, front[:taras][:z_front], srodek, naroznik, p, TarasWiazar.grubosc_lica(front, p))
         end
         sciany.select { |w| Taras.rola(w) == :bok }.each do |w|
           tr = w[:taras]
@@ -68,11 +69,13 @@ module ArteMadera
         [[dl, ph].min, pb]
       end
 
-      # Słup w ścianie w w miejscu s (oś słupu wzdłuż ściany), wierzch pełnego przekroju na z_gora; naroznik – 0 (koniec
+      # Słup w ścianie w w miejscu s (oś słupu wzdłuż ściany), wierzch pełnego przekroju na z_gora (lico – grubość pasa przy
+      # licu w zamku górnym: ściana albo wiązar bez bali frontu); naroznik – 0 (koniec
       # przy s = 0 – pas ściany poprzecznej przy y = 0), 1 (przy końcu ściany – przy y = b) albo nil.
-      def slup(w, s, z_gora, srodek, naroznik, p)
+      def slup(w, s, z_gora, srodek, naroznik, p, lico = nil)
         b, g = Parametry.przekroj(p, 'taras_slup_przekroj')
         t = Parametry.grubosc(p)
+        lico ||= t
         gora = p['taras_slup_zamek_gora'].to_f
         gora = 0.0 if skrzyzowanie_nad?(w, s, b, t)
         dol = zamek_dolny(p, g)
@@ -81,7 +84,7 @@ module ArteMadera
         do_srodka = nor_do_srodka?(w, srodek)
         cechy = []
         if gora > 0.5
-          cechy << pas_lica(ld + z_gora, dl, t, do_srodka)
+          cechy << pas_lica(ld + z_gora, dl, lico, do_srodka)
           cechy << pas_boku(ld + z_gora, dl, t, naroznik) if naroznik
         end
         if dol

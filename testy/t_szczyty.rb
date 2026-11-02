@@ -29,7 +29,8 @@ Testy.rowne(w2[:wience].length, (zmax / 139.0).ceil, 'wieńce szczytowej do kale
 Testy.sprawdz(nad_linia(pl, 'W-2') <= 0.01, "bale pod linią dachu (wystaje #{nad_linia(pl, 'W-2').round(3)})")
 Testy.rowne(w2[:otwory].count { |o| o[:gniazdo] }, 5, 'gniazda: 2 płatwie ścienne, 2 pośrednie, kalenicowa')
 Testy.sprawdz(pl[:pozycje].any? { |x| x[:prefiks] == 'Sz' }, 'pozycje bali szczytu (Sz)')
-Testy.sprawdz(pl[:bale].select { |b| b[:z0] >= 2293.5 }.all? { |b| b[:pozycja][:prefiks] == 'Sz' }, 'bale nad okapem – Sz')
+Testy.sprawdz(pl[:bale].select { |b| b[:z0] >= 2293.5 && b[:sciana][:rodzaj] != :kontrfor }.all? { |b| b[:pozycja][:prefiks] == 'Sz' },
+              'bale szczytu nad okapem – Sz')
 Testy.sprawdz(pl[:ostrzezenia].none? { |u| u.include?('krótsze niż') }, 'bez ostrzeżeń o kawałkach przy gniazdach')
 pls = pl[:elementy].select { |e| e[:prefiks] == 'P' }
 Testy.rowne(pls.length, 5, '5 płatwi')
@@ -134,16 +135,18 @@ Testy.rowne(pl[:elementy].count { |e| %w[P K].include?(e[:prefiks]) }, 0, 'bez b
 czysto(pl, 'obrys L')
 
 Testy.grupa('Płatwie oparte na pełnym balu – bez przerwy pod gniazdem (runda 7)')
-# Drewno tuż pod spodem płatwi w środku każdego gniazda ściany.
+# Drewno tuż pod spodem płatwi w środku każdego gniazda ściany – bal ściany albo węgła pod płatwią (runda 9) w tym punkcie.
 def pod_platwia_drewno?(pl, w)
-  t = ArteMadera::GeneratorWiencowy::Parametry.grubosc(pl[:parametry])
+  p = pl[:parametry]
+  t = ArteMadera::GeneratorWiencowy::Parametry.grubosc(p)
   (w[:otwory] || []).select { |o| o[:gniazdo] && o[:s0] > w[:s_od] && o[:s1] < w[:s_do] }.all? do |o|
     s = (o[:s0] + o[:s1]) / 2.0 + 1.3
-    z = o[:z0] - 0.5
-    w[:bale].any? do |b|
-      next false unless s > b[:s0] && s < b[:s1] && z > b[:z0] && z < b[:z0] + b[:h]
+    q = ArteMadera::GeneratorWiencowy::Sciany.punkt(w, s) + [o[:z0] - 0.5]
+    pl[:bale].any? do |b|
+      lb = lokalnie(ArteMadera::GeneratorWiencowy::Bale.polozenie(b, p), q)
+      next false unless lb[0] > 0.0 && lb[0] < b[:dl] && lb[2] > 0.0 && lb[2] < b[:h] && lb[1] > 0.0 && lb[1] < t
       prof = ArteMadera::GeneratorWiencowy::Bryla.profil(b[:dl], t, b[:h], b[:cechy])
-      ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, s - b[:s0], t / 2.0, z - b[:z0], 0.01)
+      ArteMadera::GeneratorWiencowy::Bryla.zawiera?(prof, lb[0], lb[1], lb[2], 0.01)
     end
   end
 end
@@ -226,10 +229,10 @@ Testy.rowne(Wience.wysokosc(pl[:sciany].find { |w| w[:rodzaj] == :dzialowa && (w
             'nie – działowa do wysokości ścian okapowych')
 
 Testy.grupa('Węgły pod dachem: słupek przy szczycie do płaszczyzny dachu, przy okapie – wieniec nad ścianą (runda 8)')
-pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator')
+pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'wegly_pod_platwiami' => 'nie')
 p = pl[:parametry]
 geo = { v_a: 22.0, v_b: 6378.0 }
-przy_szczycie = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt] }
+przy_szczycie = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt] && !w[:pod_platwia] }
 Testy.sprawdz(przy_szczycie.length >= 2, "węgły przy szczytach (#{przy_szczycie.length})")
 luki = przy_szczycie.map do |w|
   b = w[:bale].max_by { |x| x[:z0] }

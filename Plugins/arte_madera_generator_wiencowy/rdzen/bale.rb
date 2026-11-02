@@ -152,12 +152,29 @@ module ArteMadera
         return nad_gospodarzem?(kf, wn, gosp, s, zmin, p) if wn[:nad_gospodarzem]
         sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
+        return pod_platwia?(kf, wn, gosp, s, sasiedzi, p) if kf[:pod_platwia]
         return false if sasiedzi.any? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
         sasiedzi.all? do |g|
           z = zasieg(gosp, g[:z0], p)
           next false unless z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
           # Szczyt ażurowy / pusty nad tarasem – wieniec przekładek albo bez bali: węgieł nie ma oparcia.
           TarasSzczyt.przedzialy(gosp, g, z, p).any? { |a, c| a < s - t / 2.0 + 0.01 && c > s + t / 2.0 - 0.01 }
+        end
+      end
+
+      # Bal węgła pod płatwią (rdzen/wegly_konstrukcyjne.rb): wieńce do spodu płatwi – górny bal ścina gniazdo płatwi w węgle,
+      # więc gniazdo płatwi w szczycie nie odbiera mu oparcia; niższy sąsiad w ścianie bez otworu (gniazdo płatwi się nie
+      # liczy), pod płatwią zostaje co najmniej najcieńszy pasek przy otworze (inaczej bal pominięty).
+      def pod_platwia?(kf, wn, gosp, s, sasiedzi, p)
+        return false if wn[:z0] + [p['min_pasek_przy_otworze'].to_f, Otwory::TOL_Z].max > kf[:pod_platwia][:z_wegla] + 0.01
+        nizszy = sasiedzi.find { |g| g[:lvl] == wn[:lvl] - 1 }
+        bez_gniazd = gosp.merge(otwory: (gosp[:otwory] || []).reject { |o| o[:gniazdo] })
+        return false if nizszy && Otwory.w_otworze?(bez_gniazd, s, nizszy[:z0], nizszy[:z0] + nizszy[:h])
+        t = Parametry.grubosc(p)
+        sasiedzi.all? do |g|
+          next true if g[:lvl] > wn[:lvl]
+          z = zasieg(gosp, g[:z0], p)
+          z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
         end
       end
 

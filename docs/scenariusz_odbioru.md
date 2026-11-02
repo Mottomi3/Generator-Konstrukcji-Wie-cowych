@@ -1,14 +1,32 @@
-# Scenariusz odbioru – kompilacja 8
+# Scenariusz odbioru – kompilacja 9
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 7). Uruchom SketchUpa ponownie. W opisie rozszerzenia „Kompilacja 8 (2026-11-02)”.
+   (zastępuje kompilację 8). Uruchom SketchUpa ponownie. W opisie rozszerzenia „Kompilacja 9 (2026-11-03)”.
    Aplikacja do dachów (ArteMadera Roof) **3.7.0** zainstalowana – do kroków 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
    i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 9 domów „w porządku” (ósmy: dach
    jednospadowy, dziewiąty: taras jak 1100). **Prześlij ten plik.** Model po teście pusty.
+**Nowe w kompilacji 9 (uwagi z 2 listopada, 23:24):**
+
+2q. **Węgły pod płatwiami.** Prostokąt 6000 × 8000 z działową wzdłuż kalenicy, ustawienia jak u Ciebie (wypust na zewnątrz
+   200) → na obu ścianach szczytowych pod każdą płatwią pośrednią węgieł do spodu płatwi (płatew na nim leży, w ścianie
+   czop węgła we wrębie płatwi); pod płatwią kalenicową – działowa. Słupki 100 w środku, 200 na zewnątrz. „Węgieł pod
+   płatwią na szczycie”: nie → węgłów pod płatwiami nie ma.
+2r. **Wypust działowej.** Koniec działowej wychodzący przez ścianę zewnętrzną – 200 (jak węgieł, parametr „Węgieł – wypust
+   na zewnątrz”); ściana domu przy tarasie i jej węgły – 200 od strony tarasu.
+2s. **Wolny koniec.** Narysuj działową, która nie dochodzi do drugiej ściany (np. od ściany 2500 mm w głąb) → przy jej końcu
+   węgieł (bale kończą się 100 za nim). „Węgieł na wolnym końcu – od długości” 3000 → przy tej ścianie węgła nie ma.
+2t. **Przesuwanie węgłów.** Karta „Okna i drzwi” → „Węgły – przesuwanie”: lista wszystkich węgłów; wpisz nowe „od” albo
+   kliknij ◀ ▶ (50 mm) → węgieł przesunięty w podglądzie, w panelu ściany „Węgły tej ściany ustawione ręcznie”; węgieł
+   z tabeli węgłów – zmienia się wiersz tabeli. „Przywróć automatyczne” w panelu ściany cofa przesunięcia.
+2u. **Wiązar nad tarasem.** Taras na słupach, szczyt pusty → wiązar licem z licem frontu: krokwie wiązara z gniazdami,
+   płatwie przechodzą przez nie z zamkiem (5 z boku, 10 od spodu), belka dolna, słupek pod kalenicą. „Wiązar – rodzaj”:
+   z zastrzałami → dwa zastrzały od stopy słupka do krokwi. „Wiązar – na czym stoi”: na słupach → front bez bali, z przodu
+   sam trójkąt na słupach.
+
 **Nowe w kompilacji 8 (uwagi z 2 listopada wieczorem):**
 
 2i. **Zamek płatwi.** Dom 7000 × 5000 → w modelu płatew w szczycie: bal dochodzi do dna wrębu z obu boków i od spodu,
@@ -24,8 +42,7 @@ Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze
 2n. **Balustrada z wieńców ścian.** Taras na słupach, „Balustrada – z czego”: z wieńców ścian → ściany boczne ciągłe
    do frontu (do 1 m), front z przerwą na wejście, w narożnikach frontu co druga belka wysunięta 100; zakładka „nie” →
    końce równo z licem.
-2o. **Szczyt pusty.** „Szczyt nad tarasem”: pusty → nad balem spinającym dwie belki (trójkątny wieniec) aż do kalenicy,
-   płatwie leżą na nich.
+2o. **Szczyt pusty.** „Szczyt nad tarasem”: pusty → nad balem spinającym wiązar aż do kalenicy (od kompilacji 9 – krok 2u).
 2p. **Typy.** Lista szablonów: Typ 100, 200, 300, 400 – wczytaj kolejno; w opisach pól nie ma „jak 900 / 1100”.
 
 **Nowe w kompilacji 7 (Twoje uwagi do kompilacji 6):**

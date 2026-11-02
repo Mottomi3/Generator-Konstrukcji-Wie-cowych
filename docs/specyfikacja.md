@@ -269,12 +269,38 @@ Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
 - Taras (`rdzen/taras_sciany.rb`): balustrada z wieńców ścian – wieńce frontu i ścian bocznych z wierzchem nie wyżej
   niż `taras_balustrada_wysokosc` pełne, koniec przy narożniku frontu z wypustem `taras_zakladka_wypust` albo równo
   z licem; front z przerwą między licami słupów wejścia; poręcz wspólna (wyższa ścięta, bez piór); słupy z wyciętym pasem
-  ściany do wierzchu balustrady; węgły nie stają w strefach słupów. Szczyt pusty – `taras_wieniec`: dwie belki Wt
-  (graniastosłupy wzdłuż kalenicy, przekrój w płaszczyźnie frontu) od wierzchu bali spinających do kalenicy, wierzch na
-  linii spodu płatwi.
+  ściany do wierzchu balustrady; węgły nie stają w strefach słupów. Szczyt pusty – `taras_wieniec`: od rundy 9 wiązar
+  (§8d) zamiast dwóch belek pod płatwiami.
 - Szablony wbudowane – typy bazowe 100 (domek na samych płatwiach), 200 (parterowy wysoki, taras na słupach), 300
   (1,5 kondygnacji ze stropem, taras między ścianami), 400 (dach jednospadowy); wersje użytkownika – 101, 102… (szablony
   zapisane w oknie).
+
+## 8d. Runda 9 – węgły pod płatwiami, wolny koniec, przesuwanie węgłów, wiązar nad tarasem
+
+- Koniec działowej przechodzący przez ścianę zewnętrzną wychodzi na zewnątrz o `wegiel_wypust_zewn` (jak słupek węgła);
+  przy innych połączeniach T – `ostatek`. Węgieł na ścianie domu przy tarasie: strona tarasu jak na zewnątrz.
+- Węgieł pod płatwią (`rdzen/wegly_konstrukcyjne.rb`, `wegly_pod_platwiami` = zewnetrzne | wszystkie | nie): na ścianie ze
+  szczytem (dom prostokątny; zewnętrzne – szczyty zewnętrzne i ściana domu przy tarasie, wszystkie – także szczyty
+  działowych, bez frontu tarasu) w osi każdej płatwi, poza miejscami przy narożniku / skrzyżowaniu (odstęp skrzyżowań)
+  i ścianami z węgłami ręcznymi. Wieńce węgła do spodu płatwi (podbitka pod płatwiami – do spodu desek w spadku);
+  górny bal ścięty, w słupie zamka czop o wrąb od spodu płatwi; gdy w słupie zamka nie ma drewna nad gniazdem dolnym
+  (gniazdo + `min_pasek_przy_otworze`) – słup otwarty, bal węgła w dwóch kawałkach (wewnątrz i na zewnątrz); bal, pod
+  którym zostaje mniej niż `min_pasek_przy_otworze`, pominięty (luka pod płatwią < 20 mm).
+- Wolny koniec (`wegly_wolny_koniec`, `wegly_wolny_koniec_min` 1000): działowa, której koniec nie dochodzi do ściany –
+  węgieł w osi ostatek + pół grubości od końca, gdy wolny odcinek od ostatniego skrzyżowania jest dłuższy niż próg.
+- Węgły w strefie słupa tarasu (ręczne, z rysunku, z tabeli) – pominięte z ostrzeżeniem.
+- Przesuwanie węgłów (okno, karta okien i drzwi): lista wszystkich węgłów (`rdzen/wegly_tabela.rb#lista`), „od” jak przy
+  otworach; zmiana węgła z tabeli – wiersz tabeli, innego – węgły ściany (bez z tabeli i z parametru „na środku”) jako
+  ręczne z nowym położeniem.
+- Wiązar nad pustym szczytem frontu tarasu (`rdzen/taras_wiazar.rb`, prefiks Wt): grubość z przekroju płatwi albo
+  podanego, lico zewnętrzne równo z licem frontu; krokwie wiązara – wierzch na linii szczytu, gniazda płatwi (szerokość
+  w wrębie, dno na spodzie wrębu), płatwie z wrębem na grubości wiązara; belka dolna (wysokość jak krokwie) na balach
+  frontu albo – `taras_wiazar_podparcie` = slupy – na słupach od spodu podciągu między licami ścian bocznych (front bez
+  bali, zamek górny słupów frontu z pasem grubości wiązara); słupek `taras_wiazar_slupek`; `taras_wiazar` = zastrzaly –
+  dwa zastrzały `taras_wiazar_zastrzal` od stopy słupka do połowy wolnego spodu krokwi. Człon przecięty gniazdem płatwi
+  dzielony; okruchy krótsze niż `min_odcinek` pominięte.
+- Ścięcie dachu w poprzek (`rdzen/sciecie_dachu.rb#wyrownaj!`): także stopień krótszy niż 0,2 mm w pionie przy granicy
+  pasa; płaszczyzna przesuwana tylko w dół.
 
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 

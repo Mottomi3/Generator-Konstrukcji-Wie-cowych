@@ -50,7 +50,10 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `wegly_srodek` | Węgieł na środku ściany – automatycznie | nie | `nie` – nie; `zewnetrzne` – na ścianach zewnętrznych; `wszystkie` – na wszystkich ścianach | Węgieł w osi ściany, gdy ściana nie jest krótsza niż podana niżej (w miejscu skrzyżowania albo otworu – obok, do pół metra). Pojedyncze węgły dodasz w tabeli „Węgły”, jak okna. |
 | `wegly_srodek_min` | Węgieł na środku – od długości ściany | 4000 mm | 1000 … 20000 |  |
 | `wegiel_wypust_wewn` | Węgieł – wypust wewnątrz domu | 100 mm | 40 … 1500 | Długość słupka węgła za licem wewnętrznym ściany (przy działowej – z obu stron). W tabeli węgłów można podać inną dla jednego węgła. |
-| `wegiel_wypust_zewn` | Węgieł – wypust na zewnątrz | 100 mm | 40 … 1500 | Za licem zewnętrznym ściany, np. 200 przy węgle niesymetrycznym (wewnątrz 100). |
+| `wegiel_wypust_zewn` | Węgieł – wypust na zewnątrz | 100 mm | 40 … 1500 | Za licem zewnętrznym ściany, np. 200 przy węgle niesymetrycznym (wewnątrz 100). Tyle samo wychodzą na zewnątrz końce działowych przechodzących przez ścianę zewnętrzną. |
+| `wegly_pod_platwiami` | Węgieł pod płatwią na szczycie | zewnetrzne | `zewnetrzne` – na szczytach zewnętrznych (i ścianie domu przy tarasie); `wszystkie` – także na szczytach działowych; `nie` – nie | W osi każdej płatwi przechodzącej przez szczyt – słupek węgła do spodu płatwi (płatew na nim leży). Nie powstaje, gdy pod płatwią jest już ściana albo węgieł, otwór lub ściana ma węgły ręczne. |
+| `wegly_wolny_koniec` | Węgieł na wolnym końcu niepełnej ściany | tak | `tak` – tak; `nie` – nie | Działowa, która nie dochodzi do innej ściany: węgieł przy jej końcu (bale kończą się ostatkiem za węgłem). |
+| `wegly_wolny_koniec_min` | Węgieł na wolnym końcu – od długości wolnego odcinka | 1000 mm | 0 … 10000 | Od ostatniego skrzyżowania do wolnego końca ściany; krótszy wolny odcinek – bez węgła. |
 | `wegly_na_dzialowych` | Węgły także na ścianach działowych | tak | `tak` – tak; `nie` – nie |  |
 | `min_odstep_skrzyzowan` | Odstęp węgła od innego skrzyżowania | 300 mm | 150 … 3000 |  |
 | `odstep_od_otworu` | Odstęp węgła od krawędzi otworu | 150 mm | 0 … 2000 |  |
@@ -137,8 +140,12 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `taras_slup_zamek_dol` | Słup – zamek dolny (obok podwaliny) | 100 mm | 0 … 300 | Część słupa obok podwaliny schodzi w dół (najwyżej na wysokość podwaliny). 0 – słup stoi na podwalinie. Tylko z podłogą. |
 | `taras_szczyt` | Szczyt nad tarasem | pelny | `pelny` – pełny (typ 200); `azurowy` – ażurowy – bale na przemian z przekładkami, jak balustrada; `pusty` – pusty – bale spinające i trójkątny wieniec pod płatwiami |  |
 | `taras_szczyt_bale` | Szczyt pusty – bale spinające | 1 | 0 … 6 | Pełne bale szczytu nad podciągiem (nad balem, który zamyka się ze ścianami bocznymi) – dolny pas trójkąta. |
-| `taras_wieniec` | Szczyt pusty – trójkątny wieniec z przekroju | platwa | `platwa` – płatwi (jak płatwie); `wlasny` – podanego niżej; `brak` – bez wieńca – słupki z przekładek pod płatwiami |  |
-| `taras_wieniec_przekroj` | Trójkątny wieniec – przekrój (szer. × wys.) | 80x160 mm | szer. × wys. | Szerokość w poprzek frontu, wysokość prostopadle do połaci. |
+| `taras_wieniec` | Szczyt pusty – wiązar (trójkąt) z przekroju | platwa | `platwa` – płatwi (jak płatwie); `wlasny` – podanego niżej; `brak` – bez wiązara – słupki z przekładek pod płatwiami |  |
+| `taras_wieniec_przekroj` | Wiązar – przekrój (grub. × wys.) | 80x160 mm | szer. × wys. | Grubość wiązara (wzdłuż kalenicy) × wysokość krokwi wiązara (prostopadle do połaci) i belki dolnej. |
+| `taras_wiazar` | Wiązar – rodzaj | slupek | `slupek` – krokwie, belka dolna i słupek pod kalenicą; `zastrzaly` – jak obok + dwa zastrzały ze stopy słupka do krokwi |  |
+| `taras_wiazar_podparcie` | Wiązar – na czym stoi | bale | `bale` – na balach frontu (podciąg i bale spinające); `slupy` – na słupach – szczyt bez bali, z przodu sam trójkąt | Na słupach: belka dolna wiązara zamiast bali frontu – leży na słupach frontu od spodu podciągu, między ścianami bocznymi. |
+| `taras_wiazar_slupek` | Wiązar – szerokość słupka | 120 mm | 40 … 400 | W płaszczyźnie frontu; grubość jak wiązar. |
+| `taras_wiazar_zastrzal` | Wiązar – szerokość zastrzału | 100 mm | 40 … 400 |  |
 | `taras_wejscie` | Wejście na taras od frontu | srodek | `srodek` – pośrodku; `lewa` – z lewej (patrząc na front z zewnątrz); `prawa` – z prawej (patrząc na front z zewnątrz); `brak` – bez wejścia – balustrada na całym froncie |  |
 | `taras_wejscie_szerokosc` | Wejście – szerokość w świetle słupów | 1200 mm | 600 … 4000 |  |
 | `taras_balustrada_rodzaj` | Balustrada – z czego | przesla | `przesla` – dołożona – bale i przekładki między słupami; `sciany` – z wieńców ścian – ściany boczne ciągle przez taras, zamki w narożnikach frontu |  |

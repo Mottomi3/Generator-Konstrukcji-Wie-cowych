@@ -121,6 +121,7 @@ module ArteMadera
         # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut.
         def dla_okna(plan)
           wynik = { 'bledy' => plan[:bledy], 'ostrzezenia' => plan[:ostrzezenia], 'rzut' => rzut(plan),
+                    'wegly_lista' => plan[:sciany].empty? ? [] : WeglyTabela.lista(plan[:sciany], plan[:parametry]),
                     'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) }, 'widoki' => Widok.lista(plan) }
           s = plan[:podsumowanie]
           return wynik if s.nil?

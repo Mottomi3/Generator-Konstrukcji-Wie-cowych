@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_taras.rb
-# Zadanie: parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy z zamkami, szczyt nad tarasem, wejście, balustrada.
-# Tematy: taras – parametry, słupy tarasu – parametry, balustrada – parametry, szczyt nad tarasem – parametry
+# Zadanie: parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy z zamkami, szczyt nad tarasem z wiązarem, wejście, balustrada.
+# Tematy: taras – parametry, słupy tarasu – parametry, balustrada – parametry, szczyt nad tarasem – parametry, wiązar – parametry
 # Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
@@ -53,17 +53,34 @@ module ArteMadera
                    ['pusty', 'pusty – bale spinające i trójkątny wieniec pod płatwiami']],
           pomoc: 'Pełny – szczyt z bali do linii dachu. Ażurowy – co drugi wieniec szczytu to przekładki (pod płatwiami, przy ' \
                  'końcach i co najwyżej co „największy prześwit”). Pusty – nad podciągiem tylko podana liczba bali spinających ' \
-                 'front, a na nich trójkątny wieniec: dwie belki wzdłuż połaci od bali spinających do kalenicy, płatwie leżą na ' \
-                 'nich – spina konstrukcję i szczyt.' },
+                 'front, a na nich wiązar (trójkąt): krokwie wiązara z gniazdami pod płatwie, belka dolna i słupek pod kalenicą ' \
+                 '(opcjonalnie zastrzały) – spina konstrukcję i szczyt. Wiązar może też stać na słupach bez bali pod nim.' },
         { klucz: 'taras_szczyt_bale', domyslna: 1, etykieta: 'Szczyt pusty – bale spinające', min: 0, max: 6, rodzaj: :calkowita,
           sekcja: 'taras', gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'] },
           podpowiedz: 'Pełne bale szczytu nad podciągiem (nad balem, który zamyka się ze ścianami bocznymi) – dolny pas trójkąta.' },
-        { klucz: 'taras_wieniec', domyslna: 'platwa', etykieta: 'Szczyt pusty – trójkątny wieniec z przekroju', rodzaj: :wybor,
+        { klucz: 'taras_wieniec', domyslna: 'platwa', etykieta: 'Szczyt pusty – wiązar (trójkąt) z przekroju', rodzaj: :wybor,
           sekcja: 'taras', gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'] },
-          wybory: [['platwa', 'płatwi (jak płatwie)'], ['wlasny', 'podanego niżej'], ['brak', 'bez wieńca – słupki z przekładek pod płatwiami']] },
-        { klucz: 'taras_wieniec_przekroj', domyslna: '80x160', etykieta: 'Trójkątny wieniec – przekrój (szer. × wys.)', jednostka: 'mm',
+          wybory: [['platwa', 'płatwi (jak płatwie)'], ['wlasny', 'podanego niżej'], ['brak', 'bez wiązara – słupki z przekładek pod płatwiami']] },
+        { klucz: 'taras_wieniec_przekroj', domyslna: '80x160', etykieta: 'Wiązar – przekrój (grub. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'taras', gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => ['wlasny'] },
-          podpowiedz: 'Szerokość w poprzek frontu, wysokość prostopadle do połaci.' },
+          podpowiedz: 'Grubość wiązara (wzdłuż kalenicy) × wysokość krokwi wiązara (prostopadle do połaci) i belki dolnej.' },
+        { klucz: 'taras_wiazar', domyslna: 'slupek', etykieta: 'Wiązar – rodzaj', rodzaj: :wybor, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
+          wybory: [['slupek', 'krokwie, belka dolna i słupek pod kalenicą'], ['zastrzaly', 'jak obok + dwa zastrzały ze stopy słupka do krokwi']],
+          pomoc: 'Wiązar licuje się z licem zewnętrznym frontu. Krokwie wiązara mają wierzch na linii dachu i gniazda pod płatwie ' \
+                 '(płatew przechodzi przez wiązar z zamkiem – wrąb z boków i od spodu, jak w ścianie). Krokwie leżą na belce dolnej, ' \
+                 'słupek pod kalenicą podpiera obie krokwie; zastrzały (wizualnie) od stopy słupka ukośnie do połowy krokwi.' },
+        { klucz: 'taras_wiazar_podparcie', domyslna: 'bale', etykieta: 'Wiązar – na czym stoi', rodzaj: :wybor, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
+          wybory: [['bale', 'na balach frontu (podciąg i bale spinające)'], ['slupy', 'na słupach – szczyt bez bali, z przodu sam trójkąt']],
+          podpowiedz: 'Na słupach: belka dolna wiązara zamiast bali frontu – leży na słupach frontu od spodu podciągu, między ' \
+                      'ścianami bocznymi.' },
+        { klucz: 'taras_wiazar_slupek', domyslna: 120.0, etykieta: 'Wiązar – szerokość słupka', jednostka: 'mm', min: 40.0,
+          max: 400.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
+          podpowiedz: 'W płaszczyźnie frontu; grubość jak wiązar.' },
+        { klucz: 'taras_wiazar_zastrzal', domyslna: 100.0, etykieta: 'Wiązar – szerokość zastrzału', jednostka: 'mm', min: 40.0,
+          max: 400.0, rodzaj: :liczba, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny], 'taras_wiazar' => ['zastrzaly'] } },
         { klucz: 'taras_wejscie', domyslna: 'srodek', etykieta: 'Wejście na taras od frontu', rodzaj: :wybor, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },
           wybory: [['srodek', 'pośrodku'], ['lewa', 'z lewej (patrząc na front z zewnątrz)'],
                    ['prawa', 'z prawej (patrząc na front z zewnątrz)'], ['brak', 'bez wejścia – balustrada na całym froncie']] },

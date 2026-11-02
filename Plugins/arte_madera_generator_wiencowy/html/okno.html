@@ -86,6 +86,16 @@
           <button type="button" id="btn-okno">+ okno</button>
           <button type="button" id="btn-drzwi">+ drzwi</button>
         </div>
+        <h3>Węgły – przesuwanie</h3>
+        <table class="tabela" id="tab-wegly-przesun">
+          <thead>
+            <tr><th>Ściana</th><th>Węgieł</th><th>Skąd</th><th title="Oś węgła od narożnika lica zewnętrznego (działowa – od początku osi), jak „od” otworu">Od [mm]</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="wegly-przesun-pusto" class="drobny">Węgły pojawią się po podglądzie.</p>
+        <p class="drobny">Wpisz nowe „od” albo przesuń strzałkami (50 mm), np. dalej od okna. Przesunięcie węgła automatycznego
+          zapisuje węgły tej ściany jako ręczne (przywrócisz automat w panelu pod widokiem ściany); węgieł z tabeli zmienia jej wiersz.</p>
       </div>
       <div class="karta">
         <h2>Węgły (kontrfory)</h2>
@@ -139,6 +149,7 @@
   <script src="edycja.js"></script>
   <script src="otwory.js"></script>
   <script src="wegly.js"></script>
+  <script src="wegly_przesun.js"></script>
   <script src="wyniki.js"></script>
   <script src="przeliczenia.js"></script>
   <script src="okno.js"></script>

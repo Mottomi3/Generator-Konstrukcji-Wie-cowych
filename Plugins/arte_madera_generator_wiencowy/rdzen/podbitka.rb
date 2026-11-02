@@ -63,6 +63,12 @@ module ArteMadera
         end
       end
 
+      # Grubość podbitki w pionie pod spodem płatwi [mm] (podbitka pod płatwiami; inaczej 0) – węgły pod płatwią kończą się
+      # pod deskami (rdzen/wegly_konstrukcyjne.rb).
+      def pod_spodem_platwi(p)
+        rodzaj(p) == 'pod_platwiami' ? p['podbitka_grubosc'].to_f / Math.cos(Dach.kat(p)) : 0.0
+      end
+
       # Wysokość płatwi pośredniej (spód płatwi wyznacza płaszczyznę podbitki).
       def wysokosc_platwi(p)
         Parametry.przekroj(p, 'platwa_przekroj')[1]

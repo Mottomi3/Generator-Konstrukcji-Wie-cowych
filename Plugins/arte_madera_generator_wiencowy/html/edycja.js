@@ -2,9 +2,9 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/edycja.js
   Zadanie: ustawienia pojedynczej ściany pod jej widokiem – ostatek na każdym końcu, węgły dodawane i usuwane kliknięciem w widok, co jest nad działową (strop, antresola, półka) i jej góra.
-  Tematy: panel ściany, edycja w widoku ściany, ostatek na końcu ściany, ostatek 200 pod taras, dodaj węgieł kliknięciem, usuń węgieł kliknięciem, przywróć węgły automatyczne, działowa niższa, nad działową, ustawienia ścian do Ruby
+  Tematy: panel ściany, przesunięcie węgła na liście ręcznej, edycja w widoku ściany, ostatek na końcu ściany, ostatek 200 pod taras, dodaj węgieł kliknięciem, usuń węgieł kliknięciem, przywróć węgły automatyczne, działowa niższa, nad działową, ustawienia ścian do Ruby
   Zależy od: html/wspolne.js (AMGW_DOM), dane widoku z Ruby (rdzen/widok.rb: ustawienia, domyslne, skrzyzowania)
-  Używają: html/okno.js (init, panel po widoku, klik z html/sciana.js, dane do podglądu)
+  Używają: html/okno.js (init, panel po widoku, klik z html/sciana.js, dane do podglądu), html/wegly_przesun.js (przesun)
 
   Ustawienia ścian (jak 'sciany' w wejściu domu, rdzen/ustawienia_scian.rb): { 'W-1': { ostatek_od, ostatek_do, wegly: [s],
   nad, wysokosc } } – tylko wartości różne od wynikających z parametrów; lista wegly = węgły ustawione ręcznie.
@@ -81,6 +81,17 @@ var AMGW_EDYCJA = (function () {
     if (stan.naZmiane) { stan.naZmiane(); }
   }
 
+  // Przesunięcie węgła ściany id z osi stare na nowe (html/wegly_przesun.js): węgły ściany (osie – lista z podglądu, bez
+  // węgłów z tabeli) zapisane jako ręczne z nowym położeniem; potem podgląd.
+  function przesun(id, osie, stare, nowe) {
+    var u = ust(id);
+    var lista = (u.wegly || osie).filter(function (x) { return Math.abs(x - stare) > 1; });
+    lista.push(Math.round(nowe * 10) / 10);
+    lista.sort(function (a, b) { return a - b; });
+    u.wegly = lista;
+    if (stan.naZmiane) { stan.naZmiane(); }
+  }
+
   // Najbliższy węgieł do miejsca s w zasięgu BLISKO (albo zasieg [mm]); null – brak.
   function wegielPrzy(d, s, zasieg) {
     var lista = weglyWidoku(d);
@@ -119,12 +130,12 @@ var AMGW_EDYCJA = (function () {
     box.appendChild(pola);
     if (s.ostatek_od !== null && s.ostatek_od !== undefined) {
       poleLiczby(pola, 'e-ostatek-od', 'Ostatek – lewy koniec (początek)', s.ostatek_od, function (v) {
-        ustaw(d.id, 'ostatek_od', v, dom.ostatek);
+        ustaw(d.id, 'ostatek_od', v, dom.ostatek_od !== null && dom.ostatek_od !== undefined ? dom.ostatek_od : dom.ostatek);
       });
     }
     if (s.ostatek_do !== null && s.ostatek_do !== undefined) {
       poleLiczby(pola, 'e-ostatek-do', 'Ostatek – prawy koniec', s.ostatek_do, function (v) {
-        ustaw(d.id, 'ostatek_do', v, dom.ostatek);
+        ustaw(d.id, 'ostatek_do', v, dom.ostatek_do !== null && dom.ostatek_do !== undefined ? dom.ostatek_do : dom.ostatek);
       });
     }
     if (d.dzialowa) { panelDzialowej(pola, d, u, s, dom); }
@@ -164,5 +175,5 @@ var AMGW_EDYCJA = (function () {
     }
   }
 
-  return { init: init, dane: dane, klik: klik, wegielPrzy: wegielPrzy, panel: panel };
+  return { init: init, dane: dane, klik: klik, wegielPrzy: wegielPrzy, panel: panel, przesun: przesun };
 }());
