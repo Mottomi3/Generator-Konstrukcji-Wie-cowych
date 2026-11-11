@@ -2,19 +2,20 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/taras_wiazar.rb
-# Zadanie: wiązar (trójkąt) nad pustym szczytem frontu tarasu – dwie krokwie wiązara z gniazdami pod płatwie, belka dolna, słupek pod kalenicą i opcjonalnie dwa zastrzały; licem z licem zewnętrznym frontu; na balach frontu albo na słupach bez bali; wręby płatwi na grubości wiązara.
-# Tematy: wiązar szczytu tarasu, trójkąt nad tarasem, krokiew wiązara, belka dolna wiązara, słupek wiązara, zastrzał, gniazda płatwi w wiązarze, wiązar licem z frontem, szczyt bez bali, przekrój członu wiązara
+# Zadanie: wiązar (trójkąt) nad pustym szczytem frontu tarasu – dwie ciągłe krokwie wiązara pod płatwiami (płatwie leżą na nich w płytkich gniazdach – zamkach), belka dolna, słupek pod kalenicą i opcjonalnie dwa zastrzały od stopy słupka pod zadanym kątem (45°); licem z licem zewnętrznym frontu; na balach frontu albo na słupach bez bali; wręby płatwi na grubości wiązara.
+# Tematy: wiązar szczytu tarasu, trójkąt nad tarasem, krokiew wiązara, belka dolna wiązara, słupek wiązara, zastrzał, kąt zastrzału, wiązar pod płatwiami, głębokość gniazda płatwi w wiązarze, gniazda płatwi w wiązarze, wiązar licem z frontem, szczyt bez bali, przekrój członu wiązara
 # Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/elementy.rb (belka), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi), rdzen/taras_szczyt.rb (czy szczyt pusty z wiązarem)
 # Używają: rdzen/projekt.rb (przejścia płatwi przed belkami dachu, człony wiązara), rdzen/taras_slupy.rb (grubość lica frontu bez bali), rdzen/taras_szczyt.rb (bez bali frontu)
 #
 # Wiązar leży w płaszczyźnie frontu (v w poprzek kalenicy, z w górę), grubość (wzdłuż kalenicy) z przekroju płatwi albo
 # podanego, lico zewnętrzne równo z licem zewnętrznym frontu (wymóg użytkownika, runda 9). Człon = obszar między linią
-# spodu B(v) (maksimum prostych) i wierzchu T(v) (minimum prostych) na odcinku v; wierzch krokwi na linii szczytu (jak bale
-# szczytu), w nim gniazda płatwi (szerokość płatwi w ścianie, dno na spodzie wrębu – płatew przechodzi przez wiązar
-# z zamkiem jak przez ścianę). Belka dolna: na balach frontu (wierzch najwyższego bala) albo – bez bali (szczyt bez bala,
+# spodu B(v) (maksimum prostych) i wierzchu T(v) (minimum prostych) na odcinku v. Wiązar podpiera płatwie od spodu
+# (wymóg użytkownika, runda 10): wierzch krokwi wiązara jest równoległy do linii dachu i obniżony tak, że każda płatew
+# leży w gnieździe (zamku) o głębokości co najmniej taras_wiazar_gniazdo przy niższej krawędzi – krokwie są ciągłe,
+# gniazda (szerokość płatwi w wrębie, dno na spodzie wrębu) nie przecinają ich; płatew ma wrąb na grubości wiązara. Belka dolna: na balach frontu (wierzch najwyższego bala) albo – bez bali (szczyt bez bala,
 # z przodu sam trójkąt) – na słupach frontu, od spodu podciągu, między licami wewnętrznymi ścian bocznych. Krokwie leżą
-# na belce dolnej (pięta krokwi do wierzchu belki), słupek od belki do spodu krokwi, zastrzały od stopy słupka do połowy
-# krokwi. Człony prefiks Wt (graniastosłupy wzdłuż kalenicy, przekrój w płaszczyźnie frontu).
+# na belce dolnej (pięta krokwi do wierzchu belki), słupek od belki do spodu krokwi, zastrzały od stopy słupka do spodu
+# krokwi pod kątem taras_wiazar_zastrzal_kat od poziomu (45°; 0 – do połowy krokwi). Człony prefiks Wt (graniastosłupy wzdłuż kalenicy, przekrój w płaszczyźnie frontu).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -70,8 +71,21 @@ module ArteMadera
         end
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
         { os: iu.zero? ? :x : :y, iu: iu, u_c: w[:a][iu] + tr[:znak] * (t / 2.0 - bw / 2.0), bw: bw, hw: hw,
-          hv: hw / Math.cos(Dach.kat(p)), geo: geo, vk: vk, zk: Dach.linia_szczytu(geo, vk, p), tg: Dach.tg(p),
+          hv: hw / Math.cos(Dach.kat(p)), geo: geo, vk: vk, zk: Dach.linia_szczytu(geo, vk, p) - pod_platwiami(geo, p), tg: Dach.tg(p),
           v_lo: v_lo, v_hi: v_hi, z_b0: z_b0, z_b1: z_b0 + hw }
+      end
+
+      # O ile wierzch krokwi wiązara jest pod linią dachu [mm]: tak, żeby dno gniazda każdej płatwi (spód jej wrębu) było
+      # przy niższej krawędzi gniazda co najmniej taras_wiazar_gniazdo pod wierzchem krokwi – płatwie leżą na wiązarze,
+      # krokwie wiązara zostają ciągłe.
+      def pod_platwiami(geo, p)
+        vk = (geo[:v_a] + geo[:v_b]) / 2.0
+        zapas = Dach.platwie(geo, p).map do |pl|
+          b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
+          v_niska = pl[:v] <= vk ? pl[:v] - b2 : pl[:v] + b2
+          Dach.linia_szczytu(geo, v_niska, p) - ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
+        end.min
+        zapas.nil? ? 0.0 : [zapas - p['taras_wiazar_gniazdo'].to_f, 0.0].max
       end
 
       # Przejścia płatwi przez wiązar (dom[:przejscia] z grubością t – wręby płatwi na grubości wiązara); przed belkami
@@ -82,7 +96,7 @@ module ArteMadera
         u = uklad(w, p)
         return if u.nil?
         dom[:przejscia] ||= []
-        Dach.platwie({ v_a: dom[:v_a], v_b: dom[:v_b] }, p).each do |pl|
+        Dach.platwie(Dach.geo(dom), p).each do |pl|
           dom[:przejscia] << { v: pl[:v], u: u[:u_c], t: u[:bw] }
         end
       end
@@ -131,8 +145,9 @@ module ArteMadera
         lista
       end
 
-      # Dwa zastrzały: oś od stopy słupka (lico słupka na wierzchu belki dolnej) do połowy wolnego spodu krokwi, szerokość
-      # taras_wiazar_zastrzal; [] – za mało miejsca.
+      # Dwa zastrzały: oś od stopy słupka (lico słupka na wierzchu belki dolnej) do spodu krokwi pod kątem
+      # taras_wiazar_zastrzal_kat od poziomu (wymóg użytkownika, runda 10: 45° – podparcie krokwi i ozdoba); kąt 0 albo nie
+      # większy niż kąt dachu – do połowy wolnego spodu krokwi; szerokość taras_wiazar_zastrzal; [] – za mało miejsca.
       def zastrzaly(u, p, spod_l, spod_r, a)
         ws = p['taras_wiazar_zastrzal'].to_f
         vk = u[:vk]
@@ -143,6 +158,11 @@ module ArteMadera
         vm = (v2 + c) / 2.0
         zm = spod_l[0] + spod_l[1] * vm
         k = (zm - z1) / (vm - c)
+        kat = p['taras_wiazar_zastrzal_kat'].to_f
+        k = -Math.tan(kat * Math::PI / 180.0) if kat > 0.0 && Math.tan(kat * Math::PI / 180.0) > u[:tg] + 0.05
+        # Koniec osi zastrzału na spodzie krokwi; zastrzał krótszy niż dwie szerokości albo poza krokwią – bez zastrzałów.
+        v_k = (z1 - k * c - spod_l[0]) / (spod_l[1] - k)
+        return [] if v_k < v2 || (c - v_k) * Math.sqrt(1.0 + k * k) < 2.0 * ws
         dz = ws / 2.0 * Math.sqrt(1.0 + k * k)
         os_l = [z1 - k * c, k]
         lewy = { v0: v2, v1: c, gora: [[os_l[0] + dz, k], spod_l], dol: [[os_l[0] - dz, k], [z1, 0.0]] }

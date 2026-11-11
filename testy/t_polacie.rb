@@ -113,9 +113,9 @@ pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'szczyty' => 'nie')
 Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].none? { |h| h[:tekst].start_with?('Dach:') }, 'bez szczytów – bez połaci i podpowiedzi')
 pl = plan_pelny(seg, 'dach_uklad' => 'krokwie', 'dach_elementy' => 'nie')
 Testy.sprawdz(pl[:polacie].nil?, 'bez belek dachu – bez połaci')
-pl = plan_pelny(wielokat([[0, 0], [8000, 0], [8000, 4000], [4500, 4000], [4500, 7000], [0, 7000]]), 'dach_uklad' => 'krokwie')
+pl = plan_pelny(wielokat([[0, 0], [9000, 0], [9000, 6000], [6000, 6000], [6000, 3000], [3000, 3000], [3000, 6000], [0, 6000]]), 'dach_uklad' => 'krokwie')
 Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].any? { |h| h[:poziom] == 'uwaga' && h[:tekst].include?('prostokątnego') },
-              'obrys L – bez połaci, podpowiedź o aplikacji')
+              'obrys U – bez połaci, podpowiedź o aplikacji (dom L ma połacie – testy/t_skrzydla.rb)')
 pl = plan_pelny(prostokat(0, 0, 3000, 2500), 'dach_uklad' => 'krokwie', 'dach_okap' => 1500, 'dach_okap_szczyt' => 0)
 Testy.sprawdz(pl[:polacie].nil? && pl[:podpowiedzi].any? { |h| h[:tekst].include?('za krótki') }, 'za krótki dom na połacie – podpowiedź')
 

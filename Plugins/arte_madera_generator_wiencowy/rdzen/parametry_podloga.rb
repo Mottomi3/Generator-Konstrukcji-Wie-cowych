@@ -58,14 +58,14 @@ module ArteMadera
                       'w ich liniach.' },
         { klucz: 'podpora_przekroj', domyslna: '100x150', etykieta: 'Podciąg pod legarami (podpora pośrednia)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] } },
-        { klucz: 'podciag_poziom', domyslna: 'pod', etykieta: 'Podciąg – poziom', rodzaj: :wybor, sekcja: 'podloga',
+        { klucz: 'podciag_poziom', domyslna: 'rowno', etykieta: 'Podciąg – poziom', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] },
-          wybory: [['pod', 'obniżony – pod podwalinami, legary w całości na nim'],
-                   ['rowno', 'na równo z podwaliną – między podwalinami, legary dzielone na podciągu']],
-          pomoc: 'Obniżony: podciąg biegnie pod podwalinami od lica do lica obrysu, legary leżą na nim w całości. Na równo: ' \
-                 'wierzch podciągu równo z wierzchem podwalin, podciąg między licami wewnętrznymi podwalin (skręcony), legary ' \
-                 'dzielone na podciągu – każdy kawałek o połowę krótszy, od podwaliny do podciągu; podłoga niżej o wysokość ' \
-                 'podciągu.' },
+          wybory: [['rowno', 'na wysokości podwalin – między podwalinami, legary dzielone na podciągu'],
+                   ['pod', 'obniżony – pod podwalinami, legary w całości na nim']],
+          pomoc: 'Na wysokości podwalin (domyślnie): wierzch podciągu równo z wierzchem podwalin, podciąg między licami ' \
+                 'wewnętrznymi podwalin (skręcony), legary dzielone na podciągu – podłoga podzielona na mniejsze pola, każdy ' \
+                 'kawałek legara o połowę krótszy (od podwaliny do podciągu), legarów nie trzeba podpierać od spodu. Obniżony: ' \
+                 'podciąg biegnie pod podwalinami od lica do lica obrysu, legary leżą na nim w całości.' },
         { klucz: 'fundamenty', podstawowy: true, domyslna: 'tak', etykieta: 'Fundamenty punktowe', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'] }, wybory: TAK_NIE,
           pomoc: 'Stopy (bloczki, słupki betonowe) pod podwalinami i podciągami, w siatce: rzędy równo co najwyżej „rozstaw ' \

@@ -26,6 +26,8 @@ module LosoweDomy
   ZIARNA_R8 = 4000
   # Ziarna od tego numeru dostają losowe nowości rundy 9 (węgły pod płatwiami i na wolnym końcu, wiązar nad tarasem).
   ZIARNA_R9 = 5000
+  # Od tego ziarna – nowości rundy 10 (wiązar pod płatwiami, zastrzały pod kątem, poziom podciągu).
+  ZIARNA_R10 = 6000 unless const_defined?(:ZIARNA_R10)
 
   module_function
 
@@ -83,6 +85,7 @@ module LosoweDomy
     dodatki_r7(Random.new(ziarno * 2_750_159 + 3), p, opis) if ziarno >= ZIARNA_R7
     dodatki_r8(Random.new(ziarno * 3_331_333 + 11), p, opis) if ziarno >= ZIARNA_R8
     dodatki_r9(Random.new(ziarno * 4_256_249 + 17), p, opis) if ziarno >= ZIARNA_R9
+    dodatki_r10(Random.new(ziarno * 5_117_113 + 19), p, opis) if ziarno >= ZIARNA_R10
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -202,6 +205,16 @@ module LosoweDomy
     p['taras_wiazar_zastrzal'] = wybierz(r, %w[60 100 140])
     opis << "r9: węgły pod płatwiami #{p['wegly_pod_platwiami']}, wolny koniec #{p['wegly_wolny_koniec']} od " \
             "#{p['wegly_wolny_koniec_min']}, wiązar #{p['taras_wiazar']} na #{p['taras_wiazar_podparcie']}"
+  end
+
+  # Dodatki rundy 10: wiązar pod płatwiami (głębokość gniazda, kąt zastrzałów), poziom podciągu; domy L mają dwa dachy
+  # z koszem przy każdym ziarnie (rdzen/skrzydla.rb).
+  def dodatki_r10(r, p, opis)
+    p['taras_wiazar_gniazdo'] = wybierz(r, %w[0 20 20 40])
+    p['taras_wiazar_zastrzal_kat'] = wybierz(r, %w[45 45 0 30 60])
+    p['taras_wiazar'] = wybierz(r, %w[zastrzaly zastrzaly slupek])
+    p['podciag_poziom'] = wybierz(r, %w[rowno rowno pod])
+    opis << "r10: gniazdo wiązara #{p['taras_wiazar_gniazdo']}, zastrzały #{p['taras_wiazar_zastrzal_kat']}°, podciąg #{p['podciag_poziom']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).

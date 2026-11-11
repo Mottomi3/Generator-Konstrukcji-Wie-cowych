@@ -42,7 +42,7 @@ module ArteMadera
               { 'max_dlugosc' => 5000 }, [otwor('W-1', 4300, 1020, 1010, 900, 'O1')]),
           dom('Dom 10 × 8 – łączenie na przemian, węgły usztywniające', prostokat(0, 0, 10_000, 8000) + [[[0, 4000], [10_000, 4000]]],
               { 'liczba_wiencow' => 20 }, [otwor('W-2', 2000, 1020, 1010, 900, 'O1')]),
-          dom('Obrys L – ściany bez dachu i podłogi',
+          dom('Obrys L – dwa dachy z koszem, bez podłogi',
               wielokat([[0, 0], [8000, 0], [8000, 4000], [4500, 4000], [4500, 7000], [0, 7000]]), {}, []),
           dom('Krokwie z obu stron szczytu, podłoga ocieplona 150', prostokat(0, 0, 6000, 5000),
               { 'dach_uklad' => 'krokwie', 'dach_wiezba' => 'generator', 'krokwie_przy_szczycie' => 'obie_strony', 'izolacja_podlogi' => 150 }, []),

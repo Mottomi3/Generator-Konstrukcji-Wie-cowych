@@ -15,7 +15,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
+  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end

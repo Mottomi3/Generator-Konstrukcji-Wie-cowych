@@ -36,7 +36,10 @@ ZIARNA = {
   3054 => 'r7: podbitka na płatwiach, ściana nośna, działowa do dachu, szczyt tarasu ażurowy',
   16 => 'r9: ścięcie dachu węgła 0,077 mm nad wierzchem przy granicy pióra (krótka krawędź), ściana wysoka 0,03 mm nad dachem',
   5063 => 'r9: węgły pod płatwiami przy podbitce pod płatwiami – deski w spadku (kolizja z deskami)',
-  5083 => 'r9: węgieł ręczny w miejscu słupa tarasu (kolizja ze słupem)'
+  5083 => 'r9: węgieł ręczny w miejscu słupa tarasu (kolizja ze słupem)',
+  13 => 'r10: dom L – dwa dachy z koszem, połacie dla aplikacji',
+  204 => 'r10: dom L – płatew skrzydła bocznego kończy się w koszu w swojej osi (podpora w granicy aplikacji)',
+  77 => 'r10: dom L – płatew ścienna skrzydła bocznego na ścianie wyższej o pół bala'
 }.freeze
 
 ZIARNA.each do |z, opis|

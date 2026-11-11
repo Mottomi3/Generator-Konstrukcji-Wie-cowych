@@ -26,6 +26,8 @@ module ArteMadera
     module Polacie
       # Najmniejsza długość obrysu połaci wzdłuż kalenicy przed odsunięciem okapu [mm].
       MIN_DLUGOSC = 100.0 unless const_defined?(:MIN_DLUGOSC)
+      # Najmniejszy uskok obrysu między częścią szczytową a okapową jednej ściany domu L [mm].
+      USKOK = 1.0 unless const_defined?(:USKOK)
 
       module_function
 
@@ -40,6 +42,7 @@ module ArteMadera
       # nil – bez połaci (krokwie z generatora, bez belek dachu, obrys nieprostokątny).
       def dla_domu(dom, p)
         return nil if dom.nil? || !z_aplikacji?(p) || !Parametry.tak?(p, 'dach_elementy')
+        return dla_domu_l(dom, p) if dom[:boczne]
         t = Parametry.grubosc(p)
         przesuw = p['dach_okap_szczyt'].to_f - p['dach_okap'].to_f
         u0 = dom[:u1] - t / 2.0 - przesuw
@@ -53,6 +56,60 @@ module ArteMadera
         punkty.reverse! if pole(punkty) < 0.0
         { punkty: punkty, z: Dach.linia_podparcia(geo, v_okap, p) + Dach.uniesienie_krokwi(p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
           szczyty: szczytowe(punkty, dom[:os] == :x ? 1 : 0, Dach.jednospadowy?(p) ? [v_okap] : [v0, v3]) }
+      end
+
+      # Połacie domu L (rdzen/skrzydla.rb – dwa dachy z koszem): obrys domu po licach zewnętrznych, krawędzie ścian ze
+      # szczytem szczytowe i przesunięte o (wysunięcie za szczyt − okap). Ściana ze szczytem dachu głównego na części
+      # długości: krawędź podzielona na linii okapu dachu głównego, część szczytowa wysunięta dalej niż okapowa (co
+      # najmniej o USKOK) – krótka krawędź uskoku jest okapem tylnej połaci dachu głównego, bez niej aplikacja do dachów
+      # zrobiłaby w tym miejscu naroże kopertowe zamiast szczytu i kosza.
+      def dla_domu_l(dom, p)
+        przesuw = p['dach_okap_szczyt'].to_f - p['dach_okap'].to_f
+        iv = dom[:iv]
+        vk = (dom[:v_a] + dom[:v_b]) / 2.0
+        kraw = []
+        dom[:zewn].each do |w|
+          a, b = w[:bok]
+          g = w[:szczyt]
+          if g.nil? || g[:plaski]
+            kraw << [a, b, 0.0, false]
+          elsif g[:s_zakres].nil?
+            kraw << [a, b, przesuw, true]
+          else
+            j = a.dup
+            j[iv] = dom[:r][iv]
+            czesci = [[a, j], [j, b]]
+            czesci.each do |q0, q1|
+              szczyt = ((q0[iv] + q1[iv]) / 2.0 - vk).abs < (dom[:v_b] - dom[:v_a]) / 2.0
+              kraw << [q0, q1, szczyt ? [przesuw, USKOK].max : 0.0, szczyt]
+            end
+          end
+        end
+        punkty = []
+        szczyty = []
+        kraw.each_with_index do |(a, b, d1, szczyt), i|
+          pa, pb, d0, = kraw[i - 1]
+          n0 = normalna(pa, pb)
+          n1 = normalna(a, b)
+          if (n0[0] * n1[1] - n0[1] * n1[0]).abs < 1e-6
+            punkty << [a[0] + n0[0] * d0, a[1] + n0[1] * d0]
+            punkty << [a[0] + n1[0] * d1, a[1] + n1[1] * d1]
+          else
+            punkty << [a[0] + n0[0] * d0 + n1[0] * d1, a[1] + n0[1] * d0 + n1[1] * d1]
+          end
+          szczyty << punkty.length if szczyt
+        end
+        geo = Dach.geo(dom)
+        { punkty: punkty, z: Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
+          szczyty: szczyty }
+      end
+
+      # Normalna zewnętrzna krawędzi a → b obrysu przeciwnego do wskazówek zegara (w prawo od kierunku).
+      def normalna(a, b)
+        dx = b[0] - a[0]
+        dy = b[1] - a[1]
+        dl = Math.sqrt(dx * dx + dy * dy)
+        [dy / dl, -dx / dl]
       end
 
       # Krawędź obrysu po stronie ściany wysokiej (dach jednospadowy) – v: lico zewnętrzne przesunięte o (okap za ścianą
@@ -77,10 +134,21 @@ module ArteMadera
       # Podpowiedzi do okna o dachu z aplikacji ([{ poziom:, tekst: }]); pusta lista, gdy krokwie robi generator.
       def podpowiedzi(dom, p, polacie)
         return [] unless z_aplikacji?(p) && Parametry.tak?(p, 'dach_elementy') && Parametry.tak?(p, 'szczyty')
-        return Krok2.podpowiedzi(p) if polacie
+        return Krok2.podpowiedzi(p) + uwagi_l(dom, p) if polacie
         return [{ poziom: 'uwaga', tekst: 'Dach: za krótki dom na połacie z tym wysunięciem za szczyt.' }] if dom
-        [{ poziom: 'uwaga', tekst: 'Dach: połacie dla aplikacji do dachów tylko dla domu prostokątnego – inny dach zrób w ' \
-                                   'aplikacji (KROK 1 z obrysu).' }]
+        [{ poziom: 'uwaga', tekst: 'Dach: połacie dla aplikacji do dachów tylko dla domu prostokątnego i w kształcie L – inny ' \
+                                   'dach zrób w aplikacji (KROK 1 z obrysu).' }]
+      end
+
+      # Uwagi do połaci domu L: wysunięcie za szczyt mniejsze niż okap – na ścianie ze szczytem na części długości dach
+      # wystaje za szczyt o okap (część szczytowa obrysu musi być wysunięta dalej niż okapowa).
+      def uwagi_l(dom, p)
+        return [] unless dom && dom[:boczne] && p['dach_okap_szczyt'].to_f < p['dach_okap'].to_f - 0.5
+        w = dom[:zewn].find { |x| x[:szczyt] && x[:szczyt][:s_zakres] }
+        return [] if w.nil?
+        [{ poziom: 'uwaga', tekst: format('Dach domu L: na ścianie %s (szczyt na części długości) połać wystaje za szczyt o %.0f mm ' \
+                                          '(okap), nie %.0f mm – ustaw wysunięcie za szczyt nie mniejsze niż okap.', w[:id],
+                                          p['dach_okap'].to_f, p['dach_okap_szczyt'].to_f) }]
       end
 
       # Pole wielokąta ze znakiem (dodatnie – przeciwnie do wskazówek zegara).

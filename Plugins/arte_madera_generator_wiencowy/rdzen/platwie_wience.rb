@@ -59,6 +59,8 @@ module ArteMadera
 
       # Obniżenie dachu d [mm] dla przekroju geo (osie ścian okapowych) – w pamięci; podczas liczenia samo zwraca 0.
       def obnizenie(geo, p)
+        # Skrzydło boczne domu L – obniżenie dachu głównego (ten sam poziom okapu obu dachów, rdzen/skrzydla.rb).
+        return geo[:obnizenie].to_f if geo[:obnizenie]
         return 0.0 unless Parametry.tak?(p, 'platwie_na_wiencach')
         klucz = [geo[:v_a].to_f.round(2), geo[:v_b].to_f.round(2), p.values_at(*KLUCZE)]
         return PAMIEC[klucz] if PAMIEC.key?(klucz)

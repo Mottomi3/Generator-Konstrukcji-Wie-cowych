@@ -141,7 +141,14 @@ module ArteMadera
         end
         s = [w[:s_od], w[:s_do]]
         s.insert(1, sk) if sk && sk > w[:s_od] && sk < w[:s_do]
-        s.map { |x| [r(x), r(blok.call(x))] }
+        # Szczyt na części ściany (dom L): uskok linii na granicy szczytu – dalej góra ściany okapowej skrzydła bocznego.
+        zakres = w[:szczyt] ? w[:szczyt][:s_zakres] : nil
+        (zakres || []).each do |g|
+          next unless g > w[:s_od] && g < w[:s_do]
+          s << g
+          s << (g == zakres[0] ? g - 0.2 : g + 0.2)
+        end
+        s.sort.map { |x| [r(x), r(blok.call(x))] }
       end
 
       # Zaokrąglenie do 0,1 mm.

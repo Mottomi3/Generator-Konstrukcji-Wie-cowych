@@ -1,14 +1,34 @@
-# Scenariusz odbioru – kompilacja 9
+# Scenariusz odbioru – kompilacja 10
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 8). Uruchom SketchUpa ponownie. W opisie rozszerzenia „Kompilacja 9 (2026-11-03)”.
+   (zastępuje kompilację 9). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 10 (2026-11-11)”.
    Aplikacja do dachów (ArteMadera Roof) **3.7.0** zainstalowana – do kroków 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
    i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 9 domów „w porządku” (ósmy: dach
    jednospadowy, dziewiąty: taras jak 1100). **Prześlij ten plik.** Model po teście pusty.
+**Nowe w kompilacji 10 (uwagi z 10 listopada):**
+
+2v. **Dom L – dwa dachy z koszem.** Narysuj obrys L (np. 8000 × 4000 z dobudówką 4000 × 3000), ustawienia jak u Ciebie
+   → trzy szczyty z bali (dwa dachu głównego, jeden skrzydła bocznego), płatwie obu dachów: głównego na całą długość,
+   bocznego od szczytu do dachu głównego (do kosza albo na styk do płatwi dachu głównego). Ściana wspólna: do połowy
+   szczyt, dalej ściana okapowa ze ściętym górnym balem. Węgły dochodzą do dachu i są ścięte jego linią. Z aplikacją do
+   dachów („Krokwie i poszycie – kto je buduje”: aplikacja) → 5 połaci z dwoma koszami, KROK 2 kładzie deski / krokwie.
+   Zmień proporcje tak, żeby dobudówka była szersza niż część główna → kalenica główna przechodzi na szersze skrzydło.
+2w. **Wypust górnych belek w domu L.** Górne belki ścian okapowych: za szczyt wysunięte jak płatwie (300), w narożniku
+   wklęsłym (do środka domu) tylko 100 jak pozostałe.
+2x. **Okno od nowa.** Wygeneruj dom, zamknij okno. Zaznacz inne linie razem z tym domem → pytanie: Tak – nowy dom
+   z linii (okno bez otworów i ustawień starego domu), Nie – edycja domu. Zaznacz sam dom → edycja. Jeśli okno nadal
+   „nie wczytuje się od nowa” – opisz, co dokładnie widać (puste okno? stare parametry? stary podgląd?) i prześlij raport
+   z kroku 2.
+2y. **Wiązar pod płatwiami.** Taras na słupach, szczyt pusty → krokwie wiązara w jednym kawałku pod płatwiami, każda
+   płatew leży na nich w płytkim gnieździe (zamku). „Wiązar – rodzaj”: z zastrzałami → dwie belki od spodu słupka pod
+   kątem 45° do krokwi („Wiązar – kąt zastrzałów”; przy niskim, wąskim szczycie się nie mieszczą – wtedy ich nie ma).
+2z. **Podciąg na wysokości podwalin.** Nowy dom z podłogą → podciąg między podwalinami, wierzch równo z nimi, legary
+   dzielone na podciągu (bez podpór od spodu). „Podciąg – poziom”: obniżony → jak dotąd, pod podwalinami.
+
 **Nowe w kompilacji 9 (uwagi z 2 listopada, 23:24):**
 
 2q. **Węgły pod płatwiami.** Prostokąt 6000 × 8000 z działową wzdłuż kalenicy, ustawienia jak u Ciebie (wypust na zewnątrz
@@ -22,9 +42,8 @@ Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze
 2t. **Przesuwanie węgłów.** Karta „Okna i drzwi” → „Węgły – przesuwanie”: lista wszystkich węgłów; wpisz nowe „od” albo
    kliknij ◀ ▶ (50 mm) → węgieł przesunięty w podglądzie, w panelu ściany „Węgły tej ściany ustawione ręcznie”; węgieł
    z tabeli węgłów – zmienia się wiersz tabeli. „Przywróć automatyczne” w panelu ściany cofa przesunięcia.
-2u. **Wiązar nad tarasem.** Taras na słupach, szczyt pusty → wiązar licem z licem frontu: krokwie wiązara z gniazdami,
-   płatwie przechodzą przez nie z zamkiem (5 z boku, 10 od spodu), belka dolna, słupek pod kalenicą. „Wiązar – rodzaj”:
-   z zastrzałami → dwa zastrzały od stopy słupka do krokwi. „Wiązar – na czym stoi”: na słupach → front bez bali, z przodu
+2u. **Wiązar nad tarasem.** Taras na słupach, szczyt pusty → wiązar licem z licem frontu (od kompilacji 10 pod
+   płatwiami – krok 2y), płatwie z zamkiem (5 z boku, 10 od spodu), belka dolna, słupek pod kalenicą. „Wiązar – na czym stoi”: na słupach → front bez bali, z przodu
    sam trójkąt na słupach.
 
 **Nowe w kompilacji 8 (uwagi z 2 listopada wieczorem):**

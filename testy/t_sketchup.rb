@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '9', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '10', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -288,6 +288,53 @@ Testy.rowne(Ustawienia.tryb_pol, 'podstawowe', 'nieznany tryb pól – podstawow
 Testy.sprawdz(Okno.dane_startowe['opisy'].count { |o| o['podstawowy'] } >= 20, 'opisy pól z oznaczeniem podstawowych')
 File.open(Ustawienia.sciezka, 'w') { |f| f.write('{uszkodzony') }
 Testy.rowne(Ustawienia.ostatnie, {}, 'uszkodzony plik – puste ustawienia, bez błędu')
+Ustawienia.zapamietaj('liczba_wiencow' => '10')
+
+Testy.grupa('Ustawienia z wcześniejszej kompilacji – podciąg wraca do wartości fabrycznej (runda 10)')
+File.open(Ustawienia.sciezka, 'w') { |f| f.write(JSON.generate('wersja' => 1, 'ostatnie' => { 'podciag_poziom' => 'pod', 'liczba_wiencow' => '14' })) }
+Testy.rowne(Ustawienia.ostatnie, { 'liczba_wiencow' => '14' }, 'plik wersji 1: zapamiętany poziom podciągu pominięty, reszta zostaje')
+Testy.rowne(Parametry.normalizuj(Ustawienia.ostatnie)[0]['podciag_poziom'], 'rowno', 'podciąg na wysokości podwalin')
+Ustawienia.zapamietaj('podciag_poziom' => 'pod', 'liczba_wiencow' => '10')
+Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podciag_poziom']], [2, 'pod'],
+            'plik wersji 2: wybór użytkownika (obniżony) zapamiętany')
+
+Testy.grupa('Otwarcie od nowa – zaznaczony dom razem z liniami (runda 10)')
+m = model_z_liniami(prostokat(0, 0, 4000, 3000))
+Sterowanie.start
+Okno.dialog.wywolaj('generuj', JSON.generate('parametry' => { 'liczba_wiencow' => '10' }, 'otwory' => []))
+dom = m.entities.grep(Sketchup::Group).find { |g| g.name == 'Dom wieńcowy' }
+linie_domu = m.entities.grep(Sketchup::Edge)
+m.selection.clear
+m.selection.add(dom)
+linie_domu.each { |e| m.selection.add(e) }
+UI.komunikaty.clear
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+Testy.rowne([ostatni_skrypt(Okno.dialog, 'AMGW.init(')['tryb'], UI.komunikaty.length], ['edycja', 0],
+            'dom i linie, z których powstał – edycja bez pytania')
+nowe_linie = [[[20_000, 0], [23_000, 0]], [[23_000, 0], [23_000, 3000]], [[23_000, 3000], [20_000, 3000]], [[20_000, 3000], [20_000, 0]]].map do |a, b|
+  m.entities.add_line(Geom::Point3d.new(a[0] / CAL, a[1] / CAL, 0), Geom::Point3d.new(b[0] / CAL, b[1] / CAL, 0))
+end
+m.selection.clear
+m.selection.add(dom)
+nowe_linie.each { |e| m.selection.add(e) }
+UI.odpowiedz = 6
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+d3 = ostatni_skrypt(Okno.dialog, 'AMGW.init(')
+Testy.sprawdz(UI.komunikaty.last.to_s.include?('Zaznaczono wygenerowany dom i 4 linii'), 'dom i inne linie – pytanie')
+Testy.rowne([d3['tryb'], d3['otwory'], d3['sciany']], ['nowy', [], {}], 'Tak – nowy dom z linii: okno od nowa, bez otworów i ustawień ścian starego domu')
+UI.odpowiedz = 7
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+Testy.rowne(ostatni_skrypt(Okno.dialog, 'AMGW.init(')['tryb'], 'edycja', 'Nie – edycja zaznaczonego domu')
+okno_przed = Okno.dialog
+UI.odpowiedz = 2
+Sterowanie.start
+Testy.sprawdz(Okno.dialog.equal?(okno_przed), 'Anuluj – bez nowego okna')
+UI.odpowiedz = 6
+Okno.send(:po_zamknieciu, Okno.dialog)
+Testy.sprawdz(Okno.dialog.nil? && Okno.dane_startowe['parametry'] == {} && Okno.dane_startowe['info'] == '', 'po zamknięciu okna nie zostają po nim dane')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
 
 Testy.grupa('Zaznaczona sama ściana prostokąta (kliknięta raz)')

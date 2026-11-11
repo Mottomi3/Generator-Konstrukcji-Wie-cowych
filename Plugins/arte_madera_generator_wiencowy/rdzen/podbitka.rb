@@ -77,7 +77,8 @@ module ArteMadera
       # Deski podbitki (elementy Pb) domu prostokątnego; sciany – do działowych wzdłuż kalenicy.
       def elementy(dom, p, sciany)
         r = rodzaj(p)
-        return [] if dom.nil? || r == 'nie' || przez_aplikacje?(p)
+        # Dom L (dwa dachy z koszem) – podbitki generator nie rysuje (uwaga w Podbitka.uwaga).
+        return [] if dom.nil? || dom[:boczne] || r == 'nie' || przez_aplikacje?(p)
         geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         przerwy = dzialowe_wzdluz(dom, sciany, p)
         wynik = []

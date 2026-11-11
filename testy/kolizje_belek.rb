@@ -135,9 +135,10 @@ end
 
 # Wysokość płaszczyzny połaci (plan[:polacie] – dla aplikacji do dachów) nad punktem [x, y] układu domu, liczona
 # niezależnie od rdzenia: wysokość obrysu + tg kąta × odległość w głąb od najbliższej krawędzi okapowej (obrys
-# przeciwnie do wskazówek zegara – wnętrze po lewej stronie krawędzi).
+# przeciwnie do wskazówek zegara – wnętrze po lewej stronie krawędzi). Obrys L (dwa dachy z koszem) – z_polaci_l.
 def z_polaci(pol, x, y)
   n = pol[:punkty].length
+  return z_polaci_l(pol, x, y) if n > 4
   d = (0...n).reject { |i| pol[:szczyty].include?(i + 1) }.map do |i|
     a = pol[:punkty][i]
     b = pol[:punkty][(i + 1) % n]
@@ -145,6 +146,27 @@ def z_polaci(pol, x, y)
     ((x - a[0]) * -(b[1] - a[1]) + (y - a[1]) * (b[0] - a[0])) / l
   end.min
   pol[:z] + Math.tan(pol[:kat] * Math::PI / 180.0) * d
+end
+
+# Połać domu L: krawędzie okapowe w dwóch kierunkach = dwa dachy dwuspadowe. Dach główny ma trzy krawędzie okapowe (z
+# krótkim uskokiem na ścianie ze szczytem na części długości) i sięga wszędzie; dach skrzydła bocznego (dwie krawędzie)
+# liczy się tylko po swojej stronie kalenicy dachu głównego – tam dach domu to wyższa z dwóch płaszczyzn.
+def z_polaci_l(pol, x, y)
+  n = pol[:punkty].length
+  q = [x, y]
+  tg = Math.tan(pol[:kat] * Math::PI / 180.0)
+  okapy = (0...n).reject { |i| pol[:szczyty].include?(i + 1) }.map { |i| [pol[:punkty][i], pol[:punkty][(i + 1) % n]] }
+  grupy = okapy.group_by { |a, b| (a[0] - b[0]).abs < 1e-6 ? 0 : 1 }
+  dachy = grupy.map do |iv, kr|
+    vs = kr.map { |a, _b| a[iv] }.minmax
+    { iv: iv, v: vs, ile: kr.length, us: kr.flat_map { |a, b| [a[1 - iv], b[1 - iv]] }, z: pol[:z] + tg * [q[iv] - vs[0], vs[1] - q[iv]].min }
+  end
+  glowny, boczny = dachy.sort_by { |d| -d[:ile] }
+  return glowny[:z] if boczny.nil?
+  # Kalenica dachu głównego leży w poprzek skrzydła bocznego: współrzędna iv głównego = wzdłuż kalenicy bocznego.
+  vk = (glowny[:v][0] + glowny[:v][1]) / 2.0
+  strona = boczny[:us].inject(0.0) { |s, u| s + u } / boczny[:us].length - vk
+  (q[glowny[:iv]] - vk) * strona >= 0.0 ? [glowny[:z], boczny[:z]].max : glowny[:z]
 end
 
 # Bale i płatwie względem połaci: { bale: największe wystawanie wierzchu bali ponad połać, platwie: największe

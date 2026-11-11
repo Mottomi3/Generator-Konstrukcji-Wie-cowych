@@ -22,6 +22,11 @@ module ArteMadera
           return UI.messagebox('Brak aktywnego modelu SketchUpa.') if model.nil?
           z = Wejscie.z_zaznaczenia(model)
           return UI.messagebox(z[:blad]) if z[:blad]
+          z = dom_czy_linie(z)
+          return if z.nil?
+          # Każde otwarcie od nowa: bez planu i pamięci podręcznej z poprzedniego okna (uwaga użytkownika, runda 10).
+          @plan = nil
+          PlatwieWience::PAMIEC.clear
           if z[:dom]
             wej = Atrybuty.czytaj_wejscie(z[:dom])
             return UI.messagebox('Zaznaczony dom nie ma zapisanych parametrów – wygeneruj go ponownie z linii.') if wej.nil?
@@ -44,6 +49,27 @@ module ArteMadera
         rescue => e
           Log.error('Sterowanie.start', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
+        end
+
+        # Zaznaczony dom i linie razem: te same linie, z których dom powstał – edycja domu; inne – pytanie, czy zrobić
+        # nowy dom z linii (Tak) czy edytować zaznaczony dom (Nie); Anuluj – nil. Wcześniej dom w zaznaczeniu zawsze
+        # wygrywał i okno otwierało się z jego parametrami zamiast od nowa (uwaga użytkownika, runda 10).
+        def dom_czy_linie(z)
+          return z unless z[:dom] && z[:segmenty]
+          wej = Atrybuty.czytaj_wejscie(z[:dom])
+          return { dom: z[:dom] } if wej && te_same_linie?(wej['segmenty'], z[:segmenty])
+          odp = UI.messagebox(format("Zaznaczono wygenerowany dom i %d linii.\n\nTak – nowy dom z zaznaczonych linii.\n" \
+                                     'Nie – edycja zaznaczonego domu.', z[:segmenty].length), MB_YESNOCANCEL)
+          return nil if odp == IDCANCEL
+          odp == IDYES ? { segmenty: z[:segmenty], z0: z[:z0] } : { dom: z[:dom] }
+        end
+
+        # Czy dwa zestawy linii są takie same (końce z dokładnością 1 mm, dowolna kolejność i zwrot).
+        def te_same_linie?(a, b)
+          klucz = lambda do |lista|
+            (lista || []).map { |s| s.map { |q| [q[0].to_f.round, q[1].to_f.round] }.sort }.sort
+          end
+          klucz.call(a) == klucz.call(b)
         end
 
         # Podgląd z okna: obliczenia bez zmian w modelu; parametry zapamiętane na komputerze.

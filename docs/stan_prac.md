@@ -1,9 +1,34 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 9, kompilacja 9 (2026-11-03), wersja 1.0.0. Poprzednio: runda 8, kompilacja 8 (2026-11-02, wieczór). Testy: `bash testy/uruchom.sh` – 23 zestawy (16 także
-na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0), 1367 sprawdzeń, FAILURES 0; poza zestawem:
-430 losowych domów (ziarna 1–60, 4001–4040, 4141–4200, 5001–5270 z nowościami rundy 9) bez problemów po poprawkach. Repozytorium:
-`Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–9) + kopia `repozytorium_r9.bundle` na dysku.
+Stan na: runda 10, kompilacja 10 (2026-11-11), wersja 1.0.0. Poprzednio: runda 9, kompilacja 9 (2026-11-03). Testy: `bash testy/uruchom.sh` – 24 zestawy (17 także
+na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 – także dom L), 1493 sprawdzeń, FAILURES 0; poza zestawem:
+760 losowych domów (ziarna 1–540 i 6001–6240 z nowościami rundy 10; co czwarty dom L z dwoma dachami) – bez problemów poza czterema drobiazgami sprzed
+rundy 10 (§8). Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–10) + kopia `repozytorium_r10.bundle` na dysku.
+
+## 1d. Nowe w kompilacji 10 (uwagi z 2026-11-10 22:24)
+
+- **Dom w kształcie L – dwa dachy z koszem** (`rdzen/skrzydla.rb`; wybór użytkownika z trzech wariantów): skrzydło główne
+  (o większej rozpiętości; przy równych – wg „kalenica”) ma dach dwuspadowy na całej długości z dwoma szczytami, skrzydło
+  boczne – kalenicę w poprzek, szczyt na wolnym końcu i wchodzi w dach główny dwoma koszami. Trzy szczyty z bali; ściana
+  wspólna (szczyt dachu głównego + ściana okapowa skrzydła bocznego) ma szczyt na części długości. Płatwie obu dachów:
+  głównego na całą długość, bocznego od szczytu do kosza (albo na styk do płatwi dachu głównego, w którą by weszły).
+  Ten sam poziom okapu obu dachów. Węgły, działowe, bale pod okapem ścinane do dachu skrzydła, w którym stoją; gniazda
+  płatwi, węgły pod płatwiami, wypuszczone górne wieńce – w obu skrzydłach. Połacie dla aplikacji do dachów: jeden obrys
+  z uskokiem (≥ 1 mm) na ścianie wspólnej → aplikacja 3.7.0 robi 5 połaci z koszami (sprawdzone na prawdziwej wtyczce:
+  ±0,01 mm względem generatora; deski na płatwiach i krokwie z KROKU 2).
+- **Wypust górnych wieńców tylko na zewnątrz** (`rdzen/wypusty_okapu.rb`): w narożniku wklęsłym (do środka domu) górny bal
+  kończy się zwykłym ostatkiem (100), nie wysunięciem płatwi (300) – także przy obrysach bez dachu z generatora.
+- **Okno zawsze od nowa** (`sketchup/sterowanie.rb#dom_czy_linie`, `sketchup/okno.rb`, `sketchup/ustawienia.rb`):
+  zaznaczony dom razem z innymi liniami – pytanie „nowy dom z linii / edycja domu” (wcześniej dom w zaznaczeniu zawsze
+  wygrywał i okno otwierało się z jego parametrami); po zamknięciu okna nic po nim nie zostaje w pamięci, pamięć
+  podręczna płatwi czyszczona przy każdym otwarciu; plik ustawień w wersji 2 (zmienione wartości fabryczne zastępują
+  zapamiętane – `DO_FABRYCZNYCH`).
+- **Wiązar nad tarasem pod płatwiami** (`rdzen/taras_wiazar.rb`): wierzch krokwi wiązara obniżony pod płatwie – każda
+  płatew leży na nich w gnieździe (zamku) o głębokości ≥ `taras_wiazar_gniazdo` (20), krokwie w jednym kawałku (wcześniej
+  gniazda na całą wysokość cięły je na części); zastrzały od stopy słupka pod kątem `taras_wiazar_zastrzal_kat` (45°;
+  0 – do połowy krokwi), pomijane, gdy się nie mieszczą.
+- **Podciąg podłogi domyślnie na wysokości podwalin** (`podciag_poziom` = rowno): legary dzielone na podciągu; zapamiętane
+  „obniżony” z kompilacji 9 wraca jednorazowo do nowej wartości fabrycznej.
 
 ## 1c. Nowe w kompilacji 9 (uwagi z 2026-11-02 23:24)
 
@@ -162,6 +187,7 @@ Patrz `docs/SPIS_TRESCI.md` §2. Nowe w rundzie 3: `rdzen/pod_dachem.rb`, `rdzen
 `t_losowe`, `t_widok`, `t_zestawienie`, `t_raport`, `losowe_domy.rb`, `kolizje_belek.rb`, `ruby27.sh`.
 Nowe w rundzie 4: `rdzen/ustawienia_scian.rb`, `rdzen/dopelnienie.rb`, `rdzen/profil_bala.rb`, `html/tryb.js`,
 `html/edycja.js`; test `t_sciany_ust`.
+Nowe w rundzie 10: `rdzen/skrzydla.rb` (dom L – dwa dachy z koszem); test `t_skrzydla`.
 Nowe w rundzie 6: `rdzen/krok2.rb` (ustawienia KROKU 2, poszycie, podpory); sekcja parametrów „Poszycie dachu”;
 atrapa API aplikacji do dachów `testy/atrapa/aplikacja_dachow.rb`.
 Nowe w rundzie 5: `rdzen/stolarka.rb`, `rdzen/pryzmat.rb`, `rdzen/polacie.rb`, `rdzen/dach_jednospadowy.rb`,
@@ -315,6 +341,26 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
 
+### Runda 10 (kompilacja 10) – uwagi z 2026-11-10 22:24
+
+Wiadomość użytkownika (5 punktów): belka ściany użyta jako płatew przy domu L wystaje do środka 300 zamiast 100; dom L –
+brak płaszczyzny dachu i części konstrukcji, węgły nieścięte do szczytu; aplikacja „nie wczytuje się od nowa” po
+zamknięciu i otwarciu („jakby w buforze były parametry” – bez pewności); trójkąt nad tarasem ma podpierać płatwie od
+spodu na zamkach i być ciągły + opcja dwóch belek od spodu słupka pod kątem 45°; podciąg podłogi na wysokości podwalin.
+Pytanie o dach domu L (trzy warianty z rysunkami) – odpowiedź: **„Dwa dachy z koszem”**.
+- Wykonanie – §1d. Nowe pliki: `rdzen/skrzydla.rb`, `testy/t_skrzydla.rb`. Dach główny i boczny to dwa opisy „dom”
+  (`Skrzydla.domy`), wszystkie moduły dachu liczą po kolei dla każdego (`Dach.geo(dom)`, `dom[:iv]`); ściana należy do
+  dachu, w którego strefie leży (`Skrzydla.dom_sciany`); szczyt na części ściany – `szczyt[:s_zakres]`, część okapowa –
+  `w[:okap_boczny]`.
+- Testy: `t_skrzydla` (podział, szczyty, płatwie, wypusty, połacie, węgły, 12 ułożeń i wariantów bez problemów), grupy
+  rundy 10 w `t_taras`, `t_podloga`, `t_sketchup`; `sprawdz_dach_aplikacja` – 3 domy L na prawdziwej aplikacji;
+  `kolizje_belek.rb#z_polaci_l` (połać domu L liczona niezależnie); losowe domy od ziarna 6000 (`dodatki_r10`).
+- Znalezione losowymi domami i poprawione: płatew ścienna skrzydła bocznego „na ścianie” w górnym balu ściany wyższej
+  o pół bala (gniazdo na całym zasięgu płatwi, także pod wypuszczonymi wieńcami – ziarna 4, 77); koniec płatwi skrzydła
+  bocznego liczony w jej osi (podpora w granicy aplikacji – ziarno 204).
+- „Nie wczytuje się od nowa” – przyczyna nie jest pewna; poprawione to, co mogło tak wyglądać (§1d). Jeśli wróci –
+  potrzebny opis, co dokładnie widać, i raport z testu działania.
+
 ### Runda 9 (kompilacja 9) – uwagi z 2026-11-02 23:24
 
 Wiadomość użytkownika (8 punktów, zrzut z SketchUpa i okna): brak węgła pod płatwią na ścianie zewnętrznej; węgieł
@@ -384,21 +430,31 @@ kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zak
 | T6 | Trójkątny wieniec | przekrój płatwi (80 × 200) albo podany (80 × 160) |
 | W4 | Węgły pod płatwiami | na szczytach zewnętrznych i ścianie domu przy tarasie (domyślnie), pod każdą płatwią pośrednią; luka pod płatwią < 20 mm, gdy bal węgła wypada tuż pod nią |
 | W5 | Węgieł na wolnym końcu | od wolnego odcinka 1000 mm (parametr), oś 122 mm od końca (ostatek 100) |
-| T7 | Wiązar nad tarasem | słupek 120, zastrzał 100 (opcja), na balach frontu (domyślnie) albo na słupach |
+| T7 | Wiązar nad tarasem | słupek 120, zastrzał 100 (opcja), na balach frontu (domyślnie) albo na słupach; **runda 10**: pod płatwiami, gniazdo płatwi ≥ 20, zastrzały 45° |
+| L2 | Dach domu L | **rozstrzygnięte (runda 10)**: dwa dachy z koszem; skrzydło główne = większa rozpiętość (równe – parametr „kalenica”); płatwie skrzydła bocznego do kosza albo na styk do płatwi dachu głównego – podparcie ich końców (belka koszowa?) do potwierdzenia z praktyką |
+| L3 | Wspólny poziom okapu w domu L | linia dachu obu skrzydeł na tej samej wysokości; ściany okapowe skrzydła bocznego (wyższe o pół bala) – górny bal ścięty do dachu |
+| P5 | Poziom podciągu | **rozstrzygnięte (runda 10)**: na wysokości podwalin (legary dzielone); obniżony w opcji |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 9 (kroki 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 10 (kroki 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 9)
+## 8. Ograniczenia (kompilacja 10)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
-- Dach (belki, połacie, dach jednospadowy, taras) i podłoga tylko dla obrysu prostokątnego; szczyty dla innych obrysów
-  liczone każdy osobno – inne dachy w aplikacji do dachów (KROK 1 z obrysu).
+- Dach z generatora: obrys prostokątny i L (dwa dachy z koszem); inne obrysy (T, U…) – szczyty liczone każdy osobno,
+  dach w aplikacji do dachów (KROK 1 z obrysu). Dach jednospadowy, taras, podłoga, podbitka i krokwie z generatora –
+  tylko dom prostokątny (dom L: krokwie i poszycie z aplikacji do dachów, podłogi i tarasu nie ma).
+- Dom L: końce płatwi skrzydła bocznego w dachu głównym bez własnej podpory (leżą w koszu albo dochodzą na styk do
+  płatwi dachu głównego – belki koszowej generator nie rysuje); gdy wysunięcie za szczyt jest mniejsze niż okap, na
+  ścianie wspólnej połać wystaje za szczyt o okap (podpowiedź w oknie); ściana przez oba skrzydła (działowa) bierze
+  dach tego skrzydła, w którym leży jej środek.
+- Losowe domy – drobiazgi sprzed rundy 10 (poza zestawem stałym): ziarna 75 (krawędź 0,025 mm, jednospadowy), 318 i 472
+  (bal 0,04–0,16 mm nad dachem, jednospadowy), 6110 (bal 0,15 mm nad połacią, podbitka na krokwiach).
 - Krokwie z generatora z czołami prostopadłymi do osi (bez cięć przy kalenicy i okapie) – pełne krokwie robi aplikacja.
 - Krokwie z aplikacji: szczyt zawsze pod krokwiami (krokwie przy szczycie ustawia aplikacja – osie z wywołania to
   zadanie dla niej); aplikacja do dachów 3.7.0 lub nowsza (starsza – komunikat, połacie nie powstają); więźba
@@ -415,13 +471,14 @@ dach jednospadowy, taras).
 - Podbitka, fundamenty i podciągi tylko dla domu prostokątnego.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6 (runda 7), 7 (runda 8) i 8 (runda 9); kompilacja 9 – do sprawdzenia.
-- Węgły pod płatwiami tylko dla domu prostokątnego z dachem z generatora; przesunięty węgieł automatyczny zmienia całą ścianę na węgły ręczne.
+- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6–9 (rundy 7–10); kompilacja 10 – do sprawdzenia.
+- Węgły pod płatwiami tylko przy dachu z generatora (dom prostokątny i L); przesunięty węgieł automatyczny zmienia całą ścianę na węgły ręczne.
 - Balustrada z wieńców ścian tylko przy tarasie na słupach (typ 200); trójkątny wieniec tylko przy dachu dwuspadowym.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 9: raport z testu działania (JSON) + scenariusz (kroki 2q–2u) → poprawki.
+1. Odbiór kompilacji 10: raport z testu działania (JSON) + scenariusz (kroki 2v–2z, potem 2q–2u) → poprawki.
+1a. Dom L: podłoga i taras, podparcie końców płatwi skrzydła bocznego (belka koszowa), obrysy T i U.
 2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
    (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po
    zmianach tam: osie krokwi z generatora, kalenicowa wprost w grzbiecie.

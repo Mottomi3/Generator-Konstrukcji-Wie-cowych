@@ -126,13 +126,13 @@ Testy.sprawdz(sciana(pl, 'W-2')[:szczyt][:z_max] > zmax + 300, 'kąt 35° – wy
 Testy.sprawdz(nad_linia(pl, 'W-2') <= 0.01, 'bale pod linią dachu')
 czysto(pl, 'kąt 35° z oknem')
 
-Testy.grupa('Obrys L – szczyty osobno, bez belek dachu')
-pl = plan_pelny(wielokat([[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]]))
+Testy.grupa('Obrys U – szczyty osobno, bez belek dachu (dom L ma dwa dachy z koszem – testy/t_skrzydla.rb)')
+pl = plan_pelny(wielokat([[0, 0], [9000, 0], [9000, 6000], [6000, 6000], [6000, 3000], [3000, 3000], [3000, 6000], [0, 6000]]))
 Testy.rowne(pl[:bledy], [], 'brak błędów')
 Testy.sprawdz(pl[:sciany].count { |w| w[:szczyt] } >= 2, 'szczyty na ścianach szczytowych')
 Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('tylko dla obrysu prostokątnego') }, 'ostrzeżenie o dachu')
 Testy.rowne(pl[:elementy].count { |e| %w[P K].include?(e[:prefiks]) }, 0, 'bez belek dachu')
-czysto(pl, 'obrys L')
+czysto(pl, 'obrys U')
 
 Testy.grupa('Płatwie oparte na pełnym balu – bez przerwy pod gniazdem (runda 7)')
 # Drewno tuż pod spodem płatwi w środku każdego gniazda ściany – bal ściany albo węgła pod płatwią (runda 9) w tym punkcie.

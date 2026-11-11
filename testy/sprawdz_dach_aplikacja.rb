@@ -191,4 +191,54 @@ PRZYPADKI.each do |nazwa, seg, par, z0, ile, odbity|
   Testy.sprawdz(wzp[:bale] <= 0.01 && wzp[:platwie] <= 0.01 && wzp[:dotyk] >= -0.5, 'bale i płatwie generatora pod połacią, płatwie ją podpierają')
 end
 
+# Dom L (runda 10 – dwa dachy z koszem): jeden obrys z uskokiem na ścianie ze szczytem na części długości → aplikacja
+# robi pięć połaci (dwie dachu głównego, w tym tylna z dwóch części, i dwie skrzydła bocznego) z koszami.
+L_OBRYS = [[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]].freeze
+[['Dom L 8 × 4 + 4 × 3 m, same płatwie – deski na płatwiach obu dachów', L_OBRYS, {}, 0.0],
+ ['Dom L obrócony o 90° i odbity w rysunku, płatwie i krokwie, okap 500, za szczytem 300',
+  L_OBRYS.map { |x, y| [y, x] }.reverse, { 'dach_uklad' => 'platwie_krokwie', 'dach_okap' => 500, 'dach_okap_szczyt' => 300 }, 200.0],
+ ['Dom L o węższym skrzydle bocznym (kalenica niżej), 35°', [[0, 0], [9000, 0], [9000, 5000], [3000, 5000], [3000, 8000], [0, 8000]],
+  { 'dach_kat' => 35 }, 0.0]].each do |nazwa, obrys, par, z0|
+  Testy.grupa(nazwa)
+  Sketchup.reset_model!
+  Sketchup.defaults.clear
+  model = Sketchup.active_model
+  pl = plan_pelny(wielokat(obrys), par)
+  pol = pl[:polacie]
+  p = pl[:parametry]
+  Testy.sprawdz(pl[:bledy].empty? && !pol.nil? && pol[:punkty].length == 8, 'plan z połaciami domu L (obrys z uskokiem – 8 punktów)')
+  next if pol.nil?
+  dom = dom_w_modelu(model, pl, z0)
+  grupa, info = DachAplikacja.nowe_polacie(model, dom, pol, Krok2.podpory(pl))
+  Testy.sprawdz(!grupa.nil?, "połacie z API aplikacji (#{info.inspect})")
+  next if grupa.nil?
+  Testy.rowne(grupa.entities.grep(Sketchup::Face).length, 5, 'połacie: 5 (dach główny 3, skrzydło boczne 2)')
+  lo, hi = odchylki(punkty_lokalnie(grupa, dom), pol)
+  Testy.sprawdz(lo > -0.01 && hi < 0.01, format('połacie aplikacji = dwa dachy z koszem z generatora (%.4f…%.4f mm)', lo, hi))
+  ile_p = pl[:elementy].count { |e| e[:prefiks] == 'P' }
+  Testy.rowne((ROOF::Supports.stored(grupa) || []).length, ile_p, "podpory zapisane w grupie połaci: #{ile_p} płatwi obu dachów")
+  polacie_ap, blad = ROOF::FaceCollector.from_selection([grupa])
+  Testy.sprawdz(blad.nil? && polacie_ap.length == 5, "KROK 2 widzi 5 połaci (#{blad.inspect})")
+  wiezba, raport = ROOF::API.wiezba(grupa, Krok2.ustawienia(p).merge(components: false), :okno => false)
+  Testy.sprawdz(!wiezba.nil?, "więźba z KROKU 2 przez API (#{raport.is_a?(String) ? raport : 'raport'})")
+  next if wiezba.nil?
+  Testy.sprawdz(raport.to_s !~ /Żadna z belek nie leży pod połacią/, 'płatwie leżą pod połaciami')
+  par2 = ROOF::FramingBuilder.prepare_parameters(ROOF::Config.load_settings(:framing).merge(Krok2.ustawienia(p)))
+  ROOF::Supports.prepare!(model.active_entities, polacie_ap, par2)
+  pod = polacie_ap.inject(0) { |s, f| s + f.supports.length }
+  Testy.sprawdz(pod >= ile_p, "każda płatew podpiera połać (#{pod} podparć, #{ile_p} płatwi)")
+  if Krok2.bez_krokwi?(p)
+    deski = czesci(wiezba, Parametry.tak?(p, 'poszycie_nadbitka') ? 'sheath_ceiling' : 'sheath_plank')
+    Testy.sprawdz(deski.length > 8, "deski na płatwiach: #{deski.length} szt.")
+    spod = deski.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
+    Testy.sprawdz(!spod.empty? && spod.min > -0.5 && spod.max < 0.5, format('deski leżą na połaci (%.3f…%.3f mm)', spod.min || 0, spod.max || 0))
+  else
+    krokwie = czesci(wiezba, 'rafter')
+    dol = krokwie.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
+    Testy.sprawdz(krokwie.length >= 8 && dol.min > -0.5, format('krokwie z aplikacji nad połacią (%d szt., najniżej %.3f mm)', krokwie.length, dol.min || 0))
+  end
+  wzp = wzgledem_polaci(pl)
+  Testy.sprawdz(wzp[:bale] <= 0.01 && wzp[:platwie] <= 0.01 && wzp[:dotyk] >= -0.5, 'bale i płatwie generatora pod połacią, płatwie ją podpierają')
+end
+
 Testy.koniec

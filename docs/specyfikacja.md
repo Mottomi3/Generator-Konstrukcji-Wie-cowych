@@ -302,6 +302,32 @@ Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
 - Ścięcie dachu w poprzek (`rdzen/sciecie_dachu.rb#wyrownaj!`): także stopień krótszy niż 0,2 mm w pionie przy granicy
   pasa; płaszczyzna przesuwana tylko w dół.
 
+## 8e. Runda 10 – dom L, wiązar pod płatwiami, podciąg, okno od nowa
+
+- **Dom L – dwa dachy z koszem** (`rdzen/skrzydla.rb`). Obrys o 6 narożnikach z jednym wklęsłym dzieli się na skrzydło
+  główne i boczne. Główne = to o większej rozpiętości (wtedy kalenica boczna jest nie wyżej niż główna); przy równych –
+  parametr „kalenica”. Dach główny: dwuspadowy na całej długości, szczyty na obu końcach. Dach boczny: kalenica
+  w poprzek, szczyt na wolnym końcu, od strony dachu głównego dwa kosze (dach domu = wyższa z dwóch płaszczyzn po stronie
+  skrzydła bocznego od kalenicy głównej). Linia podparcia obu dachów na licu wewnętrznym ściany okapowej na tej samej
+  wysokości (wspólne obniżenie dachu).
+- **Ściana wspólna** (szczyt dachu głównego, dalej ściana okapowa skrzydła bocznego): szczyt do lica wewnętrznego linii
+  okapu dachu głównego; dalej wieńce własne w całości, górny bal ścięty w poprzek do dachu skrzydła bocznego. Ściany
+  okapowe skrzydła bocznego są o pół bala wyższe od linii dachu – górny bal ścięty w poprzek.
+- **Płatwie skrzydła bocznego**: od wysunięcia za jego szczyt do kosza (wierzch w osi płatwi = płaszczyzna dachu
+  głównego); jeśli po drodze weszłyby w płatew dachu głównego – kończą się na styk przy jej licu. Gniazda w ścianach
+  tylko na zasięgu płatwi.
+- **Połacie domu L** dla aplikacji do dachów: obrys domu, krawędzie szczytowe przesunięte o (wysunięcie − okap); na
+  ścianie wspólnej część szczytowa wysunięta dalej niż okapowa co najmniej o 1 mm – krótka krawędź uskoku jest okapem
+  tylnej połaci dachu głównego (bez niej aplikacja robi naroże kopertowe).
+- **Wypust górnych wieńców okapowych** tylko w narożnikach wypukłych; w wklęsłym – zwykły ostatek.
+- **Wiązar nad tarasem** podpiera płatwie: wierzch krokwi wiązara równoległy do dachu, obniżony tak, by dno gniazda
+  każdej płatwi (spód jej wrębu) było ≥ `taras_wiazar_gniazdo` pod wierzchem krokwi przy niższej krawędzi gniazda.
+  Zastrzały: oś od stopy słupka pod kątem `taras_wiazar_zastrzal_kat` od poziomu do spodu krokwi; krótsze niż dwie
+  szerokości – pomijane.
+- **Podciąg** domyślnie na wysokości podwalin (legary dzielone). **Ustawienia**: plik w wersji 2; parametry z listy
+  `DO_FABRYCZNYCH` zapamiętane w starszym pliku wracają do wartości fabrycznych.
+- **Zaznaczenie**: sam dom – edycja; dom + linie, z których powstał – edycja; dom + inne linie – pytanie.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

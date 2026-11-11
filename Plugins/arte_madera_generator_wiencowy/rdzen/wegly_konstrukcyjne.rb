@@ -51,13 +51,14 @@ module ArteMadera
       # Węgły w osiach płatwi na ścianach ze szczytem (dom prostokątny).
       def pod_platwiami(sciany, p, os_kalenicy, dom, uwagi)
         return if dom.nil? || !Parametry.tak?(p, 'szczyty')
-        platwie = Dach.platwie({ v_a: dom[:v_a], v_b: dom[:v_b] }, p)
         t = Parametry.grubosc(p)
         o = p['ostatek'].to_f
         min = p['min_odstep_skrzyzowan'].to_f
         sciany.select { |w| w[:rodzaj] != :kontrfor && sciana_pod_platwiami?(w, p) }.each do |w|
           next if w[:wegly_reczne]
-          platwie.each do |pl|
+          # Płatwie dachu, do którego należy szczyt ściany (dom L – dach główny albo skrzydło boczne).
+          d = Skrzydla.domy(dom).find { |x| x[:iv] == w[:szczyt][:iv] } || dom
+          Dach.platwie(Dach.geo(d), p).each do |pl|
             s = Szczyty.s_z_v(w, pl[:v])
             # Płatew przy narożniku albo przy skrzyżowaniu (działowa, węgieł) – podparta ścianą obok.
             next if s < w[:s_od] + t + o + min || s > w[:s_do] - t - o - min
@@ -68,7 +69,7 @@ module ArteMadera
               next
             end
             kf = Sciany.dodaj_kontrfor(sciany, w, s, p, :platwa, os_kalenicy)
-            kf[:pod_platwia] = pl.merge(z_wegla: z_wegla(kf, pl, p, dom))
+            kf[:pod_platwia] = pl.merge(z_wegla: z_wegla(kf, pl, p, d))
           end
         end
       end
@@ -79,7 +80,7 @@ module ArteMadera
       def z_wegla(kf, pl, p, dom)
         z = pl[:z_spod]
         if Podbitka.pod_spodem_platwi(p) > 0.0
-          geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
+          geo = Dach.geo(dom)
           t2 = Parametry.grubosc(p) / 2.0
           z = [z, [pl[:v] - t2, pl[:v] + t2].map { |v| Dach.linia_podparcia(geo, v, p) }.min - Podbitka.obnizenie(p)].min
         end

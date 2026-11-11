@@ -16,6 +16,7 @@
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -29,7 +30,7 @@ module ArteMadera
         wynik = { sciany: [], os_kalenicy: :x, ostrzezenia: [], bledy: [] }
         t = Parametry.grubosc(p)
         tol = p['tolerancja_rysunku'].to_f
-        wynik[:os_kalenicy] = obrys[:os_kalenicy] || os_kalenicy(obrys[:obrys], p['kalenica'])
+        wynik[:os_kalenicy] = obrys[:os_kalenicy] || Skrzydla.os(obrys[:obrys], p['kalenica']) || os_kalenicy(obrys[:obrys], p['kalenica'])
         licznik = [0]
         zewn = zewnetrzne(obrys[:obrys], t, p, licznik, wynik)
         dzial = dzialowe(obrys[:dzialowe], zewn, t, p, licznik, wynik, tol)
@@ -88,7 +89,7 @@ module ArteMadera
                                    'ostatki bali wchodzą do wnętrza budynku.'
           end
           sciana(licznik, :zewnetrzna, a, b, d).merge(
-            s_od: -(t / 2.0 + o), s_do: G.odl(a, b) + t / 2.0 + o,
+            wklesle: [wklesly_a, wklesly_b], s_od: -(t / 2.0 + o), s_do: G.odl(a, b) + t / 2.0 + o,
             ref: G.dot(G.sub(boki[i][0], a), d), bok: boki[i], ostatki_param: [o, o]
           )
         end

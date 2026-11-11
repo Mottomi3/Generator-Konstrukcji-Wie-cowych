@@ -36,6 +36,9 @@ module ArteMadera
                                        width: SZEROKOSC, height: WYSOKOSC, style: UI::HtmlDialog::STYLE_DIALOG)
           @dialog.set_file(File.join(EXTENSION_DIR, 'html', 'okno.html'))
           podlacz(@dialog)
+          # Po zamknięciu okna nic po nim nie zostaje – następne otwarcie zaczyna od danych z zaznaczenia.
+          dlg = @dialog
+          @dialog.set_on_closed { po_zamknieciu(dlg) } if @dialog.respond_to?(:set_on_closed)
           @dialog.show
           @dialog
         rescue => e
@@ -204,11 +207,22 @@ module ArteMadera
           end
         end
 
-        # Zamknięcie poprzedniego okna generatora.
+        # Zamknięcie poprzedniego okna generatora (także ukrytego) – nowe okno nie dziedziczy po nim niczego.
         def zamknij_stare
-          @dialog.close if @dialog && @dialog.visible?
+          stare = @dialog
+          @dialog = nil
+          stare.close if stare && stare.visible?
         rescue => e
           Log.error('Okno.zamknij_stare', e)
+        end
+
+        # Okno dlg zamknięte: jeśli to bieżące okno – bez okna i bez danych startowych w pamięci.
+        def po_zamknieciu(dlg)
+          return unless @dialog.equal?(dlg)
+          @dialog = nil
+          @dane = nil
+        rescue => e
+          Log.error('Okno.po_zamknieciu', e)
         end
       end
     end

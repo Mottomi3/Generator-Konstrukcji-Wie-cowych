@@ -22,11 +22,19 @@ require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'dach_jednospadowy') unless defined?(ArteMadera::GeneratorWiencowy::DachJednospadowy)
 require File.join(File.dirname(__FILE__), 'platwie_wience') unless defined?(ArteMadera::GeneratorWiencowy::PlatwieWience)
+require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 
 module ArteMadera
   module GeneratorWiencowy
     module Dach
       module_function
+
+      # Przekrój dachu z opisu dachu (dom): osie ścian okapowych i – w domu L – wspólne obniżenie obu dachów.
+      def geo(dom)
+        g = { v_a: dom[:v_a], v_b: dom[:v_b] }
+        g[:obnizenie] = dom[:obnizenie] if dom[:obnizenie]
+        g
+      end
 
       # Kąt dachu [rad].
       def kat(p)
@@ -233,21 +241,23 @@ module ArteMadera
         end
       end
 
-      # Belki dachu domu prostokątnego: płatwie wzdłuż kalenicy i krokwie (elementy). dom = { os:, v_a:, v_b:, u1:, u2: }.
+      # Belki dachu: płatwie wzdłuż kalenicy i krokwie (elementy). dom = { os:, v_a:, v_b:, u1:, u2: }; dom L (dom[:boczne])
+      # – płatwie obu dachów (płatwie skrzydła bocznego do dachu głównego, rdzen/skrzydla.rb), krokwie tylko z aplikacji
+      # do dachów.
       def elementy(dom, p)
         return [] unless Parametry.tak?(p, 'dach_elementy')
-        t = Parametry.grubosc(p)
-        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
-        wys = p['dach_okap_szczyt'].to_f + t / 2.0
-        u0 = dom[:u1] - wys
-        u3 = dom[:u2] + wys
-        wynik = platwie(geo, p).map do |pl|
-          e = Elementy.pozioma('P', xy(dom, u0, pl[:v]), xy(dom, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
-                               przekroj_platwi(dom, pl))
-          wreby_platwi!(e, dom, pl, u0, p)
-          e
+        wynik = []
+        Skrzydla.domy(dom).each do |d|
+          platwie(geo(d), p).each do |pl|
+            u0, u3 = Skrzydla.zasieg_platwi(d, pl, p)
+            next if u3 - u0 < 1.0
+            e = Elementy.pozioma('P', xy(d, u0, pl[:v]), xy(d, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
+                                 przekroj_platwi(d, pl))
+            wreby_platwi!(e, d, pl, u0, p)
+            wynik << e
+          end
         end
-        wynik.concat(krokwie(dom, geo, p))
+        wynik.concat(krokwie(dom, geo(dom), p)) unless dom[:boczne]
         wynik
       end
 

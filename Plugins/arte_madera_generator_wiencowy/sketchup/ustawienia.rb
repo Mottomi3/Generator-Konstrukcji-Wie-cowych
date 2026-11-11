@@ -8,7 +8,7 @@
 # Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
-# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 1, 'ostatnie' => {…},
+# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 2, 'ostatnie' => {…},
 # 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
 # (teksty); sprawdza je Parametry.normalizuj.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -20,7 +20,10 @@ module ArteMadera
   module GeneratorWiencowy
     module Ustawienia
       PLIK = 'ustawienia.json'.freeze unless const_defined?(:PLIK)
-      WERSJA = 1 unless const_defined?(:WERSJA)
+      # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną.
+      WERSJA = 2 unless const_defined?(:WERSJA)
+      # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze.
+      DO_FABRYCZNYCH = { 2 => %w[podciag_poziom] }.freeze unless const_defined?(:DO_FABRYCZNYCH)
 
       module_function
 
@@ -47,6 +50,10 @@ module ArteMadera
         return pusty unless File.exist?(sciezka)
         d = JSON.parse(File.read(sciezka, encoding: 'UTF-8'))
         return pusty unless d.is_a?(Hash)
+        if d['ostatnie'].is_a?(Hash)
+          # Plik starszej wersji: zmienione wartości fabryczne zastępują zapamiętane (np. poziom podciągu – wymóg użytkownika).
+          DO_FABRYCZNYCH.each { |wersja, klucze| klucze.each { |k| d['ostatnie'].delete(k) } if d['wersja'].to_i < wersja }
+        end
         pusty.merge('ostatnie' => d['ostatnie'].is_a?(Hash) ? d['ostatnie'] : {},
                     'szablony' => d['szablony'].is_a?(Hash) ? d['szablony'] : {},
                     'okno' => d['okno'].is_a?(Hash) ? d['okno'] : {})

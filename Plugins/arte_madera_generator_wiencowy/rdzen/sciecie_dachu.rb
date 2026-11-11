@@ -16,6 +16,7 @@
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 require File.join(File.dirname(__FILE__), 'bale') unless defined?(ArteMadera::GeneratorWiencowy::Bale)
 require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
@@ -32,14 +33,28 @@ module ArteMadera
       # Ścina bale ścian wzdłuż kalenicy do płaszczyzny dachu; dom – opis dachu (Szczyty.dom_prostokatny), nil – nic.
       def przytnij!(bale, p, dom)
         return if dom.nil? || !Parametry.tak?(p, 'szczyty')
-        iv = dom[:os] == :x ? 1 : 0
-        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         t = Parametry.grubosc(p)
         bale.each do |b|
-          next unless b[:sciana][:kierunek] == :A
-          c = sciecie(b, p, geo, iv, t)
+          w = b[:sciana]
+          ob = w[:okap_boczny]
+          if ob
+            # Ściana okapowa skrzydła bocznego domu L (rdzen/skrzydla.rb) – także część ściany ze szczytem dachu głównego.
+            c = sciecie(b, p, ob[:geo], ob[:geo][:iv], t)
+            c = w_zakresie(c, b, ob[:s_zakres]) if c
+          else
+            d = Skrzydla.dom_sciany(dom, w, p)
+            next if d.nil? || w[:os] != d[:os]
+            c = sciecie(b, p, Dach.geo(d), d[:iv], t)
+          end
           b[:cechy] << c if c
         end
+      end
+
+      # Ścięcie c bala b ograniczone do zakresu s ściany (nil – bal poza zakresem).
+      def w_zakresie(c, b, zakres)
+        x0 = [zakres[0] - b[:s0], 0.0].max
+        x1 = [zakres[1] - b[:s0], b[:dl]].min
+        x1 - x0 > Bryla::SCAL ? c.merge(x0: x0, x1: x1) : nil
       end
 
       # Ścięcia bliskie granic przekroju: gdzie płaszczyzna ścięcia przecina poziom wierzchu (dno gniazda zamka, wierzch

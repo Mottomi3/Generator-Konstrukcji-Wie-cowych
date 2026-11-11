@@ -20,6 +20,8 @@ DOMY = {
              { 'liczba_wiencow' => 10 },
              [{ 'sciana' => 'W-1', 'od' => 1200, 'szerokosc' => 1020, 'wysokosc' => 1010, 'parapet' => 600 },
               { 'sciana' => 'W-1', 'od' => 4300, 'szerokosc' => 930, 'wysokosc' => 1350, 'parapet' => 0 }]],
+  'dachL' => [wielokat([[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]]),
+              { 'liczba_wiencow' => 16, 'platwa_na_scianie' => 'nie', 'okap_wience_wypust' => 2, 'podloga' => 'nie' }, [], true],
   'pelny900' => [prostokat(0, 0, 4000, 3000), {},
                  [{ 'sciana' => 'W-2', 'od' => 1000, 'szerokosc' => 900, 'wysokosc' => 2100, 'parapet' => 0 }], true],
   'krokwie' => [prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]],

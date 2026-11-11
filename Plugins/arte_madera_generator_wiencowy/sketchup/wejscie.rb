@@ -19,14 +19,14 @@ module ArteMadera
 
       module_function
 
-      # Wynik: { dom: grupa } | { segmenty: [...], z0: mm } | { blad: tekst }.
+      # Wynik: { dom: grupa } | { segmenty: [...], z0: mm } | { dom:, segmenty:, z0: } (zaznaczony dom i linie) | { blad: tekst }.
       def z_zaznaczenia(model)
         zazn = model.selection.to_a
         dom = zazn.find { |e| Atrybuty.dom?(e) }
-        return { dom: dom } if dom
         krawedzie = []
         zbierz(zazn, Geom::Transformation.new, krawedzie, 0)
         krawedzie = krawedzie.uniq { |e, tr| [e.respond_to?(:entityID) ? e.entityID : e.object_id, tr.to_a] }
+        return { dom: dom } if dom && krawedzie.empty?
         return { blad: 'Zaznacz narysowane linie obrysu domu (lico zewnętrzne), osie ścian działowych i linie kontrforów – ' \
                        'albo dom wygenerowany wcześniej, żeby go edytować.' } if krawedzie.empty?
         segmenty = []
@@ -41,7 +41,8 @@ module ArteMadera
           return { blad: format('Zaznaczone linie leżą na różnych wysokościach (%.0f…%.0f mm) – narysuj obrys w jednej płaszczyźnie poziomej.',
                                 zs.min, zs.max) }
         end
-        { segmenty: segmenty, z0: zs.min }
+        # Dom i linie razem – wybór (nowy dom z linii albo edycja domu) w Sterowanie.start.
+        dom ? { dom: dom, segmenty: segmenty, z0: zs.min } : { segmenty: segmenty, z0: zs.min }
       end
 
       # Krawędzie z zaznaczenia (także krawędzie zaznaczonej ściany – prostokąt kliknięty raz – i wnętrza grup

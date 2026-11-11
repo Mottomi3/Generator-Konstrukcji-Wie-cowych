@@ -66,10 +66,17 @@ module ArteMadera
           podpowiedz: 'Grubość wiązara (wzdłuż kalenicy) × wysokość krokwi wiązara (prostopadle do połaci) i belki dolnej.' },
         { klucz: 'taras_wiazar', domyslna: 'slupek', etykieta: 'Wiązar – rodzaj', rodzaj: :wybor, sekcja: 'taras',
           gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
-          wybory: [['slupek', 'krokwie, belka dolna i słupek pod kalenicą'], ['zastrzaly', 'jak obok + dwa zastrzały ze stopy słupka do krokwi']],
-          pomoc: 'Wiązar licuje się z licem zewnętrznym frontu. Krokwie wiązara mają wierzch na linii dachu i gniazda pod płatwie ' \
-                 '(płatew przechodzi przez wiązar z zamkiem – wrąb z boków i od spodu, jak w ścianie). Krokwie leżą na belce dolnej, ' \
-                 'słupek pod kalenicą podpiera obie krokwie; zastrzały (wizualnie) od stopy słupka ukośnie do połowy krokwi.' },
+          wybory: [['slupek', 'krokwie, belka dolna i słupek pod kalenicą'],
+                   ['zastrzaly', 'jak obok + dwa zastrzały od stopy słupka do krokwi (45°)']],
+          pomoc: 'Wiązar licuje się z licem zewnętrznym frontu i podpiera płatwie od spodu: krokwie wiązara biegną w jednym ' \
+                 'kawałku pod płatwiami, każda płatew leży na nich w płytkim gnieździe (zamku) i ma wrąb z boków i od spodu ' \
+                 'na grubości wiązara. Krokwie leżą na belce dolnej, słupek pod kalenicą podpiera obie krokwie; zastrzały ' \
+                 'rozchodzą się od stopy słupka pod podanym kątem do spodu krokwi – wzmocnienie i ozdoba.' },
+        { klucz: 'taras_wiazar_gniazdo', domyslna: 20.0, etykieta: 'Wiązar – gniazdo płatwi, najmniejsza głębokość', jednostka: 'mm',
+          min: 0.0, max: 100.0, rodzaj: :liczba, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
+          podpowiedz: 'O tyle płatew wchodzi w krokiew wiązara przy niższej krawędzi gniazda (przy wyższej głębiej – dno gniazda ' \
+                      'jest poziome). 0 – płatew tylko dotyka krokwi niższą krawędzią.' },
         { klucz: 'taras_wiazar_podparcie', domyslna: 'bale', etykieta: 'Wiązar – na czym stoi', rodzaj: :wybor, sekcja: 'taras',
           gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny] },
           wybory: [['bale', 'na balach frontu (podciąg i bale spinające)'], ['slupy', 'na słupach – szczyt bez bali, z przodu sam trójkąt']],
@@ -81,6 +88,11 @@ module ArteMadera
         { klucz: 'taras_wiazar_zastrzal', domyslna: 100.0, etykieta: 'Wiązar – szerokość zastrzału', jednostka: 'mm', min: 40.0,
           max: 400.0, rodzaj: :liczba, sekcja: 'taras',
           gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny], 'taras_wiazar' => ['zastrzaly'] } },
+        { klucz: 'taras_wiazar_zastrzal_kat', domyslna: 45.0, etykieta: 'Wiązar – kąt zastrzałów od poziomu', jednostka: '°', min: 0.0,
+          max: 80.0, rodzaj: :liczba, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'taras_szczyt' => ['pusty'], 'taras_wieniec' => %w[platwa wlasny], 'taras_wiazar' => ['zastrzaly'] },
+          podpowiedz: 'Zastrzały rozchodzą się od stopy słupka w górę pod tym kątem do spodu krokwi wiązara. 0 albo kąt nie ' \
+                      'większy niż kąt dachu – do połowy krokwi.' },
         { klucz: 'taras_wejscie', domyslna: 'srodek', etykieta: 'Wejście na taras od frontu', rodzaj: :wybor, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },
           wybory: [['srodek', 'pośrodku'], ['lewa', 'z lewej (patrząc na front z zewnątrz)'],
                    ['prawa', 'z prawej (patrząc na front z zewnątrz)'], ['brak', 'bez wejścia – balustrada na całym froncie']] },

@@ -17,6 +17,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
@@ -30,8 +31,12 @@ module ArteMadera
       # Ściany ze szczytem (w[:szczyt]) i opis dachu domu prostokątnego; zwraca { uwagi:, dom: (nil – bez belek dachu) }.
       def przygotuj(sciany, p, os_kalenicy)
         wynik = { uwagi: [], dom: nil }
-        sciany.each { |w| w.delete(:szczyt) }
+        sciany.each do |w|
+          w.delete(:szczyt)
+          w.delete(:okap_boczny)
+        end
         return wynik unless Parametry.tak?(p, 'szczyty')
+        return dom_l(sciany, p, os_kalenicy, wynik) if !Dach.jednospadowy?(p) && Skrzydla.dom(sciany, p, os_kalenicy)
         idx = os_kalenicy == :x ? 1 : 0
         szczytowe = sciany.select { |w| szczytowa?(w, p) }
         if szczytowe.empty?
@@ -43,15 +48,35 @@ module ArteMadera
           va = w[:a][idx]
           vb = w[:b][idx]
           geo = { v_a: [va, vb].min, v_b: [va, vb].max }
-          w[:szczyt] = geo.merge(v0: va, kv: vb >= va ? 1.0 : -1.0, z_okap: z_okap)
+          w[:szczyt] = geo.merge(iv: idx, v0: va, kv: vb >= va ? 1.0 : -1.0, z_okap: z_okap)
           w[:szczyt][:z_max] = z_max(w, p)
         end
         wynik[:dom] = dom_prostokatny(sciany, szczytowe, os_kalenicy)
         wynik = jednospadowy(sciany, wynik, p, z_okap) if Dach.jednospadowy?(p)
         if wynik[:dom].nil? && Parametry.tak?(p, 'dach_elementy') && !Dach.jednospadowy?(p)
-          wynik[:uwagi] << 'Dach: belki dachu (płatwie, krokwie) tylko dla obrysu prostokątnego – szczyty liczone dla każdej ściany osobno.'
+          wynik[:uwagi] << 'Dach: belki dachu (płatwie, krokwie) tylko dla obrysu prostokątnego i w kształcie L – szczyty liczone dla każdej ściany osobno.'
         end
         dzialowe_do_dachu!(sciany, wynik[:dom], p, z_okap)
+        wynik
+      end
+
+      # Dom w kształcie L (rdzen/skrzydla.rb): dach główny i skrzydło boczne z kalenicą w poprzek – szczyty obu dachów,
+      # ściany okapowe skrzydła bocznego; krokwie tylko z aplikacji do dachów.
+      def dom_l(sciany, p, os_kalenicy, wynik)
+        dom = Skrzydla.dom(sciany, p, os_kalenicy)
+        z_okap = Wience.wysokosci(p)[:okapowa]
+        Skrzydla.oznacz!(sciany, dom, p, z_okap, Parametry.tak?(p, 'szczyty_na_dzialowych')).each do |w|
+          w[:szczyt][:z_max] = z_max(w, p)
+        end
+        wynik[:dom] = dom
+        if p['podbitka'].to_s != 'nie' && !Podbitka.przez_aplikacje?(p)
+          wynik[:uwagi] << 'Dach domu L: podbitki generator nie rysuje (tylko dom prostokątny) – pominięta.'
+        end
+        if Dach.krokwie_generatora?(p) && Parametry.tak?(p, 'dach_elementy')
+          wynik[:uwagi] << 'Dach domu L: krokwie z generatora tylko dla domu prostokątnego – płatwie obu dachów są, krokwie ' \
+                           'i poszycie zrób aplikacją do dachów („Krokwie i poszycie – kto je buduje”).'
+        end
+        dzialowe_do_dachu!(sciany, dom, p, z_okap)
         wynik
       end
 
@@ -60,15 +85,18 @@ module ArteMadera
       # (rdzen/sciecie_dachu.rb); płatew nad działową (kalenicowa) wycina gniazdo na całej długości – działowa ją podpiera.
       def dzialowe_do_dachu!(sciany, dom, p, z_okap)
         return if dom.nil? || !Parametry.tak?(p, 'dzialowa_wzdluz_do_dachu')
-        iv = dom[:os] == :x ? 1 : 0
-        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         t2 = Parametry.grubosc(p) / 2.0
         sciany.each do |w|
-          next unless w[:rodzaj] == :dzialowa && w[:kierunek] == :A && w[:nizsza].nil? && w[:szczyt].nil?
+          next unless w[:rodzaj] == :dzialowa && w[:nizsza].nil? && w[:szczyt].nil?
+          # Dom L: dach, w którego strefie leży działowa (rdzen/skrzydla.rb).
+          d = Skrzydla.dom_sciany(dom, w, p)
+          next if d.nil? || w[:os] != d[:os]
+          iv = d[:iv]
+          geo = Dach.geo(d)
           v = [w[:a][iv] - t2, w[:a][iv] + t2].max_by { |x| Dach.linia_podparcia(geo, x, p) }
           z = Dach.linia_podparcia(geo, v, p)
           next if z <= Wience.wysokosc(w, p) + 1.0
-          w[:szczyt] = geo.merge(v0: v, kv: 0.0, z_okap: z_okap, z_max: z, plaski: true, dzialowa: true)
+          w[:szczyt] = geo.merge(iv: iv, v0: v, kv: 0.0, z_okap: z_okap, z_max: z, plaski: true, dzialowa: true)
         end
       end
 
@@ -109,7 +137,7 @@ module ArteMadera
         u = szcz.map { |w| w[:a][iu] }.sort
         g = szcz[0][:szczyt]
         wewn = szczytowe.select { |w| w[:rodzaj] == :dzialowa }.map { |w| w[:a][iu] }.sort
-        { os: os, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1], wewn: wewn }
+        { os: os, iv: 1 - iu, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1], wewn: wewn }
       end
 
       # Współrzędna v punktu s ściany ze szczytem.
@@ -128,7 +156,20 @@ module ArteMadera
         g = w[:szczyt]
         return nil if g.nil?
         return Dach.linia_podparcia(g, g[:v0], p) if g[:plaski]
+        return gora_wlasna(w, p) unless w_zakresie?(g, s)
         Dach.linia_szczytu(g, v_z_s(w, s), p)
+      end
+
+      # Czy miejsce s ściany leży pod szczytem g (szczyt na części ściany domu L – g[:s_zakres]; inny – zawsze).
+      def w_zakresie?(g, s)
+        z = g[:s_zakres]
+        z.nil? || (s >= z[0] - 0.01 && s <= z[1] + 0.01)
+      end
+
+      # Góra ściany bez wieńców szczytu [mm] – linia szczytu poza zakresem szczytu na części ściany.
+      def gora_wlasna(w, p)
+        l = Wience.pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p)
+        l.last[:z0] + l.last[:h]
       end
 
       # Załom linii szczytu (kalenica) – s ściany; dach jednospadowy i szczyt płaski – nil (linia prosta).
@@ -148,7 +189,7 @@ module ArteMadera
       # Czy wysokość z w miejscu s ściany jest pod linią podparcia (spód krokwi / desek) – dla węgłów przy szczycie,
       # które wystają z obu stron szczytu pod połać; ściana bez szczytu – zawsze.
       def pod_podparciem?(w, s, z, p)
-        return true if w[:szczyt].nil?
+        return true if w[:szczyt].nil? || !w_zakresie?(w[:szczyt], s)
         z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) - Podbitka.obnizenie(p) + 0.01
       end
 
@@ -159,7 +200,20 @@ module ArteMadera
         return [w[:s_od], w[:s_do]] if g.nil?
         m = p['szczyt_min_wysokosc'].to_f
         m = [m, p['jednospad_min_pasek'].to_f].max if g[:plaski]
+        return zasieg_czesci(w, z0, m, p) if g[:s_zakres]
         zasieg_linii(w[:s_od], w[:s_do], zalom(w, p), z0 + m) { |s| linia(w, s, p) }
+      end
+
+      # Zasięg wieńca ściany ze szczytem na części długości (dom L): pod szczytem – pod linią szczytu, poza nim – cała
+      # reszta ściany dla wieńców własnych (poniżej góry ściany), nic dla wieńców szczytu.
+      def zasieg_czesci(w, z0, m, p)
+        g = w[:szczyt]
+        a = [w[:s_od], g[:s_zakres][0]].max
+        b = [w[:s_do], g[:s_zakres][1]].min
+        pod = zasieg_linii(a, b, zalom(w, p), z0 + m) { |s| Dach.linia_szczytu(g, v_z_s(w, s), p) }
+        return pod if z0 >= gora_wlasna(w, p) - 0.01
+        poza = a > w[:s_od] + 0.01 ? [w[:s_od], a] : [b, w[:s_do]]
+        pod.nil? ? poza : [[pod[0], poza[0]].min, [pod[1], poza[1]].max]
       end
 
       # Zasięg [s0, s1] odcinka s_od…s_do, na którym linia dachu (blok: s → wysokość; prosta albo łamana z załomem sk,
@@ -183,8 +237,16 @@ module ArteMadera
 
       # Obróbki skosu dla kawałka bala s0…s1 o spodzie z0 i wysokości h: [cechy skos_gora w układzie bala].
       def skosy(w, s0, s1, z0, h, p)
-        return [] if w[:szczyt].nil?
-        skosy_linii(s0, s1, z0, h, zalom(w, p)) { |s| linia(w, s, p) }
+        g = w[:szczyt]
+        return [] if g.nil?
+        return skosy_linii(s0, s1, z0, h, zalom(w, p)) { |s| linia(w, s, p) } if g[:s_zakres].nil?
+        # Szczyt na części ściany (dom L): skosy tylko pod szczytem, dalej bal pełny (ścina go dach skrzydła bocznego).
+        a = [s0, g[:s_zakres][0]].max
+        b = [s1, g[:s_zakres][1]].min
+        return [] if b - a < 0.5
+        skosy_linii(a, b, z0, h, zalom(w, p)) { |s| Dach.linia_szczytu(g, v_z_s(w, s), p) }.map do |c|
+          c.merge(x0: c[:x0] + a - s0, x1: c[:x1] + a - s0)
+        end
       end
 
       # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załom w sk, nil – linia prosta): odcinki, na
@@ -210,9 +272,11 @@ module ArteMadera
       def gniazda(sciany, p, dom)
         return unless Parametry.tak?(p, 'szczyty')
         if dom
-          platwie = Dach.platwie({ v_a: dom[:v_a], v_b: dom[:v_b] }, p)
-          dom[:przejscia] = []
-          sciany.each { |w| gniazda_sciany(w, platwie, dom, p) }
+          Skrzydla.domy(dom).each do |d|
+            platwie = Dach.platwie(Dach.geo(d), p)
+            d[:przejscia] = []
+            sciany.each { |w| gniazda_sciany(w, platwie, d, p) }
+          end
           return
         end
         luz = p['gniazdo_luz'].to_f
@@ -229,7 +293,7 @@ module ArteMadera
       # ściana w poprzek płatwi – gniazdo na szerokości płatwi w ścianie (zamek płatwi – zwężona i podcięta od spodu,
       # rdzen/zamek_platwi.rb) z luzem; ściana wzdłuż płatwi i pod nią – na całej długości.
       def gniazda_sciany(w, platwie, dom, p)
-        iv = dom[:os] == :x ? 1 : 0
+        iv = dom[:iv]
         luz = p['gniazdo_luz'].to_f
         t = Parametry.grubosc(p)
         gora = Wience.wysokosc_calkowita(w, p)
@@ -237,7 +301,10 @@ module ArteMadera
         platwie.each do |pl|
           next if pl[:z_spod] >= gora - 0.01
           z0 = pl[:z_spod]
+          # Dom L: płatew tylko na swoim zasięgu (płatwie skrzydła bocznego kończą się na dachu głównym).
+          zas = dom[:rola] ? Skrzydla.zasieg_platwi(dom, pl, p) : nil
           if w_poprzek
+            next if zas && (w[:a][1 - iv] < zas[0] - t / 2.0 + 0.5 || w[:a][1 - iv] > zas[1] + t / 2.0 - 0.5)
             v0 = w[:a][iv]
             b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
             # Z zamkiem bal dochodzi do dna wrębu z boków (bez luzu gniazda) – ściana zablokowana w płatwi.
@@ -249,6 +316,11 @@ module ArteMadera
           else
             next unless (w[:a][iv] - pl[:v]).abs < t / 2.0 + pl[:b] / 2.0 - 0.5
             s = [w[:s_od] - 1.0, w[:s_do] + 1.0]
+            if zas
+              # Na zasięgu płatwi – także pod wypuszczonymi górnymi wieńcami za szczytem (rdzen/wypusty_okapu.rb).
+              s = zas.map { |u| (u - w[:a][1 - iv]) * w[:kier][1 - iv] }.sort
+              next if s[1] <= w[:s_od] - 1000.0 || s[0] >= w[:s_do] + 1000.0
+            end
             if w[:pod_platwia] && (w[:pod_platwia][:v] - pl[:v]).abs < 0.5
               gniazda_wegla(w, pl, p)
               next

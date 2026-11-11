@@ -97,11 +97,16 @@ module ArteMadera
       def sciany_wysokie(sciany, p)
         szczyt = sciany.map { |w| w[:szczyt] }.compact.first
         return [] if szczyt.nil?
-        geo = { v_a: szczyt[:v_a], v_b: szczyt[:v_b] }
-        nosne = Parametry.tak?(p, 'platwa_na_scianie') ? [] : sciany.select { |w| w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A && w[:szczyt].nil? }
+        glowne = sciany.select { |w| w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A && w[:szczyt].nil? }
+        nosne = Parametry.tak?(p, 'platwa_na_scianie') ? [] : glowne + sciany.select { |w| w[:okap_boczny] && w[:szczyt].nil? }
         pod_platwia = lambda { |w| (w[:otwory] || []).any? { |o| o[:gniazdo] && o[:s0] < w[:s_od] + 0.5 } }
         (sciany.select { |w| w[:szczyt] && w[:szczyt][:plaski] && !pod_platwia.call(w) } + nosne).map do |w|
           iv = (w[:a][0] - w[:b][0]).abs < 0.5 ? 0 : 1
+          # Przekrój dachu ściany: skrzydła bocznego domu L, własnego szczytu płaskiego albo pierwszego szczytu domu.
+          geo = if w[:okap_boczny] then w[:okap_boczny][:geo]
+                elsif w[:szczyt] then w[:szczyt]
+                else sciany.map { |x| x[:szczyt] }.compact.find { |g| g[:iv].nil? || g[:iv] == iv } || szczyt
+                end
           z = Dach.linia_podparcia(geo, w[:a][iv], p)
           nazwa = if w[:rodzaj] == :dzialowa then 'Działowa'
                   elsif w[:szczyt] then 'Ściana wysoka'

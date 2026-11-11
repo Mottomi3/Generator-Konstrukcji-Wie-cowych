@@ -15,6 +15,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera::GeneratorWiencowy::Podbitka)
 
@@ -29,15 +30,19 @@ module ArteMadera
         sciany.each { |w| w.delete(:pod_dachem) }
         sciany.each { |w| w.delete(:pod_dachem_wzdluz) }
         return uwagi if dom.nil?
-        iv = dom[:os] == :x ? 1 : 0
-        geo = { v_a: dom[:v_a], v_b: dom[:v_b], iv: iv }
         sciany.each do |w|
+          # Dom L: dach, w którego strefie leży ściana (rdzen/skrzydla.rb).
+          d = Skrzydla.dom_sciany(dom, w, p)
+          next if d.nil?
+          iv = d[:iv]
+          g = Dach.geo(d).merge(iv: iv)
           # Węgieł wzdłuż kalenicy na ścianie bez szczytu – górny bal ścina rdzen/sciecie_dachu.rb (w poprzek).
-          w[:pod_dachem_wzdluz] = geo if w[:rodzaj] == :kontrfor && w[:kier][iv].abs < 0.5 && w[:gospodarz][:szczyt].nil?
+          w[:pod_dachem_wzdluz] = g if w[:rodzaj] == :kontrfor && w[:kier][iv].abs < 0.5 && Wience.szczyt_gospodarza(w).nil?
           next if w[:szczyt] || w[:kier][iv].abs < 0.5
           next if w[:rodzaj] == :zewnetrzna
-          w[:pod_dachem] = geo
+          w[:pod_dachem] = g
         end
+        geo = Dach.geo(dom)
         z_lico = Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p)
         z_okap = Wience.wysokosci(p)[:okapowa]
         if z_lico < z_okap - 0.5 && Parametry.tak?(p, 'platwa_na_scianie')

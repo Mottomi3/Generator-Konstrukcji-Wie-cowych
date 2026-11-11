@@ -60,8 +60,8 @@ iz = P0.merge('izolacja_podlogi' => 150.0)
 Testy.sprawdz(Statyka.kandydaci(iz).all? { |b, h| h >= 150 }, 'izolacja 150 – tylko przekroje ≥ 150')
 Testy.sprawdz(Statyka.dobierz(1000.0, iz, 600.0, 400.0)[1] >= 150, 'krótki legar i tak ≥ izolacji')
 
-Testy.grupa('Podłoga domu 4000 × 3000 (jak 900)')
-pl = plan_pelny(prostokat(0, 0, 4000, 3000))
+Testy.grupa('Podłoga domu 4000 × 3000 (jak 900), podciąg obniżony')
+pl = plan_pelny(prostokat(0, 0, 4000, 3000), 'podciag_poziom' => 'pod')
 pw = el(pl, 'Pw')
 Testy.rowne(pw.map { |e| e[:dl] }.sort, [3000.0, 3000.0, 4000.0, 4000.0], 'podwaliny zewnętrzne: długości lica (na zakład)')
 Testy.sprawdz(pw.all? { |e| e[:cechy].length == 2 && e[:cechy].all? { |c| (c[:gleb] - 50.0).abs < 0.01 } }, 'zakład na pół wysokości w narożnikach')
@@ -77,13 +77,24 @@ Testy.sprawdz(pl[:podpowiedzi].none? { |h| h[:poziom] == 'blad' }, 'dobrany prze
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('najmniejszy wystarczający') }, 'podpowiedź o przekroju najmniejszym i zalecanym')
 
 Testy.grupa('Ręczny przekrój za słaby – podpory i podpowiedź')
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100')
+pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'podciag_poziom' => 'pod')
 Testy.rowne(pl[:podloga][:legar], [50.0, 100.0], 'zostaje przekrój ręczny')
 Testy.sprawdz(pl[:podloga][:podpory] >= 1 && el(pl, 'Pd').length == pl[:podloga][:podpory], "dodane podpory (#{pl[:podloga][:podpory]})")
 pd = el(pl, 'Pd')
 Testy.rowne(pd.map { |e| e[:polozenie][:poczatek][2] + e[:h] }.uniq, [-100.0], 'podpory pod legarami')
 pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'izolacja_podlogi' => 150)
 Testy.sprawdz(podp?(pl, 'blad', 'niższy niż izolacja'), 'błąd: legar niższy niż izolacja')
+
+Testy.grupa('Podciąg domyślnie na wysokości podwalin – legary dzielone (uwaga użytkownika, runda 10)')
+pl = plan_pelny(prostokat(0, 0, 4000, 3000))
+Testy.rowne(pl[:parametry]['podciag_poziom'], 'rowno', 'wartość fabryczna: na wysokości podwalin')
+pd = el(pl, 'Pd')
+Testy.sprawdz(!pd.empty? && pd.all? { |e| (e[:polozenie][:poczatek][2] + e[:h]).abs < 0.01 }, 'wierzch podciągu równo z wierzchem podwalin')
+Testy.sprawdz(pd.all? { |e| (e[:dl] - 3800.0).abs < 0.01 }, 'podciąg między licami wewnętrznymi podwalin (4000 − 2 × 100)')
+lg = el(pl, 'L')
+Testy.sprawdz(!lg.empty? && lg.all? { |e| e[:dl] < 1400.01 } && lg.all? { |e| (e[:polozenie][:poczatek][2] + e[:h]).abs < 0.01 },
+              "legary dzielone na podciągu – od podwaliny do podciągu (#{lg.map { |e| e[:dl].round }.uniq.inspect}), wierzch równo z podwalinami")
+Testy.rowne(kolizje_elementow(pl, %w[L Pd Pw]), 0, 'legary, podciąg i podwaliny nie wchodzą w siebie')
 
 Testy.grupa('Rozstaw podpór z parametru')
 pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'podpory_rozstaw_max' => 1500, 'fundamenty' => 'nie')
@@ -127,7 +138,7 @@ Testy.rowne(zle, 0, 'siatki belek zamknięte (podwaliny z zakładem, płatwie ś
 Testy.sprawdz(pl[:podsumowanie][:lista].any? { |x| x[:prefiks] == 'L' }, 'legary na liście zamówienia')
 
 Testy.grupa('Fundamenty punktowe, podciągi do lica podwalin, podwaliny na śruby (runda 7)')
-pl = plan_pelny(prostokat(0, 0, 7000, 5000), 'izolacja_podlogi' => 100)
+pl = plan_pelny(prostokat(0, 0, 7000, 5000), 'izolacja_podlogi' => 100, 'podciag_poziom' => 'pod')
 f = el(pl, 'F')
 rogi = lambda { |e| o = e[:polozenie][:poczatek]; [o[0], o[1], o[0] + e[:b], o[1] + e[:h]] }
 Testy.rowne(f.length, 12, 'dom 5 × 7 m: 3 × 4 rzędy fundamentów')

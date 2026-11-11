@@ -804,6 +804,8 @@ module UI
 end
 
 MB_YESNO = 4 unless defined?(MB_YESNO)
+MB_YESNOCANCEL = 3 unless defined?(MB_YESNOCANCEL)
+IDCANCEL = 2 unless defined?(IDCANCEL)
 IDYES = 6 unless defined?(IDYES)
 IDNO = 7 unless defined?(IDNO)
 

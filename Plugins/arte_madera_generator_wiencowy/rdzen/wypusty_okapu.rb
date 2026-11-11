@@ -33,13 +33,18 @@ module ArteMadera
 
       # Czy ściana jest okapową: zewnętrzna wzdłuż kalenicy, bez szczytu.
       def okapowa?(w)
-        w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A && w[:szczyt].nil? && w[:taras].nil?
+        return false unless w[:rodzaj] == :zewnetrzna && w[:taras].nil?
+        # Ściana okapowa skrzydła bocznego domu L (rdzen/skrzydla.rb) – także ze szczytem dachu głównego na części długości.
+        return true if w[:okap_boczny]
+        w[:kierunek] == :A && w[:szczyt].nil?
       end
 
       # Czy wieniec wn jest jednym z n górnych wieńców własnych ściany.
       def gorny?(w, wn, n, p)
         return false if n <= 0
         wlasne = Wience.wlasne(w, p)
+        # Ściana ze szczytem na części długości – górne wieńce ściany, nie szczytu.
+        wlasne = Wience.pelna_lista(w[:kierunek], true, p) if w[:szczyt]
         idx = wlasne.index { |k| (k[:z0] - wn[:z0]).abs < 0.01 }
         !idx.nil? && idx >= wlasne.length - n
       end
@@ -85,11 +90,21 @@ module ArteMadera
         uwagi << u unless uwagi.include?(u)
       end
 
-      # Czy na końcu s ściany jest narożnik ze ścianą ze szczytem (nie płaskim).
+      # Czy na końcu s ściany jest narożnik ze ścianą ze szczytem (nie płaskim) – wypukły: w narożniku wklęsłym wypust
+      # wchodziłby do środka domu (uwaga użytkownika, runda 10), zostaje zwykły ostatek.
       def przy_szczycie?(w, s)
+        return false if w[:wklesle] && w[:wklesle][s.abs < 1.0 ? 0 : 1]
         w[:skrzyzowania].any? do |k|
-          k[:typ] == :naroznik && (k[:s] - s).abs < 1.0 && k[:inna][:szczyt] && !k[:inna][:szczyt][:plaski]
+          k[:typ] == :naroznik && (k[:s] - s).abs < 1.0 && k[:inna][:szczyt] && !k[:inna][:szczyt][:plaski] &&
+            Szczyty.w_zakresie?(k[:inna][:szczyt], k_s(k, w))
         end
+      end
+
+      # Miejsce s narożnika k na drugiej ścianie (k[:inna]) – do sprawdzenia, czy jej szczyt sięga narożnika.
+      def k_s(k, w)
+        inna = k[:inna]
+        x = (inna[:skrzyzowania] || []).find { |q| q[:inna].equal?(w) }
+        x ? x[:s] : 0.0
       end
 
       # Węgieł na ścianie okapowej: górne wegly_okap_wience bali wysunięte na zewnątrz do dach_okap od lica ściany, ścięte

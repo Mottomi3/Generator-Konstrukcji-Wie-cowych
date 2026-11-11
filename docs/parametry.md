@@ -142,10 +142,12 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `taras_szczyt_bale` | Szczyt pusty – bale spinające | 1 | 0 … 6 | Pełne bale szczytu nad podciągiem (nad balem, który zamyka się ze ścianami bocznymi) – dolny pas trójkąta. |
 | `taras_wieniec` | Szczyt pusty – wiązar (trójkąt) z przekroju | platwa | `platwa` – płatwi (jak płatwie); `wlasny` – podanego niżej; `brak` – bez wiązara – słupki z przekładek pod płatwiami |  |
 | `taras_wieniec_przekroj` | Wiązar – przekrój (grub. × wys.) | 80x160 mm | szer. × wys. | Grubość wiązara (wzdłuż kalenicy) × wysokość krokwi wiązara (prostopadle do połaci) i belki dolnej. |
-| `taras_wiazar` | Wiązar – rodzaj | slupek | `slupek` – krokwie, belka dolna i słupek pod kalenicą; `zastrzaly` – jak obok + dwa zastrzały ze stopy słupka do krokwi |  |
+| `taras_wiazar` | Wiązar – rodzaj | slupek | `slupek` – krokwie, belka dolna i słupek pod kalenicą; `zastrzaly` – jak obok + dwa zastrzały od stopy słupka do krokwi (45°) |  |
+| `taras_wiazar_gniazdo` | Wiązar – gniazdo płatwi, najmniejsza głębokość | 20 mm | 0 … 100 | O tyle płatew wchodzi w krokiew wiązara przy niższej krawędzi gniazda (przy wyższej głębiej – dno gniazda jest poziome). 0 – płatew tylko dotyka krokwi niższą krawędzią. |
 | `taras_wiazar_podparcie` | Wiązar – na czym stoi | bale | `bale` – na balach frontu (podciąg i bale spinające); `slupy` – na słupach – szczyt bez bali, z przodu sam trójkąt | Na słupach: belka dolna wiązara zamiast bali frontu – leży na słupach frontu od spodu podciągu, między ścianami bocznymi. |
 | `taras_wiazar_slupek` | Wiązar – szerokość słupka | 120 mm | 40 … 400 | W płaszczyźnie frontu; grubość jak wiązar. |
 | `taras_wiazar_zastrzal` | Wiązar – szerokość zastrzału | 100 mm | 40 … 400 |  |
+| `taras_wiazar_zastrzal_kat` | Wiązar – kąt zastrzałów od poziomu | 45 ° | 0 … 80 | Zastrzały rozchodzą się od stopy słupka w górę pod tym kątem do spodu krokwi wiązara. 0 albo kąt nie większy niż kąt dachu – do połowy krokwi. |
 | `taras_wejscie` | Wejście na taras od frontu | srodek | `srodek` – pośrodku; `lewa` – z lewej (patrząc na front z zewnątrz); `prawa` – z prawej (patrząc na front z zewnątrz); `brak` – bez wejścia – balustrada na całym froncie |  |
 | `taras_wejscie_szerokosc` | Wejście – szerokość w świetle słupów | 1200 mm | 600 … 4000 |  |
 | `taras_balustrada_rodzaj` | Balustrada – z czego | przesla | `przesla` – dołożona – bale i przekładki między słupami; `sciany` – z wieńców ścian – ściany boczne ciągle przez taras, zamki w narożnikach frontu |  |
@@ -172,7 +174,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `podciagi` | Podciągi pod legarami | auto | `auto` – gdy wymaga ich legar (najmniej drewna); `tak` – tak – co najwyżej co podany rozstaw; `nie` – nie – legary od podwaliny do podwaliny |  |
 | `podpory_rozstaw_max` | Rozstaw podciągów pod legarami – największy | 0 mm | 0 … 8000 | 0 – automatycznie: tylko tam, gdzie wymaga ich przekrój legara. Z fundamentami punktowymi podciągi leżą w ich liniach. |
 | `podpora_przekroj` | Podciąg pod legarami (podpora pośrednia) | 100x150 mm | szer. × wys. |  |
-| `podciag_poziom` | Podciąg – poziom | pod | `pod` – obniżony – pod podwalinami, legary w całości na nim; `rowno` – na równo z podwaliną – między podwalinami, legary dzielone na podciągu |  |
+| `podciag_poziom` | Podciąg – poziom | rowno | `rowno` – na wysokości podwalin – między podwalinami, legary dzielone na podciągu; `pod` – obniżony – pod podwalinami, legary w całości na nim |  |
 | `fundamenty` | Fundamenty punktowe | tak | `tak` – tak; `nie` – nie |  |
 | `fundament_ksztalt` | Fundament punktowy – kształt w rzucie | kwadrat | `kwadrat` – prostokątny – wymiary niżej; `okragly` – okrągły – średnica niżej (np. bloczek w rurze) |  |
 | `fundament_przekroj` | Fundament punktowy – wymiary w rzucie | 400x400 mm | szer. × wys. |  |

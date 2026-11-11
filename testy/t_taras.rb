@@ -165,7 +165,7 @@ Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('Taras: tylko przy obrysie 
 pl = plan_pelny(prostokat(0, 0, 5000, 4000))
 Testy.sprawdz(pl[:sciany].none? { |w| w[:taras] } && slupy(pl).empty? && pl[:obrys].map { |x, _y| x }.max == 5000.0, 'domyślnie bez tarasu')
 
-Testy.grupa('Szczyt pusty – wiązar: krokwie z gniazdami, belka dolna, słupek, zastrzały, lico z frontem (runda 9)')
+Testy.grupa('Szczyt pusty – wiązar pod płatwiami: ciągłe krokwie z gniazdami, belka dolna, słupek, zastrzały 45°, lico z frontem (rundy 9 i 10)')
 d = { segmenty: prostokat(0, 0, 4000, 4000), otwory: [],
       parametry: { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20, 'taras_szczyt' => 'pusty' } }
 problemy, pl = LosoweDomy.sprawdz(d)
@@ -182,16 +182,38 @@ Testy.sprawdz(zakres.all? { |lo, hi| front[:taras][:znak] < 0 ? (lo - u_lico).ab
 z_t = front[:bale].map { |b| b[:z0] + b[:h] }.max
 Testy.rowne(wt.map { |e| e[:polozenie][:poczatek][2] }.min, z_t, 'belka dolna leży na balach frontu')
 gora = wt.map { |e| e[:polozenie][:poczatek][2] + e[:h] }
-zk = Dach.linia_szczytu(front[:szczyt], (front[:szczyt][:v_a] + front[:szczyt][:v_b]) / 2.0, pl[:parametry])
-Testy.rowne([gora.count { |z| zk - z > -0.01 && zk - z < 30.0 }, wt.count { |e| e[:przekroj].length > 4 }], [2, 4],
-            'krokwie wiązara do linii szczytu w kalenicy, człony z gniazdami i skosami')
+pp = pl[:parametry]
+zk = Dach.linia_szczytu(front[:szczyt], (front[:szczyt][:v_a] + front[:szczyt][:v_b]) / 2.0, pp)
+# Runda 10: wiązar podpiera płatwie od spodu – wierzch krokwi wiązara pod linią dachu, krokwie w jednym kawałku.
+nizej = TarasWiazar.pod_platwiami(front[:szczyt], pp)
+Testy.sprawdz(nizej > 100.0 && gora.max <= zk - nizej + 0.01 && gora.max > zk - nizej - 80.0,
+              "wierzch wiązara #{nizej.round} mm pod linią dachu w kalenicy – pod płatwiami (gniazdo płatwi kalenicowej w wierzchołku)")
+Testy.sprawdz(wt.count { |e| e[:przekroj].length >= 6 } >= 2, 'krokwie wiązara ciągłe – każda w jednym kawałku z gniazdami płatwi w wierzchu')
+tgk = Dach.tg(pp)
+vk_w = (front[:szczyt][:v_a] + front[:szczyt][:v_b]) / 2.0
+glebokosci = Dach.platwie(front[:szczyt], pp).map do |q|
+  b2 = ZamekPlatwi.szerokosc_w_scianie(q[:b], pp) / 2.0
+  v_n = q[:v] <= vk_w ? q[:v] - b2 : q[:v] + b2
+  (zk - nizej - tgk * (v_n - vk_w).abs) - ZamekPlatwi.spod_w_scianie(q[:z_spod], pp)
+end
+Testy.sprawdz(glebokosci.min > 20.0 - 0.01 && glebokosci.min < 20.01 && glebokosci.max < 80.0,
+              "każda płatew leży w gnieździe krokwi wiązara: głębokość przy niższej krawędzi #{glebokosci.map(&:round).inspect} (najmniej 20)")
 Testy.rowne(kolizje_elementow(pl, 'Wt', 'P'), 0, 'płatwie w gniazdach wiązara – bez kolizji')
 pw = pl[:elementy].select { |e| e[:prefiks] == 'P' }
 Testy.sprawdz(pw.all? { |e| (e[:wreby] || []).any? { |x0, x1| x1 - x0 >= 81.99 } }, 'płatwie z wrębem na grubości wiązara (80 + 2 × luz)')
 _pr, pl2 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wieniec' => 'wlasny', 'taras_wieniec_przekroj' => '100x120')))
 Testy.sprawdz(pl2[:elementy].select { |e| e[:prefiks] == 'Wt' }.all? { |e| e[:dl] == 100.0 }, 'przekrój podany – 100 grubości')
-pr3, pl3 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar' => 'zastrzaly')))
-Testy.rowne([pr3, pl3[:elementy].count { |e| e[:prefiks] == 'Wt' }], [[], 6], 'z zastrzałami – 6 członów, bez problemów')
+d35 = d.merge(segmenty: prostokat(0, 0, 5000, 4000), parametry: d[:parametry].merge('taras_wiazar' => 'zastrzaly', 'dach_kat' => 35))
+pr3, pl3 = LosoweDomy.sprawdz(d35)
+wt3 = pl3[:elementy].select { |e| e[:prefiks] == 'Wt' }
+Testy.rowne([pr3, wt3.length], [[], 6], 'z zastrzałami (dom 5 m, 35°) – 6 członów, bez problemów')
+# Zastrzały pod kątem 45° od stopy słupka (uwaga użytkownika, runda 10): człon o tej samej szerokości i wysokości minus grubość.
+zas = wt3.sort_by { |e| e[:b] }.first(3).select { |e| e[:h] > 150.0 && (e[:b] - e[:h]).abs < 160.0 }
+Testy.sprawdz(zas.length >= 2, "dwa zastrzały pod kątem 45° (rozpiętość w poziomie ≈ w pionie: #{wt3.map { |e| [e[:b].round, e[:h].round] }.inspect})")
+pr3b, pl3b = LosoweDomy.sprawdz(d35.merge(parametry: d35[:parametry].merge('taras_wiazar_zastrzal_kat' => 0)))
+Testy.rowne([pr3b, pl3b[:elementy].count { |e| e[:prefiks] == 'Wt' }], [[], 6], 'kąt 0 – zastrzały do połowy krokwi, bez problemów')
+pr3c, pl3c = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar' => 'zastrzaly')))
+Testy.rowne([pr3c, pl3c[:elementy].count { |e| e[:prefiks] == 'Wt' }], [[], 4], 'dom 4 m, 20° – za mało miejsca na zastrzały, wiązar bez nich')
 pr4, pl4 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar_podparcie' => 'slupy', 'taras_wiazar' => 'zastrzaly')))
 Testy.rowne(pr4, [], 'wiązar na słupach – bez problemów')
 f4 = pl4[:sciany].find { |w| Taras.front?(w) }

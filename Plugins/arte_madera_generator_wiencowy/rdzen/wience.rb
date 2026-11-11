@@ -24,21 +24,34 @@ module ArteMadera
       # szczycie – także w szczyt, dalej ogranicza go linia dachu w rdzen/bale.rb).
       def dla_sciany(w, p)
         z_szczytu = w[:szczyt] ? w[:szczyt][:z_max] : nil
-        z_szczytu = w[:gospodarz][:szczyt][:z_max] if w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt]
+        sg = w[:rodzaj] == :kontrfor ? szczyt_gospodarza(w) : nil
+        z_szczytu = sg[:z_max] if sg
         lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, z_szczytu)
         lista = z_polbalem(lista, w[:taras][:z_polbal]) if w[:taras] && w[:taras][:z_polbal]
         return nizsza_lista(w, lista, p) if w[:nizsza] && w[:rodzaj] == :dzialowa
         return lista unless w[:rodzaj] == :kontrfor
         gosp = wlasne(w[:gospodarz], p)
+        # Węgieł na ścianie ze szczytem na części długości, poza szczytem (dom L) – do góry ściany bez wieńców szczytu.
+        gosp = pelna_lista(w[:gospodarz][:kierunek], w[:gospodarz][:rodzaj] == :zewnetrzna, p) if sg.nil? && w[:gospodarz][:szczyt]
         gora = gosp.last[:z0] + gosp.last[:h]
         wybrane = lista.select { |k| k[:z0] + k[:h] <= gora + 0.01 }
         # Ściana bez szczytu: jeszcze wieniec nad górą gospodarza (na jego górnym balu) – pod dachem ścięty linią dachu,
         # podpiera płatwie i krokwie (rdzen/bale.rb#kontrfor_obecny? decyduje, czy powstaje; runda 8).
-        dalsze = w[:gospodarz][:szczyt].nil? ? pelna_lista(w[:kierunek], false, p, gora + Parametry.krycie(p)) : []
+        dalsze = sg.nil? ? pelna_lista(w[:kierunek], false, p, gora + Parametry.krycie(p)) : []
         nad = dalsze.find { |k| k[:z0] < gora - 0.01 && k[:z0] + k[:h] > gora + 0.01 }
         wybrane << nad.merge(nad_gospodarzem: true) if nad
         wybrane.each_with_index { |k, i| k[:nr] = i + 1 }
         wybrane
+      end
+
+      # Szczyt gospodarza w miejscu węgła kf: nil, gdy gospodarz nie ma szczytu albo węgieł stoi poza zakresem szczytu
+      # na części ściany (dom L – tam ściana jest okapową skrzydła bocznego, rdzen/skrzydla.rb).
+      def szczyt_gospodarza(kf)
+        g = kf[:gospodarz]
+        sz = g[:szczyt]
+        return sz if sz.nil? || sz[:s_zakres].nil?
+        s = (kf[:a][0] - g[:a][0]) * g[:kier][0] + (kf[:a][1] - g[:a][1]) * g[:kier][1]
+        s >= sz[:s_zakres][0] && s <= sz[:s_zakres][1] ? sz : nil
       end
 
       # Wieńce z półbalem na poziomie z (front tarasu z podciągiem): wieniec, który przechodzi przez z, zaczyna się na z
