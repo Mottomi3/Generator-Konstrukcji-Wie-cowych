@@ -30,7 +30,7 @@ module ArteMadera
         { klucz: 'dach_rodzaj', podstawowy: true, domyslna: 'dwuspadowy', etykieta: 'Dach', rodzaj: :wybor, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
           wybory: [['dwuspadowy', 'dwuspadowy – dwa szczyty, kalenica w środku'],
                    ['jednospadowy', 'jednospadowy – ściana niska i wysoka, szczyty skośne']],
-          podpowiedz: 'Jednospadowy – dom prostokątny. Inne dachy (kopertowy, wielospadowy, obrys L) zrób w aplikacji do dachów ' \
+          podpowiedz: 'Jednospadowy – dom prostokątny. Dom w kształcie L dostaje dwa dachy dwuspadowe z koszem. Inne dachy (kopertowy, wielospadowy) zrób w aplikacji do dachów ' \
                       '(KROK 1 z obrysu).' },
         { klucz: 'dach_spadek', podstawowy: true, domyslna: 'min', etykieta: 'Jednospadowy – spadek w stronę', rodzaj: :wybor,
           sekcja: 'szczyty', gdy: { 'dach_rodzaj' => ['jednospadowy'] }, wybory: [['min', 'dolnej albo lewej (rysunek z góry)'], ['max', 'górnej albo prawej (rysunek z góry)']],
@@ -50,7 +50,7 @@ module ArteMadera
           rodzaj: :wybor, sekcja: 'szczyty',
           wybory: [['aplikacja', 'aplikacja do dachów (KROK 2: krokwie, poszycie, kontrola)'],
                    ['generator', 'generator (krokwie bez kontroli, bez poszycia)']],
-          podpowiedz: 'Dom prostokątny. Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu ' \
+          podpowiedz: 'Dom prostokątny i w kształcie L (dom L – tylko aplikacja). Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu ' \
                       'płatwi generatora i jego płatwie jako podpory: z krokwiami – KROK 2 liczy krokwie (przęsła między ' \
                       'płatwiami), poszycie, łaty i nośność; same płatwie – poszycie wprost na płatwiach, wzdłuż spadku, styki ' \
                       'na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji.' },
@@ -133,7 +133,7 @@ module ArteMadera
           podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; typ 100: najkrótszy ' \
                       'kawałek 104).' },
         { klucz: 'dach_elementy', domyslna: 'tak', etykieta: 'Belki dachu w modelu (płatwie, krokwie)', rodzaj: :wybor,
-          sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Dla obrysu prostokątnego.' },
+          sekcja: 'szczyty', wybory: TAK_NIE, podpowiedz: 'Dla obrysu prostokątnego i w kształcie L (dwa dachy z koszem).' },
         { klucz: 'dach_okap', podstawowy: true, domyslna: 500.0, etykieta: 'Okap – wysunięcie krokwi za ścianę', jednostka: 'mm', min: 0.0,
           max: 1500.0, rodzaj: :liczba, sekcja: 'szczyty', podpowiedz: 'W poziomie, od lica ściany okapowej.' },
         { klucz: 'dach_okap_szczyt', podstawowy: true, domyslna: 500.0, etykieta: 'Wysunięcie płatwi za szczyt', jednostka: 'mm', min: 0.0,
