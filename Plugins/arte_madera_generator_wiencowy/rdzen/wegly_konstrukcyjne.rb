@@ -3,15 +3,19 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/wegly_konstrukcyjne.rb
 # Zadanie: węgły dostawiane automatycznie tam, gdzie wymaga ich konstrukcja – pod płatwiami przechodzącymi przez szczyt (słupek węgła do spodu płatwi, płatew na nim leży) i na wolnym końcu niepełnej ściany (bez węgła koniec jest wiotki).
-# Tematy: węgieł pod płatwią, płatew na węgle, węgieł na wolnym końcu, niepełna ściana, wolny koniec działowej, węgły konstrukcyjne
+# Tematy: węgieł pod płatwią, słupek z kontrfor pod płatwią, węgieł tylko pod kalenicową, płatew na węgle, węgieł w osi płatwi, węgieł na wolnym końcu, niepełna ściana, wolny koniec działowej, węgły konstrukcyjne
 # Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/usztywnienie.rb (miejsce_ok?), rdzen/szczyty.rb (s ↔ v), rdzen/dach.rb (płatwie), rdzen/taras.rb (front i ściana domu przy tarasie), rdzen/podbitka.rb (deski pod płatwiami)
 # Używają: rdzen/projekt.rb (po węgłach z tabeli, przed stykami i węgłami usztywniającymi), rdzen/bale.rb (górny bal węgła pod płatwią – kf[:pod_platwia])
 #
-# Pod płatwią (wegly_pod_platwiami = zewnetrzne | wszystkie, runda 9 – wymóg użytkownika): na ścianie ze szczytem (dom
+# Pod płatwią (wegly_pod_platwiami = zewnetrzne | wszystkie | nie, runda 9 – wymóg użytkownika): na ścianie ze szczytem (dom
 # prostokątny) w osi każdej płatwi węgieł wzdłuż płatwi; wieńce węgła dochodzą do spodu płatwi (gniazdo płatwi w węgle
 # z rdzen/szczyty.rb ścina górny bal; podbitka pod płatwiami – pod deskami: kf[:pod_platwia][:z_wegla]), węgieł nie
 # powstaje przy narożniku i skrzyżowaniu (np. działowa pod kalenicą), przy otworze albo gdy ściana ma węgły ręczne. Zewnętrzne – szczyty zewnętrzne i ściana domu przy tarasie; wszystkie –
 # także szczyty na działowych. Front tarasu – bez (ma trójkątny wieniec / wiązar).
+# Które płatwie (wegly_pod_platwiami_ktore, runda 11 – w małych domkach słupki pod każdą płatwią są zbędne): wszystkie
+# albo tylko kalenicowa. Węgieł, który już stoi w osi płatwi (na środku ściany, z tabeli, narysowany, ręczny), staje się
+# węgłem pod płatwią – jego bale dochodzą do spodu płatwi i płatew na nim leży (wcześniej kończył się pod połacią,
+# a płatew kalenicowa wisiała nad nim bez ostatniego bala).
 # Wolny koniec (wegly_wolny_koniec): działowa, której koniec nie dochodzi do innej ściany, a wolny odcinek od ostatniego
 # skrzyżowania jest dłuższy niż wegly_wolny_koniec_min – węgieł przy końcu, oś ostatek + pół grubości od końca (bale
 # ściany kończą się ostatkiem za węgłem jak w narożniku).
@@ -48,6 +52,17 @@ module ArteMadera
         tryb == 'wszystkie' && w[:rodzaj] == :dzialowa
       end
 
+      # Czy pod płatwią pl stawia się węgieł (wegly_pod_platwiami_ktore: wszystkie płatwie albo tylko kalenicowa).
+      def platew_z_weglem?(pl, p)
+        p['wegly_pod_platwiami_ktore'].to_s != 'kalenicowa' || pl[:rodzaj] == 'kalenicowa'
+      end
+
+      # Węgieł ściany w stojący już w osi płatwi (miejsce s) albo nil.
+      def wegiel_w_osi(w, s)
+        k = w[:skrzyzowania].find { |x| x[:inna][:rodzaj] == :kontrfor && (x[:s] - s).abs < 0.5 }
+        k ? k[:inna] : nil
+      end
+
       # Węgły w osiach płatwi na ścianach ze szczytem (dom prostokątny).
       def pod_platwiami(sciany, p, os_kalenicy, dom, uwagi)
         return if dom.nil? || !Parametry.tak?(p, 'szczyty')
@@ -55,11 +70,18 @@ module ArteMadera
         o = p['ostatek'].to_f
         min = p['min_odstep_skrzyzowan'].to_f
         sciany.select { |w| w[:rodzaj] != :kontrfor && sciana_pod_platwiami?(w, p) }.each do |w|
-          next if w[:wegly_reczne]
           # Płatwie dachu, do którego należy szczyt ściany (dom L – dach główny albo skrzydło boczne).
           d = Skrzydla.domy(dom).find { |x| x[:iv] == w[:szczyt][:iv] } || dom
           Dach.platwie(Dach.geo(d), p).each do |pl|
+            next unless platew_z_weglem?(pl, p)
             s = Szczyty.s_z_v(w, pl[:v])
+            # Węgieł już stoi w osi płatwi (środek ściany, tabela, rysunek, ręczny) – podpiera ją jak węgieł pod płatwią.
+            jest = wegiel_w_osi(w, s)
+            if jest
+              jest[:pod_platwia] = pl.merge(z_wegla: z_wegla(jest, pl, p, d))
+              next
+            end
+            next if w[:wegly_reczne]
             # Płatew przy narożniku albo przy skrzyżowaniu (działowa, węgieł) – podparta ścianą obok.
             next if s < w[:s_od] + t + o + min || s > w[:s_do] - t - o - min
             next if w[:skrzyzowania].any? { |k| (k[:s] - s).abs < min - 0.01 }

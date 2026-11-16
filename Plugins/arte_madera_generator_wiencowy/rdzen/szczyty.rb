@@ -275,6 +275,7 @@ module ArteMadera
           Skrzydla.domy(dom).each do |d|
             platwie = Dach.platwie(Dach.geo(d), p)
             d[:przejscia] = []
+            d[:podparcia] = []
             sciany.each { |w| gniazda_sciany(w, platwie, d, p) }
           end
           return
@@ -306,13 +307,17 @@ module ArteMadera
           if w_poprzek
             next if zas && (w[:a][1 - iv] < zas[0] - t / 2.0 + 0.5 || w[:a][1 - iv] > zas[1] + t / 2.0 - 0.5)
             v0 = w[:a][iv]
-            b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
+            # Front tarasu z zamkiem płatwi tylko od spodu (taras_platwa_zamek) – gniazdo na pełną szerokość płatwi.
+            bok = ZamekPlatwi.bok_w_scianie(w, p)
+            b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p, bok) / 2.0
             # Z zamkiem bal dochodzi do dna wrębu z boków (bez luzu gniazda) – ściana zablokowana w płatwi.
             lz = ZamekPlatwi.wlaczone?(p) ? 0.0 : luz
             s = [(pl[:v] - b2 - lz - v0) * w[:kier][iv], (pl[:v] + b2 + lz - v0) * w[:kier][iv]].sort
             next if s[1] <= w[:s_od] + 0.5 || s[0] >= w[:s_do] - 0.5
             z0 = ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
-            dom[:przejscia] << { v: pl[:v], u: w[:a][1 - iv] }
+            przejscie = { v: pl[:v], u: w[:a][1 - iv] }
+            przejscie[:bok] = bok if ZamekPlatwi.tylko_spod?(w, p)
+            dom[:przejscia] << przejscie
           else
             next unless (w[:a][iv] - pl[:v]).abs < t / 2.0 + pl[:b] / 2.0 - 0.5
             s = [w[:s_od] - 1.0, w[:s_do] + 1.0]
@@ -325,6 +330,8 @@ module ArteMadera
               gniazda_wegla(w, pl, p)
               next
             end
+            # Ściana wzdłuż płatwi niesie ją na całej swojej długości (rdzen/statyka_dachu.rb – to nie jest przęsło).
+            dom[:podparcia] << { v: pl[:v], u: [w[:a][1 - iv], w[:b][1 - iv]].sort } if w[:rodzaj] != :kontrfor && dom[:podparcia]
           end
           dodaj_gniazdo(w, s, pl, z0)
         end

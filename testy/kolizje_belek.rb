@@ -63,8 +63,9 @@ end
 # Czy punkt lokalny belki le leży poza przekrojem jej wrębu (zamek płatwi) – w wrębie belka jest węższa i wyżej od spodu.
 def w_wrebie?(e, le)
   w = e[:wrab]
-  (e[:wreby] || []).any? do |x0, x1|
-    le[0] > x0 - 0.5 && le[0] < x1 + 0.5 && (le[1] < w[:bok] + 0.5 || le[1] > e[:b] - w[:bok] - 0.5 || le[2] < w[:dol] + 0.5)
+  (e[:wreby] || []).any? do |x0, x1, bok|
+    bok ||= w[:bok]
+    le[0] > x0 - 0.5 && le[0] < x1 + 0.5 && (le[1] < bok + 0.5 || le[1] > e[:b] - bok - 0.5 || le[2] < w[:dol] + 0.5)
   end
 end
 
@@ -95,9 +96,8 @@ def w_belce?(e, q, m = 0.5)
   return false unless le[0] > m && le[0] < e[:dl] - m
   if e[:przekroj]
     przekroj = e[:przekroj]
-    if (e[:wreby] || []).any? { |x0, x1| le[0] > x0 - m && le[0] < x1 + m }
-      przekroj = g::ZamekPlatwi.przekroj_wrebu(przekroj, e[:b], e[:wrab])
-    end
+    wr = (e[:wreby] || []).find { |x0, x1| le[0] > x0 - m && le[0] < x1 + m }
+    przekroj = g::ZamekPlatwi.przekroj_wrebu(przekroj, e[:b], g::ZamekPlatwi.wrab_odcinka(e[:wrab], wr[2])) if wr
     return w_wielokacie?(przekroj, le[1], le[2], m)
   end
   return false unless le[1] > m && le[1] < e[:b] - m && le[2] > m && le[2] < e[:h] - m

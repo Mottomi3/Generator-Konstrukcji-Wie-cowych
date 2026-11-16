@@ -5,7 +5,7 @@
 # Zadanie: sprawdzenie belki drewnianej swobodnie podpartej (zginanie, ścinanie, ugięcie końcowe), największa rozpiętość, dobór przekroju z katalogu.
 # Tematy: statyka, legar – sprawdzenie, nośność belki, ugięcie, pełzanie, klasa drewna, C24, dobór przekroju, rozpiętość legara, izolacja a wysokość legara
 # Zależy od: rdzen/parametry.rb
-# Używają: rdzen/podloga.rb
+# Używają: rdzen/podloga.rb, rdzen/statyka_dachu.rb, rdzen/statyka_wiazara.rb
 #
 # Uproszczenie wg PN-EN 1995-1-1 (klasa użytkowania 1, obciążenie średniotrwałe): k_mod 0,8, k_def 0,6, ψ2 0,3 (kat. A),
 # γM 1,3 (lite) / 1,25 (klejone), kombinacja 1,35 G + 1,5 Q, k_cr 0,67, k_h dla niskich przekrojów.
@@ -31,9 +31,10 @@ module ArteMadera
 
       module_function
 
-      # Sprawdzenie belki: l [mm], b × h [mm], obciążenia stałe g i użytkowe q [kN/m] bez ciężaru własnego, granica L/n.
+      # Sprawdzenie belki: l [mm], b × h [mm], obciążenia stałe g i użytkowe q [kN/m] bez ciężaru własnego, granica L/n;
+      # psi2 – część obciążenia zmiennego działająca długotrwale (podłoga 0,3; śnieg na dachu 0).
       # Wynik: { wyk_m:, wyk_v:, u:, l_przez_u:, nosnosc_ok:, ugiecie_ok:, ok: }.
-      def belka(l, b, h, g, q, klasa, granica)
+      def belka(l, b, h, g, q, klasa, granica, psi2 = PSI2)
         k = KLASY[klasa] || KLASY['C24']
         gc = g + k[:rho] * 9.81e-9 * b * h
         qd = 1.35 * gc + 1.5 * q
@@ -45,7 +46,7 @@ module ArteMadera
         wyk_m = m / (b * h * h / 6.0) / fmd
         wyk_v = 1.5 * v / (KCR * b * h) / fvd
         ei = k[:e] * b * h**3 / 12.0
-        u = 5.0 * l**4 / (384.0 * ei) * (gc * (1.0 + KDEF) + q * (1.0 + PSI2 * KDEF))
+        u = 5.0 * l**4 / (384.0 * ei) * (gc * (1.0 + KDEF) + q * (1.0 + psi2 * KDEF))
         lu = u > 0 ? l / u : 1.0e9
         nos = [wyk_m, wyk_v].max <= 1.0
         ug = lu >= granica - 1e-6

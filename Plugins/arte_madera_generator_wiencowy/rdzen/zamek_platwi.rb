@@ -3,14 +3,16 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/zamek_platwi.rb
 # Zadanie: zamki w płatwiach – wręby płatwi w ścianach, przez które przechodzi (z boków i od spodu), żeby płatwie trzymały szczyty na miejscu; bryła belki z wrębami, objętość, podpis.
-# Tematy: zamek płatwi, wrąb płatwi, płatew trzyma szczyt, gniazdo płatwi węższe, przekrój w wrębie, przycięcie wielokąta, siatka belki z wrębami
+# Tematy: zamek płatwi, wrąb płatwi, płatew trzyma szczyt, gniazdo płatwi węższe, przekrój w wrębie, przycięcie wielokąta, siatka belki z wrębami, zamek płatwi tylko od spodu, zamek płatwi nad szczytem tarasu
 # Zależy od: rdzen/parametry.rb, rdzen/pryzmat.rb (pole przekroju, podpis), rdzen/siatka.rb (punkty T, scalanie ścian)
 # Używają: rdzen/szczyty.rb (gniazdo dopasowane do wrębu, przejścia płatwi przez ściany), rdzen/dach.rb (wręby płatwi), rdzen/elementy.rb (pozycje), rdzen/projekt.rb (siatka i objętość)
 #
 # Płatew przechodzi przez ścianę w poprzek (szczyt, działowa, węgieł): na grubości ściany + luz (platwa_zamek_luz z każdej
 # strony) jest zwężona o platwa_zamek_bok z każdego boku i podcięta od spodu o platwa_zamek_dol. Gniazdo w ścianie ma
 # szerokość wrębu (bez luzu gniazda – bal dochodzi do dna wrębu, wymóg użytkownika z rundy 8) i dno na spodzie wrębu – barki płatwi po obu stronach ściany nie dają szczytowi
-# odjechać wzdłuż płatwi. Wręby belki: e[:wreby] = [[x0, x1]] wzdłuż belki, e[:wrab] = { bok:, dol: }.
+# odjechać wzdłuż płatwi. Wręby belki: e[:wreby] = [[x0, x1]] wzdłuż belki, e[:wrab] = { bok:, dol: }; wrąb z własną
+# głębokością boczną – [x0, x1, bok] (zamek tylko od spodu: bok = 0 – płatew nad szczytem tarasu, taras_platwa_zamek =
+# spod, wymóg użytkownika z rundy 11: płatew leży w gnieździe trójkąta pełną szerokością, boczne wręby zbędne).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -34,9 +36,27 @@ module ArteMadera
         { bok: p['platwa_zamek_bok'].to_f, dol: p['platwa_zamek_dol'].to_f }
       end
 
-      # Szerokość płatwi w ścianie (w wrębie) [mm].
-      def szerokosc_w_scianie(b, p)
-        [b - 2.0 * wrab(p)[:bok], 1.0].max
+      # Szerokość płatwi w ścianie (w wrębie) [mm]; bok – głębokość wrębu bocznego tej ściany (nil – z parametrów).
+      def szerokosc_w_scianie(b, p, bok = nil)
+        [b - 2.0 * (bok || wrab(p)[:bok]), 1.0].max
+      end
+
+      # Czy płatew w ścianie w ma zamek tylko od spodu (bez wrębów bocznych): front tarasu z podciągiem – szczyt albo
+      # wiązar nad tarasem – przy taras_platwa_zamek = spod.
+      def tylko_spod?(w, p)
+        tr = w.nil? ? nil : w[:taras]
+        return false unless wlaczone?(p) && tr && tr[:rola] == :front && tr[:wariant] == 'podciag'
+        p['taras_platwa_zamek'] == 'spod'
+      end
+
+      # Głębokość wrębu bocznego płatwi w ścianie w [mm] (0 – zamek tylko od spodu albo bez zamków).
+      def bok_w_scianie(w, p)
+        tylko_spod?(w, p) ? 0.0 : wrab(p)[:bok]
+      end
+
+      # Wymiary wrębu jednego odcinka: w – wrąb belki { bok:, dol: }, bok – własna głębokość boczna odcinka albo nil.
+      def wrab_odcinka(w, bok)
+        bok.nil? ? w : w.merge(bok: bok)
       end
 
       # Spód płatwi w ścianie (dno gniazda) [mm].
@@ -45,20 +65,26 @@ module ArteMadera
       end
 
       # Wręby belki o długości dl z osi ścian u_scian (współrzędna wzdłuż belki, od jej początku) i grubości t: [[x0, x1]]
-      # posortowane, nachodzące scalone, przycięte do belki.
-      def wreby(dl, u_scian, t, p)
+      # posortowane, nachodzące scalone, przycięte do belki; bok – własna głębokość boczna tych wrębów ([x0, x1, bok]).
+      def wreby(dl, u_scian, t, p, bok = nil)
         return [] unless wlaczone?(p)
         pol = t / 2.0 + p['platwa_zamek_luz'].to_f
-        scal(u_scian.map { |u| [[u - pol, 0.0].max, [u + pol, dl].min] }.select { |a, b| b - a > 1.0 })
+        lista = u_scian.map { |u| [[u - pol, 0.0].max, [u + pol, dl].min] }.select { |a, b| b - a > 1.0 }
+        scal(bok.nil? ? lista : lista.map { |a, b| [a, b, bok] })
       end
 
-      # Wręby posortowane, nachodzące na siebie scalone w jeden.
+      # Wręby posortowane, nachodzące na siebie scalone w jeden; przy różnej głębokości bocznej zostaje głębsza (wrąb
+      # bez własnej głębokości = pełny wrąb boczny belki).
       def scal(lista)
-        lista.sort.each_with_object([]) do |(a, b), acc|
+        lista.sort_by { |x| [x[0], x[1]] }.each_with_object([]) do |(a, b, bok), acc|
           if !acc.empty? && a <= acc.last[1] + EPS
-            acc.last[1] = [acc.last[1], b].max
+            ost = acc.last
+            ost[1] = [ost[1], b].max
+            if ost.length > 2
+              bok.nil? ? ost.pop : ost[2] = [ost[2], bok].max
+            end
           else
-            acc << [a, b]
+            acc << (bok.nil? ? [a, b] : [a, b, bok])
           end
         end
       end
@@ -95,14 +121,15 @@ module ArteMadera
         wynik
       end
 
-      # Odcinki belki: [[x0, x1, przekrój]] – przekrój pełny poza wrębami, przekrój wrębu w nich.
+      # Odcinki belki: [[x0, x1, przekrój, wrąb albo nil]] – przekrój pełny poza wrębami, przekrój wrębu w nich (z jego
+      # wymiarami – wrąb może mieć własną głębokość boczną).
       def odcinki(dl, przekroj, b, wreby, w)
-        wn = przekroj_wrebu(przekroj, b, w)
         wynik = []
         x = 0.0
-        wreby.each do |a, c|
+        wreby.each do |a, c, bok|
+          wo = wrab_odcinka(w, bok)
           wynik << [x, a, przekroj] if a - x > EPS
-          wynik << [a, c, wn]
+          wynik << [a, c, przekroj_wrebu(przekroj, b, wo), wo]
           x = c
         end
         wynik << [x, dl, przekroj] if dl - x > EPS
@@ -117,12 +144,13 @@ module ArteMadera
       # Podpis wrębów (do rozpoznania identycznych belek).
       def podpis(wreby, w)
         return '' if wreby.empty?
-        format('W%.1f/%.1f:', w[:bok], w[:dol]) + wreby.map { |a, c| format('%.1f-%.1f', a, c) }.join(',')
+        format('W%.1f/%.1f:', w[:bok], w[:dol]) +
+          wreby.map { |a, c, bok| format('%.1f-%.1f', a, c) + (bok.nil? ? '' : format('b%.1f', bok)) }.join(',')
       end
 
       # Wręby belki obróconej o 180° (x → dl − x).
       def obrocone(dl, wreby)
-        wreby.map { |a, c| [dl - c, dl - a] }.reverse
+        wreby.map { |a, c, bok| bok.nil? ? [dl - c, dl - a] : [dl - c, dl - a, bok] }.reverse
       end
 
       # Siatka belki z wrębami: boki każdego odcinka, czoła na końcach i barki wrębów (przekrój pełny bez przekroju wrębu –
@@ -142,9 +170,9 @@ module ArteMadera
         end
         f << { n: [-1.0, 0.0, 0.0], p: lista.first[2].reverse.map { |y, z| [0.0, y, z] } }
         f << { n: [1.0, 0.0, 0.0], p: lista.last[2].map { |y, z| [dl, y, z] } }
-        lista.each_cons(2) do |(_a0, a1, qa), (_b0, _b1, qb)|
-          pelny, kier = Pryzmat.pole(qa) > Pryzmat.pole(qb) ? [qa, 1.0] : [qb, -1.0]
-          barki(pelny, b, w).each do |pas|
+        lista.each_cons(2) do |(_a0, a1, qa, wa), (_b0, _b1, qb, wb)|
+          pelny, kier, ww = Pryzmat.pole(qa) > Pryzmat.pole(qb) ? [qa, 1.0, wb] : [qb, -1.0, wa]
+          barki(pelny, b, ww || w).each do |pas|
             pts = kier > 0 ? pas.map { |y, z| [a1, y, z] } : pas.reverse.map { |y, z| [a1, y, z] }
             f << { n: [kier, 0.0, 0.0], p: pts } if pts.length >= 3 && Pryzmat.pole(pas) > EPS
           end

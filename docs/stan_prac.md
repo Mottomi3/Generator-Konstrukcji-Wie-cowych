@@ -1,9 +1,37 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 10, kompilacja 10 (2026-11-11), wersja 1.0.0. Poprzednio: runda 9, kompilacja 9 (2026-11-03). Testy: `bash testy/uruchom.sh` – 24 zestawy (17 także
-na Ruby 2.7.8, jak w SketchUpie 2023; sprawdzenie z prawdziwą aplikacją do dachów 3.7.0 – także dom L), 1493 sprawdzeń, FAILURES 0; poza zestawem:
-760 losowych domów (ziarna 1–540 i 6001–6240 z nowościami rundy 10; co czwarty dom L z dwoma dachami) – bez problemów poza czterema drobiazgami sprzed
-rundy 10 (§8). Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–10) + kopia `repozytorium_r10.bundle` na dysku.
+Stan na: runda 11, kompilacja 11 (2026-11-16), wersja 1.0.0. Poprzednio: runda 10, kompilacja 10 (2026-11-11). Testy: `bash testy/uruchom.sh` – 24 zestawy
+(w tym nowy `t_statyka_dachu`; sprawdzenie z prawdziwą aplikacją do dachów 3.9.1 – także dom L), 1567 sprawdzeń, FAILURES 0; zestaw „Ruby 2.7.8” w tej
+rundzie pominięty (brak Rubiego 2.7 i sieci do jego zbudowania w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 250 losowych domów
+z nowościami rundy 11 (ziarna 7001–7120, 6001–6070, 5001–5060) – bez nowych problemów (dwa ziarna z błędem sprzed rundy 11, §8).
+Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–11) + kopia `repozytorium_r11.bundle` na dysku.
+
+## 1e. Nowe w kompilacji 11 (uwagi z 2026-11-16 16:08 i 20:44)
+
+- **Słupki z kontrfor (węgły) pod płatwiami – do wyboru** (`rdzen/wegly_konstrukcyjne.rb`): pole przemianowane na
+  „Słupki z kontrfor (węgły) pod płatwiami” (nie / szczyty zewnętrzne / wszystkie), nowe „Słupki pod płatwiami – pod
+  którymi” (pod każdą płatwią / tylko pod kalenicową). Sekcja nazywa się teraz „Węgły (kontrfory) 244”.
+- **Płatew kalenicowa na ostatniej kontrforze**: węgieł, który już stoi w osi płatwi (np. automatyczny na środku ściany
+  szczytowej – wtedy słupek pod kalenicową nie powstawał, a węgieł ze środka kończył się pod połacią), jest teraz
+  węgłem pod płatwią i dochodzi do jej spodu. Do tego `rdzen/platwie_wience.rb` pilnuje bala węgła: dach obniżony /
+  płatew pośrednia przesunięta tak, żeby górny bal węgła był pełny albo ≥ najcieńszy pasek – koniec szczelin do 20 mm
+  między węgłem a płatwią (W4).
+- **Słup frontu tarasu w osi kalenicy** (`rdzen/taras.rb#slup_w_osi`): słup tarasu i słupek trójkąta w jednej linii;
+  słup wejścia bliżej osi niż 500 staje w osi.
+- **Front tarasu bez kontrfor** (`rdzen/wegly_tabela.rb`, `rdzen/styki_tarasu.rb`): bez węgła „na środku ściany” (to on
+  dawał kontrforę z półzamkami w trójkącie) i bez węgłów pod styki; długi front łączony na styk nad słupem, sąsiedni
+  wieniec o mijankę dalej.
+- **Zamek płatwi nad szczytem tarasu tylko od spodu** (`rdzen/zamek_platwi.rb`, `taras_platwa_zamek`): wręby płatwi
+  z własną głębokością boczną.
+- **Słupek i zastrzały trójkąta** z własnych szerokości albo jak reszta trójkąta (`taras_wiazar_przekroje`).
+- **Trójkąt w wąskim domu** (`rdzen/taras_wiazar.rb#postac`): nie znika – postać uproszczona z ostrzeżeniem (same
+  krokwie na balach frontu; na słupach – sama belka dolna).
+- **Automatyczny dobór przekrojów dachu** (`rdzen/statyka_dachu.rb`, `rdzen/statyka_wiazara.rb`): „Przekrój płatwi –
+  dobór” (ręcznie ze sprawdzeniem / automatycznie) i „Trójkąt z przekroju – dobranego automatycznie”; parametry „Śnieg –
+  obciążenie gruntu” (0,9), „Ciężar pokrycia z poszyciem” (0,35), „Ugięcie płatwi dopuszczalne L /” (200), „Dostępne
+  przekroje płatwi” (Nsi / DUO / BSH z wykazu użytkownika). Obliczenia domu w dwóch przebiegach (`rdzen/projekt.rb`).
+  Wynik: podpowiedzi w sekcjach „Szczyty i dach” i „Taras” – także przy doborze ręcznym.
+- Ostrzeżenie, gdy zastrzały trójkąta się nie mieszczą (wcześniej pomijane bez słowa).
 
 ## 1d. Nowe w kompilacji 10 (uwagi z 2026-11-10 22:24)
 
@@ -188,6 +216,8 @@ Patrz `docs/SPIS_TRESCI.md` §2. Nowe w rundzie 3: `rdzen/pod_dachem.rb`, `rdzen
 Nowe w rundzie 4: `rdzen/ustawienia_scian.rb`, `rdzen/dopelnienie.rb`, `rdzen/profil_bala.rb`, `html/tryb.js`,
 `html/edycja.js`; test `t_sciany_ust`.
 Nowe w rundzie 10: `rdzen/skrzydla.rb` (dom L – dwa dachy z koszem); test `t_skrzydla`.
+Nowe w rundzie 11: `rdzen/styki_tarasu.rb` (front tarasu na styk), `rdzen/statyka_dachu.rb` (płatwie – sprawdzenie
+i dobór), `rdzen/statyka_wiazara.rb` (trójkąt nad tarasem – sprawdzenie i dobór); test `t_statyka_dachu`.
 Nowe w rundzie 6: `rdzen/krok2.rb` (ustawienia KROKU 2, poszycie, podpory); sekcja parametrów „Poszycie dachu”;
 atrapa API aplikacji do dachów `testy/atrapa/aplikacja_dachow.rb`.
 Nowe w rundzie 5: `rdzen/stolarka.rb`, `rdzen/pryzmat.rb`, `rdzen/polacie.rb`, `rdzen/dach_jednospadowy.rb`,
@@ -341,6 +371,32 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
 
+### Runda 11 (kompilacja 11) – uwagi z 2026-11-16
+
+Wiadomość użytkownika (16:08, 6 punktów): słupek z kontrfor pod każdą płatwią – do wyboru („przy niewielkich domkach
+letniskowych nie ma takiej potrzeby”); słupek i zastrzały trójkąta – przekrój jak płatwie albo jak dotąd; słup środkowy
+tarasu nie w osi – nie w jednej linii ze słupkiem trójkąta; półzamki i kontrfora „do połączenia” w trójkącie nad tarasem –
+zbędne, „wystarczy na styk łączyć z przesunięciem o 300 mm na przemian”; zamki boczne w płatwiach nad szczytem tarasu
+zbędne – wystarczy od spodu; „w płatwi kalenicowej nadal brakuje ostatniej kontrfory”. Druga wiadomość (20:44): „przy
+bardzo wąskich konstrukcjach nie buduje trójkąta nad tarasem; do opcji dodać automatyczne dobieranie przekroju, do
+minimalnej nośności konstrukcji dachu”.
+- Odtworzenie z `ustawienia.json` użytkownika (taras na słupach, szczyt pusty, wiązar z zastrzałami, płatwie 60 × 200 co
+  900, 30°): dom 5 m – węgieł „na środku ściany” na froncie tarasu (jeden bal z półzamkami) i słup pośredni 670 mm od
+  osi; dom ≥ 4,25 m – pod kalenicową brak słupka (stał tam węgieł ze środka ściany, który nie dochodził do płatwi); dom
+  3,25 m – szczelina 17,8 mm pod kalenicową; dom ≤ 2,2 m – trójkąt nie powstawał wcale.
+- Wykonanie – §1e. Decyzje przyjęte bez pytania (do potwierdzenia, §6): „na styk” tylko na froncie tarasu (szczyty ścian
+  domu jak dotąd), zamek tylko od spodu domyślnie, słup w osi domyślnie, dobór automatyczny wyłączony domyślnie (ręcznie
+  ze sprawdzeniem), obciążenia 0,9 i 0,35 kN/m², ugięcie L/200.
+- „Dobór przekroju” zrozumiany jako dobór płatwi **i** trójkąta: przy wąskim domu płatwie rządzi długość domu (60 × 200
+  na 5 m to nie za dużo), a trójkąt – szerokość, dlatego to dobór trójkąta zmieścił go w wąskim domu (60 × 100).
+- Testy: nowy zestaw `t_statyka_dachu` (35), grupy rundy 11 w `t_wegly` i `t_taras`, losowe domy od ziarna 7000
+  (`dodatki_r11`): 120 domów + 70 z ziaren 6001–6070 + 60 z 5001–5060 – bez nowych problemów.
+- Znalezione przy okazji (sprzed rundy 11, nie poprawione): dom L + podbitka na płatwiach + krokwie z aplikacji –
+  podpory 19 mm pod połacią (ziarna 7004, 7021; §8).
+- Rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md` – pół zamka w wieńcu szczytowym, katalog przekrojów
+  z długościami, komunikat zamiast wyjątku, podbitka w polach zależnych, ostrzeżenie o ostatkach do podpowiedzi,
+  poprawka działowej współliniowej) – **nie weszły do tej kompilacji**, zostają na rundę 12.
+
 ### Runda 10 (kompilacja 10) – uwagi z 2026-11-10 22:24
 
 Wiadomość użytkownika (5 punktów): belka ściany użyta jako płatew przy domu L wystaje do środka 300 zamiast 100; dom L –
@@ -428,22 +484,28 @@ kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zak
 | O1 | Wypuszczone wieńce okapowe | 2 górne wieńce, do wysunięcia płatwi za szczyt (500); węgły pod okapem do nawisu – opcja (3 górne bale) |
 | T5 | Balustrada z wieńców | do 1000 mm, zakładka 100 w narożnikach frontu |
 | T6 | Trójkątny wieniec | przekrój płatwi (80 × 200) albo podany (80 × 160) |
-| W4 | Węgły pod płatwiami | na szczytach zewnętrznych i ścianie domu przy tarasie (domyślnie), pod każdą płatwią pośrednią; luka pod płatwią < 20 mm, gdy bal węgła wypada tuż pod nią |
+| W4 | Węgły pod płatwiami | na szczytach zewnętrznych i ścianie domu przy tarasie (domyślnie), pod każdą płatwią albo tylko pod kalenicową; **runda 11**: bez luki – dach / płatew dopasowane do bala węgła, węgieł w osi płatwi ją podpiera (luka zostaje tylko przy „Płatwie oparte na pełnym balu” = nie albo wyczerpanych limitach dopasowania) |
 | W5 | Węgieł na wolnym końcu | od wolnego odcinka 1000 mm (parametr), oś 122 mm od końca (ostatek 100) |
 | T7 | Wiązar nad tarasem | słupek 120, zastrzał 100 (opcja), na balach frontu (domyślnie) albo na słupach; **runda 10**: pod płatwiami, gniazdo płatwi ≥ 20, zastrzały 45° |
 | L2 | Dach domu L | **rozstrzygnięte (runda 10)**: dwa dachy z koszem; skrzydło główne = większa rozpiętość (równe – parametr „kalenica”); płatwie skrzydła bocznego do kosza albo na styk do płatwi dachu głównego – podparcie ich końców (belka koszowa?) do potwierdzenia z praktyką |
 | L3 | Wspólny poziom okapu w domu L | linia dachu obu skrzydeł na tej samej wysokości; ściany okapowe skrzydła bocznego (wyższe o pół bala) – górny bal ścięty do dachu |
 | P5 | Poziom podciągu | **rozstrzygnięte (runda 10)**: na wysokości podwalin (legary dzielone); obniżony w opcji |
+| T8 | Łączenie na styk | **runda 11**: tylko front tarasu (podciąg i szczyt nad tarasem) – nad słupem, sąsiedni wieniec o mijankę; czy tak samo łączyć wieńce szczytów ścian domu (wtedy pół zamka z rozstrzygnięć 2026-11-14 potrzebne tylko w narożnikach) – do decyzji |
+| T9 | Słup w osi kalenicy | domyślnie tak; słup wejścia bliżej niż 500 od osi staje w osi (wejście szersze / węższe) |
+| T10 | Zamek płatwi nad szczytem tarasu | domyślnie tylko od spodu (wrąb 8–10 na grubości trójkąta), boczne w opcji |
+| D1a | Obciążenia dachu do doboru | śnieg gruntu 0,9 kN/m² (strefa 2), pokrycie z poszyciem 0,35 kN/m² połaci, ugięcie L/200, drewno jak podłoga (C24) – do potwierdzenia dla miejsc, gdzie stoją domy |
+| D1b | Lista przekrojów płatwi | 60×100 … 160×280 z wykazu „od ręki” (Nsi / DUO / BSH) z 2026-11-14, bez długości handlowych (długości – runda 12 razem z katalogiem legarów) |
+| D1c | Dobór domyślnie | ręcznie ze sprawdzeniem (jak dotąd przekroje z pól); automatyczny – wybór użytkownika |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 10 (kroki 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 11 (kroki 3a–3h rundy 11, 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 10)
+## 8. Ograniczenia (kompilacja 11)
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach z generatora: obrys prostokątny i L (dwa dachy z koszem); inne obrysy (T, U…) – szczyty liczone każdy osobno,
@@ -470,14 +532,25 @@ dach jednospadowy, taras).
 - Poszycie dachu tylko z aplikacji do dachów (KROK 2); krokwie z generatora – bez poszycia (podbitkę rysuje generator).
 - Podbitka, fundamenty i podciągi tylko dla domu prostokątnego.
 - Statyka podłogi uproszczona – podpowiedź, nie projekt konstrukcyjny.
+- Statyka dachu (runda 11) uproszczona tak samo: płatwie jako belki jednoprzęsłowe (największe przęsło), bez wiatru,
+  bez worków śnieżnych i osłabienia wrębami przy podporach; trójkąt – krokwie jako belki, bez zastrzałów i sił osiowych;
+  dom L – koniec płatwi skrzydła bocznego w dachu głównym przyjęty jako podparty. Lista przekrojów bez długości handlowych
+  (generator może dobrać przekrój na przęsło dłuższe niż belka w hurtowni).
+- Dom L z podbitką na płatwiach i krokwiami z aplikacji: podpory 19 mm pod połacią (sprzed rundy 11; ziarna 7004, 7021).
+- Front tarasu łączony na styk: przy froncie bez słupów pośrednich (albo gdy żaden nie pasuje) styk wypada w punkcie
+  równego podziału, nie nad słupem.
 - Dokumentacja 2D nie zna jeszcze grup Bs, Kf, Sz – bale trafią do grupy „Elementy”.
-- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6–9 (rundy 7–10); kompilacja 10 – do sprawdzenia.
+- Odbiór w prawdziwym SketchUpie: uwagi do kompilacji 6–10 (rundy 7–11); kompilacja 11 – do sprawdzenia.
 - Węgły pod płatwiami tylko przy dachu z generatora (dom prostokątny i L); przesunięty węgieł automatyczny zmienia całą ścianę na węgły ręczne.
 - Balustrada z wieńców ścian tylko przy tarasie na słupach (typ 200); trójkątny wieniec tylko przy dachu dwuspadowym.
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 10: raport z testu działania (JSON) + scenariusz (kroki 2v–2z, potem 2q–2u) → poprawki.
+1. Odbiór kompilacji 11: raport z testu działania (JSON) + scenariusz (kroki 3a–3h, potem 2v–2z) → poprawki.
+1b. Runda 12 – rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`): poprawka działowej współliniowej
+   z nowym zestawem domów złożonych, pół zamka w wieńcu szczytowym (po decyzji T8), katalog przekrojów z długościami
+   (legary i płatwie – wspólny format), komunikat zamiast wyjątku, podbitka w polach zależnych, ostrzeżenie o ostatkach
+   do podpowiedzi; przy okazji dom L z podbitką na płatwiach.
 1a. Dom L: podłoga i taras, podparcie końców płatwi skrzydła bocznego (belka koszowa), obrysy T i U.
 2. Dokumentacja 2D – zadanie w tamtej sesji (`docs/zadanie_dokumentacja2d.md`); aplikacja do dachów – część 2 zadania
    (`docs/zadanie_aplikacja_dachow.md`: kalenica w obu połaciach, dach jednospadowy, osie krokwi przy szczycie) → po

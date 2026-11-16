@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_dach.rb
-# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie, krokwie, oparcie dachu, poszycie i podbitka.
-# Tematy: parametry dachu, parametry szczytów, parametry płatwi, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, podbitka – parametry
+# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie, oparcie dachu, poszycie i podbitka.
+# Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, podbitka – parametry
 # Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
@@ -68,16 +68,44 @@ module ArteMadera
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
         { klucz: 'krokwie_rozstaw', domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
+        { klucz: 'platwie_dobor', podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój płatwi – dobór', rodzaj: :wybor,
+          sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          wybory: [['reczny', 'ręcznie – przekroje podane niżej (ze sprawdzeniem nośności)'],
+                   ['auto', 'automatycznie – najmniejszy wystarczający z listy']],
+          podpowiedz: 'Automatycznie: generator liczy śnieg i ciężar pokrycia na każdą płatew (pas dachu, największe przęsło ' \
+                      'między ścianami) i bierze najlżejszy przekrój z listy, który to przenosi. Mały, wąski domek dostaje ' \
+                      'mniejsze płatwie – i mniejszy trójkąt nad tarasem (z przekroju płatwi). Wynik to podpowiedź, nie projekt ' \
+                      'konstruktora.',
+          pomoc: 'Przęsło płatwi to odległość między ścianami, które ją podpierają: szczyty, działowe ze szczytem, ściana domu ' \
+                 'przy tarasie, trójkąt nad tarasem. Im dłuższe przęsło i większy rozstaw płatwi, tym większy przekrój. Ręcznie – ' \
+                 'przy polach przekroju pojawia się wynik sprawdzenia i najmniejszy wystarczający przekrój z listy.' },
+        { klucz: 'platwie_katalog', domyslna: '60x100, 60x120, 60x140, 60x160, 60x200, 60x240, 80x160, 80x180, 80x200, 80x220, ' \
+                                              '100x200, 120x200, 140x200, 140x240, 160x200, 160x280',
+          etykieta: 'Dostępne przekroje płatwi', rodzaj: :tekst, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'Lista „szer.×wys.” po przecinku (drewno widoczne Nsi / DUO / BSH z hurtowni) – dobór bierze najlżejszy ' \
+                      'wystarczający.' },
+        { klucz: 'dach_snieg', domyslna: 0.9, etykieta: 'Śnieg – obciążenie gruntu', jednostka: 'kN/m²', min: 0.0, max: 6.0,
+          rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'Strefy śniegowe Polski: 1 – 0,7; 2 – 0,9 (większość kraju); 3 – 1,2; 4 – 1,6; 5 (góry) – 2,0 i więcej.',
+          pomoc: 'Obciążenie śniegiem gruntu z mapy stref (PN-EN 1991-1-3). Na dach generator przelicza je współczynnikiem ' \
+                 'kształtu: 0,8 do kąta 30°, coraz mniej do 60° (śnieg się zsuwa). 1 kN/m² ≈ 100 kg na metr kwadratowy.' },
+        { klucz: 'dach_ciezar', domyslna: 0.35, etykieta: 'Ciężar pokrycia z poszyciem', jednostka: 'kN/m²', min: 0.05, max: 3.0,
+          rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'Na metr kwadratowy połaci, bez płatwi: deski 25 mm z papą albo gontem ok. 0,25–0,35; z nadbitką i ' \
+                      'blachą ok. 0,35; dachówka ceramiczna z łatami 0,6–0,9.' },
+        { klucz: 'dach_ugiecie', domyslna: 200.0, etykieta: 'Ugięcie płatwi dopuszczalne L /', jednostka: '', min: 100.0,
+          max: 600.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'L/200: płatew o przęśle 4 m ugina się pod śniegiem najwyżej o 20 mm. Większa liczba – sztywniejszy dach.' },
         { klucz: 'platwie_jeden_przekroj', podstawowy: true, domyslna: 'tak', etykieta: 'Jeden przekrój wszystkich płatwi',
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Tak – ścienna, pośrednie i kalenicowa z przekroju „Płatew” (wszystkie tej samej wysokości). Nie – osobne ' \
                       'przekroje płatwi ściennej i kalenicowej.' },
         { klucz: 'platwa_przekroj', podstawowy: true, domyslna: '80x200', etykieta: 'Płatew (pośrednia)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty',
+          rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_dobor' => ['reczny'] },
           podpowiedz: 'Wysokość płatwi zostaje w całości po wyższej stronie; wierzch ścięty pod dach tylko od strony okapu ' \
                       '(typ 100: 80 × 200).' },
         { klucz: 'platwa_kalenicowa_przekroj', domyslna: '80x200', etykieta: 'Płatew kalenicowa', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_jeden_przekroj' => ['nie'] } },
+          rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_jeden_przekroj' => ['nie'], 'platwie_dobor' => ['reczny'] } },
         { klucz: 'platwie_rozstaw_max', domyslna: 1000.0, etykieta: 'Największy rozstaw płatwi (w poziomie)',
           jednostka: 'mm', min: 300.0, max: 4000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[platwie platwie_krokwie] }, podpowiedz: 'Typ 100: ok. 990.' },
         { klucz: 'platwa_na_scianie', podstawowy: true, domyslna: 'tak', etykieta: 'Oparcie dachu przy ścianie okapowej',
@@ -92,7 +120,7 @@ module ArteMadera
           gdy: { 'platwa_na_scianie' => ['tak'] } },
         { klucz: 'platwa_scienna_przekroj', domyslna: '80x200', etykieta: 'Płatew ścienna', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Typ 100: 60 × 200.',
-          gdy: { 'platwa_na_scianie' => ['tak'], 'platwie_jeden_przekroj' => ['nie'] } },
+          gdy: { 'platwa_na_scianie' => ['tak'], 'platwie_jeden_przekroj' => ['nie'], 'platwie_dobor' => ['reczny'] } },
         { klucz: 'platwie_na_wiencach', domyslna: 'tak', etykieta: 'Płatwie oparte na pełnym balu', rodzaj: :wybor,
           sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Pod gniazdem płatwi nie zostaje pasek bala cieńszy niż „Najcieńszy pasek bala nad / pod otworem”: dach ' \

@@ -3,9 +3,9 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/taras_wiazar.rb
 # Zadanie: wiązar (trójkąt) nad pustym szczytem frontu tarasu – dwie ciągłe krokwie wiązara pod płatwiami (płatwie leżą na nich w płytkich gniazdach – zamkach), belka dolna, słupek pod kalenicą i opcjonalnie dwa zastrzały od stopy słupka pod zadanym kątem (45°); licem z licem zewnętrznym frontu; na balach frontu albo na słupach bez bali; wręby płatwi na grubości wiązara.
-# Tematy: wiązar szczytu tarasu, trójkąt nad tarasem, krokiew wiązara, belka dolna wiązara, słupek wiązara, zastrzał, kąt zastrzału, wiązar pod płatwiami, głębokość gniazda płatwi w wiązarze, gniazda płatwi w wiązarze, wiązar licem z frontem, szczyt bez bali, przekrój członu wiązara
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/elementy.rb (belka), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi), rdzen/taras_szczyt.rb (czy szczyt pusty z wiązarem)
-# Używają: rdzen/projekt.rb (przejścia płatwi przed belkami dachu, człony wiązara), rdzen/taras_slupy.rb (grubość lica frontu bez bali), rdzen/taras_szczyt.rb (bez bali frontu)
+# Tematy: wiązar szczytu tarasu, trójkąt nad tarasem, trójkąt w wąskim domu, wiązar bez belki dolnej, krokiew wiązara, belka dolna wiązara, słupek wiązara, zastrzał, kąt zastrzału, wiązar pod płatwiami, głębokość gniazda płatwi w wiązarze, gniazda płatwi w wiązarze, wiązar licem z frontem, szczyt bez bali, przekrój członu wiązara, przekrój słupka i zastrzałów wiązara
+# Zależy od: rdzen/statyka_wiazara.rb (tylko wynik doboru w parametrach – p['taras_wieniec_dobrany']), rdzen/parametry.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/elementy.rb (belka), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi), rdzen/taras_szczyt.rb (czy szczyt pusty z wiązarem)
+# Używają: rdzen/projekt.rb (przejścia płatwi przed belkami dachu, człony wiązara, ostrzeżenie o zastrzałach), rdzen/taras_slupy.rb (grubość lica frontu bez bali), rdzen/taras_szczyt.rb (bez bali frontu)
 #
 # Wiązar leży w płaszczyźnie frontu (v w poprzek kalenicy, z w górę), grubość (wzdłuż kalenicy) z przekroju płatwi albo
 # podanego, lico zewnętrzne równo z licem zewnętrznym frontu (wymóg użytkownika, runda 9). Człon = obszar między linią
@@ -16,6 +16,13 @@
 # z przodu sam trójkąt) – na słupach frontu, od spodu podciągu, między licami wewnętrznymi ścian bocznych. Krokwie leżą
 # na belce dolnej (pięta krokwi do wierzchu belki), słupek od belki do spodu krokwi, zastrzały od stopy słupka do spodu
 # krokwi pod kątem taras_wiazar_zastrzal_kat od poziomu (45°; 0 – do połowy krokwi). Człony prefiks Wt (graniastosłupy wzdłuż kalenicy, przekrój w płaszczyźnie frontu).
+# Słupek i zastrzały (wymóg użytkownika, runda 11 – do wyboru, taras_wiazar_przekroje): własne szerokości (smuklejsze,
+# ładniejsze przy małych konstrukcjach) albo dokładnie jak reszta trójkąta – wysokość przekroju wiązara (np. płatwi).
+# Zamek płatwi tylko od spodu (taras_platwa_zamek = spod): gniazdo w krokwi wiązara na pełną szerokość płatwi.
+# Wąski dom albo wysoki przekrój (uwaga użytkownika z 2026-11-16: „przy bardzo wąskich konstrukcjach nie buduje trójkąta”):
+# gdy belka dolna z krokwiami nie mieści się pod dachem, trójkąt powstaje w postaci uproszczonej (postac) – same krokwie
+# stojące na balach frontu (ze słupkiem, jeśli jest na niego miejsce) albo, przy wiązarze na słupach, sama belka dolna
+# ścięta dachem – z ostrzeżeniem; nigdy nie znika bez słowa.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -29,6 +36,10 @@ module ArteMadera
     module TarasWiazar
       # Najmniej drewna pod gniazdem płatwi w członie [mm]; mniej – człon przecięty gniazdem.
       MIN_DREWNO = 10.0 unless const_defined?(:MIN_DREWNO)
+      # Najmniejsza wysokość trójkąta nad oparciem [mm] – niższy nie powstaje.
+      MIN_TROJKAT = 60.0 unless const_defined?(:MIN_TROJKAT)
+      # Najniższy słupek wiązara bez belki dolnej (przy jego licu) [mm].
+      MIN_SLUPEK = 80.0 unless const_defined?(:MIN_SLUPEK)
       EPS = 1e-6 unless const_defined?(:EPS)
 
       module_function
@@ -39,9 +50,19 @@ module ArteMadera
         sciany.find { |w| TarasSzczyt.dotyczy?(w, p) }
       end
 
-      # Przekrój członów wiązara [szerokość wzdłuż kalenicy, wysokość krokwi i belki].
+      # Przekrój członów wiązara [szerokość wzdłuż kalenicy, wysokość krokwi i belki]: płatwi, podany albo – taras_wieniec
+      # = auto – dobrany do obciążenia (rdzen/statyka_wiazara.rb zapisuje go w p['taras_wieniec_dobrany']; w pierwszym
+      # przebiegu obliczeń, zanim jest dobrany – przekrój płatwi).
       def przekroj(p)
-        Parametry.przekroj(p, p['taras_wieniec'] == 'wlasny' ? 'taras_wieniec_przekroj' : 'platwa_przekroj')
+        dobrany = p['taras_wieniec'] == 'auto' ? Parametry.przekroj_z(p['taras_wieniec_dobrany']) : nil
+        dobrany || Parametry.przekroj(p, p['taras_wieniec'] == 'wlasny' ? 'taras_wieniec_przekroj' : 'platwa_przekroj')
+      end
+
+      # Szerokość słupka albo zastrzału w płaszczyźnie frontu [mm] (klucz – pole własnej szerokości): własna albo – przy
+      # taras_wiazar_przekroje = jak_wiazar – wysokość przekroju wiązara (cały trójkąt z jednego przekroju, np. płatwi).
+      def szerokosc_czlonu(p, klucz)
+        return przekroj(p)[1] if p['taras_wiazar_przekroje'] == 'jak_wiazar'
+        p[klucz].to_f
       end
 
       # Grubość lica frontu przy słupach tarasu [mm]: wiązar bez bali – grubość wiązara, inaczej grubość ściany.
@@ -51,7 +72,8 @@ module ArteMadera
       end
 
       # Układ wiązara: { os:, iu:, u_c: (oś grubości), bw:, hw:, hv: (wysokość krokwi w pionie), geo:, vk:, zk: (linia
-      # szczytu w kalenicy), tg:, v_lo:, v_hi:, z_b0: (spód belki dolnej), z_b1: (wierzch) }; nil – brak miejsca.
+      # szczytu w kalenicy), tg:, v_lo:, v_hi:, z_b0: (spód belki dolnej), z_b1: (wierzch), bok: (wrąb boczny płatwi
+      # w wiązarze – 0 przy zamku tylko od spodu), bez: (wiązar na słupach – bez bali frontu) }; nil – brak miejsca.
       def uklad(w, p)
         t = Parametry.grubosc(p)
         tr = w[:taras]
@@ -70,26 +92,36 @@ module ArteMadera
           v_hi = geo[:v_b] + t / 2.0
         end
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
+        bok = ZamekPlatwi.bok_w_scianie(w, p)
         { os: iu.zero? ? :x : :y, iu: iu, u_c: w[:a][iu] + tr[:znak] * (t / 2.0 - bw / 2.0), bw: bw, hw: hw,
-          hv: hw / Math.cos(Dach.kat(p)), geo: geo, vk: vk, zk: Dach.linia_szczytu(geo, vk, p) - pod_platwiami(geo, p), tg: Dach.tg(p),
-          v_lo: v_lo, v_hi: v_hi, z_b0: z_b0, z_b1: z_b0 + hw }
+          hv: hw / Math.cos(Dach.kat(p)), geo: geo, vk: vk, zk: Dach.linia_szczytu(geo, vk, p) - pod_platwiami(geo, p, bok),
+          tg: Dach.tg(p), v_lo: v_lo, v_hi: v_hi, z_b0: z_b0, z_b1: z_b0 + hw, bok: bok, bez: bez }
+      end
+
+      # Postać wiązara: :pelny – belka dolna, krokwie, słupek (zastrzały); :krokwie – belka dolna z krokwiami nie mieści
+      # się pod dachem (wąski dom, wysoki przekrój): same krokwie na balach frontu; :belka – to samo przy wiązarze na
+      # słupach: sama belka dolna ścięta dachem; nil – trójkąt niższy niż MIN_TROJKAT.
+      def postac(u)
+        return :pelny if u[:zk] - u[:hv] > u[:z_b1] + 1.0
+        return nil if u[:zk] - u[:z_b0] < MIN_TROJKAT
+        u[:bez] ? :belka : :krokwie
       end
 
       # O ile wierzch krokwi wiązara jest pod linią dachu [mm]: tak, żeby dno gniazda każdej płatwi (spód jej wrębu) było
       # przy niższej krawędzi gniazda co najmniej taras_wiazar_gniazdo pod wierzchem krokwi – płatwie leżą na wiązarze,
-      # krokwie wiązara zostają ciągłe.
-      def pod_platwiami(geo, p)
+      # krokwie wiązara zostają ciągłe; bok – wrąb boczny płatwi w wiązarze (nil – z parametrów).
+      def pod_platwiami(geo, p, bok = nil)
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
         zapas = Dach.platwie(geo, p).map do |pl|
-          b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
+          b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p, bok) / 2.0
           v_niska = pl[:v] <= vk ? pl[:v] - b2 : pl[:v] + b2
           Dach.linia_szczytu(geo, v_niska, p) - ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
         end.min
         zapas.nil? ? 0.0 : [zapas - p['taras_wiazar_gniazdo'].to_f, 0.0].max
       end
 
-      # Przejścia płatwi przez wiązar (dom[:przejscia] z grubością t – wręby płatwi na grubości wiązara); przed belkami
-      # dachu (Dach.elementy).
+      # Przejścia płatwi przez wiązar (dom[:przejscia] z grubością t – wręby płatwi na grubości wiązara, bok – wrąb
+      # boczny: 0 przy zamku tylko od spodu); przed belkami dachu (Dach.elementy).
       def przejscia!(sciany, dom, p)
         w = front(sciany, p)
         return if w.nil? || dom.nil?
@@ -97,7 +129,9 @@ module ArteMadera
         return if u.nil?
         dom[:przejscia] ||= []
         Dach.platwie(Dach.geo(dom), p).each do |pl|
-          dom[:przejscia] << { v: pl[:v], u: u[:u_c], t: u[:bw] }
+          przejscie = { v: pl[:v], u: u[:u_c], t: u[:bw] }
+          przejscie[:bok] = u[:bok] if ZamekPlatwi.tylko_spod?(w, p)
+          dom[:przejscia] << przejscie
         end
       end
 
@@ -106,7 +140,7 @@ module ArteMadera
         w = front(sciany, p)
         return [] if w.nil?
         u = uklad(w, p)
-        return [] if u.nil? || u[:zk] - u[:hv] <= u[:z_b1] + 1.0
+        return [] if u.nil? || postac(u).nil?
         gniazda = gniazda_platwi(u, p)
         min = p['min_odcinek'].to_f
         ksztalty = czlony(u, p).flat_map do |c|
@@ -117,16 +151,37 @@ module ArteMadera
         ksztalty.map { |ksztalt| belka(u, ksztalt) }
       end
 
-      # Gniazda płatwi w płaszczyźnie wiązara: [[v0, v1, z_dna]] (szerokość płatwi w wrębie, dno na spodzie wrębu).
+      # Ostrzeżenia: trójkąt w postaci uproszczonej albo wcale (za niski – wąski dom, wysoki przekrój), wybrane zastrzały
+      # się nie mieszczą (wiązar powstaje bez nich); [] – w porządku.
+      def uwagi(sciany, p)
+        w = front(sciany, p)
+        u = w.nil? ? nil : uklad(w, p)
+        return [] if u.nil?
+        bw, hw = przekroj(p)
+        opis = format('przekrój %.0f × %.0f jest za wysoki na ten trójkąt (wąski dom albo mały kąt dachu)', bw, hw)
+        rada = 'Mniejszy przekrój zmieści cały trójkąt – wybierz w sekcji „Taras”: „Trójkąt z przekroju – dobranego automatycznie”.'
+        case postac(u)
+        when nil then ["Trójkąt nad tarasem nie powstał: #{opis}. #{rada}"]
+        when :krokwie then ["Trójkąt nad tarasem bez belki dolnej – krokwie stoją na balach frontu: #{opis}. #{rada}"]
+        when :belka then ["Trójkąt nad tarasem – sama belka na słupach, ścięta dachem: #{opis}. #{rada}"]
+        else
+          return [] unless p['taras_wiazar'] == 'zastrzaly' && czlony(u, p).length <= 4
+          ['Trójkąt nad tarasem: zastrzały się nie mieszczą (za mały trójkąt albo za szeroki słupek i zastrzały) – pominięte.']
+        end
+      end
+
+      # Gniazda płatwi w płaszczyźnie wiązara: [[v0, v1, z_dna]] (szerokość płatwi w wrębie – przy zamku tylko od spodu
+      # pełna szerokość płatwi, dno na spodzie wrębu).
       def gniazda_platwi(u, p)
         Dach.platwie(u[:geo], p).map do |pl|
-          b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p) / 2.0
+          b2 = ZamekPlatwi.szerokosc_w_scianie(pl[:b], p, u[:bok]) / 2.0
           [pl[:v] - b2, pl[:v] + b2, ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)]
         end
       end
 
       # Człony w postaci { v0:, v1:, gora: [[a, b]], dol: [[a, b]] } (proste z = a + b·v): krokwie, belka dolna, słupek,
-      # zastrzały (rodzaj taras_wiazar).
+      # zastrzały (rodzaj taras_wiazar); postać uproszczona (postac) – same krokwie na balach frontu ze słupkiem, gdy się
+      # mieści, albo sama belka dolna.
       def czlony(u, p)
         vk = u[:vk]
         zl = [u[:zk] - u[:tg] * vk, u[:tg]]
@@ -134,7 +189,10 @@ module ArteMadera
         spod_l = [zl[0] - u[:hv], zl[1]]
         spod_r = [zr[0] - u[:hv], zr[1]]
         b1 = [u[:z_b1], 0.0]
-        a = p['taras_wiazar_slupek'].to_f / 2.0
+        a = szerokosc_czlonu(p, 'taras_wiazar_slupek') / 2.0
+        ksztalt = postac(u)
+        return [{ v0: u[:v_lo], v1: u[:v_hi], gora: [b1, zl, zr], dol: [[u[:z_b0], 0.0]] }] if ksztalt == :belka
+        return krokwie_na_balach(u, zl, zr, spod_l, spod_r, a) if ksztalt == :krokwie
         lista = [
           { v0: u[:v_lo], v1: vk, gora: [zl], dol: [spod_l, b1] },
           { v0: vk, v1: u[:v_hi], gora: [zr], dol: [spod_r, b1] },
@@ -145,11 +203,24 @@ module ArteMadera
         lista
       end
 
+      # Wiązar bez belki dolnej: dwie krokwie od wierzchu bali frontu do kalenicy (stopy ścięte poziomo na balach) i słupek
+      # od bali do krokwi, gdy przy jego licu zostaje co najmniej MIN_SLUPEK wysokości.
+      def krokwie_na_balach(u, zl, zr, spod_l, spod_r, a)
+        vk = u[:vk]
+        b0 = [u[:z_b0], 0.0]
+        lista = [{ v0: u[:v_lo], v1: vk, gora: [zl], dol: [spod_l, b0] }, { v0: vk, v1: u[:v_hi], gora: [zr], dol: [spod_r, b0] }]
+        if u[:zk] - u[:hv] - u[:tg] * a - u[:z_b0] >= MIN_SLUPEK
+          lista << { v0: vk - a, v1: vk + a, gora: [spod_l, spod_r], dol: [b0] }
+        end
+        lista
+      end
+
       # Dwa zastrzały: oś od stopy słupka (lico słupka na wierzchu belki dolnej) do spodu krokwi pod kątem
       # taras_wiazar_zastrzal_kat od poziomu (wymóg użytkownika, runda 10: 45° – podparcie krokwi i ozdoba); kąt 0 albo nie
-      # większy niż kąt dachu – do połowy wolnego spodu krokwi; szerokość taras_wiazar_zastrzal; [] – za mało miejsca.
+      # większy niż kąt dachu – do połowy wolnego spodu krokwi; szerokość taras_wiazar_zastrzal albo jak wiązar
+      # (szerokosc_czlonu); [] – za mało miejsca.
       def zastrzaly(u, p, spod_l, spod_r, a)
-        ws = p['taras_wiazar_zastrzal'].to_f
+        ws = szerokosc_czlonu(p, 'taras_wiazar_zastrzal')
         vk = u[:vk]
         z1 = u[:z_b1]
         v2 = (z1 - spod_l[0]) / spod_l[1]

@@ -4,7 +4,7 @@
 # Plik: rdzen/kontrola.rb
 # Zadanie: kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali.
 # Tematy: kontrola, kolizje, nachodzenie bali, sprawdzenie zamka, mijanka – sprawdzenie, styk bez zamka, długość – sprawdzenie, luz pionowy
-# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb
+# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk)
 # Używają: testy, sketchup/sterowanie.rb (menu „Kontrola”)
 #
 # Kolizje liczone dokładnie dla brył z obróbek prostokątnych: siatka komórek z granic przedziałów wszystkich bali
@@ -14,6 +14,7 @@
 require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::GeneratorWiencowy::Bryla)
 require File.join(File.dirname(__FILE__), 'bale') unless defined?(ArteMadera::GeneratorWiencowy::Bale)
 require File.join(File.dirname(__FILE__), 'zamek') unless defined?(ArteMadera::GeneratorWiencowy::Zamek)
+require File.join(File.dirname(__FILE__), 'styki_tarasu') unless defined?(ArteMadera::GeneratorWiencowy::StykiTarasu)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -134,7 +135,8 @@ module ArteMadera
         g = p['szczelina_styku'].to_f / 2.0
         wynik = []
         plan[:sciany].each do |w|
-          next if w[:rodzaj] == :kontrfor
+          # Front tarasu łączony na styk (rdzen/styki_tarasu.rb) – zamka w stykach nie ma z założenia.
+          next if w[:rodzaj] == :kontrfor || StykiTarasu.na_styk?(w)
           w[:bale].each do |b|
             next unless b[:konce][1] == :styk
             s = b[:s1] + g

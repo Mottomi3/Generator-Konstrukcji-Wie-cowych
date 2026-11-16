@@ -25,7 +25,7 @@ module ArteMadera
         ['przekroj', 'Przekrój bala i zamek', true],
         ['sciany', 'Ściany', true],
         ['laczenia', 'Długości bali i łączenia', true],
-        ['wegly', 'Węgły 244 – wzmocnienia ścian', true],
+        ['wegly', 'Węgły (kontrfory) 244 – wzmocnienia ścian', true],
         ['szczyty', 'Szczyty i dach', false],
         ['poszycie', 'Poszycie dachu (aplikacja do dachów)', false],
         ['taras', 'Taras', false],
@@ -131,12 +131,20 @@ module ArteMadera
           max: 1500.0, rodzaj: :liczba, sekcja: 'wegly',
           podpowiedz: 'Za licem zewnętrznym ściany, np. 200 przy węgle niesymetrycznym (wewnątrz 100). Tyle samo wychodzą na ' \
                       'zewnątrz końce działowych przechodzących przez ścianę zewnętrzną.' },
-        { klucz: 'wegly_pod_platwiami', podstawowy: true, domyslna: 'zewnetrzne', etykieta: 'Węgieł pod płatwią na szczycie',
+        { klucz: 'wegly_pod_platwiami', podstawowy: true, domyslna: 'zewnetrzne', etykieta: 'Słupki z kontrfor (węgły) pod płatwiami',
           rodzaj: :wybor, sekcja: 'wegly',
-          wybory: [['zewnetrzne', 'na szczytach zewnętrznych (i ścianie domu przy tarasie)'], ['wszystkie', 'także na szczytach działowych'],
-                   ['nie', 'nie']],
-          podpowiedz: 'W osi każdej płatwi przechodzącej przez szczyt – słupek węgła do spodu płatwi (płatew na nim leży). ' \
-                      'Nie powstaje, gdy pod płatwią jest już ściana albo węgieł, otwór lub ściana ma węgły ręczne.' },
+          wybory: [['zewnetrzne', 'tak – na szczytach zewnętrznych (i ścianie domu przy tarasie)'],
+                   ['wszystkie', 'tak – także na szczytach działowych'],
+                   ['nie', 'nie – bez słupków pod płatwiami (małe domki)']],
+          podpowiedz: 'W osi płatwi przechodzącej przez szczyt – słupek węgła do spodu płatwi (płatew na nim leży). ' \
+                      'Nie powstaje, gdy pod płatwią jest już ściana, otwór lub ściana ma węgły ręczne; węgieł, który już stoi ' \
+                      'w osi płatwi, podpiera ją. W małych domkach letniskowych zwykle zbędne – wybierz „nie” albo niżej ' \
+                      '„tylko pod kalenicową”.' },
+        { klucz: 'wegly_pod_platwiami_ktore', podstawowy: true, domyslna: 'wszystkie', etykieta: 'Słupki pod płatwiami – pod którymi',
+          rodzaj: :wybor, sekcja: 'wegly', gdy: { 'wegly_pod_platwiami' => %w[zewnetrzne wszystkie] },
+          wybory: [['wszystkie', 'pod każdą płatwią'], ['kalenicowa', 'tylko pod płatwią kalenicową']],
+          podpowiedz: 'Tylko pod kalenicową: jeden słupek w osi szczytu podpiera płatew kalenicową, płatwie pośrednie leżą ' \
+                      'w gniazdach szczytu.' },
         { klucz: 'wegly_wolny_koniec', domyslna: 'tak', etykieta: 'Węgieł na wolnym końcu niepełnej ściany', rodzaj: :wybor,
           sekcja: 'wegly', wybory: TAK_NIE,
           podpowiedz: 'Działowa, która nie dochodzi do innej ściany: węgieł przy jej końcu (bale kończą się ostatkiem za węgłem).' },

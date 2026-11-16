@@ -15,8 +15,8 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki elementy dach_jednospadowy dach szczyty polacie
-     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka fundamenty podciagi podloga podbitka kontrola].each do |plik|
+  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach szczyty polacie
+     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -26,12 +26,33 @@ module ArteMadera
     module Projekt
       module_function
 
-      # Cały przebieg: obrys (z tarasem) → ściany → ustawienia ścian → role ścian tarasu → szczyty → otwory → styki → węgły →
+      # Najwięcej dodatkowych przebiegów przy automatycznym doborze przekroju płatwi.
+      PRZEBIEGI_DOBORU = 3 unless const_defined?(:PRZEBIEGI_DOBORU)
+
+      # Plan domu z wejścia. Automatyczny dobór przekroju płatwi (rdzen/statyka_dachu.rb) i trójkąta nad tarasem
+      # (rdzen/statyka_wiazara.rb): pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające,
+      # następny liczy dom od nowa z dobranymi (płatwie, gniazda, trójkąt nad tarasem) i je potwierdza; gdyby po zmianie
+      # geometrii nie wystarczały – jeszcze raz z większymi.
+      def oblicz(wejscie)
+        plan = przebieg(wejscie, {}, :pierwszy)
+        nadpis = {}
+        PRZEBIEGI_DOBORU.times do |i|
+          nowe = plan[:dobor_przekrojow]
+          break if nowe.nil? || nowe.empty? || !plan[:bledy].empty?
+          nadpis = nadpis.merge(nowe)
+          plan = przebieg(wejscie, nadpis, i == PRZEBIEGI_DOBORU - 1 ? :koniec : :potwierdz)
+        end
+        plan
+      end
+
+      # Jeden przebieg: obrys (z tarasem) → ściany → ustawienia ścian → role ścian tarasu → szczyty → otwory → styki → węgły →
       # dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy
       # narożnikach → bale ścięte do płaszczyzny dachu w poprzek → zamki → pozycje → belki dachu, słupy tarasu i podłoga.
-      def oblicz(wejscie)
+      # nadpis – przekroje płatwi dobrane w poprzednim przebiegu (zastępują pola), tryb – tryb doboru (StatykaDachu.sprawdz).
+      def przebieg(wejscie, nadpis, tryb)
         wej = wejscie.is_a?(Hash) ? wejscie : {}
         p, uwagi = Parametry.normalizuj(wej['parametry'])
+        p = p.merge(nadpis)
         plan = { parametry: p, kat: 0.0, obrys: [], sciany: [], bale: [], pozycje: [], elementy: [], pozycje_elementow: [],
                  pary_zamkow: 0, ostrzezenia: uwagi.dup, bledy: [], podpowiedzi: [], podsumowanie: nil }
         ob = Obrys.rozpoznaj(wej['segmenty'] || [], p)
@@ -57,6 +78,7 @@ module ArteMadera
         plan[:ostrzezenia].concat(WeglyTabela.dodaj(sciany, wej['wegly'], p, sc[:os_kalenicy]))
         plan[:ostrzezenia].concat(WeglyKonstrukcyjne.dodaj(sciany, p, sc[:os_kalenicy], sz[:dom]))
         plan[:ostrzezenia].concat(Taras.wegly_przy_slupach!(sciany, p))
+        plan[:ostrzezenia].concat(Taras.uwagi_wejscia(sciany, p))
         plan[:ostrzezenia].concat(Styki.planuj(sciany, p, sc[:os_kalenicy]))
         plan[:ostrzezenia].concat(Usztywnienie.planuj(sciany, p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
@@ -76,22 +98,31 @@ module ArteMadera
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
         plan[:pozycje] = Pozycje.numeruj(bale[:bale], p)
-        belki(plan, sz[:dom], p)
+        belki(plan, sz[:dom], p, tryb)
         plan[:podsumowanie] = podsumowanie(plan)
         plan[:ostrzezenia].uniq!
         plan
       end
 
       # Belki dachu (dom prostokątny), podbitka i podłoga: elementy, pozycje (numery po balach), podpowiedzi z sekcją okna
-      # (szczyty, podloga – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]).
-      def belki(plan, dom, p)
+      # (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]);
+      # sprawdzenie płatwi i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow],
+      # tryb – StatykaDachu.sprawdz).
+      def belki(plan, dom, p, tryb = :pierwszy)
         TarasWiazar.przejscia!(plan[:sciany], dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        st = StatykaDachu.sprawdz(dom, p, tryb)
+        sw = StatykaWiazara.sprawdz(plan[:sciany], dom, p, tryb)
+        plan[:dobor_przekrojow] = st[:nadpis].merge(sw[:nadpis])
+        plan[:platwie_statyka] = st[:platwie]
+        plan[:podpowiedzi].concat(st[:podpowiedzi].map { |h| h.merge(sekcja: 'szczyty') })
+        plan[:podpowiedzi].concat(sw[:podpowiedzi].map { |h| h.merge(sekcja: 'taras') })
         plan[:elementy].concat(Podbitka.elementy(dom, p, plan[:sciany]))
         u = Podbitka.uwaga(p)
         plan[:ostrzezenia] << u if u
         plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
         plan[:elementy].concat(TarasWiazar.elementy(plan[:sciany], p))
+        plan[:ostrzezenia].concat(TarasWiazar.uwagi(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)
         plan[:podpowiedzi].concat(Polacie.podpowiedzi(dom, p, plan[:polacie]).map { |h| h.merge(sekcja: 'szczyty') })
         pod = Podloga.zaplanuj(plan[:sciany], p)

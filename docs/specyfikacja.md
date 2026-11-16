@@ -328,6 +328,48 @@ Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
   `DO_FABRYCZNYCH` zapamiętane w starszym pliku wracają do wartości fabrycznych.
 - **Zaznaczenie**: sam dom – edycja; dom + linie, z których powstał – edycja; dom + inne linie – pytanie.
 
+## 8f. Runda 11 – słupki pod płatwiami do wyboru, front tarasu bez kontrfor, dobór przekrojów dachu
+
+- **Słupki z kontrfor (węgły) pod płatwiami** (`rdzen/wegly_konstrukcyjne.rb`): `wegly_pod_platwiami` = nie / szczyty
+  zewnętrzne / wszystkie szczyty; `wegly_pod_platwiami_ktore` = pod każdą płatwią / tylko pod kalenicową. Węgieł, który
+  już stoi w osi płatwi (środek ściany, tabela, rysunek, ręczny), staje się węgłem pod płatwią – jego bale dochodzą do
+  spodu płatwi.
+- **Płatew zawsze na balu węgła** (`rdzen/platwie_wience.rb`): wieńce węgła są przesunięte o pół bala względem szczytu;
+  obniżenie dachu (≤ `dach_obnizenie_max`) i przesunięcie płatwi pośrednich (≤ `platwie_przesuniecie_max`) pilnują, żeby
+  górny bal węgła pod płatwią był pełny albo nie cieńszy niż `min_pasek_przy_otworze` – bez szczeliny między węgłem
+  a płatwią. Nie dotyczy podbitki pod płatwiami (węgieł kończy się pod deskami).
+- **Słup frontu tarasu w osi kalenicy** (`rdzen/taras.rb#slup_w_osi`, `taras_slup_w_osi`): pod kalenicą stoi słup –
+  w jednej linii ze słupkiem trójkąta; pozostałe pośrednie równo po obu stronach. Wejście z boku, którego słup jest
+  bliżej osi niż `taras_slup_os_dociag` (500) – ten słup staje w osi (wejście szersze albo węższe o tę odległość).
+  Oś w świetle wejścia – bez słupa w osi.
+- **Front tarasu bez kontrfor** (`rdzen/styki_tarasu.rb`, `rdzen/wegly_tabela.rb`): na froncie z podciągiem nie powstaje
+  węgieł „na środku ściany” ani węgły pod styki. Bale dłuższe niż maksymalny łączone na styk (`taras_styk` = styk):
+  wieńce jednej parzystości (z najniższym balem podciągu) w osi słupa, drugiej – o mijankę (≥ 300) dalej, na przemian.
+  `taras_styk` = wegly – jak zwykła ściana.
+- **Zamek płatwi nad szczytem tarasu tylko od spodu** (`rdzen/zamek_platwi.rb`, `taras_platwa_zamek` = spod): wrąb
+  płatwi na grubości trójkąta (i frontu) bez wrębów bocznych – `e[:wreby]` z własną głębokością boczną `[x0, x1, 0]`;
+  gniazdo w krokwi trójkąta na pełną szerokość płatwi. `pelny` – jak w ścianach.
+- **Słupek i zastrzały trójkąta** (`taras_wiazar_przekroje`): własne szerokości (120 / 100) albo jak reszta trójkąta
+  (wysokość przekroju wiązara).
+- **Trójkąt w wąskim domu** (`rdzen/taras_wiazar.rb#postac`): gdy belka dolna z krokwiami nie mieści się pod dachem –
+  same krokwie na balach frontu (ze słupkiem, jeśli jest miejsce) albo, na słupach, sama belka dolna; zawsze
+  z ostrzeżeniem. Trójkąt nigdy nie znika bez słowa.
+- **Dobór przekroju płatwi** (`rdzen/statyka_dachu.rb`, `platwie_dobor` = reczny / auto): obciążenie na metr płatwi =
+  ciężar pokrycia (`dach_ciezar`, kN/m² połaci) × pas dachu / cos kąta + śnieg gruntu (`dach_snieg`) × μ (0,8 do 30°,
+  liniowo do 0 przy 60°) × pas dachu; pas = po połowie odległości do sąsiednich linii podparcia połaci; przęsło =
+  największa odległość między ścianami, przez które płatew przechodzi (ściana wzdłuż płatwi podpiera ją na całej
+  długości; koniec za szczytem liczony jak przęsło dwa razy dłuższe). Sprawdzenie jak legarów (`rdzen/statyka.rb`,
+  zginanie, ścinanie, ugięcie końcowe ≤ L / `dach_ugiecie`, śnieg bez części długotrwałej). Auto – najlżejszy
+  wystarczający z `platwie_katalog`; ręcznie – wynik sprawdzenia w podpowiedziach sekcji „Szczyty i dach”.
+- **Dobór przekroju trójkąta** (`rdzen/statyka_wiazara.rb`, `taras_wieniec` = auto): krokiew trójkąta od ściany bocznej
+  do kalenicy pod siłami od płatwi pośrednich (połowa przęsła płatwi do ściany domu + koniec za trójkątem), wysokość
+  pomniejszona o gniazdo płatwi; na słupach – także belka dolna między słupami przy osi. Najlżejszy wystarczający
+  przekrój z listy płatwi, przy którym mieści się cały trójkąt.
+- **Dwa przebiegi obliczeń** (`rdzen/projekt.rb#oblicz`): dobór liczy dom z przekrojami z pól, dobiera, liczy dom od
+  nowa z dobranymi i potwierdza (najwyżej 3 dodatkowe przebiegi). `plan[:parametry]` ma przekroje dobrane; zapis domu
+  w modelu – parametry z okna.
+- Statyka dachu to podpowiedź – nie zastępuje projektu konstruktora.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

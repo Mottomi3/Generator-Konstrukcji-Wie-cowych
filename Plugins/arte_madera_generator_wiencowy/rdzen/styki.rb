@@ -4,7 +4,7 @@
 # Plik: rdzen/styki.rb
 # Zadanie: podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki.
 # Tematy: styk, łączenie bali na długość, mijanka, maksymalna długość bala, układ na przemian, para węgłów, jeden węgieł, styk w osi zamka, szczelina styku, kotwice styków
-# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami)
+# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami), rdzen/styki_tarasu.rb (front tarasu – na styk, bez węgłów)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (pozycje_w_wiencu)
 #
 # Wynik w ścianie: w[:styki] = { uklad:, parzyste: [s], nieparzyste: [s], kotwy: [s], nowe: [s] } – styki w wieńcach
@@ -22,6 +22,7 @@ require File.join(File.dirname(__FILE__), 'usztywnienie') unless defined?(ArteMa
 require File.join(File.dirname(__FILE__), 'symetria_wegly') unless defined?(ArteMadera::GeneratorWiencowy::SymetriaWegly)
 require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
 require File.join(File.dirname(__FILE__), 'styki_dzialowe') unless defined?(ArteMadera::GeneratorWiencowy::StykiDzialowe)
+require File.join(File.dirname(__FILE__), 'styki_tarasu') unless defined?(ArteMadera::GeneratorWiencowy::StykiTarasu)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -44,14 +45,7 @@ module ArteMadera
           dl = w[:s_do] - w[:s_od]
           gotowe << w
           next if dl <= p['max_dlugosc'].to_f + 0.01
-          # Ściana równoległa policzona wcześniej (ten sam zasięg) – styki i węgły w tych samych miejscach (symetria).
-          bl = w[:wegly_reczne] ? nil : SymetriaWegly.blizniak(w, gotowe)
-          wynik = bl ? SymetriaWegly.styki(w, bl, p) : nil
-          wynik ||= StykiDzialowe.planuj(w, p)
-          wynik ||= case p['styk_uklad']
-                    when 'para', 'jeden_wegiel' then z_regionow(w, p, dobierz_regiony(w, p))
-                    else na_przemian(w, p)
-                    end
+          wynik = StykiTarasu.dotyczy?(w, p) ? StykiTarasu.planuj(w, p) : z_weglami(w, p, gotowe)
           if wynik.nil?
             uwagi << format('Ściana %s (%.0f mm): nie udało się dobrać miejsc styków przy maksymalnej długości bala %.0f mm ' \
                             '(otwory lub skrzyżowania zajmują miejsce) – bale dłuższe niż dopuszczalne.%s', w[:id], dl, p['max_dlugosc'],
@@ -62,6 +56,19 @@ module ArteMadera
           gosp[:styki] = w[:styki] = wynik.merge(uklad: p['styk_uklad'])
         end
         uwagi
+      end
+
+      # Styki ściany w zamkach skrzyżowań i węgłów (wszystkie ściany poza frontem tarasu łączonym na styk): jak u ściany
+      # równoległej policzonej wcześniej (ten sam zasięg – symetria), wspólne w zamku działowej albo wybrany układ; nil –
+      # nie da się.
+      def z_weglami(w, p, gotowe)
+        bl = w[:wegly_reczne] ? nil : SymetriaWegly.blizniak(w, gotowe)
+        wynik = bl ? SymetriaWegly.styki(w, bl, p) : nil
+        wynik ||= StykiDzialowe.planuj(w, p)
+        wynik || case p['styk_uklad']
+                 when 'para', 'jeden_wegiel' then z_regionow(w, p, dobierz_regiony(w, p))
+                 else na_przemian(w, p)
+                 end
       end
 
       # Położenia styków w wieńcu o indeksie i (0 = najniższy wieniec ściany).

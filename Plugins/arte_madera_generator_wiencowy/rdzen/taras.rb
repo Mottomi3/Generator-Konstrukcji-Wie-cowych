@@ -177,8 +177,9 @@ module ArteMadera
         end
       end
 
-      # Słupy pod frontem (s): narożniki (licem równo z licami ścian bocznych), boki wejścia, pośrednie co najwyżej
-      # taras_slupy_rozstaw_max; { slupy:, wejscie: [a, b] osi słupów przy wejściu albo nil }.
+      # Słupy pod frontem (s): narożniki (licem równo z licami ścian bocznych), boki wejścia, słup w osi kalenicy
+      # (taras_slup_w_osi – w jednej linii ze słupkiem wiązara nad nim) i pośrednie co najwyżej taras_slupy_rozstaw_max;
+      # { slupy:, wejscie: [a, b] osi słupów przy wejściu albo nil, os: s słupa w osi kalenicy albo nil }.
       def slupy_frontu(front, p)
         b = Parametry.przekroj(p, 'taras_slup_przekroj')[0]
         d = [(b - Parametry.grubosc(p)) / 2.0, 0.0].max
@@ -190,7 +191,8 @@ module ArteMadera
                   when 'lewa', 'prawa' then wejscie_z_boku(front, c1, c2, szer, p['taras_wejscie'] == 'lewa')
                   end
         wejscie = nil if wejscie && (wejscie[0] < c1 - 0.01 || wejscie[1] > c2 + 0.01)
-        stale = ([c1, c2] + (wejscie || [])).uniq.sort
+        os, wejscie = slup_w_osi(front, p, c1, c2, wejscie)
+        stale = ([c1, c2] + (wejscie || []) + (os ? [os] : [])).uniq.sort
         lista = []
         stale.each_cons(2) do |a, z|
           lista << a
@@ -198,7 +200,48 @@ module ArteMadera
           lista.concat(posrednie(a, z, p))
         end
         lista << stale.last
-        { slupy: lista, wejscie: wejscie }
+        { slupy: lista, wejscie: wejscie, os: os }
+      end
+
+      # Ostrzeżenie, gdy słup wejścia stanął w osi kalenicy i wejście ma inną szerokość w świetle niż podana; [] – bez zmian.
+      def uwagi_wejscia(sciany, p)
+        front = sciany.find { |w| front?(w) && w[:taras][:wariant] == 'podciag' }
+        return [] if front.nil?
+        sf = slupy_frontu(front, p)
+        return [] if sf[:wejscie].nil? || sf[:os].nil? || !sf[:wejscie].include?(sf[:os])
+        b = Parametry.przekroj(p, 'taras_slup_przekroj')[0]
+        swiatlo = sf[:wejscie][1] - sf[:wejscie][0] - b
+        return [] if (swiatlo - p['taras_wejscie_szerokosc'].to_f).abs < 0.5
+        [format('Wejście na taras: słup wejścia stoi w osi kalenicy (pod słupkiem trójkąta) – szerokość w świetle %.0f mm ' \
+                'zamiast %.0f. Żeby zostawić podaną szerokość, ustaw „Słup w osi – słup wejścia bliżej osi niż tyle staje ' \
+                'w osi” na 0.', swiatlo, p['taras_wejscie_szerokosc'].to_f)]
+      end
+
+      # Oś kalenicy na froncie (s) – środek osi frontu (dach dwuspadowy nad domem prostokątnym).
+      def os_frontu(front)
+        front[:dl_osi] / 2.0
+      end
+
+      # Słup w osi kalenicy (wymóg użytkownika, runda 11: słup tarasu i słupek wiązara nad nim w jednej linii):
+      # [s słupa albo nil, wejście]. Wejście z boku, którego słup stoi bliżej osi niż taras_slup_os_dociag – ten słup
+      # staje w osi (wejście szersze albo węższe o tę odległość, zamiast dwóch słupów obok siebie); oś w świetle wejścia
+      # (wejście pośrodku albo szerokie) – bez słupa w osi; pozostałe słupy pośrednie równo po obu stronach osi.
+      def slup_w_osi(front, p, c1, c2, wejscie)
+        return [nil, wejscie] unless Parametry.tak?(p, 'taras_slup_w_osi') && front[:taras][:wariant] == 'podciag'
+        sk = os_frontu(front)
+        prog = p['taras_slup_os_dociag'].to_f
+        return [nil, wejscie] if sk - c1 < prog || c2 - sk < prog
+        return [sk, nil] if wejscie.nil?
+        if %w[lewa prawa].include?(p['taras_wejscie'])
+          i = (wejscie[0] - c1).abs < 0.01 ? 1 : 0
+          if (wejscie[i] - sk).abs < prog
+            nowe = wejscie.dup
+            nowe[i] = sk
+            return [sk, nowe]
+          end
+        end
+        return [nil, wejscie] if sk > wejscie[0] + 0.01 && sk < wejscie[1] - 0.01
+        [sk, wejscie]
       end
 
       # Osie słupów przy wejściu z lewej / prawej strony frontu (patrząc na front z zewnątrz).

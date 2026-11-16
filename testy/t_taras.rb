@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_taras.rb
 # Zadanie: taras – obrys przedłużony o głębokość, ściana domu ze szczytem, wariant 1100 (podciąg z górnych wieńców, słupy, wejście, balustrada z przekładkami) i 1200 (ściany boczne pełne, front bez bali), dach nad tarasem, strona tarasu, kiedy tarasu nie ma.
-# Tematy: testy tarasu, szczyt nad tarasem w testach, zamki słupów w testach, taras 1100 w testach, taras 1200 w testach, słupy tarasu w testach, balustrada w testach, wejście na taras w testach
+# Tematy: testy tarasu, słup w osi kalenicy w testach, front tarasu na styk w testach, zamek płatwi nad tarasem w testach, szczyt nad tarasem w testach, zamki słupów w testach, taras 1100 w testach, taras 1200 w testach, słupy tarasu w testach, balustrada w testach, wejście na taras w testach
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, testy/losowe_domy.rb (sprawdzenie domu), Plugins/.../rdzen/taras.rb, rdzen/taras_balustrada.rb, rdzen/taras_slupy.rb, rdzen/taras_szczyt.rb
 # Używają: testy/uruchom.sh
 
@@ -66,7 +66,7 @@ end
 sl = slupy(pl)
 xs = sl.map { |e| srodek(e)[0].round(1) }.uniq
 ys_front = sl.select { |e| (srodek(e)[0] - 6340.0).abs < 0.5 }.map { |e| srodek(e)[1].round(1) }.sort
-Testy.rowne(ys_front, [60.0, 1380.0, 2660.0, 3940.0], 'słupy frontu licem z licami ścian: narożniki, wejście 1200 z lewej (od y = 0), pośredni ≤ 2000')
+Testy.rowne(ys_front, [60.0, 1380.0, 2000.0, 3940.0], 'słupy frontu licem z licami ścian: narożniki, wejście 1200 z lewej (od y = 0), słup w osi kalenicy (runda 11)')
 Testy.rowne(sl.length - ys_front.length, 2, 'po jednym słupie pośrednim pod ścianami bocznymi (2444 > 2000)')
 Testy.sprawdz(xs.length == 2, "słupy tylko pod frontem i w połowie ścian bocznych (#{xs.inspect})")
 Testy.rowne(sl.map { |e| [e[:b], e[:h]] }.uniq, [[120.0, 120.0]], 'przekrój słupa 120 × 120')
@@ -84,10 +84,11 @@ bok_b = bal.select { |b| b[:sciana].equal?(boki[0]) }
 Testy.rowne(bok_b.count { |b| b[:dl] > 400 }, 10, 'ściana boczna: 2 przęsła × (półbal + 4 bale)')
 Testy.sprawdz(bok_b.select { |b| b[:dl] < 400 }.all? { |b| (b[:dl] - 300).abs < 0.01 }, 'przekładki 300')
 fr_b = bal.select { |b| b[:sciana].equal?(front) }
-Testy.rowne(fr_b.count { |b| b[:dl] > 400 }, 8, 'front: 2 przęsła × 4 bale (wejście bez balustrady)')
+Testy.rowne([fr_b.count { |b| b[:dl] > 1000 }, fr_b.count { |b| (b[:dl] - 500.0).abs < 0.01 }], [4, 7],
+            'front: przęsło szerokie – 4 bale, wąskie przy słupie w osi (500) – wypełnione w 7 wieńcach; wejście bez balustrady')
 Testy.sprawdz(bal.all? { |b| b[:z0] + b[:h] <= (b[:sciana].equal?(front) ? z_front : z_bok) + 0.01 }, 'balustrada pod podciągiem')
 Testy.rowne(fr_b.map { |b| b[:i] }.uniq.sort, [0, 1, 2, 3, 4, 5, 6], 'front: 7 wieńców balustrady (4 bale i 3 rzędy przekładek)')
-Testy.sprawdz(fr_b.select { |b| b[:dl] > 400 }.map { |b| b[:i] }.uniq.sort == [0, 2, 4, 6], 'front: bale w wieńcach 0, 2, 4, 6')
+Testy.sprawdz(fr_b.select { |b| b[:dl] > 1000 }.map { |b| b[:i] }.uniq.sort == [0, 2, 4, 6], 'front: bale w wieńcach 0, 2, 4, 6')
 Testy.sprawdz(bok_b.select { |b| b[:dl] > 400 }.map { |b| b[:i] }.uniq.sort == [0, 1, 3, 5, 7], 'ściana boczna: półbal i bale 1, 3, 5, 7')
 pp = pl[:elementy].select { |e| e[:prefiks] == 'P' }
 konce = pp.flat_map { |e| [e[:polozenie][:poczatek][0], e[:polozenie][:poczatek][0] + e[:polozenie][:x][0] * e[:dl]] }
@@ -103,7 +104,7 @@ end
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'srodek'))
 Testy.rowne(y_front.call(pl), [60.0, 1340.0, 2660.0, 3940.0], 'pośrodku: słupy symetrycznie, światło 1200')
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'prawa'))
-Testy.rowne(y_front.call(pl), [60.0, 1340.0, 2620.0, 3940.0], 'z prawej: wejście przy y = 4000')
+Testy.rowne(y_front.call(pl), [60.0, 2000.0, 2620.0, 3940.0], 'z prawej: wejście przy y = 4000, słup w osi kalenicy (runda 11)')
 pl = plan_pelny(seg, par.merge('taras_wejscie' => 'brak'))
 Testy.rowne(y_front.call(pl), [60.0, 2000.0, 3940.0], 'bez wejścia: słup pośredni co ≤ 2000')
 Testy.rowne(pl[:bale].count { |b| b[:taras] && b[:sciana][:taras][:rola] == :front && b[:dl] > 400 }, 8, 'bez wejścia: balustrada na całym froncie')
@@ -214,6 +215,7 @@ pr3b, pl3b = LosoweDomy.sprawdz(d35.merge(parametry: d35[:parametry].merge('tara
 Testy.rowne([pr3b, pl3b[:elementy].count { |e| e[:prefiks] == 'Wt' }], [[], 6], 'kąt 0 – zastrzały do połowy krokwi, bez problemów')
 pr3c, pl3c = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar' => 'zastrzaly')))
 Testy.rowne([pr3c, pl3c[:elementy].count { |e| e[:prefiks] == 'Wt' }], [[], 4], 'dom 4 m, 20° – za mało miejsca na zastrzały, wiązar bez nich')
+Testy.rowne(pl3c[:ostrzezenia].grep(/zastrzały się nie mieszczą/).length, 1, 'pominięte zastrzały – ostrzeżenie (runda 11)')
 pr4, pl4 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar_podparcie' => 'slupy', 'taras_wiazar' => 'zastrzaly')))
 Testy.rowne(pr4, [], 'wiązar na słupach – bez problemów')
 f4 = pl4[:sciany].find { |w| Taras.front?(w) }
@@ -243,5 +245,82 @@ Testy.rowne(gory[0].round(2), gory[1].round(2), 'poręcz frontu i boku na jednej
 Testy.rowne(kolizje_belek(pl, 'S', 5), 0, 'słupy z wyciętym pasem – bez kolizji z balami')
 _pr, pl = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_zakladka' => 'nie')))
 Testy.rowne(sciana(pl, 'W-1')[:bale].select { |b| b[:z0] < 900.0 }.map { |b| b[:s1] }.max, 5978.0, 'bez zakładki – koniec równo z licem frontu')
+
+Testy.grupa('Słup w osi kalenicy, wiązar z jednego przekroju, zamek płatwi tylko od spodu, front łączony na styk (runda 11)')
+d = { segmenty: prostokat(0, 0, 6000, 4000), otwory: [],
+      parametry: { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'taras_szczyt' => 'pusty', 'taras_wiazar' => 'zastrzaly',
+                   'taras_wejscie' => 'lewa', 'dach_kat' => 30, 'platwa_przekroj' => '60x200', 'platwie_rozstaw_max' => 900,
+                   'taras_wience_gorne' => 1, 'taras_szczyt_bale' => 0 } }
+problemy, pl = LosoweDomy.sprawdz(d)
+Testy.rowne([problemy, pl[:ostrzezenia].grep(/zastrzały/)], [[], []], 'domek letniskowy z tarasem i trójkątem – bez problemów')
+front = pl[:sciany].find { |w| Taras.front?(w) }
+sf = Taras.slupy_frontu(front, pl[:parametry])
+Testy.rowne([sf[:os], sf[:slupy].include?(front[:dl_osi] / 2.0)], [front[:dl_osi] / 2.0, true], 'słup frontu w osi kalenicy')
+wt = pl[:elementy].select { |e| e[:prefiks] == 'Wt' }
+slupek = wt.find { |e| (e[:b] - 120.0).abs < 0.01 }
+os_slupka = slupek[:polozenie][:poczatek][1] + slupek[:polozenie][:y][1] * slupek[:b] / 2.0
+sl_os = slupy(pl).map { |e| srodek(e)[1] }.min_by { |y| (y - os_slupka).abs }
+Testy.rowne([os_slupka.round(2), sl_os.round(2)], [2000.0, 2000.0], 'słup tarasu i słupek trójkąta nad nim w jednej linii (oś 2000)')
+Testy.rowne(wt.length, 6, 'trójkąt: krokwie, belka dolna, słupek 120 i dwa zastrzały 100 (własne szerokości – domyślnie)')
+# Wejście z boku blisko osi – słup wejścia staje w osi (zamiast dwóch słupów obok siebie).
+pl3 = plan_pelny(prostokat(0, 0, 6000, 3000), d[:parametry])
+f3 = pl3[:sciany].find { |w| Taras.front?(w) }
+s3 = Taras.slupy_frontu(f3, pl3[:parametry])
+Testy.rowne([s3[:slupy].map { |x| x.round(1) }, s3[:wejscie].map { |x| x.round(1) }], [[38.0, 1478.0, 2918.0], [38.0, 1478.0]],
+            'dom 3 m: słup wejścia (1358) bliżej osi niż 500 – stoi w osi 1478, wejście szersze o 120')
+Testy.rowne(pl3[:ostrzezenia].grep(/szerokość w świetle 1320 mm zamiast 1200/).length, 1, 'ostrzeżenie o zmienionej szerokości wejścia')
+Testy.rowne(pl[:ostrzezenia].grep(/Wejście na taras/), [], 'dom 4 m: wejście bez zmian – bez ostrzeżenia')
+pl3 = plan_pelny(prostokat(0, 0, 6000, 3000), d[:parametry].merge('taras_slup_os_dociag' => 0))
+Testy.rowne(Taras.slupy_frontu(pl3[:sciany].find { |w| Taras.front?(w) }, pl3[:parametry])[:slupy].map { |x| x.round(1) },
+            [38.0, 1358.0, 1478.0, 2918.0], 'dociąganie 0 – słup wejścia i słup w osi osobno')
+pl4 = plan_pelny(d[:segmenty], d[:parametry].merge('taras_slup_w_osi' => 'nie'))
+f4 = pl4[:sciany].find { |w| Taras.front?(w) }
+Testy.rowne(Taras.slupy_frontu(f4, pl4[:parametry])[:slupy].map { |x| x.round(1) }, [38.0, 1358.0, 2638.0, 3918.0],
+            'słup w osi wyłączony – pośrednie równo, jak w kompilacji 10')
+pl5 = plan_pelny(d[:segmenty], d[:parametry].merge('taras_wejscie' => 'srodek'))
+f5 = pl5[:sciany].find { |w| Taras.front?(w) }
+Testy.rowne(Taras.slupy_frontu(f5, pl5[:parametry])[:os], nil, 'wejście pośrodku – oś w świetle wejścia, bez słupa w osi')
+# Słupek i zastrzały z przekroju wiązara (płatwi) – do wyboru.
+pr6, pl6 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_wiazar_przekroje' => 'jak_wiazar')))
+wt6 = pl6[:elementy].select { |e| e[:prefiks] == 'Wt' }
+Testy.rowne([pr6, wt6.length, wt6.count { |e| (e[:b] - 200.0).abs < 0.01 }], [[], 6, 1],
+            'jak reszta trójkąta: słupek szerokości 200 (wysokość płatwi 60 × 200), z zastrzałami – bez problemów')
+Testy.rowne([TarasWiazar.szerokosc_czlonu(pl6[:parametry], 'taras_wiazar_zastrzal'), TarasWiazar.szerokosc_czlonu(pl[:parametry], 'taras_wiazar_zastrzal')],
+            [200.0, 100.0], 'zastrzały: 200 jak płatew albo własne 100')
+# Zamek płatwi nad trójkątem tylko od spodu (domyślnie) – bez wrębów bocznych, gniazdo na pełną szerokość płatwi.
+pw = pl[:elementy].select { |e| e[:prefiks] == 'P' }
+nad = pw.map { |e| e[:wreby].find { |x| x[2] } || [] }
+Testy.sprawdz(nad.all? { |x0, x1, bok| bok == 0.0 && (x1 - x0 - 62.0).abs < 0.01 }, "płatwie nad trójkątem: wrąb tylko od spodu na grubości wiązara (#{nad.first.inspect})")
+Testy.sprawdz(pw.all? { |e| e[:wreby].count { |x| x[2].nil? } >= 2 }, 'w ścianach domu wręby z boków i od spodu – bez zmian')
+Testy.rowne(ZamekPlatwi.przekroj_wrebu([[0.0, 0.0], [60.0, 0.0], [60.0, 200.0], [0.0, 200.0]], 60.0, ZamekPlatwi.wrab_odcinka({ bok: 5.0, dol: 10.0 }, 0.0)),
+            [[60.0, 10.0], [60.0, 200.0], [0.0, 200.0], [0.0, 10.0]], 'przekrój płatwi w wrębie tylko od spodu – pełna szerokość, 10 wyżej')
+gn = TarasWiazar.gniazda_platwi(TarasWiazar.uklad(front, pl[:parametry]), pl[:parametry])
+Testy.sprawdz(gn.all? { |v0, v1, _z| (v1 - v0 - 60.0).abs < 0.01 }, 'gniazda w krokwiach trójkąta na pełną szerokość płatwi (60)')
+Testy.rowne(kolizje_elementow(pl, 'Wt', 'P'), 0, 'płatwie w gniazdach trójkąta – bez kolizji')
+pr7, pl7 = LosoweDomy.sprawdz(d.merge(parametry: d[:parametry].merge('taras_platwa_zamek' => 'pelny')))
+pw7 = pl7[:elementy].select { |e| e[:prefiks] == 'P' }
+Testy.rowne([pr7, pw7.all? { |e| e[:wreby].all? { |x| x[2].nil? } }], [[], true], 'zamek z boków i od spodu – do wyboru, bez problemów')
+# Front tarasu bez kontrfor: bez węgła na środku, bale dłuższe niż maksymalny łączone na styk nad słupem.
+d8 = { segmenty: prostokat(0, 0, 7000, 8000), otwory: [],
+       parametry: d[:parametry].merge('kalenica' => 'x', 'wegly_srodek' => 'zewnetrzne', 'max_dlugosc' => 7000, 'mijanka' => 400,
+                                      'taras_szczyt_bale' => 2) }
+pr8, pl8 = LosoweDomy.sprawdz(d8)
+f8 = pl8[:sciany].find { |w| Taras.front?(w) }
+Testy.rowne(pr8, [], 'dom 8 m z tarasem – bez problemów')
+Testy.rowne(pl8[:sciany].count { |k| k[:rodzaj] == :kontrfor && k[:gospodarz].equal?(f8) }, 0,
+            'front tarasu bez kontrfor: bez węgła na środku i bez węgłów pod styki')
+st8 = f8[:styki]
+dolny = f8[:bale].reject { |b| b[:taras] }.select { |b| (b[:z0] - f8[:taras][:z_front]).abs < 0.01 }.sort_by { |b| b[:s0] }
+os8 = Taras.slupy_frontu(f8, pl8[:parametry])[:slupy]
+Testy.sprawdz(st8[:na_styk] && dolny.length == 2 && os8.any? { |s| (s - dolny[0][:s1]).abs < 0.01 },
+              "najniższy bal podciągu łączony na styk w osi słupa (#{dolny.map { |b| [b[:s0].round, b[:s1].round] }.inspect})")
+wyzej = f8[:bale].reject { |b| b[:taras] }.select { |b| b[:konce][1] == :styk }.group_by { |b| b[:i] - dolny[0][:i] }
+Testy.rowne([wyzej[1].map { |b| (b[:s1] - dolny[0][:s1]).round(1) }, wyzej[2].map { |b| (b[:s1] - dolny[0][:s1]).round(1) }], [[400.0], [0.0]],
+            'wieniec wyżej łączony o mijankę 400 dalej, kolejny znowu nad słupem – na przemian')
+k8 = Kontrola.wszystko(pl8)
+Testy.rowne([k8[:styki_bez_zamka], k8[:mijanka], pl8[:ostrzezenia].grep(/styk bez zamka/)], [[], [], []], 'styk na styk – bez ostrzeżeń o zamku i mijance')
+pl9 = plan_pelny(d8[:segmenty], d8[:parametry].merge('taras_styk' => 'wegly'))
+f9 = pl9[:sciany].find { |w| Taras.front?(w) }
+Testy.sprawdz(pl9[:sciany].any? { |k| k[:rodzaj] == :kontrfor && k[:gospodarz].equal?(f9) && k[:zrodlo] == :styk }, 'łączenie w zamkach kontrfor – do wyboru')
 
 Testy.koniec

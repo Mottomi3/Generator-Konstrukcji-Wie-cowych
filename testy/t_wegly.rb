@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_wegly.rb
 # Zadanie: testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory.
-# Tematy: testy węgłów, węgieł pod płatwią w testach, wolny koniec w testach, światło ściany, ściana wysoka, węgieł od narożnika, tylko narysowane, łączenie na przemian, styk przy otworze, dom 4 × 4
+# Tematy: testy węgłów, węgieł pod płatwią w testach, słupki pod płatwiami do wyboru w testach, wolny koniec w testach, światło ściany, ściana wysoka, węgieł od narożnika, tylko narysowane, łączenie na przemian, styk przy otworze, dom 4 × 4
 # Zależy od: testy/pomoc.rb
 # Używają: testy/uruchom.sh
 
@@ -217,5 +217,51 @@ Testy.sprawdz(kf && (kf[:a][0] - (2500.0 - 122.0)).abs < 0.01, 'wolny koniec 250
 czysto(wolny, 'węgieł na wolnym końcu')
 krotki = plan(prostokat(0, 0, 6000, 8000) + [[[0, 4000], [900, 4000]]])
 Testy.rowne(krotki[:sciany].count { |k| k[:wolny_koniec] }, 0, 'wolny odcinek krótszy niż 1000 – bez węgła')
+
+Testy.grupa('Słupki z kontrfor pod płatwiami do wyboru, węgieł w osi płatwi, płatew zawsze na balu węgła (runda 11)')
+# Luka między spodem płatwi a wierzchem górnego bala węgła pod nią [mm] (bal ścięty pod płatew – od dna wycięcia).
+def luka_pod_platwia(kf)
+  b = kf[:bale].max_by { |x| x[:z0] }
+  wyc = b[:cechy].select { |x| x[:typ] == 'wyciecie_gora' }.map { |x| x[:gleb] }.max || 0.0
+  kf[:pod_platwia][:z_spod] - (b[:z0] + b[:h] - wyc)
+end
+# Węgły pod płatwiami na ścianie szczytowej W-2 domu szer × 7000 (kalenica wzdłuż x).
+def pod_platwiami_w2(szer, par)
+  pl = plan_pelny(prostokat(0, 0, 7000, szer), par)
+  [pl, pl[:sciany].select { |k| k[:rodzaj] == :kontrfor && k[:pod_platwia] && k[:gospodarz][:id] == 'W-2' }]
+end
+letni = { 'platwa_przekroj' => '60x200', 'platwie_rozstaw_max' => 900, 'dach_kat' => 30, 'platwa_zamek_dol' => 10, 'max_dlugosc' => 7000 }
+pl, pod = pod_platwiami_w2(4000, letni)
+Testy.rowne(pod.length, 5, 'domyślnie – słupek pod każdą z 5 płatwi')
+pl, pod = pod_platwiami_w2(4000, letni.merge('wegly_pod_platwiami_ktore' => 'kalenicowa'))
+Testy.rowne([pod.length, pod.map { |k| k[:pod_platwia][:rodzaj] }], [1, ['kalenicowa']], 'tylko pod kalenicową – jeden słupek w osi szczytu')
+Testy.sprawdz(luka_pod_platwia(pod[0]).abs < 1.1, "płatew kalenicowa leży na słupku (luka #{luka_pod_platwia(pod[0]).round(2)})")
+czysto(pl, 'tylko pod kalenicową')
+pl, pod = pod_platwiami_w2(4000, letni.merge('wegly_pod_platwiami' => 'nie'))
+Testy.rowne([pod.length, pl[:sciany].count { |k| k[:zrodlo] == :platwa }], [0, 0], 'nie – bez słupków pod płatwiami (mały domek)')
+# Węgieł na środku ściany stoi w osi płatwi kalenicowej – ma ją podpierać (wcześniej kończył się pod połacią).
+pl, pod = pod_platwiami_w2(5000, letni.merge('wegly_srodek' => 'zewnetrzne'))
+kal = pod.find { |k| k[:pod_platwia][:rodzaj] == 'kalenicowa' }
+Testy.sprawdz(kal && kal[:srodek] && kal[:zrodlo] == :rysunek, 'węgieł ze środka ściany w osi kalenicowej – jest węgłem pod płatwią')
+Testy.sprawdz(kal && luka_pod_platwia(kal).abs < 1.1, "płatew kalenicowa leży na ostatnim balu węgła ze środka ściany (luka #{kal ? luka_pod_platwia(kal).round(2) : '-'})")
+Testy.rowne(pl[:sciany].count { |k| k[:rodzaj] == :kontrfor && k[:gospodarz][:id] == 'W-2' && (k[:a][1] - 2500.0).abs < 1.0 }, 1,
+            'w osi kalenicy jeden węgieł – bez drugiego obok')
+Testy.rowne(kolizje_belek(pl, 'P', 5), 0, 'płatwie bez kolizji z węgłem ze środka ściany')
+czysto(pl, 'węgieł ze środka pod kalenicową')
+pl, pod = pod_platwiami_w2(5000, letni.merge('wegly_srodek' => 'zewnetrzne', 'wegly_pod_platwiami' => 'nie'))
+Testy.rowne(pod.length, 0, 'nie – węgieł ze środka zostaje zwykłym węgłem')
+# Bal węgła pod płatwią pełny albo nie cieńszy niż najcieńszy pasek – dach obniżony / płatew pośrednia przesunięta.
+luki = (3000..7000).step(250).map do |szer|
+  _pl, pod = pod_platwiami_w2(szer, letni)
+  [szer, pod.map { |k| luka_pod_platwia(k) }.max || 0.0, pod.length]
+end
+Testy.sprawdz(luki.all? { |_s, l, n| l < 1.1 && n >= 3 },
+              "domy 3,0–7,0 m co 250: każda płatew leży na węgle (największe luki: #{luki.select { |_s, l, _n| l >= 1.1 }.map { |s, l, _n| [s, l.round(1)] }.inspect})")
+Testy.rowne([PlatwieWience.pasek_wegla(69.5 + 139.0 * 20, p), PlatwieWience.pasek_wegla(69.5 + 139.0 * 20 + 17.8, p).round(1)], [0.0, 17.8],
+            'pasek bala węgła – wieńce węgła przesunięte o pół bala')
+Testy.sprawdz(PlatwieWience.wegiel_pod?(p, 'kalenicowa') && !PlatwieWience.wegiel_pod?(p, 'scienna') &&
+              !PlatwieWience.wegiel_pod?(p.merge('wegly_pod_platwiami' => 'nie'), 'kalenicowa') &&
+              !PlatwieWience.wegiel_pod?(p.merge('wegly_pod_platwiami_ktore' => 'kalenicowa'), 'posrednia'),
+              'bal węgła pilnowany tylko pod płatwiami, pod którymi stoi węgieł')
 
 Testy.koniec

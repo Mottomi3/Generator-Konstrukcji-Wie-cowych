@@ -4,7 +4,7 @@
 # Plik: rdzen/wegly_tabela.rb
 # Zadanie: węgły (kontrfory) wstawiane jak okna i drzwi – z tabeli w oknie (ściana, od narożnika albo na środku) i automatycznie na środku ścian (parametr).
 # Tematy: tabela węgłów, lista węgłów do okna, przesuwanie węgłów, węgieł z tabeli, kontrfor z tabeli, węgieł na środku ściany, węgły na środku automatycznie, położenie węgła od narożnika
-# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce)
+# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/taras.rb (front tarasu – bez węgła na środku)
 # Używają: rdzen/projekt.rb (po otworach, przed stykami i węgłami usztywniającymi), sketchup/sterowanie.rb (lista węgłów do okna)
 #
 # Wejście domu 'wegly' => [{ 'sciana' => 'W-1', 'polozenie' => 'od' | 'srodek', 'od' => mm, 'wewn' => mm, 'zewn' => mm
@@ -12,6 +12,8 @@
 # lica zewnętrznego (jak „od” okna; działowa – od początku osi), srodek – na środku osi ściany. Parametr wegly_srodek
 # (zewnętrzne / wszystkie) dostawia węgieł na środku każdej ściany o osi nie krótszej niż wegly_srodek_min. Miejsce
 # zajęte (skrzyżowanie, otwór) – najbliższe wolne w odległości do pół metra, z ostrzeżeniem; dalej – pominięty.
+# Front tarasu (podciąg na słupach, szczyt albo trójkąt nad tarasem) nie dostaje węgła na środku – nie ma pod nim
+# ściany, a w osi stoi słup (wymóg użytkownika, runda 11: w trójkącie nad tarasem bez kontrfor i zamków).
 # Węgły z tabeli są jak narysowane (zrodlo :rysunek): styki i węgły usztywniające biorą je pod uwagę.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
@@ -78,7 +80,10 @@ module ArteMadera
       def na_srodku(glowne, p)
         tryb = p['wegly_srodek'].to_s
         return [] if tryb == 'nie'
-        glowne.select { |w| (tryb == 'wszystkie' || w[:rodzaj] == :zewnetrzna) && w[:dl_osi] >= p['wegly_srodek_min'].to_f - 0.01 }
+        glowne.select do |w|
+          next false if Taras.front?(w)
+          (tryb == 'wszystkie' || w[:rodzaj] == :zewnetrzna) && w[:dl_osi] >= p['wegly_srodek_min'].to_f - 0.01
+        end
       end
 
       # Środek osi ściany (s).

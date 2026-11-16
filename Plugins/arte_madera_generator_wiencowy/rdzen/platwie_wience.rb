@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/platwie_wience.rb
 # Zadanie: płatwie oparte na pełnym balu – obniżenie dachu i przesunięcie płatwi pośrednich tak, żeby pod gniazdem płatwi nie zostawał pasek bala cieńszy niż najcieńszy dopuszczalny (bez przerw pod płatwią).
-# Tematy: płatew na balu, płatew w powietrzu, przerwa pod płatwią, pasek pod gniazdem, obniżenie dachu, przesunięcie płatwi, dopasowanie płatwi do wieńców, jeden przekrój płatwi
+# Tematy: płatew na balu, płatew w powietrzu, przerwa pod płatwią, pasek pod gniazdem, obniżenie dachu, przesunięcie płatwi, dopasowanie płatwi do wieńców, jeden przekrój płatwi, płatew na balu węgła, luka między węgłem a płatwią
 # Zależy od: rdzen/parametry.rb, rdzen/dach.rb (płatew, linia podparcia – wywołuje ten plik)
 # Używają: rdzen/dach.rb (linia podparcia – obniżenie, płatwie pośrednie – położenia), rdzen/dach_jednospadowy.rb
 #
@@ -15,6 +15,10 @@
 # 2. płatwie pośrednie przesunięte (najwyżej platwie_przesuniecie_max) w stronę okapu albo kalenicy tak samo, bez
 #    przekroczenia rozstawu płatwi;
 # 3. czego się nie da – pasek zostaje (rdzen/otwory.rb nie wycina paska pod gniazdem), bez przerwy.
+# Węgły pod płatwiami (rdzen/wegly_konstrukcyjne.rb, runda 11): wieńce węgła są przesunięte o pół bala względem szczytu,
+# a jego górny bal cieńszy niż najcieńszy pasek nie powstaje – płatew wisiała wtedy nad węgłem (do 20 mm, np. kalenicowa
+# w domu 3,25 m). Obniżenie dachu i przesunięcie płatwi pośrednich pilnują więc także bala węgła: pełny albo nie cieńszy
+# niż najcieńszy pasek (pasek_wegla) – płatew zawsze leży na węgle.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -26,7 +30,8 @@ module ArteMadera
       KLUCZE = %w[dach_kat dach_rodzaj dach_spadek dach_podniesienie liczba_wiencow dach_uklad platwa_przekroj
                   platwa_kalenicowa_przekroj platwa_scienna_przekroj platwie_jeden_przekroj platwie_rozstaw_max
                   platwa_na_scianie platwa_scienna_polozenie platwie_sciecie min_pasek_przy_otworze platwie_na_wiencach
-                  dach_obnizenie_max platwie_przesuniecie_max zamek preset platwie_zamki platwa_zamek_dol].freeze unless const_defined?(:KLUCZE)
+                  dach_obnizenie_max platwie_przesuniecie_max zamek preset platwie_zamki platwa_zamek_dol szczyty
+                  wegly_pod_platwiami wegly_pod_platwiami_ktore podbitka].freeze unless const_defined?(:KLUCZE)
       # Pamięć obniżeń: klucz (osie ścian okapowych i parametry) → d [mm].
       PAMIEC = {} unless const_defined?(:PAMIEC)
       # Tolerancja „pasek zerowy” [mm].
@@ -57,6 +62,31 @@ module ArteMadera
         r < TOL || r >= p['min_pasek_przy_otworze'].to_f - TOL
       end
 
+      # Czy pod płatwią danego rodzaju staje węgieł, którego górny bal ma ją podpierać (parametry węgłów pod płatwiami;
+      # płatew ścienna leży przy ścianie okapowej, podbitka pod płatwiami – węgieł kończy się pod deskami).
+      def wegiel_pod?(p, rodzaj)
+        return false unless Parametry.tak?(p, 'szczyty') && rodzaj != 'scienna'
+        return false if p['wegly_pod_platwiami'].to_s == 'nie' || p['podbitka'].to_s == 'pod_platwiami'
+        p['wegly_pod_platwiami_ktore'].to_s != 'kalenicowa' || rodzaj == 'kalenicowa'
+      end
+
+      # Pasek górnego bala węgła pod płatwią o spodzie z [mm] (0 … krycie): wieńce węgła zaczynają się półbalem – są
+      # przesunięte o pół krycia względem wieńców szczytu.
+      def pasek_wegla(z, p)
+        k = Parametry.krycie(p)
+        r = (z - k / 2.0) % k
+        r > k - TOL ? 0.0 : r
+      end
+
+      # Czy płatew danego rodzaju o spodzie z leży dobrze: w ścianie (pasek_ok?) i – gdy stoi pod nią węgieł – na pełnym
+      # balu węgła albo nad paskiem nie cieńszym niż najcieńszy.
+      def oparcie_ok?(z, p, rodzaj)
+        return false unless pasek_ok?(z, p)
+        return true unless wegiel_pod?(p, rodzaj)
+        r = pasek_wegla(z, p)
+        r < TOL || r >= p['min_pasek_przy_otworze'].to_f - TOL
+      end
+
       # Obniżenie dachu d [mm] dla przekroju geo (osie ścian okapowych) – w pamięci; podczas liczenia samo zwraca 0.
       def obnizenie(geo, p)
         # Skrzydło boczne domu L – obniżenie dachu głównego (ten sam poziom okapu obu dachów, rdzen/skrzydla.rb).
@@ -69,29 +99,33 @@ module ArteMadera
         PAMIEC[klucz] = szukaj_obnizenia(Dach.platwie(geo, p), p)
       end
 
-      # Najmniejsze d (0 … dach_obnizenie_max), przy którym płatwie o stałym położeniu mają pasek_ok?; płatew stojąca na
-      # ścianie wyznacza dach – bez obniżenia. Kandydaci: 0, d dające pasek 0 i pasek równy najcieńszemu.
+      # Najmniejsze d (0 … dach_obnizenie_max), przy którym płatwie o stałym położeniu mają oparcie_ok? (ściana i węgieł
+      # pod płatwią); płatew stojąca na ścianie wyznacza dach – bez obniżenia. Kandydaci: 0, d dające pasek 0 i pasek
+      # równy najcieńszemu – w ścianie i w węgle.
       def szukaj_obnizenia(platwie, p)
         return 0.0 if Parametry.tak?(p, 'platwa_na_scianie') && p['platwa_scienna_polozenie'] == 'na_scianie'
-        stale = platwie.reject { |pl| pl[:rodzaj] == 'posrednia' }.map { |pl| pl[:z_spod] }
-        return 0.0 if stale.empty? || stale.all? { |z| pasek_ok?(z, p) }
+        stale = platwie.reject { |pl| pl[:rodzaj] == 'posrednia' }
+        return 0.0 if stale.empty? || stale.all? { |pl| oparcie_ok?(pl[:z_spod], p, pl[:rodzaj]) }
         k = Parametry.krycie(p)
         mp = p['min_pasek_przy_otworze'].to_f
         dmax = p['dach_obnizenie_max'].to_f
         kandydaci = [0.0]
-        stale.each do |z|
-          r = pasek(z, p)
+        stale.each do |pl|
+          r = pasek(pl[:z_spod], p)
           kandydaci << r << r + k << (r - mp) % k
+          next unless wegiel_pod?(p, pl[:rodzaj])
+          r2 = pasek_wegla(pl[:z_spod], p)
+          kandydaci << r2 << r2 + k << (r2 - mp) % k
         end
         kandydaci.select { |d| d >= 0.0 && d <= dmax + TOL }.sort.each do |d|
-          return d if stale.all? { |z| pasek_ok?(z - d, p) }
+          return d if stale.all? { |pl| oparcie_ok?(pl[:z_spod] - d, p, pl[:rodzaj]) }
         end
         0.0
       end
 
       # Położenia płatwi pośrednich (v) między oparciami v0 i v1 (kier – w stronę v1, w górę połaci): równo, potem każda
-      # z za cienkim paskiem przesunięta na pełny bal albo na najcieńszy pasek (najmniejsze przesunięcie, rozstaw
-      # dotrzymany). Blok: v → spód płatwi (Dach.platwa).
+      # z za cienkim paskiem (w ścianie albo w węgle pod nią) przesunięta na pełny bal albo na najcieńszy pasek
+      # (najmniejsze przesunięcie, rozstaw dotrzymany). Blok: v → spód płatwi (Dach.platwa).
       def polozenia(v0, v1, n, p, kier)
         dl = (v1 - v0).abs
         rowne = (1..n).map { |j| v0 + kier * j * dl / (n + 1) }
@@ -105,17 +139,22 @@ module ArteMadera
         poprz = v0
         rowne.each_with_index do |v, j|
           z = yield(v)
-          if pasek_ok?(z, p)
+          if oparcie_ok?(z, p, 'posrednia')
             wynik << v
             poprz = v
             next
           end
           r = pasek(z, p)
           zostalo = n - j
-          kandydaci = [-r / tg, (k - r) / tg, (mp - r) / tg].map { |dv| v + kier * dv }.sort_by { |c| (c - v).abs }
+          dz = [-r, k - r, mp - r]
+          if wegiel_pod?(p, 'posrednia')
+            r2 = pasek_wegla(z, p)
+            dz.concat([-r2, k - r2, mp - r2])
+          end
+          kandydaci = dz.map { |d| v + kier * d / tg }.sort_by { |c| (c - v).abs }
           wybor = kandydaci.find do |c|
             (c - v).abs <= przes + 0.01 && (c - poprz) * kier > 0.0 && (c - poprz).abs <= lmax &&
-              (v1 - c).abs / zostalo <= lmax && pasek_ok?(yield(c), p)
+              (v1 - c).abs / zostalo <= lmax && oparcie_ok?(yield(c), p, 'posrednia')
           end
           wybor ||= v
           wynik << wybor

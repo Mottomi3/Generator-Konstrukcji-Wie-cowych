@@ -1,14 +1,37 @@
-# Scenariusz odbioru – kompilacja 10
+# Scenariusz odbioru – kompilacja 11
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 9). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 10 (2026-11-11)”.
+   (zastępuje kompilację 10). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 11 (2026-11-16)”.
    Aplikacja do dachów (ArteMadera Roof) **3.7.0** zainstalowana – do kroków 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
    i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 9 domów „w porządku” (ósmy: dach
    jednospadowy, dziewiąty: taras jak 1100). **Prześlij ten plik.** Model po teście pusty.
+**Nowe w kompilacji 11 (uwagi z 16 listopada):**
+
+3a. **Słupki z kontrfor pod płatwiami – do wyboru.** Sekcja „Węgły (kontrfory) 244” → „Słupki z kontrfor (węgły) pod
+   płatwiami”: „nie” → szczyty bez słupków pod płatwiami; „tak” + „Słupki pod płatwiami – pod którymi”: „tylko pod płatwią
+   kalenicową” → jeden słupek w osi szczytu.
+3b. **Płatew kalenicowa na ostatniej kontrforze.** Dom szerszy niż 4 m z „Węgieł automatycznie na środku ściany”: na
+   zewnętrznych → węgieł ze środka ściany szczytowej dochodzi do spodu płatwi kalenicowej (górny bal ścięty pod płatew).
+   Sprawdź też płatwie pośrednie: każda leży na górnym balu swojego słupka, bez szczeliny.
+3c. **Słup tarasu w osi.** Taras na słupach, wejście z lewej → pod kalenicą stoi słup, dokładnie pod słupkiem trójkąta.
+   Wąski dom (ok. 3 m): słup wejścia sam staje w osi („Słup w osi – słup wejścia bliżej osi niż tyle staje w osi”).
+3d. **Front tarasu bez kontrfor.** Dom o froncie 5 m i 8 m: na froncie tarasu nie ma kontrfory ani półzamków; przy 8 m
+   bale łączą się na styk nad słupem, w sąsiednim wieńcu o mijankę dalej („Łączenie bali frontu i szczytu nad tarasem”).
+3e. **Zamek płatwi nad trójkątem tylko od spodu.** W płatwi nad trójkątem jest tylko wrąb od spodu, bez bocznych;
+   w ścianach domu wręby jak dotąd („Zamek płatwi w szczycie nad tarasem”).
+3f. **Przekroje słupka i zastrzałów.** „Wiązar – słupek i zastrzały z przekroju”: własnego (120 i 100) albo dokładnie
+   jak reszta trójkąta.
+3g. **Wąski dom.** Dom 2 m szerokości z tarasem: trójkąt z płatwi 60 × 200 – same krokwie na balach frontu
+   i ostrzeżenie; „Szczyt pusty – wiązar (trójkąt) z przekroju”: dobranego automatycznie → cały trójkąt z małego
+   przekroju (60 × 100), w wynikach podpowiedź z nośnością.
+3h. **Dobór płatwi.** Sekcja „Szczyty i dach” → „Przekrój płatwi – dobór”: automatycznie → pola przekroju znikają,
+   w wynikach „Płatwie … – dobrane automatycznie” z przęsłem, pasem dachu, nośnością i ugięciem. Zmień „Śnieg –
+   obciążenie gruntu” z 0,9 na 2,0 → większy przekrój. Ręcznie → przy Twoim przekroju wynik sprawdzenia.
+
 **Nowe w kompilacji 10 (uwagi z 10 listopada):**
 
 2v. **Dom L – dwa dachy z koszem.** Narysuj obrys L (np. 8000 × 4000 z dobudówką 4000 × 3000), ustawienia jak u Ciebie

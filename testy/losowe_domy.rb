@@ -28,6 +28,9 @@ module LosoweDomy
   ZIARNA_R9 = 5000
   # Od tego ziarna – nowości rundy 10 (wiązar pod płatwiami, zastrzały pod kątem, poziom podciągu).
   ZIARNA_R10 = 6000 unless const_defined?(:ZIARNA_R10)
+  # Od tego ziarna – nowości rundy 11 (słupki tylko pod kalenicową, węgieł w osi płatwi, przekroje wiązara, zamek płatwi
+  # nad tarasem tylko od spodu, front tarasu łączony na styk, słup w osi kalenicy).
+  ZIARNA_R11 = 7000 unless const_defined?(:ZIARNA_R11)
 
   module_function
 
@@ -86,6 +89,7 @@ module LosoweDomy
     dodatki_r8(Random.new(ziarno * 3_331_333 + 11), p, opis) if ziarno >= ZIARNA_R8
     dodatki_r9(Random.new(ziarno * 4_256_249 + 17), p, opis) if ziarno >= ZIARNA_R9
     dodatki_r10(Random.new(ziarno * 5_117_113 + 19), p, opis) if ziarno >= ZIARNA_R10
+    dodatki_r11(Random.new(ziarno * 6_700_417 + 23), p, opis) if ziarno >= ZIARNA_R11
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -215,6 +219,28 @@ module LosoweDomy
     p['taras_wiazar'] = wybierz(r, %w[zastrzaly zastrzaly slupek])
     p['podciag_poziom'] = wybierz(r, %w[rowno rowno pod])
     opis << "r10: gniazdo wiązara #{p['taras_wiazar_gniazdo']}, zastrzały #{p['taras_wiazar_zastrzal_kat']}°, podciąg #{p['podciag_poziom']}"
+  end
+
+  # Dodatki rundy 11: słupki z kontrfor pod płatwiami tylko pod kalenicową, węgieł na środku ścian (staje w osi płatwi
+  # kalenicowej), słupek i zastrzały wiązara z przekroju wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu
+  # łączony na styk albo na węgłach, słup frontu w osi kalenicy, automatyczny dobór przekroju płatwi i trójkąta nad
+  # tarasem (śnieg z kilku stref).
+  def dodatki_r11(r, p, opis)
+    p['wegly_pod_platwiami_ktore'] = wybierz(r, %w[wszystkie wszystkie kalenicowa])
+    p['wegly_srodek'] = wybierz(r, %w[nie zewnetrzne zewnetrzne wszystkie])
+    p['taras_wiazar_przekroje'] = wybierz(r, %w[wlasne jak_wiazar])
+    p['taras_platwa_zamek'] = wybierz(r, %w[spod spod pelny])
+    p['taras_styk'] = wybierz(r, %w[styk styk wegly])
+    p['taras_slup_w_osi'] = wybierz(r, %w[tak tak nie])
+    p['taras_slup_os_dociag'] = wybierz(r, %w[0 300 500 800])
+    p['platwie_dobor'] = wybierz(r, %w[reczny reczny auto])
+    p['platwie_jeden_przekroj'] = wybierz(r, %w[tak tak nie])
+    p['dach_snieg'] = wybierz(r, %w[0.7 0.9 1.2 2.0])
+    p['taras_wieniec'] = 'auto' if r.rand < 0.35
+    opis << "r11: słupki pod #{p['wegly_pod_platwiami_ktore']}, węgieł na środku #{p['wegly_srodek']}, wiązar " \
+            "#{p['taras_wiazar_przekroje']}, zamek płatwi nad tarasem #{p['taras_platwa_zamek']}, front #{p['taras_styk']}, " \
+            "słup w osi #{p['taras_slup_w_osi']} (dociąganie #{p['taras_slup_os_dociag']}), dobór płatwi #{p['platwie_dobor']} " \
+            "(jeden przekrój #{p['platwie_jeden_przekroj']}, śnieg #{p['dach_snieg']}), trójkąt z przekroju #{p['taras_wieniec']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
