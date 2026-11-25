@@ -82,7 +82,8 @@ aplikacji do dachów wygląda na prywatne (sesja dołącza je z poświadczeniami
 
 ## 6. Następne kroki
 
-Runda 15: trzy poziomy ustawień z typami domów zapisywanymi przez użytkownika + okno z wynikiem zawsze na widoku
-(`docs/zadanie_r15.md` §1–2) – przed kodem pokazać użytkownikowi podział pól na poziomy i szkic okna. Runda 16: klikanie
-okien z okienkiem parametrów, magazyn drewna, deski. Runda 17: pół zamka (po odpowiedzi na T8), podgląd na żywo po
-odczytaniu czasów budowy. Pytania do użytkownika – `docs/stan_prac.md` §6.
+Odpowiedzi użytkownika z 2026-11-25 20:26 (T8 – szczyty na styk z przesunięciem 300, deski 14 × 115 × 4000, 45 × 120 –
+5,4 / 6) i propozycje `docs/propozycje_r15.md` zmieniły kolejność: runda 15 – zdecydowane zaległości (szczyty na styk, pół
+zamka, deski, 45 × 120) z propozycjami P1 i W2 oraz tabela podziału pól i szkic okna do akceptacji; runda 16 – typy domów
+i okno; runda 17 – klikanie okien, magazyn drewna; runda 18 – podparcia płatwi, belki dzielone. Gotowe polecenie do nowego
+okna: `docs/prompt_r15.md`. Pytania do użytkownika – `docs/stan_prac.md` §6.

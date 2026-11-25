@@ -4,7 +4,8 @@ Stan na: runda 14, kompilacja 14 (2026-11-25), wersja 1.0.0. Poprzednio: runda 1
 Testy: `bash testy/uruchom.sh` – 28 zestawów (nowe `t_zlozone`, `t_dlugosci`), 1923 sprawdzenia, FAILURES 0; zestaw
 „Ruby 2.7.8” pominięty (brak Rubiego 2.7 w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 120 losowych domów
 złożonych (`testy/zlozone_domy.rb`, ziarna 10001–10120) – bez problemów; przed rundą 19 z nich kończyło się wyjątkiem.
-Aplikacja do dachów bez zmian (3.12.0).
+Aplikacja do dachów bez zmian (3.12.0). Uzupełnione 2026-11-25 20:40 (kod bez zmian): odpowiedzi użytkownika z 20:26
+(T8, deski, 45 × 120 – `docs/zadanie_r15.md` §0), propozycje `docs/propozycje_r15.md`, polecenie na rundę 15 `docs/prompt_r15.md`.
 
 Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–14).
 Dysk użytkownika: `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` (kod, dokumenty, paczka `.rbz`,
@@ -108,13 +109,16 @@ z `rdzen/krok2.rb`) i wpis do dziennika pracy.
 
 | Decyzja | Kiedy | Stan | Runda |
 |---|---|---|---|
-| Typy domów ustawiane i predefiniowane przez użytkownika („w wolnych chwilach”); podział Standard warsztatu / Typ domu / Ten dom | 2026-11-25 | do zrobienia – `docs/zadanie_r15.md` §1 | 15 |
-| Okno: wynik zawsze na widoku, kroki w kolejności budowy, podpowiedzi po wejściu w pole | 2026-11-25 | do zrobienia – `docs/zadanie_r15.md` §2 | 15 |
-| Okna, drzwi i węgły kliknięciem w widoku ściany; przy kliknięciu okienko z parametrami; lista typowej stolarki | 2026-11-25 | do zrobienia – `docs/zadanie_r15.md` §3 | 16 |
-| Jeden magazyn drewna (tabela zamiast pięciu list) i jeden przełącznik doboru przekrojów | 2026-11-25 | podstawa gotowa w r14 (`rdzen/wykaz_drewna.rb`); tabela i przełącznik – `docs/zadanie_r15.md` §4 | 16 |
-| Deski podbitki, nadbitki i deskowania z wykazu hurtowni | 2026-11-14 | czeka na informację, której deski użytkownik używa i jakie ma krycie (§6, pytanie 2) | 16 |
-| Pół zamka w wieńcu szczytowym (zamek cięty na połowie wysokości bala, kontrfory od tego poziomu) | 2026-11-14 | czeka na decyzję T8 (§6, pytanie 1) – od niej zależy, gdzie pół zamka jest potrzebne | 17 |
-| Dom T, U, krzyż: kalenica z dachu o większej powierzchni, skrzydeł dowolnie wiele | 2026-11-14 | osobna runda razem z podłogą i tarasem domu L | po 17 |
+| T8: wieńce w szczytach ścian domu na styk z przesunięciem 300 mm (bez węgłów pod styki w szczycie) | 2026-11-25 20:26 | do zrobienia – `docs/zadanie_r15.md` §0.1 | 15 |
+| Pół zamka (zamek na połowie wysokości bala) – po T8 tylko tam, gdzie zamek zostaje niedomknięty pod połacią | 2026-11-14, zakres 2026-11-25 | do zrobienia – najpierw pomiar i rysunek dla użytkownika, §0.2 | 15 |
+| Deski nadbitki / podbitki 14 × 115 (krycie) × 4000 („zazwyczaj nadbitka”) | 2026-11-25 20:26 | do zrobienia – §0.3 (pytanie: nadbitka włączona fabrycznie?) | 15 |
+| 45 × 120: długości 5,4 / 6 m | 2026-11-25 20:26 | do zrobienia – §0.4 | 15 |
+| Propozycje po rundzie 14 (P1–P5, N1–N6, W1–W5, S1–S2) | 2026-11-25 20:40 | do decyzji – `docs/propozycje_r15.md`; domyślnie P1 i W2 w rundzie 15 | 15–18 |
+| Typy domów ustawiane i predefiniowane przez użytkownika („w wolnych chwilach”); podział Standard warsztatu / Typ domu / Ten dom | 2026-11-25 | tabela podziału pól do akceptacji w r15, kod w r16 – §1 | 16 |
+| Okno: wynik zawsze na widoku, kroki w kolejności budowy, podpowiedzi po wejściu w pole | 2026-11-25 | szkic do akceptacji w r15, kod w r16 – §2 | 16 |
+| Okna, drzwi i węgły kliknięciem w widoku ściany; przy kliknięciu okienko z parametrami; lista typowej stolarki | 2026-11-25 | do zrobienia – §3 | 17 |
+| Jeden magazyn drewna (tabela zamiast pięciu list) i jeden przełącznik doboru przekrojów | 2026-11-25 | podstawa gotowa w r14 (`rdzen/wykaz_drewna.rb`); tabela i przełącznik – §4 | 17 |
+| Dom T, U, krzyż: kalenica z dachu o większej powierzchni, skrzydeł dowolnie wiele | 2026-11-14 | osobna runda, razem ze wzorem dobudówki (propozycja N4) | po 18 |
 | Repozytorium prywatne | 2026-11-25 | do zrobienia przez użytkownika w ustawieniach GitHuba (z sesji się nie da – `docs/przekazanie_r14.md` §5) | – |
 
 Wykonane w rundzie 14 (z 2026-11-14): poprawka działowej w linii ściany, komunikat zamiast wyjątku, narożnik wklęsły
@@ -123,17 +127,16 @@ rundy 7 (`wybory_gdy` w `rdzen/parametry_dach.rb`). Z 2026-11-25: prosty odbiór
 
 ## 6. Pytania do użytkownika (krótka lista)
 
-Pełna tabela wartości przyjętych bez pytania (56 wierszy, 5 rozstrzygniętych) – `docs/pytania_otwarte.md`. Naprawdę
-potrzebne odpowiedzi:
+Pełna tabela wartości przyjętych bez pytania – `docs/pytania_otwarte.md`. Rozstrzygnięte 2026-11-25 20:26: T8 (szczyty na
+styk z przesunięciem 300), deski (14 × 115 × 4000), 45 × 120 (5,4 / 6). Naprawdę potrzebne odpowiedzi:
 
-1. **T8 – łączenie wieńców w szczytach ścian domu**: na styk z przesunięciem 300 mm (jak front tarasu od rundy 11) czy
-   w zamkach węgłów (jak dziś)? Od tego zależy zakres pół zamka w wieńcu szczytowym.
-2. **Deski**: której deski używasz na podbitkę i deskowanie (wymiar i krycie po złożeniu pióro–wpust)? W wykazie są
-   18 × 95, 21 × 145, 21 × 180, 28 × 95, 27 × 143, 27 × 193, 28 × 250.
-3. **Z9 – przybudówka**: czym podeprzeć płatwie zadaszenia w długim domu (słupki, węgły albo działowe przybudówki)?
-4. **D1a – śnieg**: w jakich strefach stoją Twoje domy (dziś 0,9 kN/m² – strefa 2)?
-5. **H21 – CNC**: co dostaje wykonawca CNC – zestawienie CSV wystarcza, czy potrzebne pliki BTLx / BVN?
-6. **45 × 120**: w wykazie długości „5,4 / 5” – czy miało być 5,4 / 6?
+1. **Nadbitka fabrycznie**: włączyć nadbitkę w ustawieniach fabrycznych, a deskowanie pełne wyłączyć?
+2. **Propozycje r15**: które bierzemy (`docs/propozycje_r15.md` §5 – domyślnie ta kolejność)?
+3. **Okna w ścianie z bala**: ościeżnica na listwie ślizgowej w czołach bali czy inaczej (propozycja N2)?
+4. **Narożniki 45°, wykusze, altany wielokątne** – budujesz (propozycja N6)?
+5. **Z9 – przybudówka**: czym podeprzeć płatwie zadaszenia w długim domu (słupki, węgły albo działowe przybudówki)?
+6. **D1a – śnieg**: w jakich strefach stoją Twoje domy (dziś 0,9 kN/m² – strefa 2)?
+7. **H21 – CNC**: co dostaje wykonawca CNC – zestawienie CSV wystarcza, czy potrzebne pliki BTLx / BVN?
 
 ## 7. Odbiór
 
@@ -151,8 +154,8 @@ pasek narzędzi i ikony, menu pod prawym przyciskiem, zapis raportu do folderu w
 - Długości handlowe: dobór bierze przekrój dostępny w całej długości tylko dla płatwi i członów zadaszenia; legary,
   podciągi, krokwie i trójkąt nad tarasem – sama podpowiedź. Belka dłuższa niż handlowa zostaje w modelu w jednym kawałku
   (łączenia generator nie rysuje).
-- Przekroje fabryczne spoza wykazu hurtowni: krokiew 50 × 150, legar ręczny 50 × 100, podciąg 100 × 150, deski 19 × 121
-  i 25 × 100 – do wymiany razem z magazynem drewna (runda 16).
+- Przekroje fabryczne spoza wykazu hurtowni: krokiew 50 × 150, legar ręczny 50 × 100, podciąg 100 × 150, deskowanie 25 × 100
+  – do wymiany razem z magazynem drewna (runda 17); deski nadbitki i podbitki 19 × 121 → 14 × 115 w rundzie 15.
 - Pasek narzędzi, menu pod prawym przyciskiem, okienko po awarii i zapis raportu do folderu sprawdzone tylko na atrapie API.
 - Próg „bez zapasu” dla podciągu (90 %) jest stałą w `rdzen/podciagi.rb`, nie parametrem.
 - Statyka zadaszenia i krokwi (runda 13) uproszczona jak dachu: bez wiatru (słupy wolnostojące wymagają stężeń), bez
@@ -192,9 +195,10 @@ pasek narzędzi i ikony, menu pod prawym przyciskiem, zapis raportu do folderu w
 
 | Runda | Zakres |
 |---|---|
-| 15 | Trzy poziomy ustawień (Standard warsztatu / Typ domu / Ten dom) z wygodnym zapisywaniem własnych typów; okno z wynikiem zawsze na widoku i krokami; opcje niedostępne dla obrysu wyszarzone |
-| 16 | Okna, drzwi i węgły kliknięciem w widoku ściany z okienkiem parametrów; lista typowej stolarki; magazyn drewna jako tabela (z deskami) i jeden przełącznik doboru |
-| 17 | Pół zamka w wieńcu szczytowym (po decyzji T8); odświeżanie domu w modelu na żywo – po odczytaniu czasów budowy z dziennika pracy |
-| dalej | Dom L z podłogą i tarasem, obrysy T i U, zadaszenie od–do i zamknięcie boku; Dokumentacja 2D (grupy bali); aplikacja do dachów – część 2 zadania; wymiary pełnego profilu ze zdjęcia czoła bala |
+| 15 | Zdecydowane zaległości: szczyty na styk (T8), pół zamka, deski 14 × 115 × 4000, 45 × 120; z propozycji P1 (osiadanie słupów) i W2 (pełne zestawienie materiałów); przygotowanie rundy 16 – tabela podziału pól i szkic okna do akceptacji. Polecenie: `docs/prompt_r15.md` |
+| 16 | Trzy poziomy ustawień z typami domów zapisywanymi przez użytkownika, okno z wynikiem zawsze na widoku, opcje wyszarzone dla obrysu; dom prostokątny z wymiarów (S1), powierzchnie i limity (W1) |
+| 17 | Okna, drzwi, węgły i kanały na przewody kliknięciem z okienkiem parametrów; lista typowej stolarki; magazyn drewna jako tabela (z deską 14 × 115) i jeden przełącznik doboru; wycena materiału (W3) |
+| 18 | Podparcie końców płatwi (dom L, taras typu 300), belki dzielone nad podporą, drobne błędy geometrii (P2, P3, P5) |
+| dalej | Strop i antresola z belek (N1), wzór dobudówki z obrysami T i U (N4), okna dopasowane do wieńców (N2), grubszy bal (N5); Dokumentacja 2D (grupy bali, plan montażu); podgląd na żywo po pomiarze |
 
 Na starcie każdej rundy: `raporty\` z dysku (§4), potem kolejka z §5.
