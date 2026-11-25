@@ -326,6 +326,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | losowe krokwie z aplikacji | `testy/losowe_domy.rb` |
 | losowe luzy stolarki | `testy/losowe_domy.rb` |
 | losowe ustawienia ścian | `testy/losowe_domy.rb` |
+| losowe łączenie wieńców szczytu | `testy/losowe_domy.rb` |
 | losowy dach jednospadowy | `testy/losowe_domy.rb` |
 | losowy dobór przekrojów zadaszenia i krokwi | `testy/losowe_domy.rb` |
 | losowy pełny profil | `testy/losowe_domy.rb` |
@@ -678,6 +679,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | raport zapisywany sam | `sketchup/dziennik_pracy.rb` |
 | regresja | `testy/t_losowe.rb` |
 | regresja rundy 14 | `testy/t_zlozone.rb` |
+| regresja styków bez zamka w szczycie | `testy/t_styki_szczytu.rb` |
 | rejestracja rozszerzenia | `Plugins/arte_madera_generator_wiencowy.rb` |
 | rodzaj dachu | `rdzen/dach.rb` |
 | rola timber | `sketchup/atrybuty.rb` |
@@ -711,6 +713,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | siatka belki z wrębami | `rdzen/zamek_platwi.rb` |
 | siatka fundamentów | `rdzen/fundamenty.rb` |
 | siatka pełnego profilu | `rdzen/siatka.rb` |
+| siatka styków szczytu | `rdzen/styki_szczytu.rb` |
 | skos | `testy/t_siatka.rb` |
 | skos (szczyty) | `rdzen/bryla.rb` |
 | skos bala | `rdzen/szczyty.rb` |
@@ -753,6 +756,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | styk frontu tarasu | `rdzen/styki_tarasu.rb` |
 | styk na działowej | `rdzen/styki_dzialowe.rb` |
 | styk na styk | `rdzen/styki_tarasu.rb` |
+| styk na styk w szczycie | `rdzen/styki_szczytu.rb` |
 | styk nad słupem | `rdzen/styki_tarasu.rb` |
 | styk przy otworze | `testy/t_wegly.rb` |
 | styk w osi zamka | `rdzen/styki.rb` |
@@ -774,9 +778,11 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | szczyt ażurowy | `rdzen/taras_szczyt.rb` |
 | szczyt bez bali | `rdzen/taras_wiazar.rb` |
 | szczyt bez kontrfory | `rdzen/styki_tarasu.rb` |
+| szczyt bez węgłów pod styki | `rdzen/styki_szczytu.rb` |
 | szczyt na części ściany | `rdzen/skrzydla.rb` |
 | szczyt na części ściany w testach | `testy/t_skrzydla.rb` |
 | szczyt na działowej | `rdzen/szczyty.rb` |
+| szczyt na styk | `rdzen/styki_szczytu.rb` |
 | szczyt nad tarasem | `rdzen/taras_szczyt.rb` |
 | szczyt nad tarasem w testach | `testy/t_taras.rb` |
 | szczyt nad tarasem – parametry | `rdzen/parametry_taras.rb` |
@@ -826,6 +832,8 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | test listy przekrojów z długościami | `testy/t_dlugosci.rb` |
 | test losowy | `testy/losowe_domy.rb`, `testy/t_losowe.rb` |
 | test okna | `testy/t_okno.js` |
+| test styków w wieńcach szczytu | `testy/t_styki_szczytu.rb` |
+| test węgła pod styk do wysokości ściany | `testy/t_styki_szczytu.rb` |
 | test ścian równoległych | `testy/t_zlozone.rb` |
 | testy | `testy/pomoc.rb` |
 | testy api dachów | `testy/t_dach_aplikacja.rb` |
@@ -850,6 +858,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | testy sketchup | `testy/t_sketchup.rb` |
 | testy statyki dachu | `testy/t_statyka_dachu.rb` |
 | testy statyki zadaszenia | `testy/t_statyka_zadaszenia.rb` |
+| testy szczytu na styk | `testy/t_styki_szczytu.rb` |
 | testy szczytów | `testy/t_szczyty.rb` |
 | testy słupa | `testy/t_statyka_zadaszenia.rb` |
 | testy tarasu | `testy/t_taras.rb` |
@@ -916,6 +925,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | widok ściany w oknie | `sketchup/okno.rb` |
 | wielokąt z otworem | `rdzen/siatka.rb` |
 | wieniec | `rdzen/wience.rb` |
+| wieniec szczytu | `rdzen/styki_szczytu.rb` |
 | wieniec węgła nad ścianą | `rdzen/wience.rb` |
 | wieńce ciągłe przez taras | `rdzen/taras_sciany.rb` |
 | wieńce niższej działowej | `rdzen/wience.rb` |
@@ -978,6 +988,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | węgieł pod okapem | `rdzen/pod_dachem.rb` |
 | węgieł pod płatwią | `rdzen/wegly_konstrukcyjne.rb` |
 | węgieł pod płatwią w testach | `testy/t_wegly.rb` |
+| węgieł pod styk do wysokości ściany | `rdzen/styki_szczytu.rb` |
 | węgieł przy szczycie ścięty do dachu | `rdzen/sciecie_dachu.rb` |
 | węgieł ręczny na widoku | `html/sciana.js` |
 | węgieł tylko pod kalenicową | `rdzen/wegly_konstrukcyjne.rb` |
@@ -1047,6 +1058,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | łączenie na przemian | `rdzen/przyklady.rb`, `testy/t_wegly.rb` |
 | łączenie podwalin na śruby | `rdzen/podloga.rb` |
 | łączenie w zamku działowej | `rdzen/styki_dzialowe.rb` |
+| łączenie wieńców szczytu | `rdzen/styki_szczytu.rb` |
 | ściana | `rdzen/sciany.rb` |
 | ściana bliźniacza | `rdzen/symetria_wegly.rb` |
 | ściana domu przy przybudówce | `rdzen/zadaszenie.rb` |
@@ -1086,7 +1098,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `main.rb` | 69 | stałe wtyczki (wersja, numer kompilacji, katalogi) i ładowanie modułów w kolejności zależności. |
 | `log.rb` | 135 | dziennik wtyczki – jedno miejsce na błędy, ostrzeżenia, informacje i czasy etapów. |
 | `rdzen/awaria.rb` | 51 | nieprzewidziany wyjątek w obliczeniach domu zamieniony na plan z komunikatem po polsku – co się stało, co sprawdzić, co wysłać; pełny ślad w dzienniku. |
-| `rdzen/bale.rb` | 227 | bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu. |
+| `rdzen/bale.rb` | 229 | bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu. |
 | `rdzen/bryla.rb` | 263 | bryła bala z obróbek – profil wzdłuż bala (przedziały z zakresem grubości i wysokości), przynależność punktu, objętość, podpis. |
 | `rdzen/dach.rb` | 339 | geometria dachu – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu; dwuspadowy tutaj, jednospadowy w rdzen/dach_jednospadowy.rb. |
 | `rdzen/dach_jednospadowy.rb` | 111 | dach jednospadowy – ściana niska i wysoka, linia podparcia od ściany niskiej w górę, płatwie bez kalenicowej, krokwie w jednym kawałku, ściana wysoka do połaci. |
@@ -1095,14 +1107,14 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/elementy.rb` | 132 | elementy z belek (podłoga, dach) – belka prostopadłościenna w dowolnym położeniu, pozycje identycznych belek, lista zamówienia. |
 | `rdzen/fundamenty.rb` | 146 | fundamenty punktowe pod podłogą – siatka rzędów w obu kierunkach w obrysie (skrajne licem z licem podwalin), stopy pod podwalinami, podciągami i podwalinami działowych. |
 | `rdzen/geometria.rb` | 221 | działania na punktach 2D/3D (tablice [x, y] / [x, y, z] w mm) bez API SketchUpa. |
-| `rdzen/kontrola.rb` | 173 | kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali. |
+| `rdzen/kontrola.rb` | 176 | kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali. |
 | `rdzen/kontrola_rownoleglych.rb` | 68 | kontrola ścian równoległych – bale dwóch ścian biegnących obok siebie albo w jednej linii nie mogą zajmować tego samego miejsca. |
 | `rdzen/krok2.rb` | 179 | co generator przekazuje KROKOWI 2 aplikacji do dachów – ustawienia początkowe (kierunek, krokwie albo poszycie na samych płatwiach, warstwy poszycia, klasa drewna) i płatwie generatora jako podpory krokwi i poszycia. |
 | `rdzen/obrys.rb` | 299 | rozpoznanie narysowanych linii – zamknięty obrys (lico zewnętrzne), osie ścian działowych, znaczniki kontrforów. |
 | `rdzen/otwory.rb` | 120 | otwory okienne i drzwiowe – położenie na ścianie, sprawdzenie, cięcia bali w każdym wieńcu. |
 | `rdzen/parametry.rb` | 162 | sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy. |
 | `rdzen/parametry_dach.rb` | 255 | parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka. |
-| `rdzen/parametry_lista.rb` | 277 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
+| `rdzen/parametry_lista.rb` | 284 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
 | `rdzen/parametry_podloga.rb` | 114 | parametry sekcji „Podłoga i fundamenty” – podwaliny (przekrój, łączenie), legary, podciągi, fundamenty punktowe, obciążenia. |
 | `rdzen/parametry_taras.rb` | 162 | parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy z zamkami (słup w osi kalenicy), szczyt nad tarasem z wiązarem (przekroje słupka i zastrzałów, zamek płatwi tylko od spodu), wejście, balustrada. |
 | `rdzen/parametry_zadaszenie.rb` | 104 | parametry zakładki „Zadaszenie boczne / tylne” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, podłoga w przybudówce, dobór przekrojów (automatycznie albo z wyboru) płatwi, słupów i belek poprzecznych. |
@@ -1131,8 +1143,9 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/statyka_wiazara.rb` | 163 | sprawdzenie trójkąta (wiązara) nad tarasem pod obciążeniem od płatwi i automatyczny dobór jego najmniejszego wystarczającego przekroju, który mieści się pod dachem. |
 | `rdzen/statyka_zadaszenia.rb` | 215 | sprawdzenie i dobór przekrojów bocznego zadaszenia – płatwie i oczep (przęsło między słupami albo ścianami, pas połaci zadaszenia), belki poprzeczne (od słupa do ściany domu) i słupy (ściskanie z wyboczeniem); automatycznie najmniejszy wystarczający z list albo przekroje z wyboru użytkownika ze sprawdzeniem. |
 | `rdzen/stolarka.rb` | 51 | stolarka okien i drzwi – otwór w balach ze stolarki i luzów (boczny z obu stron, górny na osiadanie), podpowiedź luzu górnego z wysokości stolarki. |
-| `rdzen/styki.rb` | 349 | podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki. |
+| `rdzen/styki.rb` | 356 | podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki. |
 | `rdzen/styki_dzialowe.rb` | 100 | styki w zamku działowej – wszystkie wieńce ściany łączone w osi skrzyżowania z działową (zamek trzyma oba końce), bez drugiego rzędu na mijankę i bez węgłów; reszta ściany – zwykłym układem. |
+| `rdzen/styki_szczytu.rb` | 141 | łączenie wieńców szczytu ściany domu na styk – bez węgła i bez zamka, na przemian z przesunięciem o mijankę (nie mniej niż 300); miejsca styków w każdym wieńcu szczytu osobno. |
 | `rdzen/styki_tarasu.rb` | 101 | łączenie bali frontu tarasu z podciągiem (podciąg, bale spinające, szczyt nad tarasem, balustrada z wieńców) na styk – bez węgła i zamków, na przemian z mijanką; najniższy bal podciągu łączony nad słupem. |
 | `rdzen/symetria_wegly.rb` | 119 | węgły symetrycznie na ścianach równoległych – ściana bliźniacza (ta sama oś w świecie, ten sam zasięg) dostaje styki i węgły w tych samych miejscach co ściana policzona wcześniej; równy podział odcinków między ścianami przy rozmieszczeniu „równo”. |
 | `rdzen/szczyty.rb` | 398 | szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie. |
@@ -1147,7 +1160,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/wegly_konstrukcyjne.rb` | 151 | węgły dostawiane automatycznie tam, gdzie wymaga ich konstrukcja – pod płatwiami przechodzącymi przez szczyt (słupek węgła do spodu płatwi, płatew na nim leży) i na wolnym końcu niepełnej ściany (bez węgła koniec jest wiotki). |
 | `rdzen/wegly_tabela.rb` | 117 | węgły (kontrfory) wstawiane jak okna i drzwi – z tabeli w oknie (ściana, od narożnika albo na środku) i automatycznie na środku ścian (parametr). |
 | `rdzen/widok.rb` | 159 | widok ściany do okna – bale jako obrysy w płaszczyźnie ściany (s, z), otwory, styki, skrzyżowania, linia dachu. |
-| `rdzen/wience.rb` | 135 | poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian. |
+| `rdzen/wience.rb` | 137 | poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian. |
 | `rdzen/wykaz_drewna.rb` | 104 | wykaz drewna dostępnego w hurtowni (przekroje z długościami handlowymi) – listy fabryczne dla legarów, płatwi, krokwi, belek i słupów zadaszenia oraz odczyt listy przekrojów z długościami z tekstu parametru. |
 | `rdzen/wypusty_okapu.rb` | 128 | wypusty pod dachem – górne wieńce ścian okapowych wypuszczone za szczyty o wysunięcie płatwi (oparcie dachu nad szczytem) i opcjonalnie górne bale węgłów na ścianach okapowych wysunięte na zewnątrz do nawisu okapu, ścięte linią dachu. |
 | `rdzen/zadaszenie.rb` | 394 | boczne zadaszenie przy ścianie okapowej domu prostokątnego – połać dachu za linią załamania schodzi dalej pod mniejszym kątem; wariant na słupach (słupy z fundamentami, belki poprzeczne, oczep, płatwie na słupkach) albo przybudówka z bali (obrys poszerzony, dawna ściana okapowa jako działowa, niska ściana zewnętrzna); płatwie zadaszenia. |
@@ -1190,7 +1203,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/buduj_rbz.rb` | 28 | paczka instalacyjna .rbz (zip rejestratora i folderu wtyczki) – do instalacji w Menedżerze rozszerzeń SketchUpa. |
 | `testy/kolizje_belek.rb` | 211 | wspólne sprawdzenia przestrzenne testów – kolizje belek dachu z balami (punkty próbne), bale ponad linią szczytu, bale i płatwie względem połaci dla aplikacji do dachów. |
 | `testy/lista_parametrow.rb` | 73 | generator docs/parametry.md – wszystkie parametry okna (sekcja, etykieta, wartość domyślna, zakres, wybory, podpowiedź) i szablony wbudowane. |
-| `testy/losowe_domy.rb` | 451 | losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu. |
+| `testy/losowe_domy.rb` | 460 | losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu. |
 | `testy/okno_dane.rb` | 36 | dane okna z prawdziwego przebiegu (atrapa SketchUpa) – wypisuje JSON { init:, wynik:, widok:, widok_szczytu:, widok_dzialowej: } dla testu okna w przeglądarce. |
 | `testy/podglad.py` | 83 | rysunek 3D domu z pliku OBJ (testy/podglad.rb) – cały dom i zbliżenie narożnika, do sprawdzenia wzrokowego. |
 | `testy/podglad.rb` | 114 | zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py). |
@@ -1215,7 +1228,8 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_skrzydla.rb` | 151 | dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz. |
 | `testy/t_statyka_dachu.rb` | 128 | testy sprawdzenia płatwi i trójkąta nad tarasem (śnieg, pas dachu, przęsła), automatycznego doboru ich przekroju i trójkąta w wąskim domu. |
 | `testy/t_statyka_zadaszenia.rb` | 168 | runda 13 – dobór przekrojów bocznego zadaszenia (płatwie z oczepem, belki poprzeczne, słupy – automatycznie albo z wyboru), słup z wyboczeniem, dobór krokwi całego dachu, podłoga w przybudówce do wyboru, parametry zadaszenia w osobnej zakładce okna. |
-| `testy/t_szczyty.rb` | 274 | testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji. |
+| `testy/t_styki_szczytu.rb` | 140 | testy łączenia wieńców szczytu na styk (decyzja T8, runda 15) – styki bez węgła na przemian o mijankę, węgły pod styki do wysokości ściany, szeroki szczyt, okno w szczycie, wybór „w zamkach węgłów”, szczyt płaski bez zmian, ziarna regresji. |
+| `testy/t_szczyty.rb` | 276 | testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji. |
 | `testy/t_taras.rb` | 326 | taras – obrys przedłużony o głębokość, ściana domu ze szczytem, wariant 1100 (podciąg z górnych wieńców, słupy, wejście, balustrada z przekładkami) i 1200 (ściany boczne pełne, front bez bali), dach nad tarasem, strona tarasu, kiedy tarasu nie ma. |
 | `testy/t_wegly.rb` | 267 | testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory. |
 | `testy/t_widok.rb` | 76 | widok ściany do okna – obrysy bali zgodne z profilem, gniazda zamków na skrzyżowaniach, styki, linia dachu, lista ścian. |
@@ -1223,7 +1237,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_zamek.rb` | 95 | zamek 44 × 146 zgodny z rysunkiem IMG-20250930-WA0005 – wymiary obróbek, luzy, labirynt (tylko poprawne ułożenie bez kolizji). |
 | `testy/t_zestawienie.rb` | 51 | zestawienie CSV (rdzeń) i zapis pliku z okna (atrapa SketchUpa) – kolumny, przecinek dziesiętny, sumy, BOM, anulowanie. |
 | `testy/t_zlozone.rb` | 113 | testy domów o obrysach złożonych – działowa w linii ściany obrysu (dom L, T, U), linia przez wcięcie obrysu, ściany równoległe w tym samym miejscu, komunikat zamiast wyjątku, ziarna domów złożonych. |
-| `testy/uruchom.sh` | 83 | wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”. |
+| `testy/uruchom.sh` | 84 | wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”. |
 | `testy/zlozone_domy.rb` | 105 | losowe domy o obrysach złożonych (L, T, U, Z, krzyż, H) z działowymi w liniach uskoków – obrys i działowe z ziarna, sprawdzenie jak w losowych domach. |
 | `testy/zrzut_dok2d.rb` | 130 | przykładowy dom zbudowany na atrapie SketchUpa zapisany jako zrzut geometrii Dokumentacji 2D (format „ArteMadera-geometria”) – sprawdzenie, jak Dokumentacja 2D widzi bale i belki generatora. |
 
@@ -1305,28 +1319,28 @@ Używają: rdzen/projekt.rb (oblicz), sketchup/sterowanie.rb (okienko z komunika
 | 37 | `komunikat(e)` | Komunikat dla użytkownika: co się stało, co sprawdzić, co zgłosić. |
 | 44 | `opis(e)` | Krótki opis techniczny: rodzaj wyjątku, treść (do 120 znaków), plik i wiersz, numer kompilacji. |
 
-### rdzen/bale.rb (227 wierszy)
+### rdzen/bale.rb (229 wierszy)
 
 bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
 
-Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem)
+Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem), rdzen/styki_szczytu.rb (styki wieńców szczytu na styk)
 Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 28 | `module Bale` |  |
-| 32 | `OKRUCH` | Kawałek bala krótszy niż tyle [mm] przy skosie albo gnieździe to okruch – pomijany zawsze. |
-| 37 | `zbuduj(sciany, p)` | Wszystkie bale domu (bez obróbek zamka): { bale: [...], ostrzezenia: [...] }. |
-| 62 | `kawalki_wienca(w, wn, i, p, uwagi)` | Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu / dachu; wieniec nadstawki – tylko odcinki dopełnienia) minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal; pomija okruchy przy skosie i gniazdach płatwi. |
-| 97 | `zasieg(w, z0, p)` | Zasięg wieńca o spodzie z0: pod linią szczytu (ściana ze szczytem), pod linią dachu (ściana pod połacią), cały; ściana tarasu – ograniczony przez Taras.zasieg. |
-| 109 | `skosy(w, s0, s1, z0, h, p)` | Skosy kawałka bala wg linii szczytu albo linii dachu nad ścianą. |
-| 116 | `koniec_typ(w, s, ciecia, zas, wewn = [])` | Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, gniazdo płatwi, skos szczytu, wolny koniec (także wewnętrzny koniec odcinka nadstawki – lista wewn). |
-| 130 | `nowy_bal(w, wn, i, s0, s1, konce, wyciecia)` | Nowy bal z wycięciami od otworów (cechy w układzie bala). |
-| 146 | `kontrfor_obecny?(kf, wn, p)` | w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu. Przy szczycie górny bal może wystawać nad płaszczyznę dachu (ścina go rdzen/sciecie_dachu.rb), gdy pod nią zostaje drewna na zamek (gniazdo od spodu + najmniej drewna w zamku) – słupek węgła dochodzi do dachu (wymóg użytkownika, runda 8). |
-| 168 | `pod_platwia?(kf, wn, gosp, s, sasiedzi, p)` | Bal węgła pod płatwią (rdzen/wegly_konstrukcyjne.rb): wieńce do spodu płatwi – górny bal ścina gniazdo płatwi w węgle, więc gniazdo płatwi w szczycie nie odbiera mu oparcia; niższy sąsiad w ścianie bez otworu (gniazdo płatwi się nie liczy), pod płatwią zostaje co najmniej najcieńszy pasek przy otworze (inaczej bal pominięty). |
-| 184 | `nad_gospodarzem?(kf, wn, gosp, s, zmin, p)` | Wieniec węgła nad górą ściany bez szczytu: tylko pod dachem domu prostokątnego (ścina go linia dachu), gdy w osi ściany pod nim jest jej górny bal i nad zamkiem zostaje drewna (linia dachu nad zmin – także na obu licach węgła biegnącego wzdłuż kalenicy). |
-| 198 | `sprawdz_dlugosci(wynik, p)` | Ostrzeżenia o długościach: kawałek krótszy od najkrótszego, bal dłuższy od maksymalnego. |
-| 219 | `polozenie(b, p)` | Położenie bala w układzie domu: początek (lico prawe, czoło s0, spód), osie x (wzdłuż), y (w lewo), z (w górę). |
+| 29 | `module Bale` |  |
+| 33 | `OKRUCH` | Kawałek bala krótszy niż tyle [mm] przy skosie albo gnieździe to okruch – pomijany zawsze. |
+| 38 | `zbuduj(sciany, p)` | Wszystkie bale domu (bez obróbek zamka): { bale: [...], ostrzezenia: [...] }. |
+| 63 | `kawalki_wienca(w, wn, i, p, uwagi)` | Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu / dachu; wieniec nadstawki – tylko odcinki dopełnienia) minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal (wieniec szczytu łączony na styk – miejsca z rdzen/styki_szczytu.rb); pomija okruchy przy skosie i gniazdach płatwi. |
+| 99 | `zasieg(w, z0, p)` | Zasięg wieńca o spodzie z0: pod linią szczytu (ściana ze szczytem), pod linią dachu (ściana pod połacią), cały; ściana tarasu – ograniczony przez Taras.zasieg. |
+| 111 | `skosy(w, s0, s1, z0, h, p)` | Skosy kawałka bala wg linii szczytu albo linii dachu nad ścianą. |
+| 118 | `koniec_typ(w, s, ciecia, zas, wewn = [])` | Rodzaj końca bala w miejscu s: ostatek (koniec zasięgu z ostatkiem), otwór, gniazdo płatwi, skos szczytu, wolny koniec (także wewnętrzny koniec odcinka nadstawki – lista wewn). |
+| 132 | `nowy_bal(w, wn, i, s0, s1, konce, wyciecia)` | Nowy bal z wycięciami od otworów (cechy w układzie bala). |
+| 148 | `kontrfor_obecny?(kf, wn, p)` | w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu. Przy szczycie górny bal może wystawać nad płaszczyznę dachu (ścina go rdzen/sciecie_dachu.rb), gdy pod nią zostaje drewna na zamek (gniazdo od spodu + najmniej drewna w zamku) – słupek węgła dochodzi do dachu (wymóg użytkownika, runda 8). |
+| 170 | `pod_platwia?(kf, wn, gosp, s, sasiedzi, p)` | Bal węgła pod płatwią (rdzen/wegly_konstrukcyjne.rb): wieńce do spodu płatwi – górny bal ścina gniazdo płatwi w węgle, więc gniazdo płatwi w szczycie nie odbiera mu oparcia; niższy sąsiad w ścianie bez otworu (gniazdo płatwi się nie liczy), pod płatwią zostaje co najmniej najcieńszy pasek przy otworze (inaczej bal pominięty). |
+| 186 | `nad_gospodarzem?(kf, wn, gosp, s, zmin, p)` | Wieniec węgła nad górą ściany bez szczytu: tylko pod dachem domu prostokątnego (ścina go linia dachu), gdy w osi ściany pod nim jest jej górny bal i nad zamkiem zostaje drewna (linia dachu nad zmin – także na obu licach węgła biegnącego wzdłuż kalenicy). |
+| 200 | `sprawdz_dlugosci(wynik, p)` | Ostrzeżenia o długościach: kawałek krótszy od najkrótszego, bal dłuższy od maksymalnego. |
+| 221 | `polozenie(b, p)` | Położenie bala w układzie domu: początek (lico prawe, czoło s0, spód), osie x (wzdłuż), y (w lewo), z (w górę). |
 
 ### rdzen/bryla.rb (263 wierszy)
 
@@ -1532,25 +1546,25 @@ Używają: wszystkie pliki rdzen/
 | 189 | `scal_przedzialy(przedzialy, tol = TOL)` | Suma przedziałów [a, b] (scalanie zachodzących i stykających się w tolerancji). |
 | 203 | `odejmij_przedzialy(a, b, dziury, tol = TOL)` | Przedział [a, b] pomniejszony o listę przedziałów (wynik: lista kawałków o długości > tol). |
 
-### rdzen/kontrola.rb (173 wierszy)
+### rdzen/kontrola.rb (176 wierszy)
 
 kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali.
 
-Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk), rdzen/kontrola_rownoleglych.rb (ściany równoległe)
+Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk), rdzen/styki_szczytu.rb (wieńce szczytu łączone na styk), rdzen/kontrola_rownoleglych.rb (ściany równoległe)
 Używają: testy, sketchup/sterowanie.rb (menu „Kontrola”)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 22 | `module Kontrola` |  |
-| 27 | `wszystko(plan)` | Wszystkie kontrole: { kolizje:, mijanka:, za_dlugie:, styki_bez_zamka:, nakladanie: } (puste listy = w porządku); nakladanie – bale ścian równoległych w tym samym miejscu (rdzen/kontrola_rownoleglych.rb). |
-| 33 | `kolizje(plan)` | Kolizje w słupach zamków: [{ sciany: [id, id], punkt: [x, y], bale: [nr, nr], z: [z0, z1], objetosc: mm³ }]. |
-| 52 | `kolizje_slupa(bale, pt, t, p, profile, ids)` | Kolizje w jednym słupie zamka (środek pt, bok t + 2 mm). |
-| 93 | `globalny(pol, lx, ly, lz)` | Punkt bala (układ bala) w układzie domu. |
-| 99 | `zawiera_globalnie?(pol, prof, c)` | Czy punkt domu leży w bryle bala. |
-| 108 | `mijanka(plan)` | Naruszenia mijanki: [{ sciana:, wieniec:, odstep: }] – styki w sąsiednich wieńcach bliżej niż MIJANKA_MIN. |
-| 134 | `styki_bez_zamka(plan)` | Styki, których nie trzyma zamek (układy na przemian i para – styk w osi skrzyżowania, gdzie w wieńcu wyżej albo niżej leży bal ściany poprzecznej): [{ sciana:, wieniec:, s: }]. |
-| 160 | `pod_platwia?(w, b, s)` | Czy styk w s bala b leży pod płatwią, która biegnie wzdłuż ściany (gniazdo na całej długości – działowa pod kalenicową): górny bal ścięty gniazdem, płatew dociska styk z góry. |
-| 165 | `za_dlugie(plan)` | Bale dłuższe od maksymalnej długości: [{ sciana:, nazwa:, dl: }]. |
+| 23 | `module Kontrola` |  |
+| 28 | `wszystko(plan)` | Wszystkie kontrole: { kolizje:, mijanka:, za_dlugie:, styki_bez_zamka:, nakladanie: } (puste listy = w porządku); nakladanie – bale ścian równoległych w tym samym miejscu (rdzen/kontrola_rownoleglych.rb). |
+| 34 | `kolizje(plan)` | Kolizje w słupach zamków: [{ sciany: [id, id], punkt: [x, y], bale: [nr, nr], z: [z0, z1], objetosc: mm³ }]. |
+| 53 | `kolizje_slupa(bale, pt, t, p, profile, ids)` | Kolizje w jednym słupie zamka (środek pt, bok t + 2 mm). |
+| 94 | `globalny(pol, lx, ly, lz)` | Punkt bala (układ bala) w układzie domu. |
+| 100 | `zawiera_globalnie?(pol, prof, c)` | Czy punkt domu leży w bryle bala. |
+| 109 | `mijanka(plan)` | Naruszenia mijanki: [{ sciana:, wieniec:, odstep: }] – styki w sąsiednich wieńcach bliżej niż MIJANKA_MIN. |
+| 135 | `styki_bez_zamka(plan)` | Styki, których nie trzyma zamek (układy na przemian i para – styk w osi skrzyżowania, gdzie w wieńcu wyżej albo niżej leży bal ściany poprzecznej): [{ sciana:, wieniec:, s: }]. |
+| 163 | `pod_platwia?(w, b, s)` | Czy styk w s bala b leży pod płatwią, która biegnie wzdłuż ściany (gniazdo na całej długości – działowa pod kalenicową): górny bal ścięty gniazdem, płatew dociska styk z góry. |
+| 168 | `za_dlugie(plan)` | Bale dłuższe od maksymalnej długości: [{ sciana:, nazwa:, dl: }]. |
 
 ### rdzen/kontrola_rownoleglych.rb (68 wierszy)
 
@@ -1674,7 +1688,7 @@ Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 | 19 | `TAK_NIE` |  |
 | 22 | `LISTA` | Parametry sekcji (kolejność = kolejność w oknie). |
 
-### rdzen/parametry_lista.rb (277 wierszy)
+### rdzen/parametry_lista.rb (284 wierszy)
 
 lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
 
@@ -1688,15 +1702,15 @@ Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketc
 | 42 | `ZAKLADKI` | Zakładki okna: [klucz, tytuł]; sekcja bez czwartego elementu w SEKCJE należy do pierwszej zakładki. Wymóg użytkownika (2026-11-25): „cała część bocznego zadaszenia – lub tylnego – w osobnej zakładce, by się nic nie myliło”. |
 | 47 | `TAK_NIE` |  |
 | 50 | `LISTA_SCIANY` | Parametry sekcji przekroju, ścian, łączeń i węgłów (kolejność = kolejność w oknie w ramach sekcji). |
-| 173 | `LISTA_OTWORY` | Parametry sekcji okien i drzwi oraz rozpoznania rysunku. |
-| 211 | `LISTA` | Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu i podłogi. |
-| 216 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
-| 229 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
-| 234 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
-| 249 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
-| 259 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
-| 264 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
-| 271 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
+| 180 | `LISTA_OTWORY` | Parametry sekcji okien i drzwi oraz rozpoznania rysunku. |
+| 218 | `LISTA` | Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu i podłogi. |
+| 223 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
+| 236 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
+| 241 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
+| 256 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
+| 266 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
+| 271 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
+| 278 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
 
 ### rdzen/parametry_podloga.rb (114 wierszy)
 
@@ -2295,42 +2309,42 @@ Używają: rdzen/otwory.rb (otwór w balach), rdzen/widok.rb (stolarka w widoku 
 | 34 | `luz_gorny(o, h, p)` | Luz górny otworu: wpisany w wierszu (liczba ≥ 0) albo podpowiedź; [luz, czy_podpowiedz]. |
 | 42 | `otwor(s0, szer, wys, parapet, o, p)` | Otwór w balach ze stolarki: { s0:, s1:, z0:, z1:, stolarka: { s0:, s1:, z0:, z1: }, luz_gorny:, podpowiedz: }; s0 – krawędź otworu na osi ściany (punkt odniesienia + od). |
 
-### rdzen/styki.rb (349 wierszy)
+### rdzen/styki.rb (356 wierszy)
 
 podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki.
 
-Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami), rdzen/styki_tarasu.rb (front tarasu – na styk, bez węgłów)
+Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami), rdzen/styki_tarasu.rb (front tarasu – na styk, bez węgłów), rdzen/styki_szczytu.rb (wieńce szczytu na styk – węgły pod styki tylko do wysokości ściany)
 Używają: rdzen/projekt.rb, rdzen/bale.rb (pozycje_w_wiencu)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 29 | `module Styki` |  |
-| 31 | `KROK` | Krok siatki miejsc na nowy węgieł [mm] (od początku osi ściany – okrągłe odległości od narożnika). |
-| 33 | `LIMIT_WEZLOW` | Najwięcej kroków przeszukiwania układu na przemian dla jednej liczby kotwic. |
-| 38 | `planuj(sciany, p, os_kalenicy)` | Miejsca styków dla wszystkich ścian (zewnętrznych i działowych); dostawia węgły pod styki. Zwraca ostrzeżenia. |
-| 64 | `z_weglami(w, p, gotowe)` | Styki ściany w zamkach skrzyżowań i węgłów (wszystkie ściany poza frontem tarasu łączonym na styk): jak u ściany równoległej policzonej wcześniej (ten sam zasięg – symetria), wspólne w zamku działowej albo wybrany układ; nil – nie da się. |
-| 75 | `pozycje_w_wiencu(w, i)` | Położenia styków w wieńcu o indeksie i (0 = najniższy wieniec ściany). |
-| 83 | `kotwice(w, p)` | Istniejące skrzyżowania wewnątrz ściany, w których może wypaść styk (bez narożników i za blisko otworów). Ściana ze szczytem – tylko węgły: działowa kończy się pod okapem, a styki w wieńcach szczytu też muszą leżeć w zamku. |
-| 90 | `poza_otworami?(w, p, s)` | Czy styk w miejscu s jest dość daleko od otworów (styk_odstep_od_otworu, nie bliżej niż węgieł od otworu). |
-| 96 | `miejsce_styku_ok?(w, p, s, zajete)` | Czy w miejscu s może stanąć nowy węgieł pod styk (miejsce na węgieł i odstęp styku od otworów). |
-| 101 | `kawalki_ok?(w, listy, lmax)` | Czy kawałki bali w każdym wieńcu mieszczą się w maksymalnej długości (listy styków: parzyste, nieparzyste). |
-| 111 | `na_przemian(w, p)` | Układ na przemian: najmniej nowych węgłów, potem najmniej kotwic; nil – nie da się. |
-| 127 | `razem_wegli(w, p, nowe)` | Ile węgłów będzie na ścianie z nowymi węgłami pod styki: nowe + usztywniające, których wymagają światła dłuższe niż limit (szacunek do wyboru między równym podziałem a dowolnym miejscem). |
-| 138 | `przemian_siatka(w, p, kotwy, siatka, dl, lmax)` | Układ na przemian z nowymi węgłami z listy miejsc siatka: najmniej nowych węgłów, potem najmniej kotwic; nil – nie da się. |
-| 161 | `przemian_k(w, p, k, kotwy, siatka)` | Najlepszy układ na przemian dla k kotwic: { kotwy:, nowe:, ocena: } albo nil. |
-| 168 | `przemian_szukaj(w, p, k, kotwy, siatka, a, nowe, odch, stan)` | Krok przeszukiwania: następna kotwica – istniejące skrzyżowanie (do 3 najbliższych celu) albo nowy węgieł. |
-| 193 | `przemian_zakres(w, p, k, a)` | Zakres [lo, hi] kotwicy nr a.length: kawałek od poprzedniej kotwicy tej samej parzystości ≤ maks. długość, od poprzedniej kotwicy ≥ mijanka, pozostałe kotwice tej parzystości muszą jeszcze dosięgnąć końca ściany. |
-| 205 | `wolna_siatka(w, p)` | Miejsca (co KROK od początku osi), w których może stanąć nowy węgieł – bez względu na inne nowe węgły. |
-| 217 | `najblizsze_wolne(siatka, cel, lo, hi, zajete, min)` | Najbliższe celu miejsce z siatki w zakresie lo…hi, odległe od zajętych o ≥ min; nil gdy brak. |
-| 236 | `indeks_od(lista, x)` | Indeks pierwszego elementu posortowanej listy ≥ x (długość listy, gdy brak) – wyszukiwanie połówkowe. |
-| 249 | `dobierz_regiony(w, p)` | Regiony łączenia [{ a:, b:, c:, nowe: [s] }] albo nil; próbuje coraz większej liczby bali. |
-| 263 | `proba(w, p, m)` | Jedna próba podziału na m bali: regiony przy punktach docelowych s_od + j·dł/m. |
-| 281 | `najlepszy_region(w, p, cel, okno, zajete, regiony = [])` | Najlepszy region przy punkcie cel: najmniej nowych węgłów, potem najbliżej celu; z zachowaniem mijanki względem regionów już wybranych (styki wieńców parzystych i nieparzystych co najmniej mijanka od siebie). |
-| 290 | `mijanka_ok?(regiony, d)` | Czy styki regionów (a – wieńce parzyste, b – nieparzyste) są w sąsiednich wieńcach co najmniej d od siebie. |
-| 295 | `kandydaci_para(w, p, cel, okno, zajete)` | Kandydaci układu para: dwie istniejące kotwice, kotwica + nowy węgieł, dwa nowe węgły. |
-| 318 | `kandydaci_jeden(w, p, cel, okno, zajete)` | Kandydaci układu jeden węgieł: istniejące kotwice i nowy węgieł; styki ± mijanka/2 poza zamkami i otworami. |
-| 332 | `styki_poza_zamkami?(w, p, x)` | Układ jeden węgieł: oba styki x ± mijanka/2 poza zamkami innych skrzyżowań (z zapasem grubości) i z dala od otworów. |
-| 341 | `z_regionow(_w, p, regiony)` | Wynik ściany z regionów (para / jeden węgieł); nil gdy brak regionów. |
+| 30 | `module Styki` |  |
+| 32 | `KROK` | Krok siatki miejsc na nowy węgieł [mm] (od początku osi ściany – okrągłe odległości od narożnika). |
+| 34 | `LIMIT_WEZLOW` | Najwięcej kroków przeszukiwania układu na przemian dla jednej liczby kotwic. |
+| 39 | `planuj(sciany, p, os_kalenicy)` | Miejsca styków dla wszystkich ścian (zewnętrznych i działowych); dostawia węgły pod styki. Zwraca ostrzeżenia. |
+| 69 | `z_weglami(w, p, gotowe)` | Styki ściany w zamkach skrzyżowań i węgłów (wszystkie ściany poza frontem tarasu łączonym na styk): jak u ściany równoległej policzonej wcześniej (ten sam zasięg – symetria), wspólne w zamku działowej albo wybrany układ; nil – nie da się. |
+| 80 | `pozycje_w_wiencu(w, i)` | Położenia styków w wieńcu o indeksie i (0 = najniższy wieniec ściany). |
+| 89 | `kotwice(w, p)` | Istniejące skrzyżowania wewnątrz ściany, w których może wypaść styk (bez narożników i za blisko otworów). Ściana ze szczytem łączonym w zamkach (szczyt_styk = wegly, szczyt płaski) – tylko węgły: działowa kończy się pod okapem, a styki w wieńcach szczytu też muszą leżeć w zamku. Szczyt na styk (rdzen/styki_szczytu.rb) – jak zwykła ściana. |
+| 97 | `poza_otworami?(w, p, s)` | Czy styk w miejscu s jest dość daleko od otworów (styk_odstep_od_otworu, nie bliżej niż węgieł od otworu). |
+| 103 | `miejsce_styku_ok?(w, p, s, zajete)` | Czy w miejscu s może stanąć nowy węgieł pod styk (miejsce na węgieł i odstęp styku od otworów). |
+| 108 | `kawalki_ok?(w, listy, lmax)` | Czy kawałki bali w każdym wieńcu mieszczą się w maksymalnej długości (listy styków: parzyste, nieparzyste). |
+| 118 | `na_przemian(w, p)` | Układ na przemian: najmniej nowych węgłów, potem najmniej kotwic; nil – nie da się. |
+| 134 | `razem_wegli(w, p, nowe)` | Ile węgłów będzie na ścianie z nowymi węgłami pod styki: nowe + usztywniające, których wymagają światła dłuższe niż limit (szacunek do wyboru między równym podziałem a dowolnym miejscem). |
+| 145 | `przemian_siatka(w, p, kotwy, siatka, dl, lmax)` | Układ na przemian z nowymi węgłami z listy miejsc siatka: najmniej nowych węgłów, potem najmniej kotwic; nil – nie da się. |
+| 168 | `przemian_k(w, p, k, kotwy, siatka)` | Najlepszy układ na przemian dla k kotwic: { kotwy:, nowe:, ocena: } albo nil. |
+| 175 | `przemian_szukaj(w, p, k, kotwy, siatka, a, nowe, odch, stan)` | Krok przeszukiwania: następna kotwica – istniejące skrzyżowanie (do 3 najbliższych celu) albo nowy węgieł. |
+| 200 | `przemian_zakres(w, p, k, a)` | Zakres [lo, hi] kotwicy nr a.length: kawałek od poprzedniej kotwicy tej samej parzystości ≤ maks. długość, od poprzedniej kotwicy ≥ mijanka, pozostałe kotwice tej parzystości muszą jeszcze dosięgnąć końca ściany. |
+| 212 | `wolna_siatka(w, p)` | Miejsca (co KROK od początku osi), w których może stanąć nowy węgieł – bez względu na inne nowe węgły. |
+| 224 | `najblizsze_wolne(siatka, cel, lo, hi, zajete, min)` | Najbliższe celu miejsce z siatki w zakresie lo…hi, odległe od zajętych o ≥ min; nil gdy brak. |
+| 243 | `indeks_od(lista, x)` | Indeks pierwszego elementu posortowanej listy ≥ x (długość listy, gdy brak) – wyszukiwanie połówkowe. |
+| 256 | `dobierz_regiony(w, p)` | Regiony łączenia [{ a:, b:, c:, nowe: [s] }] albo nil; próbuje coraz większej liczby bali. |
+| 270 | `proba(w, p, m)` | Jedna próba podziału na m bali: regiony przy punktach docelowych s_od + j·dł/m. |
+| 288 | `najlepszy_region(w, p, cel, okno, zajete, regiony = [])` | Najlepszy region przy punkcie cel: najmniej nowych węgłów, potem najbliżej celu; z zachowaniem mijanki względem regionów już wybranych (styki wieńców parzystych i nieparzystych co najmniej mijanka od siebie). |
+| 297 | `mijanka_ok?(regiony, d)` | Czy styki regionów (a – wieńce parzyste, b – nieparzyste) są w sąsiednich wieńcach co najmniej d od siebie. |
+| 302 | `kandydaci_para(w, p, cel, okno, zajete)` | Kandydaci układu para: dwie istniejące kotwice, kotwica + nowy węgieł, dwa nowe węgły. |
+| 325 | `kandydaci_jeden(w, p, cel, okno, zajete)` | Kandydaci układu jeden węgieł: istniejące kotwice i nowy węgieł; styki ± mijanka/2 poza zamkami i otworami. |
+| 339 | `styki_poza_zamkami?(w, p, x)` | Układ jeden węgieł: oba styki x ± mijanka/2 poza zamkami innych skrzyżowań (z zapasem grubości) i z dala od otworów. |
+| 348 | `z_regionow(_w, p, regiony)` | Wynik ściany z regionów (para / jeden węgieł); nil gdy brak regionów. |
 
 ### rdzen/styki_dzialowe.rb (100 wierszy)
 
@@ -2347,6 +2361,28 @@ Używają: rdzen/styki.rb (planuj – najpierw działowe), rdzen/kontrola.rb (mi
 | 48 | `planuj(w, p)` | Plan styków ściany ze stykami wspólnymi: { parzyste:, nieparzyste:, kotwy:, nowe:, wspolne: } albo nil (brak skrzyżowań z działową albo reszta ściany nie da się zaplanować – wtedy zwykły układ dla całej ściany). |
 | 76 | `zloz(w, p, wspolne, odcinki)` | Złożenie wyniku: styki wspólne w obu parzystościach + układ zwykły na odcinkach dłuższych niż bal (odcinek jako ściana od styku do styku); nil, gdy odcinka nie da się zaplanować albo jego styki są bliżej niż mijanka od wspólnych. |
 | 94 | `wspolny?(w, s)` | Czy styk w s (oś styku) jest stykiem wspólnym ściany (do kontroli mijanki). |
+
+### rdzen/styki_szczytu.rb (141 wierszy)
+
+łączenie wieńców szczytu ściany domu na styk – bez węgła i bez zamka, na przemian z przesunięciem o mijankę (nie mniej niż 300); miejsca styków w każdym wieńcu szczytu osobno.
+
+Zależy od: rdzen/parametry.rb, rdzen/szczyty.rb (góra ściany bez szczytu, linia szczytu), rdzen/taras.rb (front tarasu ma własne zasady – rdzen/styki_tarasu.rb)
+Używają: rdzen/styki.rb (ściana pod szczytem łączona jak zwykła, węgły pod styki do wysokości ściany), rdzen/bale.rb (styki w kawałku wieńca szczytu), rdzen/kontrola.rb (styk na styk nie jest „stykiem bez zamka”)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 30 | `module StykiSzczytu` |  |
+| 32 | `ZAPAS` | Najwięcej dodatkowych styków w kawałku ponad najmniejszą potrzebną liczbę. |
+| 38 | `dotyczy?(w, p)` | Czy wieńce szczytu ściany łączy się na styk: ściana domu ze szczytem skośnym przy szczyt_styk = styk (nie węgieł, nie szczyt płaski, nie front tarasu). |
+| 46 | `wieniec?(w, wn, p)` | Czy wieniec wn ściany w jest wieńcem szczytu łączonym na styk (spód na górze ściany bez szczytu albo wyżej). |
+| 51 | `odstep(p)` | Odstęp styków sąsiednich wieńców [mm]: mijanka, nie mniej niż 300. |
+| 56 | `os(w, p)` | Oś siatek styków na osi ściany [mm]: najwyższy punkt linii szczytu (kalenica); linia prosta – środek ściany. |
+| 64 | `pozycje(w, wn, i, a, b, p)` | Miejsca styków w kawałku a…b wieńca szczytu wn (indeks i od dołu ściany): [] – kawałek mieści się w maksymalnym balu albo nie ma gdzie go połączyć (wtedy ostrzeżenie o za długim balu daje rdzen/bale.rb). |
+| 80 | `proba(w, i, a, b, k, strefy, lmin, lmax, p)` | Jedna próba: k styków, każdy w wolnym miejscu siatki najbliżej punktu równego podziału, kawałki od najkrótszego do maksymalnego bala; nil – nie da się. |
+| 93 | `najblizszy(w, i, cel, lo, hi, strefy, p)` | Wolne miejsce siatki wieńca i najbliższe celu w zakresie lo…hi; nil – brak. |
+| 99 | `siatka(w, i, lo, hi, p)` | Miejsca siatki wieńca i w zakresie lo…hi: oś − pół mijanki (wieńce parzyste) albo oś + pół mijanki (nieparzyste), dalej co 2 × mijanka. |
+| 114 | `strefy_zakazane(w, wn, i, p)` | Przedziały osi ściany, w których styk wieńca szczytu wn (indeks i) nie może wypaść: zamki skrzyżowań (1,5 grubości od osi), otwory sięgające szczytu z zapasem jak dla styków, gniazda płatwi przy tym wieńcu, a nad najwyższym wieńcem ściany pod szczytem – mijanka od jego styków. |
+| 134 | `styki_pod(w, wn, i, gora)` | Styki wieńca tuż pod wieńcem szczytu wn, gdy jest to jeszcze wieniec ściany (łączony w zamkach – rdzen/styki.rb). |
 
 ### rdzen/styki_tarasu.rb (101 wierszy)
 
@@ -2676,7 +2712,7 @@ Używają: sketchup/sterowanie.rb (widok dla okna), html/sciana.js (rysunek)
 | 132 | `linia_dachu(w, p)` | Linia dachu nad ścianą (szczyt – wierzch bali szczytu, ściana pod połacią – spód krokwi): [[s, z]]; [] – brak. |
 | 154 | `r(v)` | Zaokrąglenie do 0,1 mm. |
 
-### rdzen/wience.rb (135 wierszy)
+### rdzen/wience.rb (137 wierszy)
 
 poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian.
 
@@ -2687,15 +2723,15 @@ Używają: rdzen/bale.rb, rdzen/projekt.rb (wysokości do okna), rdzen/dopelnien
 |---:|---|---|
 | 20 | `module Wience` |  |
 | 25 | `dla_sciany(w, p)` | Wieńce ściany od dołu: [{ nr:, z0:, h:, lvl:, polbal: }]; kontrfor dopasowany do wysokości gospodarza (przy szczycie – także w szczyt, dalej ogranicza go linia dachu w rdzen/bale.rb). |
-| 49 | `szczyt_gospodarza(kf)` | Szczyt gospodarza w miejscu węgła kf: nil, gdy gospodarz nie ma szczytu albo węgieł stoi poza zakresem szczytu na części ściany (dom L – tam ściana jest okapową skrzydła bocznego, rdzen/skrzydla.rb). |
-| 59 | `z_polbalem(lista, z)` | Wieńce z półbalem na poziomie z (front tarasu z podciągiem): wieniec, który przechodzi przez z, zaczyna się na z (górna połowa bala – jak półbal na dole ścian wzdłuż kalenicy); niższe wieńce zostają (balustrada pod podciągiem). |
-| 68 | `pelna_lista(kierunek, zewnetrzna, p, z_szczytu = nil)` | Wieńce według kierunku: A – półbal + n pełnych; B zewnętrzna – n + 1 (początek szczytu); B działowa i kontrfor – n; ściana ze szczytem – wieńce aż do wierzchu szczytu z_szczytu. |
-| 86 | `nizsza_lista(w, pelna, p)` | Wieńce niższej działowej: własne (góra pełnego wieńca ≤ w[:nizsza][:z], nie wyżej niż pełna wysokość), potem nadstawka – tyle wieńców, ile sięgają kolumny dopełnienia (bez kolumn – sama działowa). |
-| 105 | `wlasne(w, p)` | Wieńce własne ściany (bez nadstawki niższej działowej). |
-| 110 | `wysokosc(w, p)` | Wysokość ściany = góra najwyższego wieńca własnego [mm] (niższa działowa – bez nadstawki). |
-| 116 | `wysokosc_calkowita(w, p)` | Wysokość ściany z nadstawką niższej działowej [mm] (np. do gniazd płatwi). |
-| 122 | `wysokosc_pelna(w, p)` | Pełna wysokość ściany (jakby nie była niższą działową) [mm]. |
-| 128 | `wysokosci(p)` | Wysokości do okna: { okapowa:, szczytowa:, dzialowa_okapowa:, dzialowa_szczytowa: } [mm]. |
+| 51 | `szczyt_gospodarza(kf)` | Szczyt gospodarza w miejscu węgła kf: nil, gdy gospodarz nie ma szczytu albo węgieł stoi poza zakresem szczytu na części ściany (dom L – tam ściana jest okapową skrzydła bocznego, rdzen/skrzydla.rb). |
+| 61 | `z_polbalem(lista, z)` | Wieńce z półbalem na poziomie z (front tarasu z podciągiem): wieniec, który przechodzi przez z, zaczyna się na z (górna połowa bala – jak półbal na dole ścian wzdłuż kalenicy); niższe wieńce zostają (balustrada pod podciągiem). |
+| 70 | `pelna_lista(kierunek, zewnetrzna, p, z_szczytu = nil)` | Wieńce według kierunku: A – półbal + n pełnych; B zewnętrzna – n + 1 (początek szczytu); B działowa i kontrfor – n; ściana ze szczytem – wieńce aż do wierzchu szczytu z_szczytu. |
+| 88 | `nizsza_lista(w, pelna, p)` | Wieńce niższej działowej: własne (góra pełnego wieńca ≤ w[:nizsza][:z], nie wyżej niż pełna wysokość), potem nadstawka – tyle wieńców, ile sięgają kolumny dopełnienia (bez kolumn – sama działowa). |
+| 107 | `wlasne(w, p)` | Wieńce własne ściany (bez nadstawki niższej działowej). |
+| 112 | `wysokosc(w, p)` | Wysokość ściany = góra najwyższego wieńca własnego [mm] (niższa działowa – bez nadstawki). |
+| 118 | `wysokosc_calkowita(w, p)` | Wysokość ściany z nadstawką niższej działowej [mm] (np. do gniazd płatwi). |
+| 124 | `wysokosc_pelna(w, p)` | Pełna wysokość ściany (jakby nie była niższą działową) [mm]. |
+| 130 | `wysokosci(p)` | Wysokości do okna: { okapowa:, szczytowa:, dzialowa_okapowa:, dzialowa_szczytowa: } [mm]. |
 
 ### rdzen/wykaz_drewna.rb (104 wierszy)
 
@@ -3690,7 +3726,7 @@ Używają: testy/uruchom.sh (sprawdzenie aktualności)
 | 27 | `kom(t)` | Komórka tabeli bez znaków psujących Markdown. |
 | 32 | `tresc` | Treść dokumentu. |
 
-### testy/losowe_domy.rb (451 wierszy)
+### testy/losowe_domy.rb (460 wierszy)
 
 losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
 
@@ -3709,26 +3745,28 @@ Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.r
 | 33 | `ZIARNA_R11` | Od tego ziarna – nowości rundy 11 (słupki tylko pod kalenicową, węgieł w osi płatwi, przekroje wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk, słup w osi kalenicy). |
 | 35 | `ZIARNA_R12` | Od tego ziarna – nowości rundy 12 (boczne zadaszenie: wiata na słupach albo przybudówka z bali). |
 | 37 | `ZIARNA_R13` | Od tego ziarna – nowości rundy 13 (dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce do wyboru). |
-| 42 | `wybierz(r, lista)` | Losowy wybór z listy. |
-| 47 | `dom(ziarno)` | Dom z ziarna: { ziarno:, opis:, segmenty:, parametry:, otwory: }. |
-| 104 | `dodatki(r, p, dl_w1, opis)` | Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą, węgły ręczne na W-1; zwraca ustawienia ścian (parametry uzupełnia w p, opis w opis). |
-| 134 | `dodatki_r5(r, p, opis)` | Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie), luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi), dach jednospadowy. |
-| 153 | `taras(r, p, opis)` | Taras (osobne losowanie, tylko ziarna od ZIARNA_Z_TARASEM – domy z ziaren wcześniejszych rund bez zmian): wariant 1100 albo 1200, strona, głębokość, podciąg, wejście, balustrada, słupy. |
-| 169 | `dodatki_r7(r, p, opis)` | Dodatki rundy 7 (osobne losowanie, ziarna od ZIARNA_R7): podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku, działowa do dachu, podwalina 50 × 150 na śruby, fundamenty, szczyt nad tarasem. |
-| 188 | `dodatki_r8(r, p, opis)` | Dodatki rundy 8 (osobne losowanie, ziarna od ZIARNA_R8): wypuszczone górne wieńce okapowe, węgły pod okapem do nawisu, węgły niesymetryczne, podciąg na równo, fundament okrągły, balustrada z wieńców ścian, trójkątny wieniec. |
-| 207 | `dodatki_r9(r, p, opis)` | Dodatki rundy 9 (osobne losowanie, ziarna od ZIARNA_R9): węgły pod płatwiami, węgieł na wolnym końcu, wiązar nad tarasem (rodzaj, na balach albo na słupach, słupek, zastrzał); szczyt pusty częściej. |
-| 222 | `dodatki_r10(r, p, opis)` | Dodatki rundy 10: wiązar pod płatwiami (głębokość gniazda, kąt zastrzałów), poziom podciągu; domy L mają dwa dachy z koszem przy każdym ziarnie (rdzen/skrzydla.rb). |
-| 234 | `dodatki_r11(r, p, opis)` | kalenicowej), słupek i zastrzały wiązara z przekroju wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk albo na węgłach, słup frontu w osi kalenicy, automatyczny dobór przekroju płatwi i trójkąta nad tarasem (śnieg z kilku stref). |
-| 254 | `dodatki_r12(r, p, opis)` | Dodatki rundy 12: boczne zadaszenie (słupy albo przybudówka, strona, szerokość, kąt mniejszy niż dachu – czasem nie, okap, przekroje, rozstaw słupów); dom z tarasem, jednospadowy albo L – zadaszenie pominięte z ostrzeżeniem. |
-| 271 | `dodatki_r13(r, p, opis)` | Dodatki rundy 13: dobór przekrojów zadaszenia (automatycznie / z wyboru), dobór krokwi, podłoga w przybudówce. |
-| 279 | `parametry(r)` | Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5). |
-| 297 | `otwory(r, dlugosci)` | Losowe otwory na ścianach W-1…W-4 (długości lica ścian w kolejności numeracji). |
-| 311 | `sprawdz(dom, belki = true)` | Sprawdzenie domu: lista problemów (pusta – w porządku) i plan. |
-| 369 | `bez_zamka_w_narozniku(pl)` | Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy. |
-| 383 | `problemy_polaci(pl)` | Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora; podpory (płatwie, ściana wysoka) w granicy aplikacji (wierzch w osi pod połacią o ≤ b/2·sin α + 30 mm po normalnej). |
-| 398 | `podpory_poza(pl)` | Podpory, których aplikacja do dachów nie uzna (za wysoko, za nisko albo nie równolegle do okapu) – opisy. |
-| 411 | `siatka(poz)` | Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }. |
-| 419 | `min_krawedz(sciany)` | Najkrótsza krawędź pętli ścian siatki [mm] (SketchUp scala punkty bliższe niż 0,0254 mm). |
+| 39 | `ZIARNA_R15` | Od tego ziarna – nowości rundy 15 (wieńce szczytu łączone na styk albo w zamkach węgłów). |
+| 44 | `wybierz(r, lista)` | Losowy wybór z listy. |
+| 49 | `dom(ziarno)` | Dom z ziarna: { ziarno:, opis:, segmenty:, parametry:, otwory: }. |
+| 107 | `dodatki(r, p, dl_w1, opis)` | Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą, węgły ręczne na W-1; zwraca ustawienia ścian (parametry uzupełnia w p, opis w opis). |
+| 137 | `dodatki_r5(r, p, opis)` | Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie), luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi), dach jednospadowy. |
+| 156 | `taras(r, p, opis)` | Taras (osobne losowanie, tylko ziarna od ZIARNA_Z_TARASEM – domy z ziaren wcześniejszych rund bez zmian): wariant 1100 albo 1200, strona, głębokość, podciąg, wejście, balustrada, słupy. |
+| 172 | `dodatki_r7(r, p, opis)` | Dodatki rundy 7 (osobne losowanie, ziarna od ZIARNA_R7): podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku, działowa do dachu, podwalina 50 × 150 na śruby, fundamenty, szczyt nad tarasem. |
+| 191 | `dodatki_r8(r, p, opis)` | Dodatki rundy 8 (osobne losowanie, ziarna od ZIARNA_R8): wypuszczone górne wieńce okapowe, węgły pod okapem do nawisu, węgły niesymetryczne, podciąg na równo, fundament okrągły, balustrada z wieńców ścian, trójkątny wieniec. |
+| 210 | `dodatki_r9(r, p, opis)` | Dodatki rundy 9 (osobne losowanie, ziarna od ZIARNA_R9): węgły pod płatwiami, węgieł na wolnym końcu, wiązar nad tarasem (rodzaj, na balach albo na słupach, słupek, zastrzał); szczyt pusty częściej. |
+| 225 | `dodatki_r10(r, p, opis)` | Dodatki rundy 10: wiązar pod płatwiami (głębokość gniazda, kąt zastrzałów), poziom podciągu; domy L mają dwa dachy z koszem przy każdym ziarnie (rdzen/skrzydla.rb). |
+| 237 | `dodatki_r11(r, p, opis)` | kalenicowej), słupek i zastrzały wiązara z przekroju wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk albo na węgłach, słup frontu w osi kalenicy, automatyczny dobór przekroju płatwi i trójkąta nad tarasem (śnieg z kilku stref). |
+| 257 | `dodatki_r12(r, p, opis)` | Dodatki rundy 12: boczne zadaszenie (słupy albo przybudówka, strona, szerokość, kąt mniejszy niż dachu – czasem nie, okap, przekroje, rozstaw słupów); dom z tarasem, jednospadowy albo L – zadaszenie pominięte z ostrzeżeniem. |
+| 274 | `dodatki_r13(r, p, opis)` | Dodatki rundy 13: dobór przekrojów zadaszenia (automatycznie / z wyboru), dobór krokwi, podłoga w przybudówce. |
+| 282 | `dodatki_r15(r, p, opis)` | Dodatki rundy 15: łączenie wieńców szczytu (na styk – fabrycznie – albo w zamkach węgłów, jak do kompilacji 14). |
+| 288 | `parametry(r)` | Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5). |
+| 306 | `otwory(r, dlugosci)` | Losowe otwory na ścianach W-1…W-4 (długości lica ścian w kolejności numeracji). |
+| 320 | `sprawdz(dom, belki = true)` | Sprawdzenie domu: lista problemów (pusta – w porządku) i plan. |
+| 378 | `bez_zamka_w_narozniku(pl)` | Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy. |
+| 392 | `problemy_polaci(pl)` | Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora; podpory (płatwie, ściana wysoka) w granicy aplikacji (wierzch w osi pod połacią o ≤ b/2·sin α + 30 mm po normalnej). |
+| 407 | `podpory_poza(pl)` | Podpory, których aplikacja do dachów nie uzna (za wysoko, za nisko albo nie równolegle do okapu) – opisy. |
+| 420 | `siatka(poz)` | Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }. |
+| 428 | `min_krawedz(sciany)` | Najkrótsza krawędź pętli ścian siatki [mm] (SketchUp scala punkty bliższe niż 0,0254 mm). |
 
 ### testy/okno_dane.rb (36 wierszy)
 
@@ -4060,7 +4098,21 @@ Używają: testy/uruchom.sh
 | 41 | `DOM` |  |
 | 42 | `WIATA` |  |
 
-### testy/t_szczyty.rb (274 wierszy)
+### testy/t_styki_szczytu.rb (140 wierszy)
+
+testy łączenia wieńców szczytu na styk (decyzja T8, runda 15) – styki bez węgła na przemian o mijankę, węgły pod styki do wysokości ściany, szeroki szczyt, okno w szczycie, wybór „w zamkach węgłów”, szczyt płaski bez zmian, ziarna regresji.
+
+Zależy od: testy/pomoc.rb, testy/losowe_domy.rb, Plugins/.../rdzen/styki_szczytu.rb
+Używają: testy/uruchom.sh
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 16 | `DACH` | Dach z krokwiami z generatora, bez węgłów pod płatwiami – szczyt bez gniazd co kilkadziesiąt centymetrów. |
+| 19 | `styki_wienca(w, i)` | Styki (koniec s1 bala zakończonego stykiem) w wieńcu o indeksie i ściany w. |
+| 24 | `wience_szczytu(w, p)` | Indeksy wieńców szczytu ściany w (spód na górze ściany bez szczytu albo wyżej). |
+| 29 | `wegly_stykow(pl, w)` | Węgły pod styki na ścianie w. |
+
+### testy/t_szczyty.rb (276 wierszy)
 
 testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji.
 
@@ -4157,7 +4209,7 @@ Używają: testy/uruchom.sh
 | 21 | `ulozone(odcinki, n, odbicie)` | Odcinki obrócone o n ćwierćobrotów i odbite (odbicie = true) – to samo w ośmiu ułożeniach. |
 | 31 | `W_LINII` |  |
 
-### testy/uruchom.sh (83 wierszy)
+### testy/uruchom.sh (84 wierszy)
 
 wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”.
 

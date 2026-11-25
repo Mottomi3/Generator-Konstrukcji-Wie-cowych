@@ -25,6 +25,8 @@ module ArteMadera
       def dla_sciany(w, p)
         z_szczytu = w[:szczyt] ? w[:szczyt][:z_max] : nil
         sg = w[:rodzaj] == :kontrfor ? szczyt_gospodarza(w) : nil
+        # Węgieł pod styk ściany, której wieńce szczytu łączą się na styk (rdzen/styki_szczytu.rb) – do góry ściany.
+        sg = nil if w[:do_gory_sciany]
         z_szczytu = sg[:z_max] if sg
         lista = pelna_lista(w[:kierunek], w[:rodzaj] == :zewnetrzna, p, z_szczytu)
         lista = z_polbalem(lista, w[:taras][:z_polbal]) if w[:taras] && w[:taras][:z_polbal]

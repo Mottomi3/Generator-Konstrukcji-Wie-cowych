@@ -4,7 +4,7 @@
 # Plik: rdzen/kontrola.rb
 # Zadanie: kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali.
 # Tematy: kontrola, kolizje, nachodzenie bali, sprawdzenie zamka, mijanka – sprawdzenie, styk bez zamka, długość – sprawdzenie, luz pionowy
-# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk), rdzen/kontrola_rownoleglych.rb (ściany równoległe)
+# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk), rdzen/styki_szczytu.rb (wieńce szczytu łączone na styk), rdzen/kontrola_rownoleglych.rb (ściany równoległe)
 # Używają: testy, sketchup/sterowanie.rb (menu „Kontrola”)
 #
 # Kolizje liczone dokładnie dla brył z obróbek prostokątnych: siatka komórek z granic przedziałów wszystkich bali
@@ -15,6 +15,7 @@ require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::G
 require File.join(File.dirname(__FILE__), 'bale') unless defined?(ArteMadera::GeneratorWiencowy::Bale)
 require File.join(File.dirname(__FILE__), 'zamek') unless defined?(ArteMadera::GeneratorWiencowy::Zamek)
 require File.join(File.dirname(__FILE__), 'styki_tarasu') unless defined?(ArteMadera::GeneratorWiencowy::StykiTarasu)
+require File.join(File.dirname(__FILE__), 'styki_szczytu') unless defined?(ArteMadera::GeneratorWiencowy::StykiSzczytu)
 require File.join(File.dirname(__FILE__), 'kontrola_rownoleglych') unless defined?(ArteMadera::GeneratorWiencowy::KontrolaRownoleglych)
 
 module ArteMadera
@@ -142,6 +143,8 @@ module ArteMadera
           next if w[:rodzaj] == :kontrfor || StykiTarasu.na_styk?(w)
           w[:bale].each do |b|
             next unless b[:konce][1] == :styk
+            # Wieniec szczytu łączony na styk (rdzen/styki_szczytu.rb) – także bez zamka z założenia.
+            next if StykiSzczytu.wieniec?(w, b[:wieniec], p)
             s = b[:s1] + g
             k = w[:skrzyzowania].find { |x| (x[:s] - s).abs < 1.0 }
             ok = k && begin

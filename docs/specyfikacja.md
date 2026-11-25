@@ -73,9 +73,11 @@ Na każdym skrzyżowaniu w osi c (narożnik, T, X, kontrfor – ten sam zamek):
   skrzyżowania niż 300 i otworu niż 150, nie przy narożniku. `szczelina_styku` (0) – szczelina między czołami.
 - Styk tylko w kawałku dłuższym niż `max_dlugosc` – kawałek między otworami, który się mieści, zostaje w całości.
 - Mijanka pilnowana także między miejscami łączenia (styki wieńców parzystych i nieparzystych różnych miejsc).
-- Ściana ze szczytem łączy się tylko na węgłach (działowa kończy się pod okapem, więc w wieńcach szczytu nie trzyma
-  styku). Gdy styk wypada nad węgłem, który kończy się pod połacią – ostrzeżenie „styk bez zamka” (zwiększ maksymalną
-  długość bala albo dorysuj węgieł bliżej kalenicy).
+- **Szczyt na styk** (`szczyt_styk` = styk – fabrycznie, runda 15, §8j): wieńce szczytu łączą się na styk bez węgła,
+  ściana pod szczytem – jak każda inna (w zamkach węgłów i działowych). `szczyt_styk` = wegly (jak do kompilacji 14)
+  i szczyt płaski: ściana ze szczytem łączy się tylko na węgłach (działowa kończy się pod okapem, więc w wieńcach
+  szczytu nie trzyma styku). Gdy styk wypada nad węgłem, który kończy się pod połacią – ostrzeżenie „styk bez zamka”
+  (zwiększ maksymalną długość bala albo dorysuj węgieł bliżej kalenicy).
 - Kontrola: `Kontrola.mijanka` – styki w sąsiednich wieńcach co najmniej 300 od siebie; `Kontrola.styki_bez_zamka` –
   styk w osi skrzyżowania, w którym ściana poprzeczna ma bal wieniec wyżej lub niżej.
 
@@ -207,7 +209,8 @@ Wejście domu ma `sciany` – ustawienia ścian zmienione pod widokiem ściany (
 - Bale pod połacią (`rdzen/pod_dachem.rb`): ściany w poprzek kalenicy bez własnego szczytu (działowe niższe od dachu,
   węgły na ścianach okapowych) ścinane linią podparcia (spód krokwi / desek) – przy stromym dachu ostatki węgłów nie
   wchodzą w połać. Ostrzeżenie, gdy przy licu zewnętrznym ściany okapowej spód krokwi wypada niżej niż jej wierzch.
-- Węgły przy szczycie wchodzą w szczyt (do linii dachu), żeby trzymać styki bali szczytu.
+- Węgły przy szczycie wchodzą w szczyt (do linii dachu); węgły dostawione pod styki – tylko przy `szczyt_styk` = wegly
+  (przy szczycie na styk kończą się na wysokości ściany, §8j).
 - Belki dachu tylko dla obrysu prostokątnego (inny obrys – szczyty liczone dla każdej ściany osobno, ostrzeżenie;
   dach zrób w aplikacji do dachów – KROK 1 z obrysu).
 - **Dach jednospadowy** (`dach_rodzaj`, `rdzen/dach_jednospadowy.rb`, runda 5): ściany wzdłuż „kalenicy” to ściana
@@ -475,6 +478,26 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   fabrycznych) i po awarii; najwyżej 400 ostatnich wierszy.
 - **Plik ustawień wersja 3** (`sketchup/ustawienia.rb`): listy przekrojów z pliku starszej wersji (ostatnie parametry
   i własne szablony) zastępowane fabrycznymi.
+
+## 8j. Runda 15 – szczyty na styk, pół zamka, deski 14 × 115, osiadanie słupów, zestawienie materiałów
+
+- **Szczyt na styk** (`rdzen/styki_szczytu.rb`, decyzja T8 z 2026-11-25: „można na styk z przesunięciem o 300 mm”):
+  wieniec szczytu = wieniec o spodzie na górze ściany bez szczytu albo wyżej (ściana zewnętrzna: od wieńca n + 2).
+  Kawałek takiego wieńca dłuższy niż `max_dlugosc` łączy się na styk – bez węgła i bez zamka. Miejsca styków leżą na
+  dwóch siatkach o kroku 2 × `mijanka` (nie mniej niż 2 × 300), przesuniętych o mijankę: wieńce parzyste – kalenica
+  − pół mijanki, nieparzyste – kalenica + pół mijanki, więc styki sąsiednich wieńców zawsze mijają się o mijankę.
+  W kawałku: jak najmniej styków, w wolnym miejscu siatki najbliżej punktu równego podziału. Styk nie wypada w zamku
+  skrzyżowania (1,5 grubości od osi), bliżej otworu sięgającego szczytu niż `styk_odstep_od_otworu`, przy gnieździe
+  płatwi ani bliżej niż mijanka od styku najwyższego wieńca ściany; kawałki od `min_odcinek` do `max_dlugosc`.
+- Ściana pod szczytem łączy się jak ściana bez szczytu: miejscem styku jest także zamek działowej, a węgły dostawione
+  pod styki (`do_gory_sciany`) kończą się na wysokości ściany okapowej – najwyższy wieniec ściany trzyma zamek od spodu.
+  Węgły usztywniające, narysowane, z tabeli i pod płatwiami – bez zmian (do dachu).
+- Nie dotyczy: szczytu płaskiego (ściana wysoka dachu jednospadowego, działowa do dachu, ściana przybudówki – pełne
+  wieńce na całej długości, zostają przy węgłach) i frontu tarasu (`taras_styk`). `szczyt_styk` = wegly – jak do
+  kompilacji 14. `Kontrola.styki_bez_zamka` nie liczy styków wieńców szczytu łączonych na styk; mijanka – liczy.
+- Pomiar (600 losowych domów, ziarna 1–300 i 6001–6300): domy ze stykiem bez zamka w ścianie ze szczytem 31 → 10
+  (zostały: ściana wysoka dachu jednospadowego i ściana domu L pod dachem skrzydła bocznego – do pół zamka), bale
+  węgłów pod styki na ścianach ze szczytem 30 542 → 22 056 (−28 %).
 
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 

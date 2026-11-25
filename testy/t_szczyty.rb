@@ -229,7 +229,9 @@ Testy.rowne(Wience.wysokosc(pl[:sciany].find { |w| w[:rodzaj] == :dzialowa && (w
             'nie – działowa do wysokości ścian okapowych')
 
 Testy.grupa('Węgły pod dachem: słupek przy szczycie do płaszczyzny dachu, przy okapie – wieniec nad ścianą (runda 8)')
-pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'wegly_pod_platwiami' => 'nie')
+# Węgły pod styki wchodzą w szczyt tylko przy szczyt_styk = wegly (od rundy 15 domyślnie szczyt łączony na styk – t_styki_szczytu.rb).
+pl = plan_pelny(prostokat(0, 0, 8000, 6400), 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'wegly_pod_platwiami' => 'nie',
+                'szczyt_styk' => 'wegly')
 p = pl[:parametry]
 geo = { v_a: 22.0, v_b: 6378.0 }
 przy_szczycie = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor && w[:gospodarz][:szczyt] && !w[:pod_platwia] }

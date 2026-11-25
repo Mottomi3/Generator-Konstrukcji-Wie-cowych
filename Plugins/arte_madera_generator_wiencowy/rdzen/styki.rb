@@ -4,7 +4,7 @@
 # Plik: rdzen/styki.rb
 # Zadanie: podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki.
 # Tematy: styk, łączenie bali na długość, mijanka, maksymalna długość bala, układ na przemian, para węgłów, jeden węgieł, styk w osi zamka, szczelina styku, kotwice styków
-# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami), rdzen/styki_tarasu.rb (front tarasu – na styk, bez węgłów)
+# Zależy od: rdzen/parametry.rb, rdzen/sciany.rb (dodaj_kontrfor), rdzen/otwory.rb (strefy otworów), rdzen/usztywnienie.rb (miejsce_ok?, wolne_miejsce), rdzen/styki_dzialowe.rb (najpierw styki wspólne w zamku działowej), rdzen/symetria_wegly.rb (ściana bliźniacza, równy podział), rdzen/wypusty_okapu.rb (zasięg z wypustami), rdzen/styki_tarasu.rb (front tarasu – na styk, bez węgłów), rdzen/styki_szczytu.rb (wieńce szczytu na styk – węgły pod styki tylko do wysokości ściany)
 # Używają: rdzen/projekt.rb, rdzen/bale.rb (pozycje_w_wiencu)
 #
 # Wynik w ścianie: w[:styki] = { uklad:, parzyste: [s], nieparzyste: [s], kotwy: [s], nowe: [s] } – styki w wieńcach
@@ -23,6 +23,7 @@ require File.join(File.dirname(__FILE__), 'symetria_wegly') unless defined?(Arte
 require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
 require File.join(File.dirname(__FILE__), 'styki_dzialowe') unless defined?(ArteMadera::GeneratorWiencowy::StykiDzialowe)
 require File.join(File.dirname(__FILE__), 'styki_tarasu') unless defined?(ArteMadera::GeneratorWiencowy::StykiTarasu)
+require File.join(File.dirname(__FILE__), 'styki_szczytu') unless defined?(ArteMadera::GeneratorWiencowy::StykiSzczytu)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -52,7 +53,11 @@ module ArteMadera
                             w[:wegly_reczne] ? ' Węgły tej ściany ustawione ręcznie – dodaj węgieł w widoku ściany.' : '')
             next
           end
-          wynik[:nowe].each { |s| Sciany.dodaj_kontrfor(sciany, gosp, s, p, :styk, os_kalenicy) }
+          wynik[:nowe].each do |s|
+            kf = Sciany.dodaj_kontrfor(sciany, gosp, s, p, :styk, os_kalenicy)
+            # Wieńce szczytu łączone na styk (rdzen/styki_szczytu.rb) – węgieł pod styk kończy się na wysokości ściany.
+            kf[:do_gory_sciany] = true if StykiSzczytu.dotyczy?(gosp, p)
+          end
           gosp[:styki] = w[:styki] = wynik.merge(uklad: p['styk_uklad'])
         end
         uwagi
@@ -79,10 +84,12 @@ module ArteMadera
       end
 
       # Istniejące skrzyżowania wewnątrz ściany, w których może wypaść styk (bez narożników i za blisko otworów). Ściana ze
-      # szczytem – tylko węgły: działowa kończy się pod okapem, a styki w wieńcach szczytu też muszą leżeć w zamku.
+      # szczytem łączonym w zamkach (szczyt_styk = wegly, szczyt płaski) – tylko węgły: działowa kończy się pod okapem,
+      # a styki w wieńcach szczytu też muszą leżeć w zamku. Szczyt na styk (rdzen/styki_szczytu.rb) – jak zwykła ściana.
       def kotwice(w, p)
         t = Parametry.grubosc(p)
-        lista = w[:szczyt] ? w[:skrzyzowania].select { |k| k[:inna][:rodzaj] == :kontrfor } : w[:skrzyzowania]
+        tylko_wegly = w[:szczyt] && !StykiSzczytu.dotyczy?(w, p)
+        lista = tylko_wegly ? w[:skrzyzowania].select { |k| k[:inna][:rodzaj] == :kontrfor } : w[:skrzyzowania]
         lista.map { |k| k[:s] }.select { |s| s > t && s < w[:dl_osi] - t && poza_otworami?(w, p, s) }
       end
 

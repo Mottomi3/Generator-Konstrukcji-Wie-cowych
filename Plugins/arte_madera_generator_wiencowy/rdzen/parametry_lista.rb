@@ -102,6 +102,13 @@ module ArteMadera
           wybory: [['na_przemian', 'na przemian w kolejnych węgłach / działowych (typ 300)'],
                    ['para', 'para węgłów w odstępie mijanki, styk w osi zamka (typ 100)'],
                    ['jeden_wegiel', 'jeden węgieł, styki ± połowa mijanki']] },
+        { klucz: 'szczyt_styk', domyslna: 'styk', etykieta: 'Łączenie wieńców szczytu', rodzaj: :wybor, sekcja: 'laczenia',
+          wybory: [['styk', 'na styk, na przemian z mijanką – bez węgłów pod styki w szczycie'],
+                   ['wegly', 'w zamkach węgłów – węgły pod styki do dachu']],
+          podpowiedz: 'Wieńce szczytu dłuższe niż maksymalny bal: na styk – czoła bali stykają się bez zamka, w sąsiednim ' \
+                      'wieńcu o mijankę („Mijanka styków”, nie mniej niż 300) dalej; ściana pod szczytem łączy się jak ' \
+                      'każda inna, a węgły pod jej styki kończą się na wysokości ściany. Szczyt płaski (ściana wysoka ' \
+                      'dachu jednospadowego) – zawsze w zamkach węgłów.' },
         { klucz: 'mijanka', domyslna: 400.0, etykieta: 'Mijanka styków w sąsiednich wieńcach', jednostka: 'mm',
           min: 300.0, max: 3000.0, rodzaj: :liczba, sekcja: 'laczenia',
           podpowiedz: 'Najmniejszy odstęp styków w sąsiednich wieńcach – nie mniej niż 300.' },

@@ -4,7 +4,7 @@
 # Plik: rdzen/bale.rb
 # Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
 # Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu, odcinki nadstawki
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem)
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem), rdzen/styki_szczytu.rb (styki wieńców szczytu na styk)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
@@ -22,6 +22,7 @@ require File.join(File.dirname(__FILE__), 'pod_dachem') unless defined?(ArteMade
 require File.join(File.dirname(__FILE__), 'dopelnienie') unless defined?(ArteMadera::GeneratorWiencowy::Dopelnienie)
 require File.join(File.dirname(__FILE__), 'taras_szczyt') unless defined?(ArteMadera::GeneratorWiencowy::TarasSzczyt)
 require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
+require File.join(File.dirname(__FILE__), 'styki_szczytu') unless defined?(ArteMadera::GeneratorWiencowy::StykiSzczytu)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -57,8 +58,8 @@ module ArteMadera
       end
 
       # Kawałki bala w wieńcu: zasięg ściany (pod linią szczytu / dachu; wieniec nadstawki – tylko odcinki dopełnienia)
-      # minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal; pomija okruchy
-      # przy skosie i gniazdach płatwi.
+      # minus otwory przelotowe, podzielony stykami – styki tylko w kawałkach dłuższych niż maksymalny bal (wieniec szczytu
+      # łączony na styk – miejsca z rdzen/styki_szczytu.rb); pomija okruchy przy skosie i gniazdach płatwi.
       def kawalki_wienca(w, wn, i, p, uwagi)
         zas = WypustyOkapu.zasieg(w, wn, i, zasieg(w, wn[:z0], p), p, uwagi)
         return [] if zas.nil?
@@ -69,6 +70,7 @@ module ArteMadera
         ciecia[:uwagi].each { |u| uwagi << u unless uwagi.include?(u) }
         przedzialy = bazy.map { |a, b| G.odejmij_przedzialy(a, b, ciecia[:pelne], 0.5) }.flatten(1)
         styki = w[:rodzaj] == :kontrfor ? [] : Styki.pozycje_w_wiencu(w, i)
+        na_styk = StykiSzczytu.wieniec?(w, wn, p)
         g = p['szczelina_styku'].to_f / 2.0
         lmax = p['max_dlugosc'].to_f
         okruch = [p['szczyt_min_kawalek'].to_f, OKRUCH].max
@@ -76,7 +78,7 @@ module ArteMadera
         przedzialy.each do |a, b|
           punkty = [[a, koniec_typ(w, a, ciecia, zas, wewn)]]
           if b - a > lmax + 0.01
-            styki.sort.each do |st|
+            (na_styk ? StykiSzczytu.pozycje(w, wn, i, a, b, p) : styki.sort).each do |st|
               next unless st - g > a + 1.0 && st + g < b - 1.0
               punkty << [st - g, :styk] << [st + g, :styk]
             end
