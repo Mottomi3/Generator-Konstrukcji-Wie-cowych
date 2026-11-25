@@ -3,8 +3,8 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.html
   Zadanie: okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby).
-  Tematy: okno, układ okna, sekcje formularza, przyciski, szablony, podpowiedzi, karta widoku ściany, przełącznik pól
-  Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/edycja.js, html/wyniki.js, html/okno.js
+  Tematy: okno, układ okna, sekcje formularza, pasek zakładek, przyciski, szablony, podpowiedzi, karta widoku ściany, przełącznik pól
+  Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/edycja.js, html/wyniki.js, html/okno.js
   Używają: sketchup/okno.rb
 -->
 <html lang="pl">
@@ -48,6 +48,7 @@
         </div>
         <p id="plik-ustawien" class="drobny"></p>
       </div>
+      <div id="zakladki" class="zakladki" title="Zakładki parametrów: dom oraz boczne / tylne zadaszenie (osobno, żeby się nie myliło)"></div>
       <div class="przelacznik" title="Podstawowe – najczęściej zmieniane parametry (i te zmienione); Wszystkie – pełna lista">
         <span>Pola:</span>
         <button type="button" id="btn-tryb-podstawowe">Podstawowe</button>
@@ -146,6 +147,7 @@
   <script src="zalezne.js"></script>
   <script src="pomoc.js"></script>
   <script src="tryb.js"></script>
+  <script src="zakladki.js"></script>
   <script src="edycja.js"></script>
   <script src="otwory.js"></script>
   <script src="wegly.js"></script>

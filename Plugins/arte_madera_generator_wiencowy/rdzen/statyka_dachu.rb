@@ -5,7 +5,7 @@
 # Zadanie: sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy.
 # Tematy: statyka dachu, dobór przekroju płatwi, automatyczny dobór płatwi, nośność płatwi, obciążenie śniegiem, ciężar pokrycia, przęsło płatwi, pas dachu na płatew, ugięcie płatwi, lista przekrojów płatwi
 # Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi)
-# Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń)
+# Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń), rdzen/statyka_zadaszenia.rb (obciążenia, przęsło płatwi, opis ugięcia), rdzen/statyka_krokwi.rb (współczynnik μ, opis ugięcia)
 #
 # Wymóg użytkownika (2026-11-16): „do opcji dodać automatyczne dobieranie przekroju, do minimalnej nośności konstrukcji
 # dachu” – w wąskich domkach płatew 60 × 200 jest za duża (trójkąt nad tarasem z jej przekroju się nie mieści).
@@ -55,9 +55,11 @@ module ArteMadera
         0.8 * (60.0 - kat) / 30.0
       end
 
-      # Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie]: [stałe, śnieg].
-      def obciazenia(pas, p)
-        [p['dach_ciezar'].to_f * pas / 1000.0 / Math.cos(Dach.kat(p)), mi(p['dach_kat'].to_f) * p['dach_snieg'].to_f * pas / 1000.0]
+      # Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie] przy kącie połaci kat [°] (domyślnie kąt dachu; boczne
+      # zadaszenie – jego kąt): [stałe, śnieg].
+      def obciazenia(pas, p, kat = nil)
+        k = kat.nil? ? p['dach_kat'].to_f : kat.to_f
+        [p['dach_ciezar'].to_f * pas / 1000.0 / Math.cos(k * Math::PI / 180.0), mi(k) * p['dach_snieg'].to_f * pas / 1000.0]
       end
 
       # Wysokość przekroju do obliczeń [mm]: płatew ścięta do płaszczyzny dachu – średnia (kalenicowa ścięta z obu stron).

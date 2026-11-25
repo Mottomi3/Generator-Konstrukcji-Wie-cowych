@@ -16,7 +16,7 @@ unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
   %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
-     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara fundamenty podciagi podloga podbitka kontrola].each do |plik|
+     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -26,11 +26,12 @@ module ArteMadera
     module Projekt
       module_function
 
-      # Najwięcej dodatkowych przebiegów przy automatycznym doborze przekroju płatwi.
+      # Najwięcej dodatkowych przebiegów przy automatycznym doborze przekrojów.
       PRZEBIEGI_DOBORU = 3 unless const_defined?(:PRZEBIEGI_DOBORU)
 
-      # Plan domu z wejścia. Automatyczny dobór przekroju płatwi (rdzen/statyka_dachu.rb) i trójkąta nad tarasem
-      # (rdzen/statyka_wiazara.rb): pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające,
+      # Plan domu z wejścia. Automatyczny dobór przekroju płatwi (rdzen/statyka_dachu.rb), trójkąta nad tarasem
+      # (rdzen/statyka_wiazara.rb), bocznego zadaszenia (rdzen/statyka_zadaszenia.rb) i krokwi (rdzen/statyka_krokwi.rb):
+      # pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające,
       # następny liczy dom od nowa z dobranymi (płatwie, gniazda, trójkąt nad tarasem) i je potwierdza; gdyby po zmianie
       # geometrii nie wystarczały – jeszcze raz z większymi.
       def oblicz(wejscie)
@@ -109,7 +110,7 @@ module ArteMadera
 
       # Belki dachu (dom prostokątny), podbitka i podłoga: elementy, pozycje (numery po balach), podpowiedzi z sekcją okna
       # (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]);
-      # sprawdzenie płatwi i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow],
+      # sprawdzenie płatwi, krokwi, zadaszenia i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow],
       # tryb – StatykaDachu.sprawdz).
       def belki(plan, dom, p, tryb = :pierwszy)
         TarasWiazar.przejscia!(plan[:sciany], dom, p)
@@ -117,14 +118,19 @@ module ArteMadera
         zad = Zadaszenie.elementy(dom, plan[:sciany], p)
         plan[:elementy].concat(zad)
         plan[:podpowiedzi].concat(Zadaszenie.podpowiedzi(dom, p, zad).map { |h| h.merge(sekcja: 'zadaszenie') })
+        plan[:podpowiedzi].concat(PodlogaPrzybudowki.podpowiedzi(plan[:sciany], p).map { |h| h.merge(sekcja: 'zadaszenie') })
         u = Zadaszenie.przeszkoda(p)
         plan[:ostrzezenia] << u if u
         st = StatykaDachu.sprawdz(dom, p, tryb)
         sw = StatykaWiazara.sprawdz(plan[:sciany], dom, p, tryb)
-        plan[:dobor_przekrojow] = st[:nadpis].merge(sw[:nadpis])
+        sz = StatykaZadaszenia.sprawdz(dom, plan[:sciany], p, tryb)
+        sk = StatykaKrokwi.sprawdz(dom, p, tryb)
+        plan[:dobor_przekrojow] = st[:nadpis].merge(sw[:nadpis]).merge(sz[:nadpis]).merge(sk[:nadpis])
         plan[:platwie_statyka] = st[:platwie]
         plan[:podpowiedzi].concat(st[:podpowiedzi].map { |h| h.merge(sekcja: 'szczyty') })
+        plan[:podpowiedzi].concat(sk[:podpowiedzi])
         plan[:podpowiedzi].concat(sw[:podpowiedzi].map { |h| h.merge(sekcja: 'taras') })
+        plan[:podpowiedzi].concat(sz[:podpowiedzi].map { |h| h.merge(sekcja: 'zadaszenie_przekroje') })
         plan[:elementy].concat(Podbitka.elementy(dom, p, plan[:sciany]))
         u = Podbitka.uwaga(p)
         plan[:ostrzezenia] << u if u

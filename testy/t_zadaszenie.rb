@@ -93,7 +93,8 @@ par_w = par.merge('wegly_srodek' => 'wszystkie', 'wegly_srodek_min' => 3000, 'za
 pl_w = plan_pelny(prostokat(0, 0, 6200, 4000), par_w)
 srodek = el(pl_w, 'Belka poprzeczna zadaszenia').map { |e| zakres(e, 0).inject(:+) / 2.0 }.sort
 Testy.rowne(srodek.length, 3, 'trzy linie słupów')
-Testy.sprawdz((srodek[1] - 3100.0).abs > t / 2.0 + 40.0, "linia środkowa przesunięta obok węgła (#{srodek[1].round})")
+bb_w = Parametry.przekroj(pl_w[:parametry], 'zadaszenie_belka_przekroj')[0]
+Testy.sprawdz((srodek[1] - 3100.0).abs > t / 2.0 + bb_w / 2.0 + 5.0, "linia środkowa przesunięta obok węgła (#{srodek[1].round}, belka #{bb_w.round})")
 problemy, = LosoweDomy.sprawdz({ segmenty: prostokat(0, 0, 6200, 4000), parametry: par_w, otwory: [] })
 Testy.sprawdz(problemy.empty?, "bez kolizji (#{problemy.first(3).join('; ')})")
 

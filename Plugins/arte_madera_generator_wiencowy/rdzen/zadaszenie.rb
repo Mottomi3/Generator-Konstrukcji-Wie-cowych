@@ -5,7 +5,7 @@
 # Zadanie: boczne zadaszenie przy ścianie okapowej domu prostokątnego – połać dachu za linią załamania schodzi dalej pod mniejszym kątem; wariant na słupach (słupy z fundamentami, belki poprzeczne, oczep, płatwie na słupkach) albo przybudówka z bali (obrys poszerzony, dawna ściana okapowa jako działowa, niska ściana zewnętrzna); płatwie zadaszenia.
 # Tematy: boczne zadaszenie, załamanie dachu, linia załamania, połać zadaszenia, kąt zadaszenia, płatwie zadaszenia, płatew przy ścianie, oczep, słupy zadaszenia, belka poprzeczna zadaszenia, słupek pod płatwią zadaszenia, fundament słupa zadaszenia, przeszkody przy ścianie okapowej, przybudówka z bali, obrys z przybudówką, ściana domu przy przybudówce, ściana przybudówki, prześwit pod zadaszeniem
 # Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia z załamaniem, płatew, wręby płatwi), rdzen/platwie_wience.rb (przekrój płatwi ściennej), rdzen/elementy.rb, rdzen/fundamenty.rb, rdzen/sciany.rb (oś kalenicy), rdzen/skrzydla.rb (zasięg płatwi)
-# Używają: rdzen/projekt.rb (obrys z przybudówką, role ścian, elementy, podpowiedzi), rdzen/szczyty.rb (przekrój dachu z zadaszeniem, gniazda płatwi zadaszenia, ściana przybudówki pod połacią), rdzen/polacie.rb (załamania dla aplikacji do dachów), rdzen/krok2.rb (ściana domu przy przybudówce jako podpora)
+# Używają: rdzen/projekt.rb (obrys z przybudówką, role ścian, elementy, podpowiedzi), rdzen/statyka_zadaszenia.rb (płatwie, linie słupów, belki), rdzen/statyka_krokwi.rb (płatwie zadaszenia jako podpory krokwi), rdzen/podloga_przybudowki.rb (role ścian), rdzen/szczyty.rb (przekrój dachu z zadaszeniem, gniazda płatwi zadaszenia, ściana przybudówki pod połacią), rdzen/polacie.rb (załamania dla aplikacji do dachów), rdzen/krok2.rb (ściana domu przy przybudówce jako podpora)
 #
 # Wymóg użytkownika (2026-11-25): „boczne zadaszenie … musi być pod mniejszym kątem niż połać dachu, do której została
 # doklejona; generator dachów powinien dostać informację, że w tym miejscu jest załamanie dachu”. Wybory: podparcie do
@@ -253,35 +253,54 @@ module ArteMadera
         -Parametry.przekroj(p, 'podwalina_przekroj')[1]
       end
 
+      # Linie słupów strony c: [{ u:, v_konca: (koniec belki poprzecznej przy domu), v_slupa: (oś słupa), z_dol: (podstawa),
+      # z_slupa: (wierzch słupa = spód belki), z_belki: (wierzch belki = spód oczepu) }]; [] – bez słupów (przybudówka, brak
+      # oczepu albo słupy niższe niż MIN_SLUP). lista_pl – płatwie zadaszenia (platwie), gdy już policzone.
+      def linie_slupow(dom, geo, c, sciany, p, lista_pl = nil)
+        return [] unless p['zadaszenie'] == 'slupy'
+        ls = Parametry.przekroj(p, 'zadaszenie_slup_przekroj')[1]
+        bb, hb = Parametry.przekroj(p, 'zadaszenie_belka_przekroj')
+        z0 = z_podstawy(p)
+        oczep = (lista_pl || platwie(geo, p)).find { |pl| pl[:kier] == c[:kier] && pl[:rodzaj] == 'oczep' }
+        return [] if oczep.nil?
+        z_slupa = oczep[:z_spod] - hb
+        return [] if z_slupa - z0 < MIN_SLUP
+        v_slupa = c[:v_s] - c[:kier] * ls / 2.0
+        linie(dom, c, przeszkody(sciany, c, dom, p), bb, p, koniec_belki(geo, c, oczep[:z_spod], p)).map do |u, vk|
+          { u: u, v_konca: vk, v_slupa: v_slupa, z_dol: z0, z_slupa: z_slupa, z_belki: oczep[:z_spod] }
+        end
+      end
+
+      # Koniec belki poprzecznej przy domu (v): lico ściany okapowej, a gdy płatew ścienna stoi na ścianie, jest szersza niż
+      # ściana i jej spód leży niżej niż wierzch belki (z_belki) – krawędź płatwi (linia załamania; belka dochodzi do boku płatwi).
+      def koniec_belki(geo, c, z_belki, p)
+        return c[:v_lico] unless (c[:v_k] - c[:v_lico]) * c[:kier] > 0.5
+        sc = Dach.platwie(geo, p).select { |pl| pl[:rodzaj] == 'scienna' }.min_by { |pl| (pl[:v] - c[:v_lico]).abs }
+        sc && sc[:z_spod] < z_belki - 0.01 ? c[:v_k] : c[:v_lico]
+      end
+
       # Słupy, fundamenty, belki poprzeczne i słupki zadaszenia na słupach (każda strona).
       def slupy(dom, geo, sciany, p)
         bs, ls = Parametry.przekroj(p, 'zadaszenie_slup_przekroj')
         bb, hb = Parametry.przekroj(p, 'zadaszenie_belka_przekroj')
-        z0 = z_podstawy(p)
         lista_pl = platwie(geo, p)
         wynik = []
         geo[:zad].each do |c|
           pl_strony = lista_pl.select { |pl| pl[:kier] == c[:kier] }
-          oczep = pl_strony.find { |pl| pl[:rodzaj] == 'oczep' }
-          next if oczep.nil?
-          z_belki = oczep[:z_spod]
-          z_slupa = z_belki - hb
-          next if z_slupa - z0 < MIN_SLUP
-          v_slupa = c[:v_s] - c[:kier] * ls / 2.0
-          linie(dom, c, przeszkody(sciany, c, dom, p), bb, p).each do |u, v_konca|
-            wynik << slup(dom, u, v_slupa, bs, ls, z0, z_slupa, 'Słup zadaszenia')
+          linie_slupow(dom, geo, c, sciany, p, lista_pl).each do |x|
+            u = x[:u]
+            wynik << slup(dom, u, x[:v_slupa], bs, ls, x[:z_dol], x[:z_slupa], 'Słup zadaszenia')
             if Fundamenty.wlaczone?(p)
-              wynik.concat(Fundamenty.elementy([[Dach.xy(dom, u, v_slupa), z0]], p).map do |f|
+              wynik.concat(Fundamenty.elementy([[Dach.xy(dom, u, x[:v_slupa]), x[:z_dol]]], p).map do |f|
                 f.merge!(rodzaj: 'Fundament słupa zadaszenia', tag: :zadaszenie)
               end)
             end
-            b = Elementy.pozioma('Bp', Dach.xy(dom, u, c[:v_s]), Dach.xy(dom, u, v_konca), bb, hb, z_slupa, :os)
+            b = Elementy.pozioma('Bp', Dach.xy(dom, u, c[:v_s]), Dach.xy(dom, u, x[:v_konca]), bb, hb, x[:z_slupa], :os)
             wynik << b.merge!(rodzaj: 'Belka poprzeczna zadaszenia', tag: :zadaszenie)
             pl_strony.each do |pl|
-              next if pl.equal?(oczep) || !nad_belka?(pl, c, v_konca)
-              hs = pl[:z_spod] - z_belki
-              next if hs < MIN_SLUPEK
-              wynik << slup(dom, u, pl[:v], bb, pl[:b], z_belki, pl[:z_spod], 'Słupek zadaszenia')
+              next if pl[:rodzaj] == 'oczep' || !nad_belka?(pl, c, x[:v_konca])
+              next if pl[:z_spod] - x[:z_belki] < MIN_SLUPEK
+              wynik << slup(dom, u, pl[:v], bb, pl[:b], x[:z_belki], pl[:z_spod], 'Słupek zadaszenia')
             end
           end
         end
@@ -310,8 +329,9 @@ module ArteMadera
       end
 
       # Linie słupów [[u, v końca belki poprzecznej]]: skrajne w osiach ścian szczytowych (belka do końca ostatków), pośrednie
-      # równo co najwyżej zadaszenie_slupy_rozstaw; linia, w której belka trafiłaby w węgieł albo działową, przesunięta obok.
-      def linie(dom, c, przeszkody, bb, p)
+      # równo co najwyżej zadaszenie_slupy_rozstaw; linia, w której belka trafiłaby w węgieł albo działową, przesunięta obok;
+      # v_bazy – koniec belki bez przeszkód (lico ściany albo krawędź płatwi ściennej – koniec_belki).
+      def linie(dom, c, przeszkody, bb, p, v_bazy = c[:v_lico])
         u1 = dom[:u1]
         u2 = dom[:u2]
         n = ((u2 - u1) / p['zadaszenie_slupy_rozstaw'].to_f - 1e-9).ceil
@@ -320,7 +340,7 @@ module ArteMadera
         us.each_with_index.map do |u, i|
           u = omin(u, przeszkody, bb, u1, u2) unless i.zero? || i == n
           konce = przeszkody.select { |x| (x[:u] - u).abs < x[:pol] + bb / 2.0 - 0.5 }.map { |x| x[:v] }
-          v = konce.empty? ? c[:v_lico] : (c[:kier] < 0 ? konce.min : konce.max)
+          v = konce.empty? ? v_bazy : (c[:kier] < 0 ? (konce + [v_bazy]).min : (konce + [v_bazy]).max)
           [u, v]
         end
       end

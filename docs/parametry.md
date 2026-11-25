@@ -75,7 +75,9 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `dach_wiezba` | Krokwie i poszycie – kto je buduje | aplikacja | `aplikacja` – aplikacja do dachów (KROK 2: krokwie, poszycie, kontrola); `generator` – generator (krokwie bez kontroli, bez poszycia) | Dom prostokątny i w kształcie L (dom L – tylko aplikacja). Aplikacja do dachów (ArteMadera Roof, 3.7.0 lub nowsza) dostaje połacie na wierzchu płatwi generatora i jego płatwie jako podpory: z krokwiami – KROK 2 liczy krokwie (przęsła między płatwiami), poszycie, łaty i nośność; same płatwie – poszycie wprost na płatwiach, wzdłuż spadku, styki na płatwiach. Szczyt kończy się pod krokwiami, krokwie przy szczycie ustawia się w aplikacji. |
 | `dach_podniesienie` | Wierzch płatwi nad ścianą okapową (przy licu wewn.) | 69,5 mm | -300 … 1500 | Typ 100: 69,5 = wierzch najwyższego bala ściany szczytowej. Nie dotyczy płatwi stojącej na ścianie. |
 | `krokwie_przy_szczycie` | Krokwie przy ścianie szczytowej | obie_strony | `obie_strony` – z obu stron szczytu; `wewnatrz` – tylko od wewnątrz; `zewnatrz` – tylko od zewnątrz; `na_szczycie` – na szczycie (krokiew oparta na balach) | Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami. |
-| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. |
+| `krokwie_dobor` | Przekrój krokwi – dobór | reczny | `reczny` – z wyboru – przekrój podany niżej (ze sprawdzeniem nośności); `auto` – automatycznie – najmniejszy wystarczający z listy | Jeden przekrój krokwi całego dachu – także krokwi bocznego zadaszenia. Automatycznie: generator liczy śnieg i ciężar pokrycia na krokiew (rozstaw krokwi, przęsło między płatwiami, okap jako wspornik) i bierze najlżejszy przekrój z listy. Z aplikacją do dachów – wartość na start KROKU 2 (tam pełna kontrola). |
+| `krokiew_przekroj` | Krokiew (szer. × wys.) | 50x150 mm | szer. × wys. | Z aplikacją do dachów – wartość na start KROKU 2. Wynik sprawdzenia – pod sekcją. |
+| `krokwie_katalog` | Dostępne przekroje krokwi | 45x145, 45x170, 45x195, 50x150, 50x175, 50x200, 60x120, 60x140, 60x160, 60x180, 60x200, 60x240, 80x160, 80x200, 80x240 |  | Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy wystarczający. |
 | `krokwie_rozstaw` | Rozstaw krokwi – największy | 900 mm | 300 … 2000 | Z aplikacją do dachów – wartość na start KROKU 2. |
 | `platwie_dobor` | Przekrój płatwi – dobór | reczny | `reczny` – ręcznie – przekroje podane niżej (ze sprawdzeniem nośności); `auto` – automatycznie – najmniejszy wystarczający z listy | Automatycznie: generator liczy śnieg i ciężar pokrycia na każdą płatew (pas dachu, największe przęsło między ścianami) i bierze najlżejszy przekrój z listy, który to przenosi. Mały, wąski domek dostaje mniejsze płatwie – i mniejszy trójkąt nad tarasem (z przekroju płatwi). Wynik to podpowiedź, nie projekt konstruktora. |
 | `platwie_katalog` | Dostępne przekroje płatwi | 60x100, 60x120, 60x140, 60x160, 60x200, 60x240, 80x160, 80x180, 80x200, 80x220, 100x200, 120x200, 140x200, 140x240, 160x200, 160x280 |  | Lista „szer.×wys.” po przecinku (drewno widoczne Nsi / DUO / BSH z hurtowni) – dobór bierze najlżejszy wystarczający. |
@@ -169,20 +171,6 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `taras_przekladka` | Balustrada – długość przekładki | 300 mm | 50 … 1000 | Odcinek bala między balami balustrady (typ 200: 300). |
 | `taras_przekladka_odstep` | Balustrada – największy prześwit między przekładkami | 600 mm | 50 … 2000 | Przekładki przy obu końcach przęsła i równo między nimi. |
 
-## Boczne zadaszenie
-
-| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
-|---|---|---|---|---|
-| `zadaszenie` | Boczne zadaszenie przy ścianie okapowej | nie | `nie` – bez zadaszenia; `slupy` – na słupach z oczepem (wiata, drewutnia); `bale` – ściany z bali (przybudówka) | Połać dachu za ścianą okapową schodzi dalej pod mniejszym kątem – załamanie nad licem zewnętrznym ściany. Narysuj sam dom: słupy, belki i płatwie zadaszenia albo ściany przybudówki dokłada generator. Aplikacja do dachów dostaje połacie z załamaniem (łaty przy załamaniu, pełne moduły pod nim). Dom prostokątny, dach dwuspadowy, bez tarasu. |
-| `zadaszenie_strona` | Zadaszenie – przy ścianie okapowej | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry); `obie` – po obu stronach | Kalenica wzdłuż X – ściana dolna / górna rysunku, wzdłuż Y – lewa / prawa. |
-| `zadaszenie_szerokosc` | Zadaszenie – szerokość | 2000 mm | 600 … 6000 | Od lica zewnętrznego ściany domu do lica zewnętrznego podpory (słupów albo ściany przybudówki), w poziomie. |
-| `zadaszenie_kat` | Zadaszenie – kąt (mniejszy niż kąt dachu) | 12 ° | 3 … 50 | Musi być mniejszy niż kąt dachu (załamanie). Blachodachówka zwykle od 9–12°, blacha na rąbek od 3–5° – sprawdź kartę pokrycia. |
-| `zadaszenie_okap` | Zadaszenie – okap za podporą (najmniej) | 300 mm | 0 … 1500 | W poziomie, od lica podpory. Aplikacja do dachów wydłuża go do pełnych modułów łat (0 … 1 moduł). |
-| `zadaszenie_platwa_przekroj` | Płatew zadaszenia (szer. × wys.) | 80x160 mm | szer. × wys. | Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak płatwie dachu. Bez sprawdzenia nośności. |
-| `zadaszenie_slup_przekroj` | Słup zadaszenia (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory. |
-| `zadaszenie_slupy_rozstaw` | Słupy zadaszenia – największy rozstaw (osiowo) | 2500 mm | 800 … 6000 | Skrajne słupy w osiach ścian szczytowych, pośrednie równo; słup w miejscu węgła albo działowej przesunięty obok. |
-| `zadaszenie_belka_przekroj` | Belka poprzeczna na słupie (szer. × wys.) | 80x160 mm | szer. × wys. | Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, na słupkach płatwie zadaszenia. Ściana domu osiada (bale) – belka tylko oparta o ścianę. |
-
 ## Podłoga i fundamenty
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
@@ -236,6 +224,29 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `kontrfor_max_linia` | Linia węgła – najdłuższa | 600 mm | 100 … 3000 | Krótsza linia przecinająca jedną ścianę = węgieł. |
 | `tolerancja_rysunku` | Tolerancja rysunku obrysu | 5 mm | 0,5 … 50 |  |
 | `gestosc` | Gęstość drewna (waga) | 450 kg/m³ | 300 … 900 |  |
+
+## Zadaszenie – rodzaj i wymiary
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `zadaszenie` | Zadaszenie przy ścianie okapowej (boczne / tylne) | nie | `nie` – bez zadaszenia; `slupy` – na słupach z oczepem (wiata, drewutnia); `bale` – ściany z bali (przybudówka) | Połać dachu za ścianą okapową schodzi dalej pod mniejszym kątem – załamanie nad licem zewnętrznym ściany. Narysuj sam dom: słupy, belki i płatwie zadaszenia albo ściany przybudówki dokłada generator. Aplikacja do dachów dostaje połacie z załamaniem (łaty przy załamaniu, pełne moduły pod nim). Dom prostokątny, dach dwuspadowy, bez tarasu. |
+| `zadaszenie_strona` | Zadaszenie – przy ścianie okapowej | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry); `obie` – po obu stronach | Kalenica wzdłuż X – ściana dolna / górna rysunku, wzdłuż Y – lewa / prawa. |
+| `zadaszenie_szerokosc` | Zadaszenie – szerokość | 2000 mm | 600 … 6000 | Od lica zewnętrznego ściany domu do lica zewnętrznego podpory (słupów albo ściany przybudówki), w poziomie. |
+| `zadaszenie_kat` | Zadaszenie – kąt (mniejszy niż kąt dachu) | 12 ° | 3 … 50 | Musi być mniejszy niż kąt dachu (załamanie). Blachodachówka zwykle od 9–12°, blacha na rąbek od 3–5° – sprawdź kartę pokrycia. |
+| `zadaszenie_okap` | Zadaszenie – okap za podporą (najmniej) | 300 mm | 0 … 1500 | W poziomie, od lica podpory. Aplikacja do dachów wydłuża go do pełnych modułów łat (0 … 1 moduł). |
+| `zadaszenie_slupy_rozstaw` | Słupy zadaszenia – największy rozstaw (osiowo) | 2500 mm | 800 … 6000 | Skrajne słupy w osiach ścian szczytowych, pośrednie równo; słup w miejscu węgła albo działowej przesunięty obok. Rozstaw słupów to przęsło płatwi i oczepu. |
+| `zadaszenie_podloga` | Przybudówka – podłoga | tak | `tak` – tak – podłoga domu sięga do ściany przybudówki; `nie` – nie – same podwaliny i fundamenty pod ścianami przybudówki | Podłogę domu (legary, podciągi, fundamenty) ustawiasz w zakładce Dom → „Podłoga i fundamenty”; tu tylko, czy wchodzi do przybudówki. Bez podłogi w przybudówce zostają podwaliny pod jej ścianami na fundamentach. |
+
+## Zadaszenie – przekroje (dobór)
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `zadaszenie_dobor` | Przekroje zadaszenia – dobór | auto | `auto` – automatycznie – najmniejsze wystarczające z list; `reczny` – z wyboru – przekroje podane niżej (ze sprawdzeniem nośności) | Płatwie i oczep, belki poprzeczne i słupy zadaszenia: generator liczy śnieg i ciężar pokrycia (jak dach – zakładka Dom → „Szczyty i dach”) i bierze najlżejszy przekrój z listy, który to przenosi. Krokwie zadaszenia mają przekrój krokwi dachu (dobór przy krokwiach w zakładce Dom). Wynik to podpowiedź, nie projekt konstruktora. |
+| `zadaszenie_katalog` | Dostępne przekroje belek zadaszenia | 60x100, 60x120, 60x140, 60x160, 60x200, 60x240, 80x160, 80x180, 80x200, 80x220, 100x200, 120x200, 140x200, 140x240, 160x200, 160x280 |  | Płatwie, oczep i belki poprzeczne – lista „szer.×wys.” po przecinku; dobór bierze najlżejszy wystarczający. |
+| `zadaszenie_slupy_katalog` | Dostępne przekroje słupów zadaszenia | 100x100, 120x120, 140x140, 160x160, 180x180, 200x200 |  | Lista „wzdłuż ściany×w poprzek” po przecinku; dobór bierze najlżejszy wystarczający. |
+| `zadaszenie_platwa_przekroj` | Płatew zadaszenia (szer. × wys.) | 80x160 mm | szer. × wys. | Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak płatwie dachu. Wynik sprawdzenia – pod sekcją. |
+| `zadaszenie_slup_przekroj` | Słup zadaszenia (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory. |
+| `zadaszenie_belka_przekroj` | Belka poprzeczna na słupie (szer. × wys.) | 80x160 mm | szer. × wys. | Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, na słupkach płatwie zadaszenia. Ściana domu osiada (bale) – belka tylko oparta o ścianę. |
 
 ## Szablony wbudowane
 

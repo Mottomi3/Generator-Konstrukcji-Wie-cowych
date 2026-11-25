@@ -1,19 +1,41 @@
-# Scenariusz odbioru – kompilacja 12
+# Scenariusz odbioru – kompilacja 13
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 11). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 12 (2026-11-25)”.
+   (zastępuje kompilację 12). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 13 (2026-11-25)”.
    Aplikacja do dachów (ArteMadera Roof) **3.12.0** zainstalowana (`artemadera_roof_3.12.0.rbz` z tej rundy – bez niej
    zadaszenie nie dostanie połaci) – do kroków 4d–4h, 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
    i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 11 domów „w porządku” (ósmy: dach
-   jednospadowy, dziewiąty: taras jak 1100, dziesiąty: wiata boczna na słupach, jedenasty: przybudówki z bali). **Prześlij
+   jednospadowy, dziewiąty: taras jak 1100, dziesiąty: wiata boczna na słupach z dobranymi przekrojami, jedenasty: przybudówki z bali bez podłogi, krokwie dobrane). **Prześlij
    ten plik.** Model po teście pusty.
+**Nowe w kompilacji 13 (prośba z 25 listopada, 17:19):**
+
+5a. **Zakładka zadaszenia.** Generuj dom… → nad polami dwie zakładki: „Dom” i „Zadaszenie boczne / tylne”. W „Dom” nie
+   ma żadnego pola zadaszenia; w zakładce zadaszenia – sekcje „Zadaszenie – rodzaj i wymiary” i „Zadaszenie – przekroje
+   (dobór)”. Wybierz „na słupach z oczepem” → w nazwie zakładki „· zmienione: 1”. Wczytaj szablon → zostajesz w tej samej
+   zakładce.
+5b. **Dobór automatyczny.** Prostokąt 8000 × 5000, dach 30°, zadaszenie na słupach (szerokość 2000, kąt 12°) → pod sekcją
+   „Zadaszenie – przekroje” trzy wiersze: płatwie z oczepem (przęsło = rozstaw słupów), belki poprzeczne, słupy (wysokość,
+   siła, wyboczenie) – „dobrane automatycznie”. Pola przekrojów są ukryte. W modelu słupy, belki i płatwie mają te
+   przekroje. Zmień „Śnieg – obciążenie gruntu” (zakładka Dom) z 0,9 na 2,5 → przekroje rosną.
+5c. **Z wyboru.** „Przekroje zadaszenia – dobór”: z wyboru → pokazują się pola płatwi, słupa i belki (80 × 160, 120 × 120,
+   80 × 160) – wynik „wystarczy; najmniejszy wystarczający z listy: …”. Wpisz płatew 40x60 → „za słaby – z listy
+   wystarczy …”.
+5d. **Krokwie.** Zakładka Dom → „Szczyty i dach”: układ „płatwie i krokwie”, „Przekrój krokwi – dobór”: automatycznie →
+   pod sekcją „Krokwie … dobrane automatycznie”, w zakładce zadaszenia „Krokwie zadaszenia …” (ten sam przekrój). Z aplikacją
+   do dachów – KROK 2 startuje z dobranym przekrojem krokwi.
+5e. **Przybudówka bez podłogi.** Zadaszenie „ściany z bali (przybudówka)”, podłoga w zakładce Dom włączona, „Przybudówka –
+   podłoga”: nie → w przybudówce tylko podwaliny pod jej ścianami na fundamentach, legary i podciągi kończą się na
+   podwalinie dawnej ściany okapowej. „tak” → legary do ściany przybudówki.
+5f. **Przybudówka – płatwie.** Ta sama przybudówka przy domu 8 m: płatwie zadaszenia mają przęsło całej długości domu –
+   dobór daje duży przekrój (np. 160 × 280). Zgłoś, czy w przybudówce mają stanąć słupki / węgły pod płatwiami.
+
 **Nowe w kompilacji 12 (prośba z 25 listopada – boczne zadaszenie):**
 
-4a. **Wiata na słupach.** Prostokąt 6000 × 4000, dach 30°, sekcja „Boczne zadaszenie” → „na słupach z oczepem”, strona
+4a. **Wiata na słupach.** Prostokąt 6000 × 4000, dach 30°, zakładka „Zadaszenie boczne / tylne” → „na słupach z oczepem”, strona
    dolna, szerokość 2000, kąt 12°. Podgląd / budowa: dach domu do lica ściany okapowej, dalej połać 12°; cztery słupy na
    fundamentach (skrajne w osiach ścian szczytowych), na każdym belka poprzeczna do ściany (skrajne do końca ostatków),
    oczep na belkach nad słupami, płatew pośrednia i płatew przy ścianie na słupkach; płatew przy ścianie przechodzi przez

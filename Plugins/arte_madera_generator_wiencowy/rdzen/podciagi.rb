@@ -4,7 +4,7 @@
 # Plik: rdzen/podciagi.rb
 # Zadanie: podciągi pod legarami – położenia w przęsłach (automatycznie, co najwyżej rozstaw, w liniach fundamentów albo bez podciągów), belki do lica zewnętrznego podwalin pod podwalinami, sprawdzenie podciągu między fundamentami.
 # Tematy: podciąg na równo z podwaliną, legary dzielone na podciągu, podciąg, podpora legarów, położenie podciągów, podciągi w liniach fundamentów, podciąg pod podwaliną, podciąg do lica podwalin, wybór podciągów, sprawdzenie podciągu, rozpiętość podciągu
-# Zależy od: rdzen/parametry.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/fundamenty.rb (linie i rzędy)
+# Zależy od: rdzen/parametry.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/fundamenty.rb (linie i rzędy), rdzen/podloga_przybudowki.rb (pole podłogi bez przybudówki)
 # Używają: rdzen/podloga.rb (dobór legara, elementy, podpowiedzi)
 #
 # Przęsło legarów [a, c] (między licami podwalin w poprzek legarów, wzdłuż d). Położenia podciągów: lista d w każdym
@@ -20,6 +20,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera::GeneratorWiencowy::Statyka)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMadera::GeneratorWiencowy::Fundamenty)
+require File.join(File.dirname(__FILE__), 'podloga_przybudowki') unless defined?(ArteMadera::GeneratorWiencowy::PodlogaPrzybudowki)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -91,7 +92,7 @@ module ArteMadera
       # wewnętrznymi podwalin, przerwany na podwalinach działowych wzdłuż legarów; punkt – blok (d, e) → rzut.
       def elementy(u, p, poz, h_legara)
         bp, hp = Parametry.przekroj(p, 'podpora_przekroj')
-        e0, e1 = u[:ext][u[:ie]]
+        e0, e1 = PodlogaPrzybudowki.pole(u)[u[:ie]]
         z = z_wierzchu(u, h_legara, p)
         poz.flatten.flat_map do |d|
           odcinki(u, p, d, e0, e1).map { |a, c| Elementy.pozioma('Pd', yield(d, a), yield(d, c), bp, hp, z - hp, :os) }
@@ -103,7 +104,7 @@ module ArteMadera
       def odcinki(u, p, d, e0, e1)
         return [[e0, e1]] unless rowno?(p)
         b = u[:pw][0]
-        zakaz = (u[:dzialowe] || []).select { |w| (w[:a][u[:ie]] - w[:b][u[:ie]]).abs < 0.5 }.select do |w|
+        zakaz = PodlogaPrzybudowki.dzialowe_pola(u).select { |w| (w[:a][u[:ie]] - w[:b][u[:ie]]).abs < 0.5 }.select do |w|
           lo, hi = [w[:a][u[:id]], w[:b][u[:id]]].sort
           d > lo && d < hi
         end.map { |w| [w[:a][u[:ie]] - b / 2.0, w[:a][u[:ie]] + b / 2.0] }

@@ -387,7 +387,7 @@ z bali), na całej długości ściany okapowej, łaty przy załamaniu z obu stro
 - **Płatwie zadaszenia** (`zadaszenie_platwa_przekroj`, wierzch ścięty do połaci jak płatwie dachu): pierwsza tuż za linią
   załamania (przechodzi przez ostatki ścian szczytowych – gniazda i wręby jak płatwie dachu), pośrednie co najwyżej
   `platwie_rozstaw_max` (układy z płatwiami pośrednimi), ostatnia – oczep nad słupami albo płatew ścienna przybudówki;
-  bez sprawdzenia nośności (statyka płatwi – tylko dach domu).
+  od rundy 13 dobierane automatycznie albo sprawdzane (§8h).
 - **Na słupach**: słupy (`zadaszenie_slup_przekroj`) licem w linii podpory, skrajne w osiach ścian szczytowych, pośrednie
   równo co najwyżej `zadaszenie_slupy_rozstaw`, na fundamentach punktowych (gdy podłoga ma fundamenty), podstawa – spód
   podwaliny. Na słupie belka poprzeczna (`zadaszenie_belka_przekroj`, prefiks Bp) od lica podpory do ściany domu (skrajne –
@@ -404,6 +404,35 @@ z bali), na całej długości ściany okapowej, łaty przy załamaniu z obu stro
 - **Krokwie z generatora**: przy zadaszeniu krokiew dachu od linii załamania i krokiew zadaszenia od jego okapu do niej
   (czoła prostopadłe do osi, jak dotąd).
 - Elementy zadaszenia w grupie i tagu „Zadaszenie” (płatwie P, słupy i słupki S, belki Bp, fundamenty F).
+
+## 8h. Runda 13 – zakładka zadaszenia, dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce
+
+Wymóg użytkownika (2026-11-25 17:19): płatwie, słupy, krokwie dobierane z minimalnego przekroju automatycznie albo z wyboru
+użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylnego) zadaszenia w osobnej zakładce.
+- **Zakładki okna** (`rdzen/parametry_lista.rb` ZAKLADKI, czwarty element SEKCJE, `html/zakladki.js`): „Dom” i „Zadaszenie
+  boczne / tylne”; sekcja bez zakładki należy do „Dom”. Parametry `zadaszenie_*` tylko w sekcjach zakładki zadaszenia.
+- **Dobór zadaszenia** (`zadaszenie_dobor`: auto – domyślnie, reczny; `rdzen/statyka_zadaszenia.rb`): grupy o wspólnym
+  przekroju – płatwie z oczepem (`zadaszenie_platwa_przekroj`), belki poprzeczne (`zadaszenie_belka_przekroj`), słupy
+  (`zadaszenie_slup_przekroj`); listy `zadaszenie_katalog` (belki) i `zadaszenie_slupy_katalog`. Obciążenia jak dach
+  (`dach_ciezar` na m² połaci, `dach_snieg` × μ) przy kącie zadaszenia, ugięcie `dach_ugiecie`.
+  - Płatew / oczep: przęsło – największa odległość między podporami (linie słupów pod płatwią – belka poprzeczna i słupek,
+    oczep – słupy; ściany i ostatki, przez które płatew przechodzi; ściana wzdłuż płatwi niesie ją w całości), wspornik za
+    szczytem jak 2a; pas – połowa odległości do sąsiednich płatwi zadaszenia (pierwsza od załamania, ostatnia do okapu).
+  - Belka poprzeczna: przęsło od osi słupa do końca belki przy ścianie domu, obciążenie z pasa między sąsiednimi liniami
+    słupów (skrajne – z wysunięciem za szczyt).
+  - Słup (`rdzen/statyka_slupa.rb`): ściskanie z wyboczeniem, długość = od fundamentu do spodu belki, siła z połowy szerokości
+    zadaszenia i okapu na pasie słupa + ciężar belki i oczepu; k_c wg PN-EN 1995 §6.3.2, smukłość ≤ 150.
+  - Auto: najlżejszy przekrój z listy spełniający warunki całej grupy – wynik do następnego przebiegu obliczeń (jak płatwie
+    dachu); z wyboru: przekrój z pola, podpowiedź z najmniejszym wystarczającym albo radą.
+- **Dobór krokwi** (`krokwie_dobor`: reczny – domyślnie, auto; `krokwie_katalog`; `rdzen/statyka_krokwi.rb`): jeden przekrój
+  krokwi całego dachu (krokwie zadaszenia z tego samego przekroju). Krokiew – belka na płatwiach (ściana nośna – lico
+  wewnętrzne ściany; kalenica i załamanie to końce krokwi), przęsło w rzucie, okap jako wspornik 2a; obciążenia na rozstaw
+  `krokwie_rozstaw`, składowe prostopadłe, długość po skosie. Podpowiedź krokwi dachu w „Szczyty i dach”, krokwi zadaszenia –
+  w zakładce zadaszenia. Z aplikacją do dachów – przekrój na start KROKU 2.
+- **Podłoga w przybudówce** (`zadaszenie_podloga`: tak – domyślnie, nie; `rdzen/podloga_przybudowki.rb`): bez podłogi pole
+  podłogi (legary, przęsła, podciągi, objętość) kończy się na osi dawnej ściany okapowej ± pół podwaliny; podwaliny na całym
+  obrysie (także pod ścianami przybudówki) i siatka fundamentów na całym obrysie, fundamenty pod podciągami tylko w polu
+  podłogi. Kierunek legarów (krótszy / dłuższy bok) z pola podłogi. Dawna ściana okapowa zawsze na podwalinie.
 
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 

@@ -21,7 +21,7 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '12'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD      = '13'.freeze unless const_defined?(:PLUGIN_BUILD)
     PLUGIN_BUILD_DATE = '2026-11-25'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
@@ -43,7 +43,7 @@ module ArteMadera
       rdzen/usztywnienie rdzen/wegly_tabela rdzen/symetria_wegly rdzen/wypusty_okapu rdzen/styki_dzialowe rdzen/styki_tarasu rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/zamek_platwi rdzen/elementy rdzen/platwie_wience rdzen/dach_jednospadowy rdzen/dach rdzen/zadaszenie rdzen/szczyty rdzen/taras_wiazar rdzen/wegly_konstrukcyjne rdzen/podbitka rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
       rdzen/skos_przy_narozniku rdzen/sciecie_dachu
       rdzen/zamek
-      rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/statyka_dachu rdzen/statyka_wiazara rdzen/fundamenty rdzen/podciagi rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie
+      rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/statyka_dachu rdzen/statyka_wiazara rdzen/statyka_slupa rdzen/statyka_zadaszenia rdzen/statyka_krokwi rdzen/podloga_przybudowki rdzen/fundamenty rdzen/podciagi rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie
       rdzen/przyklady sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/dach_aplikacja sketchup/eksport
       sketchup/okno sketchup/sterowanie sketchup/raport sketchup/menu
     ].freeze unless const_defined?(:MODULE_FILES)

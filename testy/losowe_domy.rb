@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras, podpory dla aplikacji do dachów w teście losowym, losowe boczne zadaszenie
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras, podpory dla aplikacji do dachów w teście losowym, losowe boczne zadaszenie, losowy dobór przekrojów zadaszenia i krokwi, losowa podłoga w przybudówce
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -33,6 +33,8 @@ module LosoweDomy
   ZIARNA_R11 = 7000 unless const_defined?(:ZIARNA_R11)
   # Od tego ziarna – nowości rundy 12 (boczne zadaszenie: wiata na słupach albo przybudówka z bali).
   ZIARNA_R12 = 8000 unless const_defined?(:ZIARNA_R12)
+  # Od tego ziarna – nowości rundy 13 (dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce do wyboru).
+  ZIARNA_R13 = 8500 unless const_defined?(:ZIARNA_R13)
 
   module_function
 
@@ -93,6 +95,7 @@ module LosoweDomy
     dodatki_r10(Random.new(ziarno * 5_117_113 + 19), p, opis) if ziarno >= ZIARNA_R10
     dodatki_r11(Random.new(ziarno * 6_700_417 + 23), p, opis) if ziarno >= ZIARNA_R11
     dodatki_r12(Random.new(ziarno * 7_368_791 + 29), p, opis) if ziarno >= ZIARNA_R12
+    dodatki_r13(Random.new(ziarno * 8_191_207 + 31), p, opis) if ziarno >= ZIARNA_R13
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -262,6 +265,14 @@ module LosoweDomy
     p['zadaszenie_slupy_rozstaw'] = wybierz(r, %w[1500 2500 3500])
     opis << "r12: zadaszenie #{p['zadaszenie']} #{p['zadaszenie_strona']} #{p['zadaszenie_szerokosc']} mm, " \
             "#{p['zadaszenie_kat']}° (dach #{p['dach_kat']}°), okap #{p['zadaszenie_okap']}"
+  end
+
+  # Dodatki rundy 13: dobór przekrojów zadaszenia (automatycznie / z wyboru), dobór krokwi, podłoga w przybudówce.
+  def dodatki_r13(r, p, opis)
+    p['zadaszenie_dobor'] = wybierz(r, %w[auto auto reczny])
+    p['krokwie_dobor'] = wybierz(r, %w[auto reczny])
+    p['zadaszenie_podloga'] = wybierz(r, %w[tak nie])
+    opis << "r13: dobór zadaszenia #{p['zadaszenie_dobor']}, krokwi #{p['krokwie_dobor']}, podłoga przybudówki #{p['zadaszenie_podloga']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).

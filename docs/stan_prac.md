@@ -1,11 +1,36 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 12, kompilacja 12 (2026-11-25), wersja 1.0.0. Poprzednio: runda 11, kompilacja 11 (2026-11-16). Testy: `bash testy/uruchom.sh` – 25 zestawów
-(nowy `t_zadaszenie`; sprawdzenie z prawdziwą aplikacją do dachów **3.12.0** – także trzy domy z bocznym zadaszeniem), FAILURES 0; zestaw „Ruby 2.7.8”
-pominięty (brak Rubiego 2.7 i sieci do jego zbudowania w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 108 wariantów domów z zadaszeniem
-(słupy / bale × strona × układ dachu × oparcie dachu × kto robi krokwie) i losowe domy rundy 12 (ziarna od 8000) – bez problemów (§5 runda 12).
-Aplikacja do dachów 3.12.0 (ta sama sesja – `Mottomi3/Aplikacja-do-konstrukcji-dach-w`): 414 testów, 0 błędów.
-Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–12).
+Stan na: runda 13, kompilacja 13 (2026-11-25), wersja 1.0.0. Poprzednio: runda 12, kompilacja 12 (2026-11-25). Testy: `bash testy/uruchom.sh` – 26 zestawów
+(nowy `t_statyka_zadaszenia`; okno z zakładkami w Chromium; sprawdzenie z prawdziwą aplikacją do dachów 3.12.0), 1766 sprawdzeń, FAILURES 0;
+zestaw „Ruby 2.7.8” pominięty (brak Rubiego 2.7 w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 108 wariantów
+domów z zadaszeniem z doborem krokwi i podłogą przybudówki, losowe domy rundy 13 (ziarna 8501–8800, 35 z zadaszeniem),
+rundy 12 (8001–8250) i z wymuszonym zadaszeniem (9001–9200, 159 zadaszeń) – bez problemów po poprawce końca belki
+poprzecznej (§1g). Aplikacja do dachów bez zmian (3.12.0).
+Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–13).
+
+## 1g. Nowe w kompilacji 13 (prośba z 2026-11-25 17:19)
+
+- **Osobna zakładka „Zadaszenie boczne / tylne”** (`html/zakladki.js`, `rdzen/parametry_lista.rb` ZAKLADKI, czwarty element
+  SEKCJE): okno ma dwie zakładki – „Dom” (wszystkie dotychczasowe sekcje) i zadaszenie (sekcje „Zadaszenie – rodzaj
+  i wymiary” oraz „Zadaszenie – przekroje (dobór)”); w nazwie zakładki liczba zmienionych pól, wybrana zakładka zostaje po
+  wczytaniu szablonu. Wszystkie parametry `zadaszenie_*` tylko w tej zakładce.
+- **Dobór przekrojów zadaszenia** (`rdzen/statyka_zadaszenia.rb`, `rdzen/statyka_slupa.rb`): „Przekroje zadaszenia –
+  dobór”: automatycznie (domyślnie) – najmniejsze wystarczające z list „Dostępne przekroje belek zadaszenia” (płatwie
+  z oczepem, belki poprzeczne) i „… słupów zadaszenia”; z wyboru – przekroje z pól ze sprawdzeniem i radą. Płatwie
+  i oczep – przęsło między liniami słupów / ścianami, pas połaci zadaszenia; belka poprzeczna – od słupa do ściany; słup –
+  ściskanie z wyboczeniem (PN-EN 1995 §6.3.2). Obciążenia jak dach (śnieg, ciężar pokrycia) przy kącie zadaszenia.
+- **Dobór krokwi** (`rdzen/statyka_krokwi.rb`, „Przekrój krokwi – dobór” w „Szczyty i dach”): jeden przekrój krokwi
+  całego dachu (także krokwie zadaszenia – jak KROK 2 aplikacji), automatycznie z listy „Dostępne przekroje krokwi” albo
+  z wyboru ze sprawdzeniem; wynik krokwi zadaszenia w zakładce zadaszenia. Z aplikacją do dachów – dobrany przekrój na
+  start KROKU 2.
+- **Podłoga w przybudówce do wyboru** (`rdzen/podloga_przybudowki.rb`, „Przybudówka – podłoga”): bez podłogi – legary
+  i podciągi tylko w domu (do podwaliny dawnej ściany okapowej), podwaliny i fundamenty pod ścianami przybudówki;
+  kierunek legarów („krótszy / dłuższy bok”) liczony z pola podłogi. Dawna ściana okapowa zawsze na podwalinie (także gdy
+  „Podwaliny pod działowymi” = nie).
+- Test działania: przykład 10 – wiata z przekrojami dobranymi, 11 – przybudówki bez podłogi z krokwiami dobranymi.
+- Poprawka znaleziona losowymi domami: belka poprzeczna zadaszenia przy płatwi ściennej stojącej na ścianie i szerszej niż
+  ściana – gdy wierzch belki jest wyżej niż spód płatwi, belka kończy się przy boku płatwi (linia załamania), nie przy
+  licu ściany (`rdzen/zadaszenie.rb#koniec_belki`; mniejsze dobrane przekroje podnosiły belkę – kolizja 5 mm, ziarno 9008).
 
 ## 1f. Nowe w kompilacji 12 (prośba z 2026-11-25 15:10)
 
@@ -242,6 +267,8 @@ Patrz `docs/SPIS_TRESCI.md` §2. Nowe w rundzie 3: `rdzen/pod_dachem.rb`, `rdzen
 Nowe w rundzie 4: `rdzen/ustawienia_scian.rb`, `rdzen/dopelnienie.rb`, `rdzen/profil_bala.rb`, `html/tryb.js`,
 `html/edycja.js`; test `t_sciany_ust`.
 Nowe w rundzie 10: `rdzen/skrzydla.rb` (dom L – dwa dachy z koszem); test `t_skrzydla`.
+Nowe w rundzie 13: `rdzen/statyka_zadaszenia.rb`, `rdzen/statyka_slupa.rb`, `rdzen/statyka_krokwi.rb`, `rdzen/podloga_przybudowki.rb`,
+`html/zakladki.js`; test `t_statyka_zadaszenia`.
 Nowe w rundzie 11: `rdzen/styki_tarasu.rb` (front tarasu na styk), `rdzen/statyka_dachu.rb` (płatwie – sprawdzenie
 i dobór), `rdzen/statyka_wiazara.rb` (trójkąt nad tarasem – sprawdzenie i dobór); test `t_statyka_dachu`.
 Nowe w rundzie 6: `rdzen/krok2.rb` (ustawienia KROKU 2, poszycie, podpory); sekcja parametrów „Poszycie dachu”;
@@ -396,6 +423,27 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
 - Podbitka „na płatwiach” z krokwiami: połać dla aplikacji do dachów i podpory wyżej o grubość deski (krokwie leżą na
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
+
+### Runda 13 (kompilacja 13) – dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce, zakładka zadaszenia
+
+Wiadomość użytkownika (2026-11-25 17:19): „płatwie, słupy, krokwie niech są dobierane z minimalnego przekroju jako
+automatyczne, lub z wyboru przekroju użytkownika. Podłogi w przybudówce w opcjach. Pamiętaj, by cała ta część bocznego
+zadaszenia – lub tylnego – była w osobnej zakładce, by się nic nie myliło.”
+- Wykonanie – §1g. Nowe pliki: `rdzen/statyka_zadaszenia.rb`, `rdzen/statyka_slupa.rb`, `rdzen/statyka_krokwi.rb`,
+  `rdzen/podloga_przybudowki.rb`, `html/zakladki.js`, `testy/t_statyka_zadaszenia.rb`; zmiany: `rdzen/parametry_zadaszenie.rb`
+  (sekcje, dobór, listy, podłoga), `rdzen/parametry_dach.rb` (dobór krokwi), `rdzen/parametry_lista.rb` (ZAKLADKI),
+  `rdzen/statyka.rb` (f_c,0,k i E0,05 klas), `rdzen/statyka_dachu.rb#obciazenia` (kąt połaci), `rdzen/zadaszenie.rb#linie_slupow`,
+  `rdzen/podloga.rb#uklad` (pole podłogi), `rdzen/podciagi.rb`, `rdzen/fundamenty.rb#stopy`, `rdzen/projekt.rb#belki`,
+  `sketchup/okno.rb`, `html/okno.html`, `html/okno.js`, `html/okno.css`, `rdzen/przyklady.rb`.
+- Przyjęte bez pytania (§6, Z6–Z9): krokwie zadaszenia z przekrojem krokwi dachu; dobór zadaszenia domyślnie
+  automatyczny, krokwi – z wyboru (jak płatwie – stare domy bez zmian); podłoga w przybudówce domyślnie tak (jak
+  w kompilacji 12); obciążenia zadaszenia jak dachu.
+- Uwaga z obliczeń: przybudówka bez ścian poprzecznych – płatwie zadaszenia mają przęsło równe długości domu (dom 8 m →
+  dobór 160 × 280). Słupów ani działowych w przybudówce generator jeszcze nie stawia (do decyzji – §6 Z9).
+- Testy: `t_statyka_zadaszenia` (62: słup, dobór i sprawdzenie zadaszenia, przybudówka, krokwie, podłoga, zakładka),
+  `t_okno.js` (+9: zakładki, pola zależne doboru), `t_zadaszenie` (belka obok węgła z dobranym przekrojem), losowe domy
+  od ziarna 8500 (`dodatki_r13`): 8501–8800, 8001–8250, wymuszone zadaszenie 9001–9200 i 108 wariantów – bez problemów
+  (jedna kolizja znaleziona i poprawiona – §1g, ziarno 9008).
 
 ### Runda 12 (kompilacja 12) – boczne zadaszenie z załamaniem dachu
 
@@ -553,23 +601,29 @@ kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zak
 | D1b | Lista przekrojów płatwi | 60×100 … 160×280 z wykazu „od ręki” (Nsi / DUO / BSH) z 2026-11-14, bez długości handlowych (długości – runda 12 razem z katalogiem legarów) |
 | D1c | Dobór domyślnie | ręcznie ze sprawdzeniem (jak dotąd przekroje z pól); automatyczny – wybór użytkownika |
 | Z1 | Linia załamania bocznego zadaszenia | nad licem zewnętrznym ściany okapowej (płatew ścienna na ścianie, szersza niż ściana – nad jej krawędzią); dach domu do niej bez zmian |
-| Z2 | Płatwie zadaszenia | jeden przekrój (80 × 160), wierzch ścięty do połaci, rozstaw jak płatwie dachu (≤ 1000), pierwsza przy samej ścianie w gniazdach ostatków ścian szczytowych; bez sprawdzenia nośności |
+| Z2 | Płatwie zadaszenia | jeden przekrój (80 × 160), wierzch ścięty do połaci, rozstaw jak płatwie dachu (≤ 1000), pierwsza przy samej ścianie w gniazdach ostatków ścian szczytowych; **runda 13**: przekrój dobierany albo sprawdzany (Z6) |
 | Z3 | Zadaszenie na słupach | słup 120 × 120 co ≤ 2500 (skrajne w osiach szczytów), na fundamencie punktowym; belka poprzeczna 80 × 160 na słupie do ściany domu (oparta, bez gniazda – osiadanie); oczep na belkach, płatwie na słupkach |
 | Z4 | Przybudówka z bali | dawna ściana okapowa – działowa o wysokości ściany okapowej (bez „do dachu”), ściana przybudówki ścięta do połaci; podłoga także pod przybudówką |
 | Z5 | Łaty przy załamaniu (aplikacja 3.12) | po obu stronach łata przy linii załamania (górne krawędzie w dwusiecznej); nad załamaniem jak od okapu (nakładka i podwójna łata jak przy okapie), pod załamaniem pojedyncza; pełne moduły pod załamaniem – okap zadaszenia wydłużany 0…1 moduł |
+| Z6 | Dobór przekrojów zadaszenia | domyślnie automatycznie; listy: belki jak płatwie (60×100 … 160×280), słupy 100×100 … 200×200; obciążenia jak dach (śnieg 0,9, pokrycie 0,35) przy kącie zadaszenia, ugięcie L/200 |
+| Z7 | Krokwie zadaszenia | jeden przekrój krokwi całego dachu (KROK 2 aplikacji ma jeden przekrój); dobór krokwi domyślnie z wyboru (stare domy bez zmian), lista 45×145 … 80×240 |
+| Z8 | Podłoga w przybudówce | domyślnie tak; bez podłogi – podwaliny i fundamenty pod ścianami przybudówki, legary do dawnej ściany okapowej |
+| Z9 | Podparcie płatwi zadaszenia w przybudówce | tylko ściany szczytowe – przęsło = długość domu (duże przekroje przy długich domach); słupki / węgły pod płatwiami w przybudówce albo jej działowe – do decyzji |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 12 (kroki 4a–4h rundy 12 – boczne zadaszenie, aplikacja do dachów 3.12.0; 3a–3h rundy 11, 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 13 (kroki 5a–5f rundy 13 – zakładka zadaszenia, dobór, podłoga przybudówki; 4a–4h rundy 12 – boczne zadaszenie, aplikacja do dachów 3.12.0; 3a–3h rundy 11, 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 12)
+## 8. Ograniczenia (kompilacja 13)
 
+- Statyka zadaszenia i krokwi (runda 13) uproszczona jak dachu: bez wiatru (słupy wolnostojące wymagają stężeń), bez
+  zsuwania śniegu z wyższej połaci na zadaszenie, krokwie jako belki swobodnie podparte; podpowiedź, nie projekt.
 - Boczne zadaszenie: tylko dom prostokątny, dach dwuspadowy, bez tarasu; na całej długości ściany okapowej (bez odcinka
-  od–do); płatwie zadaszenia bez sprawdzenia nośności; zadaszenie na słupach – belka poprzeczna w modelu dosunięta do lica
+  od–do); w przybudówce płatwie zadaszenia oparte tylko na ścianach szczytowych; zadaszenie na słupach – belka poprzeczna w modelu dosunięta do lica
   ściany (mocowanie z luzem na osiadanie do wykonania na budowie); ścian szczytowych zadaszenia na słupach (zamknięcia
   boku) generator nie robi; podbitka tylko w domu (od lica wewnętrznego ściany okapowej do kalenicy).
 - Aplikacja do dachów 3.12: deski poszycia przy załamaniu docięte pionowo (warstwy nad krokwiami – stopień kilku mm na
@@ -614,9 +668,9 @@ dach jednospadowy, taras).
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 12: raport z testu działania (JSON, 11 domów) + scenariusz (kroki 4a–4h – boczne zadaszenie z aplikacją
-   do dachów 3.12.0, potem 3a–3h) → poprawki.
-1b. Runda 13 – rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`): poprawka działowej współliniowej
+1. Odbiór kompilacji 13: raport z testu działania (JSON, 11 domów) + scenariusz (kroki 5a–5f, 4a–4h – boczne zadaszenie
+   z aplikacją do dachów 3.12.0, potem 3a–3h) → poprawki; decyzje Z6–Z9.
+1b. Następna runda – rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`): poprawka działowej współliniowej
    z nowym zestawem domów złożonych, pół zamka w wieńcu szczytowym (po decyzji T8), katalog przekrojów z długościami
    (legary i płatwie – wspólny format), komunikat zamiast wyjątku, podbitka w polach zależnych, ostrzeżenie o ostatkach
    do podpowiedzi; przy okazji dom L z podbitką na płatwiach.

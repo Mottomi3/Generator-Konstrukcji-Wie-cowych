@@ -25,8 +25,10 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | atrapa aplikacji do dachów | `testy/atrapa/aplikacja_dachow.rb` |
 | atrybuty | `sketchup/atrybuty.rb` |
 | atrybuty dokumentacji 2d | `testy/t_sketchup.rb` |
+| automatyczny dobór krokwi | `rdzen/statyka_krokwi.rb` |
 | automatyczny dobór płatwi | `rdzen/statyka_dachu.rb` |
 | automatyczny dobór wiązara | `rdzen/statyka_wiazara.rb` |
+| automatyczny dobór zadaszenia | `rdzen/statyka_zadaszenia.rb` |
 | bal | `rdzen/bale.rb` |
 | bal bez zamka przy narożniku | `rdzen/skos_przy_narozniku.rb` |
 | bal obrócony | `sketchup/konwersja.rb`, `testy/t_sketchup.rb` |
@@ -46,6 +48,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | belka | `rdzen/elementy.rb` |
 | belka dolna wiązara | `rdzen/taras_wiazar.rb` |
 | belka poprzeczna zadaszenia | `rdzen/zadaszenie.rb` |
+| belka poprzeczna – nośność | `rdzen/statyka_zadaszenia.rb` |
 | belka wiązara na słupach – nośność | `rdzen/statyka_wiazara.rb` |
 | belki w modelu | `sketchup/budowa.rb`, `testy/t_sketchup.rb` |
 | bez mijanki przy działowej | `rdzen/styki_dzialowe.rb` |
@@ -94,11 +97,15 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | deski na płatwiach z aplikacji | `testy/sprawdz_dach_aplikacja.rb` |
 | deskowanie pełne | `rdzen/krok2.rb` |
 | dobór przekroju | `rdzen/statyka.rb`, `testy/t_podloga.rb` |
+| dobór przekroju krokwi | `rdzen/statyka_krokwi.rb` |
+| dobór przekroju krokwi – parametry | `rdzen/parametry_dach.rb` |
 | dobór przekroju legara | `rdzen/podloga.rb` |
 | dobór przekroju płatwi | `rdzen/statyka_dachu.rb` |
 | dobór przekroju płatwi w testach | `testy/t_statyka_dachu.rb` |
 | dobór przekroju płatwi – parametry | `rdzen/parametry_dach.rb` |
 | dobór przekroju trójkąta nad tarasem | `rdzen/statyka_wiazara.rb` |
+| dobór przekroju zadaszenia | `rdzen/statyka_zadaszenia.rb` |
+| dobór przekrojów zadaszenia – parametry | `rdzen/parametry_zadaszenie.rb` |
 | dobór trójkąta nad tarasem w testach | `testy/t_statyka_dachu.rb` |
 | dodaj węgieł | `rdzen/ustawienia_scian.rb` |
 | dodaj węgieł kliknięciem | `html/edycja.js` |
@@ -148,6 +155,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | fundament pod działową | `rdzen/fundamenty.rb` |
 | fundament słupa zadaszenia | `rdzen/zadaszenie.rb` |
 | fundament w obrysie | `rdzen/fundamenty.rb` |
+| fundamenty przybudówki | `rdzen/podloga_przybudowki.rb` |
 | fundamenty punktowe | `rdzen/fundamenty.rb` |
 | fundamenty punktowe – parametry | `rdzen/parametry_podloga.rb` |
 | funkcje pomocnicze okna | `html/wspolne.js` |
@@ -247,6 +255,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | krokwie z generatora albo z aplikacji | `testy/t_polacie.rb` |
 | krokwie z generatora albo z aplikacji do dachów | `rdzen/dach.rb` |
 | krokwie zadaszenia | `rdzen/dach.rb` |
+| krokwie zadaszenia – nośność | `rdzen/statyka_krokwi.rb` |
 | krótkie krawędzie | `testy/t_losowe.rb` |
 | krótkie krawędzie brył | `testy/losowe_domy.rb` |
 | kąt dachu | `rdzen/dach.rb` |
@@ -261,6 +270,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | lico okapu | `rdzen/dach.rb` |
 | lico zewnętrzne | `rdzen/obrys.rb` |
 | liczba zmian w sekcji | `html/zmiany.js` |
+| liczba zmian w zakładce | `html/zakladki.js` |
 | liczby wyniku | `html/wyniki.js` |
 | liczniki ui.start_timer | `testy/atrapa/sketchup.rb` |
 | linia dachu | `rdzen/dach.rb`, `testy/t_szczyty.rb` |
@@ -280,12 +290,14 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | lista węgłów w oknie | `html/wegly_przesun.js` |
 | lista ścian | `rdzen/projekt.rb` |
 | lista ścian otworu | `html/otwory.js` |
+| losowa podłoga w przybudówce | `testy/losowe_domy.rb` |
 | losowe boczne zadaszenie | `testy/losowe_domy.rb` |
 | losowe domy | `testy/losowe_domy.rb` |
 | losowe krokwie z aplikacji | `testy/losowe_domy.rb` |
 | losowe luzy stolarki | `testy/losowe_domy.rb` |
 | losowe ustawienia ścian | `testy/losowe_domy.rb` |
 | losowy dach jednospadowy | `testy/losowe_domy.rb` |
+| losowy dobór przekrojów zadaszenia i krokwi | `testy/losowe_domy.rb` |
 | losowy pełny profil | `testy/losowe_domy.rb` |
 | losowy taras | `testy/losowe_domy.rb` |
 | luka między węgłem a płatwią | `rdzen/platwie_wience.rb` |
@@ -323,7 +335,9 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | nowy parametr | `rdzen/parametry_lista.rb` |
 | nowy węgieł | `html/wegly.js` |
 | nośność belki | `rdzen/statyka.rb` |
+| nośność krokwi | `rdzen/statyka_krokwi.rb` |
 | nośność płatwi | `rdzen/statyka_dachu.rb` |
+| nośność słupa | `rdzen/statyka_slupa.rb` |
 | numer kompilacji | `Plugins/arte_madera_generator_wiencowy.rb`, `main.rb`, `sketchup/menu.rb`, `testy/sprawdz_zasady.rb` |
 | numeracja bali | `rdzen/pozycje.rb` |
 | numeracja ścian | `rdzen/sciany.rb` |
@@ -332,6 +346,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | o wtyczce | `sketchup/menu.rb` |
 | obciążenia | `rdzen/parametry_podloga.rb` |
 | obciążenie użytkowe – rysunek | `html/pomoc.js` |
+| obciążenie zadaszenia | `rdzen/statyka_zadaszenia.rb` |
 | obciążenie śniegiem | `rdzen/statyka_dachu.rb` |
 | objaśnienie pola | `html/pomoc.js` |
 | objętość | `rdzen/bryla.rb`, `rdzen/zestawienie.rb`, `testy/t_siatka.rb` |
@@ -354,6 +369,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | obrót układu | `rdzen/geometria.rb` |
 | ocena przekroju przy polu | `html/przeliczenia.js` |
 | oczep | `rdzen/zadaszenie.rb` |
+| oczep – nośność | `rdzen/statyka_zadaszenia.rb` |
 | odcinek 244 | `testy/t_zamek.rb` |
 | odcinki 244 i 344 | `testy/t_sciany_ust.rb` |
 | odcinki nad działową | `rdzen/dopelnienie.rb` |
@@ -405,7 +421,9 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | parametry szczytów | `rdzen/parametry_dach.rb` |
 | parapet | `rdzen/otwory.rb` |
 | pas dachu na płatew | `rdzen/statyka_dachu.rb` |
+| pas połaci zadaszenia | `rdzen/statyka_zadaszenia.rb` |
 | pasek pod gniazdem | `rdzen/platwie_wience.rb` |
+| pasek zakładek | `html/okno.html` |
 | pasy przekroju | `rdzen/profil_bala.rb`, `rdzen/siatka.rb` |
 | pasy ze skośnym wierzchem | `rdzen/bryla.rb` |
 | pełny profil bala | `rdzen/profil_bala.rb` |
@@ -462,17 +480,22 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | podpowiedź luzu | `rdzen/stolarka.rb`, `html/otwory.js` |
 | podsumowanie | `rdzen/projekt.rb` |
 | podwalina | `rdzen/elementy.rb`, `rdzen/podloga.rb` |
+| podwalina dawnej ściany okapowej | `rdzen/podloga_przybudowki.rb` |
 | podwalina na styk | `rdzen/podloga.rb` |
 | podwalina – parametry | `rdzen/parametry_podloga.rb` |
 | podwaliny na zakład | `testy/t_podloga.rb` |
 | podwójne pióro | `rdzen/profil_bala.rb` |
 | podział wieńca | `rdzen/bale.rb` |
 | podłoga | `rdzen/podloga.rb` |
+| podłoga w przybudówce | `rdzen/podloga_przybudowki.rb` |
+| podłoga w przybudówce – parametr | `rdzen/parametry_zadaszenie.rb` |
 | podłoga – parametry | `rdzen/parametry_podloga.rb` |
+| pojemnik sekcji zakładki | `html/zakladki.js` |
 | pokaz grup | `testy/zrzut_dok2d.rb` |
 | pola podstawowe | `rdzen/parametry_lista.rb`, `html/tryb.js` |
 | pola zależne | `html/zalezne.js` |
 | pola zmienione | `html/okno.css` |
+| pole legarów | `rdzen/podloga_przybudowki.rb` |
 | pole nadrzędne | `html/zalezne.js` |
 | pole obrysu | `testy/t_widok.rb` |
 | poprzednie połacie przy przebudowie | `sketchup/dach_aplikacja.rb` |
@@ -540,11 +563,13 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | przesuwanie węgłów w teście okna | `testy/t_okno.js` |
 | przesuń węgieł | `html/wegly_przesun.js` |
 | przeszkody przy ścianie okapowej | `rdzen/zadaszenie.rb` |
+| przełączanie zakładek | `html/zakladki.js` |
 | przełącznik pól | `html/okno.css`, `html/okno.html`, `html/tryb.js` |
 | przełącznik pól podstawowe / wszystkie | `html/okno.js` |
 | prześwit balustrady | `rdzen/taras_balustrada.rb` |
 | prześwit pod połacią | `rdzen/pod_dachem.rb` |
 | prześwit pod zadaszeniem | `rdzen/zadaszenie.rb` |
+| przybudówka bez podłogi | `rdzen/podloga_przybudowki.rb` |
 | przybudówka z bali | `rdzen/zadaszenie.rb` |
 | przybudówka – parametry | `rdzen/parametry_zadaszenie.rb` |
 | przycisk generuj | `sketchup/okno.rb` |
@@ -559,6 +584,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | przęsła krokwi | `rdzen/krok2.rb` |
 | przęsła między płatwiami | `testy/sprawdz_dach_aplikacja.rb` |
 | przęsło balustrady | `rdzen/taras_balustrada.rb` |
+| przęsło krokwi | `rdzen/statyka_krokwi.rb` |
 | przęsło płatwi | `rdzen/statyka_dachu.rb` |
 | punkt odniesienia otworu | `html/rzut.js` |
 | punkt sketchupa | `sketchup/konwersja.rb` |
@@ -585,6 +611,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | płatew przy ścianie | `rdzen/zadaszenie.rb` |
 | płatew trzyma szczyt | `rdzen/zamek_platwi.rb` |
 | płatew w powietrzu | `rdzen/platwie_wience.rb` |
+| płatew zadaszenia – nośność | `rdzen/statyka_zadaszenia.rb` |
 | płatew ścienna | `rdzen/dach.rb`, `testy/t_szczyty.rb` |
 | płatew ścienna – rysunek | `html/pomoc.js` |
 | płatew ścięta | `rdzen/pryzmat.rb` |
@@ -626,6 +653,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | sekcje formularza | `html/okno.html` |
 | sekcje okna | `rdzen/parametry_lista.rb`, `sketchup/okno.rb` |
 | sekcje pól | `html/okno.js` |
+| sekcje w zakładkach | `html/okno.js` |
 | siatka | `rdzen/siatka.rb` |
 | siatka belki | `rdzen/pryzmat.rb` |
 | siatka belki z wrębami | `rdzen/zamek_platwi.rb` |
@@ -641,6 +669,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | skrzyżowania w widoku | `rdzen/widok.rb` |
 | skrzyżowanie x | `rdzen/sciany.rb`, `testy/t_rdzen.rb` |
 | skąd węgieł | `html/wegly_przesun.js` |
+| smukłość słupa | `rdzen/statyka_slupa.rb` |
 | spadek dachu | `rdzen/dach_jednospadowy.rb` |
 | spadek dachu w testach | `testy/t_jednospadowy.rb` |
 | spis treści | `testy/spis_tresci.rb` |
@@ -654,8 +683,11 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | start z menu | `sketchup/sterowanie.rb` |
 | statyka | `rdzen/statyka.rb` |
 | statyka dachu | `rdzen/statyka_dachu.rb` |
+| statyka krokwi | `rdzen/statyka_krokwi.rb` |
 | statyka legara | `testy/t_podloga.rb` |
+| statyka słupa | `rdzen/statyka_slupa.rb` |
 | statyka wiązara | `rdzen/statyka_wiazara.rb` |
+| statyka zadaszenia | `rdzen/statyka_zadaszenia.rb` |
 | sterowanie | `sketchup/sterowanie.rb` |
 | stolarka | `rdzen/stolarka.rb` |
 | stolarka w oknie | `html/otwory.js` |
@@ -707,6 +739,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | słup pod węgłem | `rdzen/taras_slupy.rb` |
 | słup tarasu | `rdzen/elementy.rb` |
 | słup w osi kalenicy w testach | `testy/t_taras.rb` |
+| słup zadaszenia – nośność | `rdzen/statyka_zadaszenia.rb` |
 | słupek pod płatwią | `rdzen/taras_szczyt.rb` |
 | słupek pod płatwią zadaszenia | `rdzen/zadaszenie.rb` |
 | słupek wiązara | `rdzen/taras_wiazar.rb` |
@@ -741,12 +774,14 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | testy aplikacji do dachów | `testy/t_dach_aplikacja.rb` |
 | testy bocznego zadaszenia | `testy/t_zadaszenie.rb` |
 | testy dachu jednospadowego | `testy/t_jednospadowy.rb` |
+| testy doboru krokwi | `testy/t_statyka_zadaszenia.rb` |
 | testy kroku 2 | `testy/t_polacie.rb` |
 | testy na starszym ruby | `testy/ruby27.sh` |
 | testy offline | `testy/atrapa/sketchup.rb` |
 | testy podbitki | `testy/t_podbitka.rb` |
 | testy podpór | `testy/t_polacie.rb` |
 | testy podłogi | `testy/t_podloga.rb` |
+| testy podłogi w przybudówce | `testy/t_statyka_zadaszenia.rb` |
 | testy poszycia | `testy/t_polacie.rb` |
 | testy połaci | `testy/t_polacie.rb` |
 | testy przybudówki z bali | `testy/t_zadaszenie.rb` |
@@ -755,12 +790,15 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | testy siatki | `testy/t_siatka.rb` |
 | testy sketchup | `testy/t_sketchup.rb` |
 | testy statyki dachu | `testy/t_statyka_dachu.rb` |
+| testy statyki zadaszenia | `testy/t_statyka_zadaszenia.rb` |
 | testy szczytów | `testy/t_szczyty.rb` |
+| testy słupa | `testy/t_statyka_zadaszenia.rb` |
 | testy tarasu | `testy/t_taras.rb` |
 | testy ustawień ściany | `testy/t_sciany_ust.rb` |
 | testy wiaty bocznej | `testy/t_zadaszenie.rb` |
 | testy widoku ściany | `testy/t_widok.rb` |
 | testy węgłów | `testy/t_wegly.rb` |
+| testy zakładki zadaszenia | `testy/t_statyka_zadaszenia.rb` |
 | testy zamka | `testy/t_zamek.rb` |
 | testy załamania dachu | `testy/t_zadaszenie.rb` |
 | testy zestawienia csv | `testy/t_zestawienie.rb` |
@@ -836,6 +874,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | wpust | `rdzen/profil_bala.rb` |
 | wrąb płatwi | `rdzen/zamek_platwi.rb` |
 | wspornik okapu | `rdzen/wypusty_okapu.rb` |
+| wyboczenie słupa | `rdzen/statyka_slupa.rb` |
 | wybory zależne od innego pola | `html/zalezne.js` |
 | wybór domu do edycji | `sketchup/wejscie.rb` |
 | wybór podbitki a układ dachu | `rdzen/podbitka.rb` |
@@ -892,6 +931,10 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | zakresy wartości | `rdzen/parametry.rb` |
 | zakład podwalin | `rdzen/podloga.rb` |
 | zakładka pod barierkę | `rdzen/taras_sciany.rb` |
+| zakładka zadaszenia | `html/zakladki.js` |
+| zakładki | `html/okno.css` |
+| zakładki okna | `rdzen/parametry_lista.rb`, `sketchup/okno.rb`, `html/zakladki.js` |
+| zakładki w teście okna | `testy/t_okno.js` |
 | zamek | `rdzen/zamek.rb` |
 | zamek dolny słupa | `rdzen/taras_slupy.rb` |
 | zamek górny słupa | `rdzen/taras_slupy.rb` |
@@ -959,6 +1002,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | ściany równoległe | `rdzen/symetria_wegly.rb` |
 | ściany tarasu na liście | `html/sciana.js` |
 | ściany tarasu w widoku | `rdzen/widok.rb` |
+| ściskanie wzdłuż włókien | `rdzen/statyka_slupa.rb` |
 | ścięcie dachu | `rdzen/sciecie_dachu.rb` |
 | ścięcie dachu w poprzek bala | `rdzen/bryla.rb` |
 | ścięcie wierzchu płatwi | `rdzen/pryzmat.rb` |
@@ -981,37 +1025,41 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/dach_jednospadowy.rb` | 111 | dach jednospadowy – ściana niska i wysoka, linia podparcia od ściany niskiej w górę, płatwie bez kalenicowej, krokwie w jednym kawałku, ściana wysoka do połaci. |
 | `rdzen/dopelnienie.rb` | 97 | dopełnienie zamka nad niższą działową – przy ścianach, które idą wyżej, odcinki działowej (ostatek + grubość + dopelnienie_wewn) aż do góry tamtej ściany, jak 1100 W-6, W-7 i 1200 W-5, W-7. |
 | `rdzen/elementy.rb` | 132 | elementy z belek (podłoga, dach) – belka prostopadłościenna w dowolnym położeniu, pozycje identycznych belek, lista zamówienia. |
-| `rdzen/fundamenty.rb` | 142 | fundamenty punktowe pod podłogą – siatka rzędów w obu kierunkach w obrysie (skrajne licem z licem podwalin), stopy pod podwalinami, podciągami i podwalinami działowych. |
+| `rdzen/fundamenty.rb` | 146 | fundamenty punktowe pod podłogą – siatka rzędów w obu kierunkach w obrysie (skrajne licem z licem podwalin), stopy pod podwalinami, podciągami i podwalinami działowych. |
 | `rdzen/geometria.rb` | 221 | działania na punktach 2D/3D (tablice [x, y] / [x, y, z] w mm) bez API SketchUpa. |
 | `rdzen/kontrola.rb` | 170 | kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali. |
 | `rdzen/krok2.rb` | 179 | co generator przekazuje KROKOWI 2 aplikacji do dachów – ustawienia początkowe (kierunek, krokwie albo poszycie na samych płatwiach, warstwy poszycia, klasa drewna) i płatwie generatora jako podpory krokwi i poszycia. |
 | `rdzen/obrys.rb` | 292 | rozpoznanie narysowanych linii – zamknięty obrys (lico zewnętrzne), osie ścian działowych, znaczniki kontrforów. |
 | `rdzen/otwory.rb` | 120 | otwory okienne i drzwiowe – położenie na ścianie, sprawdzenie, cięcia bali w każdym wieńcu. |
 | `rdzen/parametry.rb` | 156 | sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy. |
-| `rdzen/parametry_dach.rb` | 241 | parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie, oparcie dachu, poszycie i podbitka. |
-| `rdzen/parametry_lista.rb` | 268 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
+| `rdzen/parametry_dach.rb` | 254 | parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka. |
+| `rdzen/parametry_lista.rb` | 277 | lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala. |
 | `rdzen/parametry_podloga.rb` | 112 | parametry sekcji „Podłoga i fundamenty” – podwaliny (przekrój, łączenie), legary, podciągi, fundamenty punktowe, obciążenia. |
 | `rdzen/parametry_taras.rb` | 162 | parametry sekcji „Taras” – wariant, głębokość, podciąg, słupy z zamkami (słup w osi kalenicy), szczyt nad tarasem z wiązarem (przekroje słupka i zastrzałów, zamek płatwi tylko od spodu), wejście, balustrada. |
-| `rdzen/parametry_zadaszenie.rb` | 71 | parametry sekcji „Boczne zadaszenie” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, przekroje płatwi, słupów i belek poprzecznych. |
+| `rdzen/parametry_zadaszenie.rb` | 102 | parametry zakładki „Zadaszenie boczne / tylne” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, podłoga w przybudówce, dobór przekrojów (automatycznie albo z wyboru) płatwi, słupów i belek poprzecznych. |
 | `rdzen/platwie_wience.rb` | 167 | płatwie oparte na pełnym balu – obniżenie dachu i przesunięcie płatwi pośrednich tak, żeby pod gniazdem płatwi nie zostawał pasek bala cieńszy niż najcieńszy dopuszczalny (bez przerw pod płatwią). |
 | `rdzen/pod_dachem.rb` | 87 | bale wystające pod połać – węgły na ścianach okapowych i działowe w poprzek kalenicy ścięte linią dachu (spód krokwi / desek); ostrzeżenie o zbyt stromym dachu. |
 | `rdzen/podbitka.rb` | 304 | podbitka – boazeria widoczna od spodu pod albo na płatwiach (deski wzdłuż spadku), pod albo na krokwiach (deski równolegle do okapu); wybór zależny od układu dachu; co robi aplikacja do dachów (nadbitka KROKU 2); obniżenie linii, pod którą kończą się ściany pod połacią. |
-| `rdzen/podciagi.rb` | 156 | podciągi pod legarami – położenia w przęsłach (automatycznie, co najwyżej rozstaw, w liniach fundamentów albo bez podciągów), belki do lica zewnętrznego podwalin pod podwalinami, sprawdzenie podciągu między fundamentami. |
-| `rdzen/podloga.rb` | 357 | podłoga domu prostokątnego – podwaliny pod ścianami (zakład albo styk na śruby w narożnikach), legary między podwalinami, dobór przekroju legara i podpowiedzi; podciągi i fundamenty punktowe w osobnych plikach. |
+| `rdzen/podciagi.rb` | 157 | podciągi pod legarami – położenia w przęsłach (automatycznie, co najwyżej rozstaw, w liniach fundamentów albo bez podciągów), belki do lica zewnętrznego podwalin pod podwalinami, sprawdzenie podciągu między fundamentami. |
+| `rdzen/podloga.rb` | 365 | podłoga domu prostokątnego – podwaliny pod ścianami (zakład albo styk na śruby w narożnikach), legary między podwalinami, dobór przekroju legara i podpowiedzi; podciągi i fundamenty punktowe w osobnych plikach. |
+| `rdzen/podloga_przybudowki.rb` | 85 | podłoga w przybudówce z bali do wyboru – bez podłogi legary i podciągi tylko w domu (pole podłogi kończy się na podwalinie dawnej ściany okapowej), podwaliny i fundamenty także pod ścianami przybudówki; dawna ściana okapowa zawsze na podwalinie. |
 | `rdzen/polacie.rb` | 189 | połacie dachu dla aplikacji do dachów – obrys, wysokość, kąt, okap i krawędzie szczytowe tak, żeby płaszczyzna połaci leżała na wierzchu płatwi generatora (spód krokwi albo spód poszycia na samych płatwiach). |
 | `rdzen/pozycje.rb` | 75 | numeracja pozycji jak u producenta – identyczne bale (ta sama bryła, także po obrocie o 180°) dostają jedną pozycję „nr-długość”. |
 | `rdzen/profil_bala.rb` | 146 | pełny profil bala do wizualizacji – pióra na wierzchu i wpust od spodu (pierwszy wieniec bez wpustu); przekrój pasami wzdłuż grubości, objętość. |
-| `rdzen/projekt.rb` | 220 | przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa. |
+| `rdzen/projekt.rb` | 226 | przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa. |
 | `rdzen/pryzmat.rb` | 69 | belka o przekroju wielokątnym (graniastosłup) – siatka ścian, objętość, podpis i postać kanoniczna przekroju (np. płatew ścięta do płaszczyzny dachu). |
-| `rdzen/przyklady.rb` | 74 | przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory. |
+| `rdzen/przyklady.rb` | 75 | przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory. |
 | `rdzen/sciany.rb` | 266 | ściany z rozpoznanego obrysu – osie, zasięgi bali z ostatkami, skrzyżowania, kontrfory, kierunek względem kalenicy, numeracja W-n. |
 | `rdzen/sciecie_dachu.rb` | 147 | bale ścian wzdłuż kalenicy wystające nad płaszczyznę dachu ścięte w poprzek do tej płaszczyzny – górny bal ściany okapowej przy ścianie nośnej, ściana wysoka dachu jednospadowego, działowa wzdłużna pod dachem. |
 | `rdzen/siatka.rb` | 433 | siatka ścian (płaskich wielokątów z otworami) zamkniętej bryły bala z profilu – do budowy komponentu w SketchUpie. |
 | `rdzen/skos_przy_narozniku.rb` | 129 | bale ścięte dachem przy narożnikach – przez narożnik (słup zamka) tylko w prawdziwym zamku; inaczej bal kończy się przy licu wewnętrznym ściany poprzecznej. |
 | `rdzen/skrzydla.rb` | 239 | dach domu w kształcie L – podział obrysu na skrzydło główne i boczne, opisy obu dachów (dwa dachy dwuspadowe z koszem), szczyty i ściany okapowe skrzydeł, zasięg płatwi skrzydła bocznego. |
-| `rdzen/statyka.rb` | 92 | sprawdzenie belki drewnianej swobodnie podpartej (zginanie, ścinanie, ugięcie końcowe), największa rozpiętość, dobór przekroju z katalogu. |
-| `rdzen/statyka_dachu.rb` | 191 | sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy. |
+| `rdzen/statyka.rb` | 93 | sprawdzenie belki drewnianej swobodnie podpartej (zginanie, ścinanie, ugięcie końcowe), największa rozpiętość, dobór przekroju z katalogu. |
+| `rdzen/statyka_dachu.rb` | 193 | sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy. |
+| `rdzen/statyka_krokwi.rb` | 162 | sprawdzenie i dobór przekroju krokwi całego dachu – połacie domu i bocznego zadaszenia (przęsła między płatwiami, okap jako wspornik, rozstaw krokwi); automatycznie najmniejszy wystarczający z listy albo przekrój z wyboru ze sprawdzeniem. |
+| `rdzen/statyka_slupa.rb` | 51 | sprawdzenie słupa drewnianego ściskanego osiowo z wyboczeniem (przegubowo na obu końcach) – nośność, smukłość. |
 | `rdzen/statyka_wiazara.rb` | 163 | sprawdzenie trójkąta (wiązara) nad tarasem pod obciążeniem od płatwi i automatyczny dobór jego najmniejszego wystarczającego przekroju, który mieści się pod dachem. |
+| `rdzen/statyka_zadaszenia.rb` | 212 | sprawdzenie i dobór przekrojów bocznego zadaszenia – płatwie i oczep (przęsło między słupami albo ścianami, pas połaci zadaszenia), belki poprzeczne (od słupa do ściany domu) i słupy (ściskanie z wyboczeniem); automatycznie najmniejszy wystarczający z list albo przekroje z wyboru użytkownika ze sprawdzeniem. |
 | `rdzen/stolarka.rb` | 51 | stolarka okien i drzwi – otwór w balach ze stolarki i luzów (boczny z obu stron, górny na osiadanie), podpowiedź luzu górnego z wysokości stolarki. |
 | `rdzen/styki.rb` | 349 | podział długich ścian na bale – miejsca styków na mijankę (min. 300 mm) w trzech układach, węgły pod styki. |
 | `rdzen/styki_dzialowe.rb` | 100 | styki w zamku działowej – wszystkie wieńce ściany łączone w osi skrzyżowania z działową (zamek trzyma oba końce), bez drugiego rzędu na mijankę i bez węgłów; reszta ściany – zwykłym układem. |
@@ -1031,7 +1079,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/widok.rb` | 159 | widok ściany do okna – bale jako obrysy w płaszczyźnie ściany (s, z), otwory, styki, skrzyżowania, linia dachu. |
 | `rdzen/wience.rb` | 135 | poziomy wieńców każdej ściany – półbal na dole ścian wzdłuż kalenicy, liczba wieńców, wysokości ścian. |
 | `rdzen/wypusty_okapu.rb` | 128 | wypusty pod dachem – górne wieńce ścian okapowych wypuszczone za szczyty o wysunięcie płatwi (oparcie dachu nad szczytem) i opcjonalnie górne bale węgłów na ścianach okapowych wysunięte na zewnątrz do nawisu okapu, ścięte linią dachu. |
-| `rdzen/zadaszenie.rb` | 374 | boczne zadaszenie przy ścianie okapowej domu prostokątnego – połać dachu za linią załamania schodzi dalej pod mniejszym kątem; wariant na słupach (słupy z fundamentami, belki poprzeczne, oczep, płatwie na słupkach) albo przybudówka z bali (obrys poszerzony, dawna ściana okapowa jako działowa, niska ściana zewnętrzna); płatwie zadaszenia. |
+| `rdzen/zadaszenie.rb` | 394 | boczne zadaszenie przy ścianie okapowej domu prostokątnego – połać dachu za linią załamania schodzi dalej pod mniejszym kątem; wariant na słupach (słupy z fundamentami, belki poprzeczne, oczep, płatwie na słupkach) albo przybudówka z bali (obrys poszerzony, dawna ściana okapowa jako działowa, niska ściana zewnętrzna); płatwie zadaszenia. |
 | `rdzen/zamek.rb` | 115 | obróbki zamka na każdym skrzyżowaniu – gniazda górne/dolne i podcięcia boczne bali (zamek 44 × 146 z rysunku IMG-20250930-WA0005). |
 | `rdzen/zamek_platwi.rb` | 194 | zamki w płatwiach – wręby płatwi w ścianach, przez które przechodzi (z boków i od spodu), żeby płatwie trzymały szczyty na miejscu; bryła belki z wrębami, objętość, podpis. |
 | `rdzen/zestawienie.rb` | 74 | zestawienie bali i belek do pliku CSV (Excel) – pozycje z długością, ilością i objętością, sumy grup i całości. |
@@ -1041,15 +1089,15 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `sketchup/eksport.rb` | 60 | zapis plików z wtyczki – wybór miejsca (okno zapisu SketchUpa), zestawienie CSV z ostatniego podglądu, plik tekstowy UTF-8. |
 | `sketchup/konwersja.rb` | 71 | przeliczenia między rdzeniem (mm, tablice) a SketchUpem (cale, Geom::Point3d, Geom::Transformation). |
 | `sketchup/menu.rb` | 42 | menu Rozszerzenia → ArteMadera Generator Wieńcowy (generuj / edytuj, kontrola, test działania, o wtyczce). |
-| `sketchup/okno.rb` | 230 | okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna. |
+| `sketchup/okno.rb` | 233 | okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna. |
 | `sketchup/raport.rb` | 187 | test działania w prawdziwym SketchUpie i raport do wysłania – przykładowe domy budowane w operacji cofanej na końcu (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, środowisko, dziennik. |
 | `sketchup/sterowanie.rb` | 185 | przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna. |
 | `sketchup/ustawienia.rb` | 135 | zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony. |
 | `sketchup/wejscie.rb` | 66 | odczyt zaznaczenia – narysowane linie (obrys, osie działowych, kontrfory) albo istniejący dom z generatora. |
 | `html/edycja.js` | 179 | ustawienia pojedynczej ściany pod jej widokiem – ostatek na każdym końcu, węgły dodawane i usuwane kliknięciem w widok, co jest nad działową (strop, antresola, półka) i jej góra. |
-| `html/okno.css` | 192 | wygląd okna parametrów. |
-| `html/okno.html` | 157 | okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby). |
-| `html/okno.js` | 348 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby. |
+| `html/okno.css` | 198 | wygląd okna parametrów. |
+| `html/okno.html` | 159 | okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby). |
+| `html/okno.js` | 352 | logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby. |
 | `html/otwory.js` | 154 | tabela okien i drzwi w oknie – stolarka (ściana, od, szerokość i wysokość stolarki, parapet, luz górny, nazwa), otwór w balach i podpowiedź luzu górnego. |
 | `html/pomoc.js` | 94 | objaśnienia pól w oknie – znak zapytania w kółku przy etykiecie, po kliknięciu ramka z dłuższym opisem i rysunkiem pokazującym różnicę (obciążenie, ugięcie, podbitka, położenie płatwi ściennej, układ dachu). |
 | `html/przeliczenia.js` | 78 | przeliczenia przy parametrach – podpowiedzi z obliczeń (legar, podciąg, fundamenty, dach) pokazane w sekcji parametrów, której dotyczą, i krótka informacja, co zmieniło się w domu po ostatniej zmianie pola. |
@@ -1060,6 +1108,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `html/wegly_przesun.js` | 97 | przesuwanie węgłów w karcie okien i drzwi – lista wszystkich węgłów domu (automatyczne, pod płatwiami, na wolnych końcach, z rysunku, ręczne, z tabeli) z położeniem „od” jak przy otworach; zmiana położenia przesuwa węgieł. |
 | `html/wspolne.js` | 48 | wspólne funkcje okna – element po identyfikatorze, nowy element, czyszczenie, liczby do wyświetlenia. |
 | `html/wyniki.js` | 100 | wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, rzut. |
+| `html/zakladki.js` | 79 | zakładki formularza parametrów – „Dom” i „Zadaszenie boczne / tylne” (sekcje parametrów w osobnych pojemnikach), przełączanie zakładek i liczba zmienionych pól w nazwie zakładki. |
 | `html/zalezne.js` | 85 | pola zależne w oknie – pole pokazuje się tylko przy wybranych wartościach pól nadrzędnych (np. kierunek spadku tylko przy dachu jednospadowym), a wybory listy – tylko te, które pasują do innych pól (np. podbitka a układ dachu). |
 | `html/zmiany.js` | 60 | pola zmienione względem ustawień fabrycznych – wyróżnienie etykiety, wartość fabryczna w dymku, liczba zmian w nagłówku sekcji. |
 | `testy/atrapa/aplikacja_dachow.rb` | 84 | atrapa aplikacji do dachów (ArteMadera::Roof) – jej stałe API wersji 1 (polacie, podpory, wiezba) – zapisuje wywołania generatora. |
@@ -1068,10 +1117,10 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/buduj_rbz.rb` | 28 | paczka instalacyjna .rbz (zip rejestratora i folderu wtyczki) – do instalacji w Menedżerze rozszerzeń SketchUpa. |
 | `testy/kolizje_belek.rb` | 211 | wspólne sprawdzenia przestrzenne testów – kolizje belek dachu z balami (punkty próbne), bale ponad linią szczytu, bale i płatwie względem połaci dla aplikacji do dachów. |
 | `testy/lista_parametrow.rb` | 73 | generator docs/parametry.md – wszystkie parametry okna (sekcja, etykieta, wartość domyślna, zakres, wybory, podpowiedź) i szablony wbudowane. |
-| `testy/losowe_domy.rb` | 435 | losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu. |
+| `testy/losowe_domy.rb` | 446 | losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu. |
 | `testy/okno_dane.rb` | 36 | dane okna z prawdziwego przebiegu (atrapa SketchUpa) – wypisuje JSON { init:, wynik:, widok:, widok_szczytu:, widok_dzialowej: } dla testu okna w przeglądarce. |
 | `testy/podglad.py` | 83 | rysunek 3D domu z pliku OBJ (testy/podglad.rb) – cały dom i zbliżenie narożnika, do sprawdzenia wzrokowego. |
-| `testy/podglad.rb` | 111 | zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py). |
+| `testy/podglad.rb` | 114 | zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py). |
 | `testy/pomoc.rb` | 94 | wspólne narzędzia testów – sprawdzenia, licznik błędów, przykładowe obrysy (domy testowe). |
 | `testy/ruby27.sh` | 36 | testy rdzenia i warstwy SketchUpa na Ruby 2.7.8 – tej samej linii co Ruby w SketchUpie 2023 (2.7.7); gdy brak, buduje Ruby ze źródeł z GitHuba. |
 | `testy/spis_tresci.rb` | 151 | generator spisu treści kodu docs/SPIS_TRESCI.md – tematy → pliki, lista plików, metody i stałe z numerami wierszy. |
@@ -1080,7 +1129,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_dach_aplikacja.rb` | 244 | dach z aplikacji do dachów w modelu (atrapa SketchUpa i API aplikacji) – połacie po budowie domu, podpory z płatwi, ustawienia KROKU 2, okno KROKU 2 z licznika, więźba po OK powiązana z domem, przebudowa (poprzednie połacie i więźba), same płatwie, brak i stara aplikacja, odmowa aplikacji, inny kontekst, dom obrócony. |
 | `testy/t_jednospadowy.rb` | 153 | dach jednospadowy – ściana niska i wysoka, szczyty skośne do linii dachu, ściana wysoka do połaci (górny bal przycięty, cienki pasek pominięty), płatwie bez kalenicowej, krokwie w jednym kawałku, połać dla aplikacji (trzy krawędzie szczytowe), widok ściany, obrys L. |
 | `testy/t_losowe.rb` | 57 | stały zestaw losowych domów (ziarna, które kiedyś ujawniły błąd, i kilka zwykłych) – każdy bez problemów. |
-| `testy/t_okno.js` | 410 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
+| `testy/t_okno.js` | 453 | okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki. |
 | `testy/t_podbitka.rb` | 114 | podbitka w czterech położeniach – pod / na płatwiach, pod / na krokwiach: deski przy właściwej płaszczyźnie, bez kolizji z balami, krokwie uniesione nad deskami na płatwiach, podbitka jako nadbitka KROKU 2 aplikacji do dachów, wybór niepasujący do układu dachu. |
 | `testy/t_podloga.rb` | 184 | testy podłogi i statyki – wzory belki, dobór przekroju (minimalny / zalecany / ręczny), izolacja, podpory, układ podwalin i legarów. |
 | `testy/t_polacie.rb` | 205 | połacie dla aplikacji do dachów – obrys, wysokość, krawędzie szczytowe, okap i wysunięcie za szczyt; płatwie pod połacią, szczyt pod krokwiami, bez krokwi generatora; same płatwie (poszycie na płatwiach); ustawienia KROKU 2 i podpory z płatwi; kiedy połaci nie ma. |
@@ -1091,14 +1140,15 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_sketchup.rb` | 370 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
 | `testy/t_skrzydla.rb` | 151 | dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz. |
 | `testy/t_statyka_dachu.rb` | 128 | testy sprawdzenia płatwi i trójkąta nad tarasem (śnieg, pas dachu, przęsła), automatycznego doboru ich przekroju i trójkąta w wąskim domu. |
+| `testy/t_statyka_zadaszenia.rb` | 167 | runda 13 – dobór przekrojów bocznego zadaszenia (płatwie z oczepem, belki poprzeczne, słupy – automatycznie albo z wyboru), słup z wyboczeniem, dobór krokwi całego dachu, podłoga w przybudówce do wyboru, parametry zadaszenia w osobnej zakładce okna. |
 | `testy/t_szczyty.rb` | 274 | testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji. |
 | `testy/t_taras.rb` | 326 | taras – obrys przedłużony o głębokość, ściana domu ze szczytem, wariant 1100 (podciąg z górnych wieńców, słupy, wejście, balustrada z przekładkami) i 1200 (ściany boczne pełne, front bez bali), dach nad tarasem, strona tarasu, kiedy tarasu nie ma. |
 | `testy/t_wegly.rb` | 267 | testy węgłów usztywniających i łączenia na przemian – limity światła, rozmieszczenie, ściany wysokie, otwory. |
 | `testy/t_widok.rb` | 76 | widok ściany do okna – obrysy bali zgodne z profilem, gniazda zamków na skrzyżowaniach, styki, linia dachu, lista ścian. |
-| `testy/t_zadaszenie.rb` | 199 | boczne zadaszenie (runda 12) – linia dachu z załamaniem, płatwie zadaszenia, słupy z belkami poprzecznymi i słupkami, przybudówka z bali (obrys, role ścian, niska ściana, szczyty z załamaniem), krokwie zadaszenia z generatora, połacie z załamaniem dla aplikacji do dachów, przeszkody (kąt, taras, jednospadowy), przekazanie załamania w modelu (atrapa). |
+| `testy/t_zadaszenie.rb` | 200 | boczne zadaszenie (runda 12) – linia dachu z załamaniem, płatwie zadaszenia, słupy z belkami poprzecznymi i słupkami, przybudówka z bali (obrys, role ścian, niska ściana, szczyty z załamaniem), krokwie zadaszenia z generatora, połacie z załamaniem dla aplikacji do dachów, przeszkody (kąt, taras, jednospadowy), przekazanie załamania w modelu (atrapa). |
 | `testy/t_zamek.rb` | 95 | zamek 44 × 146 zgodny z rysunkiem IMG-20250930-WA0005 – wymiary obróbek, luzy, labirynt (tylko poprawne ułożenie bez kolizji). |
 | `testy/t_zestawienie.rb` | 51 | zestawienie CSV (rdzeń) i zapis pliku z okna (atrapa SketchUpa) – kolumny, przecinek dziesiętny, sumy, BOM, anulowanie. |
-| `testy/uruchom.sh` | 80 | wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”. |
+| `testy/uruchom.sh` | 81 | wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”. |
 | `testy/zrzut_dok2d.rb` | 130 | przykładowy dom zbudowany na atrapie SketchUpa zapisany jako zrzut geometrii Dokumentacji 2D (format „ArteMadera-geometria”) – sprawdzenie, jak Dokumentacja 2D widzi bale i belki generatora. |
 
 ## 3. Zawartość plików
@@ -1311,29 +1361,29 @@ Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/taras.rb, rdzen/projekt.rb, sk
 | 112 | `lista_zamowienia(pozycje)` | Wiersze listy zamówienia elementów: jak Pozycje.lista_zamowienia (przekrój szer. × wys.). |
 | 121 | `polozenie_instancji(e)` | Położenie instancji pozycji (obrócona o 180° – początek na drugim końcu, osie x i y odwrócone). |
 
-### rdzen/fundamenty.rb (142 wierszy)
+### rdzen/fundamenty.rb (146 wierszy)
 
 fundamenty punktowe pod podłogą – siatka rzędów w obu kierunkach w obrysie (skrajne licem z licem podwalin), stopy pod podwalinami, podciągami i podwalinami działowych.
 
-Zależy od: rdzen/parametry.rb, rdzen/elementy.rb
+Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/podloga_przybudowki.rb (pole podłogi – stopy pod podciągami)
 Używają: rdzen/podloga.rb (linie podciągów, elementy F), rdzen/podciagi.rb (rozpiętość podciągu między fundamentami)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 25 | `module Fundamenty` |  |
-| 27 | `BOKI_KOLA` | Liczba boków wielokąta stopy okrągłej. |
-| 32 | `wlaczone?(p)` | Czy podłoga ma fundamenty punktowe. |
-| 37 | `wymiar(p)` | Wymiar stopy w rzucie (większy bok albo średnica) [mm]. |
-| 43 | `opis(p)` | Opis stopy do podpowiedzi: „400x400” albo „⌀ 400”. |
-| 49 | `okragle?(p)` | Czy stopy są okrągłe. |
-| 55 | `rzedy(lo, hi, p, rozstaw = nil, stale = [])` | Osie rzędów od lo do hi (lica obrysu): skrajne pół stopy od lica, rzędy stałe w osiach działowych (stale), odcinki między nimi równo, rozstaw ≤ fundamenty_rozstaw_max. |
-| 72 | `siatka(u, p)` | Siatka: { d: [osie rzędów wzdłuż legarów], e: [osie w poprzek] }; u[:rozstaw_d] – rozstaw rzędów d zagęszczony przez dobór legara (rdzen/podloga.rb#zageszczone); rzędy przechodzą przez osie działowych. |
-| 78 | `osie_dzialowych(u, k)` | Osie działowych w kierunku k (współrzędna k stała wzdłuż działowej – działowa w poprzek tego kierunku). |
-| 83 | `linie_podciagow(u, p)` | Wewnętrzne linie d siatki (pod podciągi). |
-| 89 | `stopy(u, p, podciagi, z_pd, z_pw, dzialowe)` | Stopy: [[d, e, z_wierzchu]]; podciagi – osie d podciągów (stopy wewnątrz tylko pod nimi), z_pd / z_pw – spód podciągu / podwaliny, dzialowe – odcinki podwalin działowych [[[d, e], [d, e]]]. |
-| 111 | `dodatkowe(pa, pb, s)` | Stopy pod odcinkiem podwaliny działowej pa…pb (w układzie d, e): przecięcia z rzędami siatki i końce. |
-| 121 | `elementy(lista, p)` | Elementy F: stopy jako bryły fb × fl w rzucie, wysokość fundament_wysokosc, wierzch na z_wierzchu; xy – blok (d, e) → punkt rzutu. |
-| 133 | `okrag(d)` | Przekrój stopy okrągłej o średnicy d: wielokąt BOKI_KOLA kątów wpisany w kwadrat d × d (przeciwnie do wskazówek). |
+| 26 | `module Fundamenty` |  |
+| 28 | `BOKI_KOLA` | Liczba boków wielokąta stopy okrągłej. |
+| 33 | `wlaczone?(p)` | Czy podłoga ma fundamenty punktowe. |
+| 38 | `wymiar(p)` | Wymiar stopy w rzucie (większy bok albo średnica) [mm]. |
+| 44 | `opis(p)` | Opis stopy do podpowiedzi: „400x400” albo „⌀ 400”. |
+| 50 | `okragle?(p)` | Czy stopy są okrągłe. |
+| 56 | `rzedy(lo, hi, p, rozstaw = nil, stale = [])` | Osie rzędów od lo do hi (lica obrysu): skrajne pół stopy od lica, rzędy stałe w osiach działowych (stale), odcinki między nimi równo, rozstaw ≤ fundamenty_rozstaw_max. |
+| 73 | `siatka(u, p)` | Siatka: { d: [osie rzędów wzdłuż legarów], e: [osie w poprzek] }; u[:rozstaw_d] – rozstaw rzędów d zagęszczony przez dobór legara (rdzen/podloga.rb#zageszczone); rzędy przechodzą przez osie działowych. |
+| 79 | `osie_dzialowych(u, k)` | Osie działowych w kierunku k (współrzędna k stała wzdłuż działowej – działowa w poprzek tego kierunku). |
+| 84 | `linie_podciagow(u, p)` | Wewnętrzne linie d siatki (pod podciągi). |
+| 90 | `stopy(u, p, podciagi, z_pd, z_pw, dzialowe)` | Stopy: [[d, e, z_wierzchu]]; podciagi – osie d podciągów (stopy wewnątrz tylko pod nimi), z_pd / z_pw – spód podciągu / podwaliny, dzialowe – odcinki podwalin działowych [[[d, e], [d, e]]]. |
+| 115 | `dodatkowe(pa, pb, s)` | Stopy pod odcinkiem podwaliny działowej pa…pb (w układzie d, e): przecięcia z rzędami siatki i końce. |
+| 125 | `elementy(lista, p)` | Elementy F: stopy jako bryły fb × fl w rzucie, wysokość fundament_wysokosc, wierzch na z_wierzchu; xy – blok (d, e) → punkt rzutu. |
+| 137 | `okrag(d)` | Przekrój stopy okrągłej o średnicy d: wielokąt BOKI_KOLA kątów wpisany w kwadrat d × d (przeciwnie do wskazówek). |
 
 ### rdzen/geometria.rb (221 wierszy)
 
@@ -1487,9 +1537,9 @@ Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), ske
 | 142 | `liczba(v)` | Liczba z tekstu lub liczby (przecinek dziesiętny dozwolony); nil gdy się nie da. |
 | 150 | `fmt(v)` | Liczba do komunikatu (bez zbędnego ,0). |
 
-### rdzen/parametry_dach.rb (241 wierszy)
+### rdzen/parametry_dach.rb (254 wierszy)
 
-parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie, oparcie dachu, poszycie i podbitka.
+parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka.
 
 Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
 Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
@@ -1500,7 +1550,7 @@ Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 | 17 | `TAK_NIE` |  |
 | 20 | `LISTA` | Parametry sekcji (kolejność = kolejność w oknie). |
 
-### rdzen/parametry_lista.rb (268 wierszy)
+### rdzen/parametry_lista.rb (277 wierszy)
 
 lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
 
@@ -1510,18 +1560,19 @@ Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketc
 | Wiersz | Element | Opis |
 |---:|---|---|
 | 22 | `module ParametryLista` |  |
-| 24 | `SEKCJE` | Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie]. |
-| 38 | `TAK_NIE` |  |
-| 41 | `LISTA_SCIANY` | Parametry sekcji przekroju, ścian, łączeń i węgłów (kolejność = kolejność w oknie w ramach sekcji). |
-| 164 | `LISTA_OTWORY` | Parametry sekcji okien i drzwi oraz rozpoznania rysunku. |
-| 202 | `LISTA` | Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu i podłogi. |
-| 207 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
-| 220 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
-| 225 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
-| 240 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
-| 250 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
-| 255 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
-| 262 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
+| 24 | `SEKCJE` | Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie, zakładka (brak – pierwsza z ZAKLADKI)]. |
+| 42 | `ZAKLADKI` | Zakładki okna: [klucz, tytuł]; sekcja bez czwartego elementu w SEKCJE należy do pierwszej zakładki. Wymóg użytkownika (2026-11-25): „cała część bocznego zadaszenia – lub tylnego – w osobnej zakładce, by się nic nie myliło”. |
+| 47 | `TAK_NIE` |  |
+| 50 | `LISTA_SCIANY` | Parametry sekcji przekroju, ścian, łączeń i węgłów (kolejność = kolejność w oknie w ramach sekcji). |
+| 173 | `LISTA_OTWORY` | Parametry sekcji okien i drzwi oraz rozpoznania rysunku. |
+| 211 | `LISTA` | Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu i podłogi. |
+| 216 | `SZABLONY` | Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych. |
+| 229 | `STARE_WARTOSCI` | Wartości z wcześniejszych kompilacji zapisane w modelach: klucz => { stara => nowa }. |
+| 234 | `PRESETY` | Presety przekroju: wymiary bala i zamka [mm]. Klucze zamka czyta rdzen/zamek.rb. |
+| 249 | `OPISY_ZAMKA` | Opisy wymiarów zamka w oknie: klucz presetu => [etykieta, jednostka]. |
+| 259 | `wpis(klucz)` | Wpis parametru po kluczu (nil – nie ma takiego). |
+| 264 | `domyslne` | Wartości domyślne wszystkich parametrów: { klucz => wartość }. |
+| 271 | `wybory(w)` | Lista wyborów pola (preset – z PRESETY). |
 
 ### rdzen/parametry_podloga.rb (112 wierszy)
 
@@ -1549,9 +1600,9 @@ Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 | 17 | `TAK_NIE` |  |
 | 20 | `LISTA` | Parametry sekcji (kolejność = kolejność w oknie). |
 
-### rdzen/parametry_zadaszenie.rb (71 wierszy)
+### rdzen/parametry_zadaszenie.rb (102 wierszy)
 
-parametry sekcji „Boczne zadaszenie” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, przekroje płatwi, słupów i belek poprzecznych.
+parametry zakładki „Zadaszenie boczne / tylne” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, podłoga w przybudówce, dobór przekrojów (automatycznie albo z wyboru) płatwi, słupów i belek poprzecznych.
 
 Zależy od: –
 Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
@@ -1631,57 +1682,75 @@ Używają: rdzen/projekt.rb (belki – elementy Pb), rdzen/pod_dachem.rb i rdzen
 | 251 | `pod_krokwiami(dom, geo, p, u0, u1, v0, v1, przerwy)` | Pod krokwiami: pasy między płatwiami (i działowymi) wzdłuż spadku, w nich deski wzdłuż okapu, kolejne w górę spadku co krycie (ostatnia węższa); dłuższe niż długość handlowa – dzielone równo. |
 | 280 | `deska_wzdluz(dom, geo, p, u0, u1, vs, kier, a, szer, g, nad = nil)` | Deska wzdłuż okapu u0…u1, dolna krawędź w vs (rzut), szerokość szer w górę spadku; wierzch na spodzie krokwi albo (nad – wysokość płaszczyzny nad linią podparcia) spód na wierzchu krokwi. |
 
-### rdzen/podciagi.rb (156 wierszy)
+### rdzen/podciagi.rb (157 wierszy)
 
 podciągi pod legarami – położenia w przęsłach (automatycznie, co najwyżej rozstaw, w liniach fundamentów albo bez podciągów), belki do lica zewnętrznego podwalin pod podwalinami, sprawdzenie podciągu między fundamentami.
 
-Zależy od: rdzen/parametry.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/fundamenty.rb (linie i rzędy)
+Zależy od: rdzen/parametry.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/fundamenty.rb (linie i rzędy), rdzen/podloga_przybudowki.rb (pole podłogi bez przybudówki)
 Używają: rdzen/podloga.rb (dobór legara, elementy, podpowiedzi)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 26 | `module Podciagi` |  |
-| 29 | `OPARCIE` | Zapas oparcia doliczany do światła przęsła w obliczeniach [mm] (jak w rdzen/podloga.rb). |
-| 34 | `w_liniach_fundamentow?(p)` | Czy podciągi mają stałe położenia w liniach fundamentów. |
-| 39 | `stale(u, p, przesla)` | Stałe położenia (linie fundamentów) w przęsłach: [[d]] – linie wewnątrz przęsła, dalej niż 100 mm od jego lic. |
-| 45 | `polozenia(u, p, przesla, lmax)` | Położenia w przęsłach dla legara o największej rozpiętości lmax: [[d]] albo nil (legar nie da rady). |
-| 59 | `liczba(l, lmax, p)` | Liczba podciągów w przęśle długości l przy największej rozpiętości lmax legara; nil – nie da się. |
-| 72 | `luka(przesla, poz)` | Największa luka legara (między licem podwaliny a podciągiem albo między podciągami) [mm]. |
-| 80 | `rowno?(p)` | Czy podciąg na równo z podwaliną (między podwalinami, legary dzielone na nim). |
-| 85 | `z_wierzchu(u, h_legara, p = {})` | Wierzch podciągu [mm]: obniżony – spód wyższego z legara i podwaliny (pod podwalinami); na równo – 0 (wierzch podwalin). |
-| 92 | `elementy(u, p, poz, h_legara)` | Belki podciągów (Pd) w liniach d w poprzek legarów: obniżony – od lica do lica obrysu; na równo – między licami wewnętrznymi podwalin, przerwany na podwalinach działowych wzdłuż legarów; punkt – blok (d, e) → rzut. |
-| 103 | `odcinki(u, p, d, e0, e1)` | Odcinki podciągu w linii d: obniżony – cały obrys; na równo – między podwalinami (zewnętrznymi i działowymi wzdłuż legarów, które linia przecina). |
-| 114 | `podpowiedzi(u, p, poz, h_legara, przesla)` | Podpowiedzi o podciągach: liczba, odstęp od legarów (podwalina wyższa), sprawdzenie między fundamentami. |
-| 133 | `sprawdzenie(u, p, poz, przesla)` | Sprawdzenie najbardziej obciążonego podciągu: rozpiętość między fundamentami (rzędy e), szerokość zbierania (połowa luk po obu stronach). |
+| 27 | `module Podciagi` |  |
+| 30 | `OPARCIE` | Zapas oparcia doliczany do światła przęsła w obliczeniach [mm] (jak w rdzen/podloga.rb). |
+| 35 | `w_liniach_fundamentow?(p)` | Czy podciągi mają stałe położenia w liniach fundamentów. |
+| 40 | `stale(u, p, przesla)` | Stałe położenia (linie fundamentów) w przęsłach: [[d]] – linie wewnątrz przęsła, dalej niż 100 mm od jego lic. |
+| 46 | `polozenia(u, p, przesla, lmax)` | Położenia w przęsłach dla legara o największej rozpiętości lmax: [[d]] albo nil (legar nie da rady). |
+| 60 | `liczba(l, lmax, p)` | Liczba podciągów w przęśle długości l przy największej rozpiętości lmax legara; nil – nie da się. |
+| 73 | `luka(przesla, poz)` | Największa luka legara (między licem podwaliny a podciągiem albo między podciągami) [mm]. |
+| 81 | `rowno?(p)` | Czy podciąg na równo z podwaliną (między podwalinami, legary dzielone na nim). |
+| 86 | `z_wierzchu(u, h_legara, p = {})` | Wierzch podciągu [mm]: obniżony – spód wyższego z legara i podwaliny (pod podwalinami); na równo – 0 (wierzch podwalin). |
+| 93 | `elementy(u, p, poz, h_legara)` | Belki podciągów (Pd) w liniach d w poprzek legarów: obniżony – od lica do lica obrysu; na równo – między licami wewnętrznymi podwalin, przerwany na podwalinach działowych wzdłuż legarów; punkt – blok (d, e) → rzut. |
+| 104 | `odcinki(u, p, d, e0, e1)` | Odcinki podciągu w linii d: obniżony – cały obrys; na równo – między podwalinami (zewnętrznymi i działowymi wzdłuż legarów, które linia przecina). |
+| 115 | `podpowiedzi(u, p, poz, h_legara, przesla)` | Podpowiedzi o podciągach: liczba, odstęp od legarów (podwalina wyższa), sprawdzenie między fundamentami. |
+| 134 | `sprawdzenie(u, p, poz, przesla)` | Sprawdzenie najbardziej obciążonego podciągu: rozpiętość między fundamentami (rzędy e), szerokość zbierania (połowa luk po obu stronach). |
 
-### rdzen/podloga.rb (357 wierszy)
+### rdzen/podloga.rb (365 wierszy)
 
 podłoga domu prostokątnego – podwaliny pod ścianami (zakład albo styk na śruby w narożnikach), legary między podwalinami, dobór przekroju legara i podpowiedzi; podciągi i fundamenty punktowe w osobnych plikach.
 
-Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/podciagi.rb (położenia i belki podciągów), rdzen/fundamenty.rb
+Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/podciagi.rb (położenia i belki podciągów), rdzen/fundamenty.rb, rdzen/podloga_przybudowki.rb (pole legarów bez przybudówki)
 Używają: rdzen/projekt.rb
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 24 | `module Podloga` |  |
-| 27 | `OPARCIE` | Zapas oparcia doliczany do światła przęsła w obliczeniach [mm]. |
-| 32 | `zaplanuj(sciany, p)` | Podłoga: { elementy: [...], podpowiedzi: [{ poziom: 'ok' \| 'uwaga' \| 'blad', tekst: }], legar: [b, h] \| nil }. |
-| 54 | `fundamenty(u, p, poz, h_legara, wynik)` | Fundamenty punktowe (rdzen/fundamenty.rb): stopy pod podwalinami, podciągami i podwalinami działowych; podpowiedź. |
-| 74 | `uklad(sciany, p)` | Układ podłogi: kierunek legarów (id – indeks osi wzdłuż legarów), zasięgi, ściany zewnętrzne i działowe z podwalinami. |
-| 92 | `podwaliny(u, p)` | Podwaliny: zewnętrzne licem z licem ściany i na zakład w narożnikach, pod działowymi w osi (dosunięte do podwalin). |
-| 122 | `odcinki_dzialowej(u, w)` | Odcinki podwaliny działowej [s0, s1] na jej osi: końce przy podwalinach innych ścian, działowe wzdłuż legarów przerwane na podwalinach działowych poprzecznych. |
-| 145 | `wzdluz_legarow?(u, w)` | Czy ściana biegnie wzdłuż legarów. |
-| 150 | `pelna?(w)` | Czy działowa przechodzi przez całą szerokość domu (oba końce na ścianach zewnętrznych). |
-| 158 | `przesla(u)` | Przęsła legarów: [[f1, f2], …] – między licami podwalin prostopadłych do legarów na całej szerokości. |
-| 172 | `linie_legarow(u, p)` | Linie legarów (współrzędna e poprzecznie): równo w polach między podwalinami bocznymi i działowymi wzdłuż legarów. |
-| 188 | `dobierz(u, p, podp)` | Dobór przekroju legara i liczby podpór w każdym przęśle; [[b, h], [podpory w przęsłach]] albo [nil, nil]. |
-| 215 | `wybierz(u, p, sekcje, zakresy, rozstaw, gr)` | Najlepszy przekrój z listy sekcje i położenia podciągów: [[b, h], [[d]], ocena] albo nil (żaden nie da rady). |
-| 231 | `zageszczone(u, p, sekcje, zakresy, rozstaw, gr, podp)` | Legar nie przenosi rozpiętości między liniami fundamentów: rzędy pod podciągami zagęszczane co 100 mm (najmniej 800), aż przekrój da radę (u[:rozstaw_d] – rozstaw rzędów wzdłuż legarów); podpowiedź o dodatkowym rzędzie. |
-| 250 | `brak_przekroju(u, p, bh, zakresy, rozstaw, gr)` | Błąd doboru: legar (ostatni sprawdzany) nie przenosi rozpiętości – co zrobić zależnie od podciągów i fundamentów. |
-| 268 | `objetosc(u, p, bh, przes, n)` | Objętość drewna legarów i podpór [m³] – kryterium wyboru między większym przekrojem a podporami. |
-| 279 | `podpowiedzi(u, p, bh, zakresy, poz, podp)` | Podpowiedzi do okna: ocena legara, przekroje najmniejszy i zalecany, izolacja, wysokość podwaliny, podpory. |
-| 319 | `legary(u, p, bh, podciagi = [])` | Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i podciągów na równo z podwaliną (podciagi – ich osie d), omija podwaliny wzdłuż. |
-| 352 | `punkt(u, d, e)` | Punkt rzutu z (d wzdłuż legarów, e w poprzek). |
+| 25 | `module Podloga` |  |
+| 28 | `OPARCIE` | Zapas oparcia doliczany do światła przęsła w obliczeniach [mm]. |
+| 33 | `zaplanuj(sciany, p)` | Podłoga: { elementy: [...], podpowiedzi: [{ poziom: 'ok' \| 'uwaga' \| 'blad', tekst: }], legar: [b, h] \| nil }. |
+| 55 | `fundamenty(u, p, poz, h_legara, wynik)` | Fundamenty punktowe (rdzen/fundamenty.rb): stopy pod podwalinami, podciągami i podwalinami działowych; podpowiedź. |
+| 76 | `uklad(sciany, p)` | Układ podłogi: kierunek legarów (id – indeks osi wzdłuż legarów), zasięgi (obrys; pole legarów – bez przybudówki bez podłogi), ściany zewnętrzne i działowe z podwalinami. |
+| 100 | `podwaliny(u, p)` | Podwaliny: zewnętrzne licem z licem ściany i na zakład w narożnikach, pod działowymi w osi (dosunięte do podwalin). |
+| 130 | `odcinki_dzialowej(u, w)` | Odcinki podwaliny działowej [s0, s1] na jej osi: końce przy podwalinach innych ścian, działowe wzdłuż legarów przerwane na podwalinach działowych poprzecznych. |
+| 153 | `wzdluz_legarow?(u, w)` | Czy ściana biegnie wzdłuż legarów. |
+| 158 | `pelna?(w)` | Czy działowa przechodzi przez całą szerokość domu (oba końce na ścianach zewnętrznych). |
+| 166 | `przesla(u)` | Przęsła legarów: [[f1, f2], …] – między licami podwalin prostopadłych do legarów na całej szerokości pola podłogi. |
+| 180 | `linie_legarow(u, p)` | Linie legarów (współrzędna e poprzecznie): równo w polach między podwalinami bocznymi i działowymi wzdłuż legarów. |
+| 196 | `dobierz(u, p, podp)` | Dobór przekroju legara i liczby podpór w każdym przęśle; [[b, h], [podpory w przęsłach]] albo [nil, nil]. |
+| 223 | `wybierz(u, p, sekcje, zakresy, rozstaw, gr)` | Najlepszy przekrój z listy sekcje i położenia podciągów: [[b, h], [[d]], ocena] albo nil (żaden nie da rady). |
+| 239 | `zageszczone(u, p, sekcje, zakresy, rozstaw, gr, podp)` | Legar nie przenosi rozpiętości między liniami fundamentów: rzędy pod podciągami zagęszczane co 100 mm (najmniej 800), aż przekrój da radę (u[:rozstaw_d] – rozstaw rzędów wzdłuż legarów); podpowiedź o dodatkowym rzędzie. |
+| 258 | `brak_przekroju(u, p, bh, zakresy, rozstaw, gr)` | Błąd doboru: legar (ostatni sprawdzany) nie przenosi rozpiętości – co zrobić zależnie od podciągów i fundamentów. |
+| 276 | `objetosc(u, p, bh, przes, n)` | Objętość drewna legarów i podpór [m³] – kryterium wyboru między większym przekrojem a podporami. |
+| 287 | `podpowiedzi(u, p, bh, zakresy, poz, podp)` | Podpowiedzi do okna: ocena legara, przekroje najmniejszy i zalecany, izolacja, wysokość podwaliny, podpory. |
+| 327 | `legary(u, p, bh, podciagi = [])` | Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i podciągów na równo z podwaliną (podciagi – ich osie d), omija podwaliny wzdłuż. |
+| 360 | `punkt(u, d, e)` | Punkt rzutu z (d wzdłuż legarów, e w poprzek). |
+
+### rdzen/podloga_przybudowki.rb (85 wierszy)
+
+podłoga w przybudówce z bali do wyboru – bez podłogi legary i podciągi tylko w domu (pole podłogi kończy się na podwalinie dawnej ściany okapowej), podwaliny i fundamenty także pod ścianami przybudówki; dawna ściana okapowa zawsze na podwalinie.
+
+Zależy od: rdzen/parametry.rb
+Używają: rdzen/podloga.rb (pole legarów, przęsła, linie legarów), rdzen/podciagi.rb (zasięg podciągów), rdzen/fundamenty.rb (stopy pod podciągami tylko w polu podłogi), rdzen/projekt.rb (podpowiedź w zakładce zadaszenia)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 21 | `module PodlogaPrzybudowki` |  |
+| 25 | `sciana_domu?(w)` | Czy ściana to dawna ściana okapowa domu przy przybudówce (zawsze na podwalinie – niesie dom). |
+| 30 | `bez_podlogi?(sciany, p)` | Czy przybudówka jest bez podłogi (przybudówka z bali, zadaszenie_podloga = nie, podłoga domu włączona). |
+| 36 | `ogranicz!(u, sciany, p)` | Ograniczenie pola podłogi do domu (u z rdzen/podloga.rb#uklad): u[:pole] i u[:dzialowe_pola]; bez zmian, gdy przybudówka ma podłogę albo jej nie ma. |
+| 56 | `pole(u)` | Zasięg legarów i podciągów: [[x0, x1], [y0, y1]] (bez ograniczenia – obrys). |
+| 61 | `dzialowe_pola(u)` | Działowe dzielące pole podłogi (przęsła i linie legarów). |
+| 66 | `w_polu?(u, k, x)` | Czy współrzędna x w kierunku k leży w polu podłogi (z zapasem 1 mm). |
+| 72 | `podpowiedzi(sciany, p)` | Podpowiedź do zakładki zadaszenia: przybudówka z podłogą albo bez ([{ poziom:, tekst: }]). |
 
 ### rdzen/polacie.rb (189 wierszy)
 
@@ -1742,7 +1811,7 @@ Używają: rdzen/projekt.rb (siatka i objętość pozycji, oznaczenie bali bez w
 | 128 | `wyrownaj!(pasy, klucz)` | Wyrównanie wartości (wierzchów albo spodów na jednym końcu) różnych o mniej niż WYROWNAJ – do najniższej z grupy. |
 | 137 | `objetosc(prof)` | Objętość przedziałów (pełny profil albo prosty – Bryla.profil) [mm³]. |
 
-### rdzen/projekt.rb (220 wierszy)
+### rdzen/projekt.rb (226 wierszy)
 
 przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
 
@@ -1752,18 +1821,18 @@ Używają: sketchup/sterowanie.rb, testy
 | Wiersz | Element | Opis |
 |---:|---|---|
 | 26 | `module Projekt` |  |
-| 30 | `PRZEBIEGI_DOBORU` | Najwięcej dodatkowych przebiegów przy automatycznym doborze przekroju płatwi. |
-| 36 | `oblicz(wejscie)` | (rdzen/statyka_wiazara.rb): pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające, następny liczy dom od nowa z dobranymi (płatwie, gniazda, trójkąt nad tarasem) i je potwierdza; gdyby po zmianie geometrii nie wystarczały – jeszcze raz z większymi. |
-| 52 | `przebieg(wejscie, nadpis, tryb)` | dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy narożnikach → bale ścięte do płaszczyzny dachu w poprzek → zamki → pozycje → belki dachu, słupy tarasu i podłoga. nadpis – przekroje płatwi dobrane w poprzednim przebiegu (zastępują pola), tryb – tryb doboru (StatykaDachu.sprawdz). |
-| 114 | `belki(plan, dom, p, tryb = :pierwszy)` | (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]); sprawdzenie płatwi i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow], tryb – StatykaDachu.sprawdz). |
-| 144 | `uwagi_o_stykach(plan)` | Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią). |
-| 152 | `podsumowanie(plan)` | Podsumowanie do okna: ściany, liczby bali i pozycji, objętość i waga, wysokości. |
-| 178 | `wysokosci(plan)` | Wysokości ścian do okna (Wience.wysokosci) i ściana wysoka dachu jednospadowego (góra jej bali – do połaci). |
-| 186 | `wysokosc_ciecia(b)` | O ile górny bal jest niższy po przycięciu wzdłuż (skos płaski na całej długości) [mm]. |
-| 192 | `styki_opis(w)` | Styki ściany do okna: [styki wieńców parzystych, nieparzystych] w mm od początku osi (puste – bez styków). |
-| 200 | `siatka_pozycji(poz)` | Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem i wpustem, gdy pozycja ma opis profilu). |
-| 207 | `profil_pozycji(poz)` | Profil bryły pozycji: pełny (rdzen/profil_bala.rb) albo prosty (rdzen/bryla.rb). |
-| 213 | `objetosc_pozycji(poz)` | Objętość bryły pozycji [mm³] (pełny albo prosty profil). |
+| 30 | `PRZEBIEGI_DOBORU` | Najwięcej dodatkowych przebiegów przy automatycznym doborze przekrojów. |
+| 37 | `oblicz(wejscie)` | pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające, następny liczy dom od nowa z dobranymi (płatwie, gniazda, trójkąt nad tarasem) i je potwierdza; gdyby po zmianie geometrii nie wystarczały – jeszcze raz z większymi. |
+| 53 | `przebieg(wejscie, nadpis, tryb)` | dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy narożnikach → bale ścięte do płaszczyzny dachu w poprzek → zamki → pozycje → belki dachu, słupy tarasu i podłoga. nadpis – przekroje płatwi dobrane w poprzednim przebiegu (zastępują pola), tryb – tryb doboru (StatykaDachu.sprawdz). |
+| 115 | `belki(plan, dom, p, tryb = :pierwszy)` | (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]); sprawdzenie płatwi, krokwi, zadaszenia i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow], tryb – StatykaDachu.sprawdz). |
+| 150 | `uwagi_o_stykach(plan)` | Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią). |
+| 158 | `podsumowanie(plan)` | Podsumowanie do okna: ściany, liczby bali i pozycji, objętość i waga, wysokości. |
+| 184 | `wysokosci(plan)` | Wysokości ścian do okna (Wience.wysokosci) i ściana wysoka dachu jednospadowego (góra jej bali – do połaci). |
+| 192 | `wysokosc_ciecia(b)` | O ile górny bal jest niższy po przycięciu wzdłuż (skos płaski na całej długości) [mm]. |
+| 198 | `styki_opis(w)` | Styki ściany do okna: [styki wieńców parzystych, nieparzystych] w mm od początku osi (puste – bez styków). |
+| 206 | `siatka_pozycji(poz)` | Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem i wpustem, gdy pozycja ma opis profilu). |
+| 213 | `profil_pozycji(poz)` | Profil bryły pozycji: pełny (rdzen/profil_bala.rb) albo prosty (rdzen/bryla.rb). |
+| 219 | `objetosc_pozycji(poz)` | Objętość bryły pozycji [mm³] (pełny albo prosty profil). |
 
 ### rdzen/pryzmat.rb (69 wierszy)
 
@@ -1781,7 +1850,7 @@ Używają: rdzen/elementy.rb (pozycje belek z przekrojem), rdzen/projekt.rb (sia
 | 54 | `podpis(przekroj)` | Podpis przekroju (punkty zaokrąglone do 0,1 mm) – do rozpoznania identycznych belek. |
 | 60 | `kanoniczny(przekroj, b)` | Postać kanoniczna: przekrój albo jego odbicie (y → b − y, belka obrócona o 180° wokół pionu) – mniejszy podpis; [przekrój, czy_obrócony]. |
 
-### rdzen/przyklady.rb (74 wierszy)
+### rdzen/przyklady.rb (75 wierszy)
 
 przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory.
 
@@ -1795,7 +1864,7 @@ Używają: sketchup/raport.rb (test działania), testy/t_raport.rb
 | 25 | `wielokat(punkty)` | Odcinki wielokąta zamkniętego. |
 | 30 | `otwor(sciana, od, szer, wys, parapet, nazwa)` | Otwór w tabeli otworów (jak z okna). |
 | 35 | `lista` | Lista przykładów: [{ 'nazwa' =>, 'wejscie' => { 'segmenty', 'z0', 'parametry', 'otwory', 'sciany' } }]. |
-| 68 | `dom(nazwa, segmenty, parametry, otwory, sciany = {})` | Przykład: nazwa i wejście domu (sciany – ustawienia ścian z widoku ściany). |
+| 69 | `dom(nazwa, segmenty, parametry, otwory, sciany = {})` | Przykład: nazwa i wejście domu (sciany – ustawienia ścian z widoku ściany). |
 
 ### rdzen/sciany.rb (266 wierszy)
 
@@ -1927,34 +1996,34 @@ Używają: rdzen/sciany.rb (oś kalenicy), rdzen/szczyty.rb (szczyty, gniazda), 
 | 214 | `zasieg_platwi(dom, pl, p)` | Zasięg płatwi pl dachu dom wzdłuż kalenicy [u0, u3]: za szczyty o wysunięcie dachu; płatew skrzydła bocznego – od szczytu do dachu głównego (koniec_w_dachu_glownym). |
 | 223 | `koniec_w_dachu_glownym(dom, pl, p)` | Koniec płatwi skrzydła bocznego w dachu głównym (współrzędna u skrzydła = v dachu głównego): tam, gdzie wierzch płatwi w jej osi dochodzi do płaszczyzny dachu głównego (w koszu); wcześniej – przy licu płatwi dachu głównego, w którą by weszła (płatew skrzydła dochodzi do niej na styk). |
 
-### rdzen/statyka.rb (92 wierszy)
+### rdzen/statyka.rb (93 wierszy)
 
 sprawdzenie belki drewnianej swobodnie podpartej (zginanie, ścinanie, ugięcie końcowe), największa rozpiętość, dobór przekroju z katalogu.
 
 Zależy od: rdzen/parametry.rb
-Używają: rdzen/podloga.rb, rdzen/statyka_dachu.rb, rdzen/statyka_wiazara.rb
+Używają: rdzen/podloga.rb, rdzen/statyka_dachu.rb, rdzen/statyka_wiazara.rb, rdzen/statyka_slupa.rb (klasy drewna), rdzen/statyka_zadaszenia.rb, rdzen/statyka_krokwi.rb
 
 | Wiersz | Element | Opis |
 |---:|---|---|
 | 19 | `module Statyka` |  |
-| 21 | `KLASY` | Klasy drewna: wytrzymałość na zginanie i ścinanie f_m,k, f_v,k [MPa], moduł E0,mean [MPa], gęstość [kg/m³], γM. |
-| 27 | `KMOD` |  |
-| 28 | `KDEF` |  |
-| 29 | `PSI2` |  |
-| 30 | `KCR` |  |
-| 37 | `belka(l, b, h, g, q, klasa, granica, psi2 = PSI2)` | Sprawdzenie belki: l [mm], b × h [mm], obciążenia stałe g i użytkowe q [kN/m] bez ciężaru własnego, granica L/n; psi2 – część obciążenia zmiennego działająca długotrwale (podłoga 0,3; śnieg na dachu 0). Wynik: { wyk_m:, wyk_v:, u:, l_przez_u:, nosnosc_ok:, ugiecie_ok:, ok: }. |
-| 57 | `obciazenia(p, rozstaw)` | Obciążenia legara [kN/m] z parametrów i rozstawu: [g, q]. |
-| 62 | `max_rozpietosc(b, h, p, rozstaw, granica)` | Największa rozpiętość [mm], przy której belka spełnia nośność i ugięcie L/granica (szukanie połówkowe). |
-| 75 | `kandydaci(p)` | Przekroje z katalogu nie niższe niż izolacja, od najlżejszego (przy równym polu – wyższy pierwszy). |
-| 81 | `dobierz(l, p, rozstaw, granica)` | Najlżejszy przekrój z katalogu (nie niższy niż izolacja), który przenosi rozpiętość l; nil gdy żaden. |
-| 87 | `granica(p, tryb = p['legary_dobor'])` | Granica ugięcia L/n dla trybu doboru ('minimalny' – dopuszczalna, inne – zalecana). |
+| 22 | `KLASY` | Klasy drewna: wytrzymałość na zginanie, ścinanie i ściskanie wzdłuż włókien f_m,k, f_v,k, f_c,0,k [MPa], moduły E0,mean i E0,05 [MPa], gęstość [kg/m³], γM (PN-EN 338, PN-EN 14080). |
+| 28 | `KMOD` |  |
+| 29 | `KDEF` |  |
+| 30 | `PSI2` |  |
+| 31 | `KCR` |  |
+| 38 | `belka(l, b, h, g, q, klasa, granica, psi2 = PSI2)` | Sprawdzenie belki: l [mm], b × h [mm], obciążenia stałe g i użytkowe q [kN/m] bez ciężaru własnego, granica L/n; psi2 – część obciążenia zmiennego działająca długotrwale (podłoga 0,3; śnieg na dachu 0). Wynik: { wyk_m:, wyk_v:, u:, l_przez_u:, nosnosc_ok:, ugiecie_ok:, ok: }. |
+| 58 | `obciazenia(p, rozstaw)` | Obciążenia legara [kN/m] z parametrów i rozstawu: [g, q]. |
+| 63 | `max_rozpietosc(b, h, p, rozstaw, granica)` | Największa rozpiętość [mm], przy której belka spełnia nośność i ugięcie L/granica (szukanie połówkowe). |
+| 76 | `kandydaci(p)` | Przekroje z katalogu nie niższe niż izolacja, od najlżejszego (przy równym polu – wyższy pierwszy). |
+| 82 | `dobierz(l, p, rozstaw, granica)` | Najlżejszy przekrój z katalogu (nie niższy niż izolacja), który przenosi rozpiętość l; nil gdy żaden. |
+| 88 | `granica(p, tryb = p['legary_dobor'])` | Granica ugięcia L/n dla trybu doboru ('minimalny' – dopuszczalna, inne – zalecana). |
 
-### rdzen/statyka_dachu.rb (191 wierszy)
+### rdzen/statyka_dachu.rb (193 wierszy)
 
 sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy.
 
 Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi)
-Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń)
+Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń), rdzen/statyka_zadaszenia.rb (obciążenia, przęsło płatwi, opis ugięcia), rdzen/statyka_krokwi.rb (współczynnik μ, opis ugięcia)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
@@ -1964,18 +2033,54 @@ Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje 
 | 42 | `PSI2_SNIEG` | Część śniegu działająca długotrwale (pełzanie) – 0 poniżej 1000 m n.p.m. |
 | 47 | `auto?(p)` | Czy przekrój płatwi dobiera generator. |
 | 52 | `mi(kat)` | Współczynnik kształtu dachu dla śniegu μ (kąt w stopniach): 0,8 do 30°, liniowo do 0 przy 60°. |
-| 59 | `obciazenia(pas, p)` | Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie]: [stałe, śnieg]. |
-| 64 | `wysokosc(b, h, rodzaj, p)` | Wysokość przekroju do obliczeń [mm]: płatew ścięta do płaszczyzny dachu – średnia (kalenicowa ścięta z obu stron). |
-| 71 | `pas(geo, lista, pl, p)` | Pas dachu na płatew pl [mm w poziomie]: po połowie odległości do sąsiednich linii podparcia połaci (płatwie; ściana okapowa, gdy nie ma przy niej płatwi ściennej); skrajna płatew – także okap. |
-| 86 | `przeslo(d, pl, u0, u3, p)` | Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (ściany w poprzek – d[:przejscia]; końce ścian wzdłuż płatwi – d[:podparcia], odcinek na takiej ścianie nie jest przęsłem; koniec płatwi skrzydła bocznego w dachu głównym) albo dwa wsporniki końca; bez podpór – cała długość. |
-| 101 | `platwie(dom, p)` | Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas: }]. |
-| 115 | `grupy(lista, p)` | Grupy płatwi o wspólnym przekroju: { pole przekroju => [płatwie] } (jeden przekrój – wszystkie w platwa_przekroj); dach bez płatwi – {}. |
-| 123 | `ocena(grupa, b, h, p)` | Ocena przekroju b × h dla płatwi grupy – wynik najbardziej wytężonej (nośność albo ugięcie względem granicy): { ok:, wyk: (nośność 0…), l_przez_u:, l:, pas: }. |
-| 133 | `kandydaci(p)` | Przekroje do doboru – od najlżejszego (przy równym polu wyższy pierwszy). |
-| 138 | `dobierz(grupa, p)` | Najlżejszy przekrój z listy wystarczający dla grupy; nil – żaden. |
-| 146 | `sprawdz(dom, p, tryb = :pierwszy)` | platwie: [sprawdzone płatwie – przęsło i pas dachu] }. tryb: :pierwszy – dobór od zera; :potwierdz – przebieg z dobranym już przekrojem, zmiana tylko, gdy obecny nie wystarcza; :koniec – ostatni przebieg, bez zmian (sama ocena). |
-| 167 | `ugiecie_opis(l_przez_u)` | Ugięcie do komunikatu: „ugięcie L/250”, a przy znikomym – „ugięcie poniżej L/1000”. |
-| 172 | `podpowiedz(pole, bh, r, min, p)` | Podpowiedź do okna dla grupy płatwi o przekroju bh z oceną r (min – najlżejszy wystarczający z listy albo nil). |
+| 60 | `obciazenia(pas, p, kat = nil)` | Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie] przy kącie połaci kat [°] (domyślnie kąt dachu; boczne zadaszenie – jego kąt): [stałe, śnieg]. |
+| 66 | `wysokosc(b, h, rodzaj, p)` | Wysokość przekroju do obliczeń [mm]: płatew ścięta do płaszczyzny dachu – średnia (kalenicowa ścięta z obu stron). |
+| 73 | `pas(geo, lista, pl, p)` | Pas dachu na płatew pl [mm w poziomie]: po połowie odległości do sąsiednich linii podparcia połaci (płatwie; ściana okapowa, gdy nie ma przy niej płatwi ściennej); skrajna płatew – także okap. |
+| 88 | `przeslo(d, pl, u0, u3, p)` | Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (ściany w poprzek – d[:przejscia]; końce ścian wzdłuż płatwi – d[:podparcia], odcinek na takiej ścianie nie jest przęsłem; koniec płatwi skrzydła bocznego w dachu głównym) albo dwa wsporniki końca; bez podpór – cała długość. |
+| 103 | `platwie(dom, p)` | Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas: }]. |
+| 117 | `grupy(lista, p)` | Grupy płatwi o wspólnym przekroju: { pole przekroju => [płatwie] } (jeden przekrój – wszystkie w platwa_przekroj); dach bez płatwi – {}. |
+| 125 | `ocena(grupa, b, h, p)` | Ocena przekroju b × h dla płatwi grupy – wynik najbardziej wytężonej (nośność albo ugięcie względem granicy): { ok:, wyk: (nośność 0…), l_przez_u:, l:, pas: }. |
+| 135 | `kandydaci(p)` | Przekroje do doboru – od najlżejszego (przy równym polu wyższy pierwszy). |
+| 140 | `dobierz(grupa, p)` | Najlżejszy przekrój z listy wystarczający dla grupy; nil – żaden. |
+| 148 | `sprawdz(dom, p, tryb = :pierwszy)` | platwie: [sprawdzone płatwie – przęsło i pas dachu] }. tryb: :pierwszy – dobór od zera; :potwierdz – przebieg z dobranym już przekrojem, zmiana tylko, gdy obecny nie wystarcza; :koniec – ostatni przebieg, bez zmian (sama ocena). |
+| 169 | `ugiecie_opis(l_przez_u)` | Ugięcie do komunikatu: „ugięcie L/250”, a przy znikomym – „ugięcie poniżej L/1000”. |
+| 174 | `podpowiedz(pole, bh, r, min, p)` | Podpowiedź do okna dla grupy płatwi o przekroju bh z oceną r (min – najlżejszy wystarczający z listy albo nil). |
+
+### rdzen/statyka_krokwi.rb (162 wierszy)
+
+sprawdzenie i dobór przekroju krokwi całego dachu – połacie domu i bocznego zadaszenia (przęsła między płatwiami, okap jako wspornik, rozstaw krokwi); automatycznie najmniejszy wystarczający z listy albo przekrój z wyboru ze sprawdzeniem.
+
+Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/statyka_dachu.rb (współczynnik μ, opis ugięcia), rdzen/dach.rb (płatwie, krokwie), rdzen/dach_jednospadowy.rb, rdzen/zadaszenie.rb (płatwie zadaszenia), rdzen/skrzydla.rb
+Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach” i „Zadaszenie – przekroje”, przekrój dobrany do następnego przebiegu)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 29 | `module StatykaKrokwi` |  |
+| 31 | `POLE` | Pole przekroju krokwi. |
+| 36 | `auto?(p)` | Czy przekrój krokwi dobiera generator. |
+| 42 | `przeslo(e0, e1, podpory)` | Przęsło obliczeniowe krokwi w rzucie [mm] między jej końcami e0 i e1 (okap, kalenica, załamanie) przy podporach (v): największa odległość między podporami albo wspornik końca (2a); bez podpór – cała długość. |
+| 51 | `krokwie(dom, p)` | Krokwie domu do sprawdzenia: [{ gdzie: :dach \| :zadaszenie, l: (przęsło w rzucie), kat: [°] }] – po jednej na połać. |
+| 71 | `jednospadowa(geo, pod, p)` | Krokiew dachu jednospadowego (jeden kawałek od okapu za ścianą niską do okapu za ścianą wysoką; ściana wysoka podporą). |
+| 84 | `zadaszenia(geo, c, p)` | Krokiew bocznego zadaszenia strony c: od załamania do okapu zadaszenia, na płatwiach zadaszenia (przybudówka ze ścianą nośną – także na ścianie). |
+| 96 | `ocena(lista, b, h, p)` | Ocena krokwi b × h: { ok:, wyk:, l_przez_u:, l: (przęsło w rzucie) } najbardziej wytężonej z listy (nil – pusta). |
+| 109 | `kandydaci(p)` | Przekroje krokwi do doboru – od najlżejszego (przy równym polu wyższy pierwszy). |
+| 114 | `dobierz(lista, p)` | Najlżejszy przekrój z listy wystarczający dla wszystkich krokwi; nil – żaden. |
+| 120 | `sprawdz(dom, p, tryb = :pierwszy)` | Sprawdzenie i dobór krokwi domu: { podpowiedzi: [{ poziom:, tekst:, sekcja: }], nadpis: { POLE => 'b×h' } }; tryb jak StatykaDachu.sprawdz. Podpowiedź krokwi dachu – sekcja „szczyty”, krokwi zadaszenia – „zadaszenie_przekroje”. |
+| 144 | `podpowiedz(nazwa, bh, r, min, p)` | Podpowiedź do okna: krokwie (nazwa) o przekroju bh z oceną r (min – najlżejszy wystarczający dla całego dachu). |
+
+### rdzen/statyka_slupa.rb (51 wierszy)
+
+sprawdzenie słupa drewnianego ściskanego osiowo z wyboczeniem (przegubowo na obu końcach) – nośność, smukłość.
+
+Zależy od: rdzen/statyka.rb (klasy drewna, k_mod)
+Używają: rdzen/statyka_zadaszenia.rb (słupy zadaszenia)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 21 | `module StatykaSlupa` |  |
+| 23 | `SMUKLOSC_MAX` | Największa dopuszczalna smukłość słupa. |
+| 29 | `sprawdz(l, b, h, ng, nq, klasa)` | Sprawdzenie słupa: l – długość wyboczeniowa [mm], b × h [mm], siły od obciążeń stałych ng i zmiennych nq [kN] bez ciężaru własnego słupa. Wynik: { wyk: (wytężenie 0…), smuklosc:, kc:, n_d: [kN], ok: }. |
+| 44 | `wspolczynnik_kc(lrel, beta)` | Współczynnik wyboczeniowy k_c ze smukłości względnej (do 0,3 – bez wyboczenia). |
 
 ### rdzen/statyka_wiazara.rb (163 wierszy)
 
@@ -1996,6 +2101,37 @@ Używają: rdzen/projekt.rb (podpowiedzi sekcji „Taras”, przekrój dobrany d
 | 115 | `dobierz(front, u, sily, p)` | Przekrój z listy: najlżejszy wystarczający, przy którym mieści się cały trójkąt; inaczej najlżejszy wystarczający; nil – żaden nie wystarcza. |
 | 122 | `sprawdz(sciany, dom, p, tryb = :pierwszy)` | Sprawdzenie i dobór: { podpowiedzi: [{ poziom:, tekst: }], nadpis: { 'taras_wieniec_dobrany' => 'b×h' } }; tryb jak w StatykaDachu.sprawdz (:pierwszy – dobór, :potwierdz – zmiana tylko, gdy obecny nie wystarcza, :koniec – ocena). |
 | 143 | `podpowiedz(bh, r, min, p)` | Podpowiedź do okna: przekrój trójkąta bh z oceną r (min – dobrany z listy albo nil). |
+
+### rdzen/statyka_zadaszenia.rb (212 wierszy)
+
+sprawdzenie i dobór przekrojów bocznego zadaszenia – płatwie i oczep (przęsło między słupami albo ścianami, pas połaci zadaszenia), belki poprzeczne (od słupa do ściany domu) i słupy (ściskanie z wyboczeniem); automatycznie najmniejszy wystarczający z list albo przekroje z wyboru użytkownika ze sprawdzeniem.
+
+Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/statyka_slupa.rb (słup), rdzen/statyka_dachu.rb (obciążenia, przęsło płatwi, opis ugięcia), rdzen/dach.rb, rdzen/zadaszenie.rb (płatwie, linie słupów), rdzen/skrzydla.rb (zasięg płatwi)
+Używają: rdzen/projekt.rb (podpowiedzi sekcji „Zadaszenie – przekroje”, przekroje dobrane do następnego przebiegu)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 34 | `module StatykaZadaszenia` |  |
+| 36 | `PLATWIE` | Pola przekrojów grup i nazwy do komunikatów. |
+| 37 | `BELKI` |  |
+| 38 | `SLUPY` |  |
+| 39 | `NAZWY` |  |
+| 40 | `SLUPY` |  |
+| 42 | `KATALOGI` | Lista przekrojów do doboru dla pola. |
+| 43 | `SLUPY` |  |
+| 48 | `auto?(p)` | Czy przekroje zadaszenia dobiera generator. |
+| 53 | `kat(p)` | Kąt zadaszenia [°]. |
+| 58 | `na_metr(p)` | Obciążenia na metr kwadratowy rzutu zadaszenia [kN/m²]: [stałe, śnieg]. |
+| 64 | `pasy(c, strona, p)` | Szerokości pasów połaci zadaszenia [mm w poziomie] dla płatwi strona (w kolejności listy): połowa odległości do sąsiednich linii podparcia (płatwie, ściana nośna przybudówki); pierwsza – od załamania, ostatnia – do okapu. |
+| 81 | `pasy_u(linie, p)` | Pasy wzdłuż ściany na linie słupów [mm]: połowa odległości do sąsiednich linii, skrajne – z wysunięciem za szczyt. |
+| 91 | `czlony(dom, sciany, p)` | Człony zadaszenia domu do sprawdzenia: { PLATWIE => [{ l:, pas:, rodzaj: }], BELKI => [{ l:, pas: }], SLUPY => [{ l:, a: (pole rzutu [m²]), g_wl: (ciężar belki i oczepu [kN]) }] }; bez zadaszenia – {}. |
+| 126 | `wysokosc(b, h, p)` | Wysokość płatwi do obliczeń: ścięta do połaci zadaszenia – średnia wysokość przekroju (jak płatwie dachu). |
+| 133 | `ocena(pole, grupa, b, h, p)` | Ocena przekroju b × h dla grupy pola – najbardziej wytężony człon: { ok:, wyk:, l_przez_u: (belki), l:, pas:, smuklosc:, n_d: (słupy) }. |
+| 151 | `kandydaci(pole, p)` | Przekroje do doboru dla pola – od najlżejszego (przy równym polu wyższy pierwszy). |
+| 156 | `dobierz(pole, grupa, p)` | Najlżejszy przekrój z listy wystarczający dla grupy; nil – żaden. |
+| 162 | `sprawdz(dom, sciany, p, tryb = :pierwszy)` | Sprawdzenie i dobór zadaszenia domu: { podpowiedzi: [{ poziom:, tekst: }], nadpis: { pole => 'b×h' } }; tryb jak StatykaDachu.sprawdz (:pierwszy, :potwierdz, :koniec). |
+| 182 | `opis(pole, bh, r)` | Opis członu do podpowiedzi: przęsło i pas (belki) albo wysokość, siła i smukłość (słupy). |
+| 194 | `podpowiedz(pole, bh, r, min, p)` | Podpowiedź do okna dla grupy pola o przekroju bh z oceną r (min – najlżejszy wystarczający z listy albo nil). |
 
 ### rdzen/stolarka.rb (51 wierszy)
 
@@ -2434,12 +2570,12 @@ Używają: rdzen/bale.rb (kawałki wieńca), rdzen/styki.rb (styki liczone z wyp
 | 104 | `k_s(k, w)` | Miejsce s narożnika k na drugiej ścianie (k[:inna]) – do sprawdzenia, czy jej szczyt sięga narożnika. |
 | 112 | `wegiel(w, wn, zas, p)` | Węgieł na ścianie okapowej: górne wegly_okap_wience bali wysunięte na zewnątrz do dach_okap od lica ściany, ścięte linią dachu (zasięg pod linią jak w szczycie). |
 
-### rdzen/zadaszenie.rb (374 wierszy)
+### rdzen/zadaszenie.rb (394 wierszy)
 
 boczne zadaszenie przy ścianie okapowej domu prostokątnego – połać dachu za linią załamania schodzi dalej pod mniejszym kątem; wariant na słupach (słupy z fundamentami, belki poprzeczne, oczep, płatwie na słupkach) albo przybudówka z bali (obrys poszerzony, dawna ściana okapowa jako działowa, niska ściana zewnętrzna); płatwie zadaszenia.
 
 Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia z załamaniem, płatew, wręby płatwi), rdzen/platwie_wience.rb (przekrój płatwi ściennej), rdzen/elementy.rb, rdzen/fundamenty.rb, rdzen/sciany.rb (oś kalenicy), rdzen/skrzydla.rb (zasięg płatwi)
-Używają: rdzen/projekt.rb (obrys z przybudówką, role ścian, elementy, podpowiedzi), rdzen/szczyty.rb (przekrój dachu z zadaszeniem, gniazda płatwi zadaszenia, ściana przybudówki pod połacią), rdzen/polacie.rb (załamania dla aplikacji do dachów), rdzen/krok2.rb (ściana domu przy przybudówce jako podpora)
+Używają: rdzen/projekt.rb (obrys z przybudówką, role ścian, elementy, podpowiedzi), rdzen/statyka_zadaszenia.rb (płatwie, linie słupów, belki), rdzen/statyka_krokwi.rb (płatwie zadaszenia jako podpory krokwi), rdzen/podloga_przybudowki.rb (role ścian), rdzen/szczyty.rb (przekrój dachu z zadaszeniem, gniazda płatwi zadaszenia, ściana przybudówki pod połacią), rdzen/polacie.rb (załamania dla aplikacji do dachów), rdzen/krok2.rb (ściana domu przy przybudówce jako podpora)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
@@ -2466,13 +2602,15 @@ Używają: rdzen/projekt.rb (obrys z przybudówką, role ścian, elementy, podpo
 | 230 | `elementy(dom, sciany, p)` | Elementy zadaszenia domu prostokątnego: płatwie (P, z wrębami w ścianach, przez które przechodzą) i – na słupach – słupy, fundamenty, belki poprzeczne i słupki; [] bez zadaszenia. |
 | 240 | `platwie_elementy(dom, geo, p)` | Płatwie zadaszenia jako elementy P (grupa „Zadaszenie”) na zasięgu płatwi dachu (wysunięcie za szczyty). |
 | 251 | `z_podstawy(p)` | Wysokość podstawy słupów [mm]: spód podwaliny (podłoga) albo 0 – na niej stoi fundament. |
-| 257 | `slupy(dom, geo, sciany, p)` | Słupy, fundamenty, belki poprzeczne i słupki zadaszenia na słupach (każda strona). |
-| 292 | `nad_belka?(pl, c, v_konca)` | Czy płatew leży nad belką poprzeczną (rzut płatwi między licem podpory a końcem belki przy domu). |
-| 299 | `przeszkody(sciany, c, dom, p)` | Przeszkody przy licu ściany okapowej po stronie zadaszenia: ściany w poprzek (szczytowe z ostatkami, działowe z wypustem, węgły) wychodzące przed lico – [{ u:, pol: (pół grubości), v: (koniec przed licem) }]. |
-| 314 | `linie(dom, c, przeszkody, bb, p)` | Linie słupów [[u, v końca belki poprzecznej]]: skrajne w osiach ścian szczytowych (belka do końca ostatków), pośrednie równo co najwyżej zadaszenie_slupy_rozstaw; linia, w której belka trafiłaby w węgieł albo działową, przesunięta obok. |
-| 329 | `omin(u, przeszkody, bb, u1, u2)` | Położenie u linii pośredniej z dala od przeszkód (najbliższe wolne, w zakresie u1…u2). |
-| 339 | `slup(dom, u, v, b, l, z_dol, z_gora, rodzaj)` | Słup (S) od z_dol do z_gora: przekrój b (wzdłuż kalenicy) × l (w poprzek), oś w (u, v); x w górę. |
-| 348 | `podpowiedzi(dom, p, elementy)` | Podpowiedzi do sekcji „Boczne zadaszenie” ([{ poziom:, tekst: }]). |
+| 259 | `linie_slupow(dom, geo, c, sciany, p, lista_pl = nil)` | Linie słupów strony c: [{ u:, v_konca: (koniec belki poprzecznej przy domu), v_slupa: (oś słupa), z_dol: (podstawa), z_slupa: (wierzch słupa = spód belki), z_belki: (wierzch belki = spód oczepu) }]; [] – bez słupów (przybudówka, brak oczepu albo słupy niższe niż MIN_SLUP). lista_pl – płatwie zadaszenia (platwie), gdy już policzone. |
+| 276 | `koniec_belki(geo, c, z_belki, p)` | Koniec belki poprzecznej przy domu (v): lico ściany okapowej, a gdy płatew ścienna stoi na ścianie, jest szersza niż ściana i jej spód leży niżej niż wierzch belki (z_belki) – krawędź płatwi (linia załamania; belka dochodzi do boku płatwi). |
+| 283 | `slupy(dom, geo, sciany, p)` | Słupy, fundamenty, belki poprzeczne i słupki zadaszenia na słupach (każda strona). |
+| 311 | `nad_belka?(pl, c, v_konca)` | Czy płatew leży nad belką poprzeczną (rzut płatwi między licem podpory a końcem belki przy domu). |
+| 318 | `przeszkody(sciany, c, dom, p)` | Przeszkody przy licu ściany okapowej po stronie zadaszenia: ściany w poprzek (szczytowe z ostatkami, działowe z wypustem, węgły) wychodzące przed lico – [{ u:, pol: (pół grubości), v: (koniec przed licem) }]. |
+| 334 | `linie(dom, c, przeszkody, bb, p, v_bazy = c[:v_lico])` | Linie słupów [[u, v końca belki poprzecznej]]: skrajne w osiach ścian szczytowych (belka do końca ostatków), pośrednie równo co najwyżej zadaszenie_slupy_rozstaw; linia, w której belka trafiłaby w węgieł albo działową, przesunięta obok; v_bazy – koniec belki bez przeszkód (lico ściany albo krawędź płatwi ściennej – koniec_belki). |
+| 349 | `omin(u, przeszkody, bb, u1, u2)` | Położenie u linii pośredniej z dala od przeszkód (najbliższe wolne, w zakresie u1…u2). |
+| 359 | `slup(dom, u, v, b, l, z_dol, z_gora, rodzaj)` | Słup (S) od z_dol do z_gora: przekrój b (wzdłuż kalenicy) × l (w poprzek), oś w (u, v); x w górę. |
+| 368 | `podpowiedzi(dom, p, elementy)` | Podpowiedzi do sekcji „Boczne zadaszenie” ([{ poziom:, tekst: }]). |
 
 ### rdzen/zamek.rb (115 wierszy)
 
@@ -2668,7 +2806,7 @@ Używają: main.rb (ładowanie)
 | 18 | `dodaj` | Dodanie menu (raz na sesję SketchUpa). |
 | 32 | `o_wtyczce` | Okno z wersją i numerem kompilacji. |
 
-### sketchup/okno.rb (230 wierszy)
+### sketchup/okno.rb (233 wierszy)
 
 okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
 
@@ -2682,16 +2820,16 @@ Używają: sketchup/sterowanie.rb (pokaz)
 | 23 | `WYSOKOSC` |  |
 | 31 | `pokaz(dane)` | Otwarcie okna z danymi startowymi (tryb: 'nowy' \| 'edycja'). |
 | 51 | `dane_startowe` | Dane startowe okna: sekcje i pola formularza, wartości, presety, szablony, informacja o liniach / domu. |
-| 62 | `opisy_pol` | Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź). |
-| 72 | `wyslij_parametry(parametry, komunikat)` | Szablon do okna (wczytanie albo domyślne): AMGW.ustaw. |
-| 80 | `wyslij_szablony(komunikat)` | Lista szablonów do okna po zapisie / usunięciu: AMGW.szablony. |
-| 88 | `wyslij_komunikat(tekst, rodzaj)` | Komunikat w oknie (ok / blad): AMGW.komunikat. |
-| 96 | `wyslij_widok(dane)` | Widok ściany do okna: AMGW.widok. |
-| 104 | `wyslij_wynik(dane)` | Wynik obliczeń lub budowy do okna. |
-| 114 | `podlacz(dlg)` | Wywołania z JavaScriptu. |
-| 175 | `podlacz_szablony(dlg)` | Wywołania szablonów: wczytaj (nazwa), zapisz ({ nazwa, parametry }), usuń (nazwa), domyślne. |
-| 211 | `zamknij_stare` | Zamknięcie poprzedniego okna generatora (także ukrytego) – nowe okno nie dziedziczy po nim niczego. |
-| 220 | `po_zamknieciu(dlg)` | Okno dlg zamknięte: jeśli to bieżące okno – bez okna i bez danych startowych w pamięci. |
+| 65 | `opisy_pol` | Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź). |
+| 75 | `wyslij_parametry(parametry, komunikat)` | Szablon do okna (wczytanie albo domyślne): AMGW.ustaw. |
+| 83 | `wyslij_szablony(komunikat)` | Lista szablonów do okna po zapisie / usunięciu: AMGW.szablony. |
+| 91 | `wyslij_komunikat(tekst, rodzaj)` | Komunikat w oknie (ok / blad): AMGW.komunikat. |
+| 99 | `wyslij_widok(dane)` | Widok ściany do okna: AMGW.widok. |
+| 107 | `wyslij_wynik(dane)` | Wynik obliczeń lub budowy do okna. |
+| 117 | `podlacz(dlg)` | Wywołania z JavaScriptu. |
+| 178 | `podlacz_szablony(dlg)` | Wywołania szablonów: wczytaj (nazwa), zapisz ({ nazwa, parametry }), usuń (nazwa), domyślne. |
+| 214 | `zamknij_stare` | Zamknięcie poprzedniego okna generatora (także ukrytego) – nowe okno nie dziedziczy po nim niczego. |
+| 223 | `po_zamknieciu(dlg)` | Okno dlg zamknięte: jeśli to bieżące okno – bez okna i bez danych startowych w pamięci. |
 
 ### sketchup/raport.rb (187 wierszy)
 
@@ -2803,52 +2941,52 @@ Używają: html/okno.js (init, panel po widoku, klik z html/sciana.js, dane do p
 | 122 | `panel(box, d)` | Panel ustawień ściany pod widokiem (d – dane widoku z Ruby; brak – panel pusty). |
 | 157 | `panelDzialowej(pola, d, u, s, dom)` | Pola działowej: co jest nad nią (strop, antresola, półka – tylko wtedy niższa) i góra działowej. |
 
-### html/okno.css (192 wierszy)
+### html/okno.css (198 wierszy)
 
 wygląd okna parametrów.
 
 Zależy od: –
 Używają: html/okno.html
 
-### html/okno.html (157 wierszy)
+### html/okno.html (159 wierszy)
 
 okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby).
 
-Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/edycja.js, html/wyniki.js, html/okno.js
+Zależy od: html/okno.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/edycja.js, html/wyniki.js, html/okno.js
 Używają: sketchup/okno.rb
 
-### html/okno.js (348 wierszy)
+### html/okno.js (352 wierszy)
 
 logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
 
-Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło)
+Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło), html/zakladki.js (AMGW_ZAKLADKI – zakładki Dom / Zadaszenie)
 Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
 | 12 | `AMGW` |  |
 | 23 | `wywolaj(nazwa, dane)` | Wywołanie Ruby (window.sketchup.nazwa) – poza SketchUpem nic nie robi. |
-| 32 | `zbudujSekcje()` | Sekcje formularza (rozwijane) z listy sekcji; zachowuje rozwinięcie przy przebudowie. |
-| 51 | `zbudujFormularz(parametry)` | Formularz: sekcje, pole na każdy parametr (z podpowiedzią) i wymiary zamka. |
-| 65 | `dodajPole(opis, parametry)` | Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst), podpowiedź pod nim i pytajnik z objaśnieniem; zmiana pola – pola zależne, wyróżnienie zmienionych, widoczność i podgląd. |
-| 114 | `wartoscPola(klucz, domyslna)` | Wartość pola parametru z formularza (gdy brak pola – domyślna). |
-| 122 | `wypelnijSzablony(lista)` | Lista szablonów w polu wyboru. |
-| 130 | `komunikatSzablonu(tekst)` | Komunikat przy szablonach. |
-| 133 | `zbudujZamek(parametry)` | Pola wymiarów zamka: wartości własne albo z presetu. |
-| 152 | `zbierzParametry()` | Parametry z formularza (z wymiarami zamka) do wysłania do Ruby. |
-| 167 | `pokazKomunikat(tekst, rodzaj)` | Komunikat nad formularzem (ok / blad). |
-| 174 | `ukryjKomunikat()` | Ukrycie komunikatu. |
-| 177 | `pokazWynik(d)` | Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów (html/otwory.js) i odświeżenie widoku ściany. |
-| 197 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
-| 212 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana; kliknięcie w rysunek dodaje albo usuwa węgieł; pod rysunkiem panel ustawień ściany. |
-| 223 | `dane()` | Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku). |
-| 229 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli. |
-| 236 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
-| 257 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
-| 264 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
-| 270 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
-| 288 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
-| 345 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
+| 33 | `zbudujSekcje()` | Sekcje formularza (rozwijane) z listy sekcji, każda w pojemniku swojej zakładki (AMGW_ZAKLADKI); zachowuje rozwinięcie przy przebudowie. |
+| 52 | `zbudujFormularz(parametry)` | Formularz: sekcje, pole na każdy parametr (z podpowiedzią) i wymiary zamka. |
+| 67 | `dodajPole(opis, parametry)` | Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst), podpowiedź pod nim i pytajnik z objaśnieniem; zmiana pola – pola zależne, wyróżnienie zmienionych, widoczność i podgląd. |
+| 117 | `wartoscPola(klucz, domyslna)` | Wartość pola parametru z formularza (gdy brak pola – domyślna). |
+| 125 | `wypelnijSzablony(lista)` | Lista szablonów w polu wyboru. |
+| 133 | `komunikatSzablonu(tekst)` | Komunikat przy szablonach. |
+| 136 | `zbudujZamek(parametry)` | Pola wymiarów zamka: wartości własne albo z presetu. |
+| 155 | `zbierzParametry()` | Parametry z formularza (z wymiarami zamka) do wysłania do Ruby. |
+| 170 | `pokazKomunikat(tekst, rodzaj)` | Komunikat nad formularzem (ok / blad). |
+| 177 | `ukryjKomunikat()` | Ukrycie komunikatu. |
+| 180 | `pokazWynik(d)` | Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów (html/otwory.js) i odświeżenie widoku ściany. |
+| 200 | `wybierzSciane(id)` | Wybór ściany do widoku (lista albo kliknięcie na rzucie). |
+| 215 | `widok(d)` | Widok ściany z Ruby (AMGW.widok) – rysunek, gdy to nadal wybrana ściana; kliknięcie w rysunek dodaje albo usuwa węgieł; pod rysunkiem panel ustawień ściany. |
+| 226 | `dane()` | Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku). |
+| 232 | `zaplanujPodglad()` | Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli. |
+| 239 | `init(d)` | Start okna danymi z Ruby (AMGW.init). |
+| 261 | `ustaw(d)` | Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd. |
+| 268 | `szablony(d)` | Lista szablonów po zapisie / usunięciu (AMGW.szablony). |
+| 274 | `wynik(d)` | Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu. |
+| 292 | `start()` | Podpięcie przycisków i zgłoszenie gotowości okna do Ruby. |
+| 349 | `komunikat(d)` | Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia. |
 
 ### html/otwory.js (154 wierszy)
 
@@ -3028,6 +3166,22 @@ Używają: html/okno.js (pokazWynik)
 | 31 | `wiersz(tbody, komorki, liczbowe)` | Wiersz tabeli wyników. |
 | 43 | `podpowiedzi(pozycje)` | Podpowiedzi (podłoga, dobór przekrojów) z poziomem ok / uwaga / blad. |
 | 56 | `pokaz(d, naKlik)` | Wyniki: liczby, wysokości, tabela ścian, lista bali, rzut, błędy, ostrzeżenia i podpowiedzi; naKlik(id) – kliknięta ściana na rzucie. |
+
+### html/zakladki.js (79 wierszy)
+
+zakładki formularza parametrów – „Dom” i „Zadaszenie boczne / tylne” (sekcje parametrów w osobnych pojemnikach), przełączanie zakładek i liczba zmienionych pól w nazwie zakładki.
+
+Zależy od: html/wspolne.js (AMGW_DOM), html/okno.html (#zakladki, #sekcje)
+Używają: html/okno.js (budowa sekcji formularza, po zmianie pola), html/zmiany.js (klasa „zmieniony” na etykiecie)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 13 | `AMGW_ZAKLADKI` |  |
+| 23 | `zbuduj(lista)` | Pasek zakładek (#zakladki) i pusty pojemnik sekcji każdej zakładki (#sekcje-<klucz> w #sekcje); wybrana zakładka zostaje po przebudowie formularza (szablon, fabryczne). |
+| 43 | `pojemnik(klucz)` | Pojemnik sekcji zakładki (nieznana zakładka – pierwsza). |
+| 48 | `wybierz(klucz)` | Pokazanie zakładki: jej pojemnik widoczny, pozostałe ukryte, przycisk wyróżniony. |
+| 63 | `oznacz()` | Nazwy zakładek z liczbą pól zmienionych względem fabrycznych (etykiety z klasą „zmieniony” w pojemniku zakładki). |
+| 76 | `biezaca()` | Klucz bieżącej zakładki. |
 
 ### html/zalezne.js (85 wierszy)
 
@@ -3300,7 +3454,7 @@ Używają: testy/uruchom.sh (sprawdzenie aktualności)
 | 27 | `kom(t)` | Komórka tabeli bez znaków psujących Markdown. |
 | 32 | `tresc` | Treść dokumentu. |
 
-### testy/losowe_domy.rb (435 wierszy)
+### testy/losowe_domy.rb (446 wierszy)
 
 losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
 
@@ -3318,25 +3472,27 @@ Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.r
 | 30 | `ZIARNA_R10` | Od tego ziarna – nowości rundy 10 (wiązar pod płatwiami, zastrzały pod kątem, poziom podciągu). |
 | 33 | `ZIARNA_R11` | Od tego ziarna – nowości rundy 11 (słupki tylko pod kalenicową, węgieł w osi płatwi, przekroje wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk, słup w osi kalenicy). |
 | 35 | `ZIARNA_R12` | Od tego ziarna – nowości rundy 12 (boczne zadaszenie: wiata na słupach albo przybudówka z bali). |
-| 40 | `wybierz(r, lista)` | Losowy wybór z listy. |
-| 45 | `dom(ziarno)` | Dom z ziarna: { ziarno:, opis:, segmenty:, parametry:, otwory: }. |
-| 101 | `dodatki(r, p, dl_w1, opis)` | Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą, węgły ręczne na W-1; zwraca ustawienia ścian (parametry uzupełnia w p, opis w opis). |
-| 131 | `dodatki_r5(r, p, opis)` | Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie), luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi), dach jednospadowy. |
-| 150 | `taras(r, p, opis)` | Taras (osobne losowanie, tylko ziarna od ZIARNA_Z_TARASEM – domy z ziaren wcześniejszych rund bez zmian): wariant 1100 albo 1200, strona, głębokość, podciąg, wejście, balustrada, słupy. |
-| 166 | `dodatki_r7(r, p, opis)` | Dodatki rundy 7 (osobne losowanie, ziarna od ZIARNA_R7): podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku, działowa do dachu, podwalina 50 × 150 na śruby, fundamenty, szczyt nad tarasem. |
-| 185 | `dodatki_r8(r, p, opis)` | Dodatki rundy 8 (osobne losowanie, ziarna od ZIARNA_R8): wypuszczone górne wieńce okapowe, węgły pod okapem do nawisu, węgły niesymetryczne, podciąg na równo, fundament okrągły, balustrada z wieńców ścian, trójkątny wieniec. |
-| 204 | `dodatki_r9(r, p, opis)` | Dodatki rundy 9 (osobne losowanie, ziarna od ZIARNA_R9): węgły pod płatwiami, węgieł na wolnym końcu, wiązar nad tarasem (rodzaj, na balach albo na słupach, słupek, zastrzał); szczyt pusty częściej. |
-| 219 | `dodatki_r10(r, p, opis)` | Dodatki rundy 10: wiązar pod płatwiami (głębokość gniazda, kąt zastrzałów), poziom podciągu; domy L mają dwa dachy z koszem przy każdym ziarnie (rdzen/skrzydla.rb). |
-| 231 | `dodatki_r11(r, p, opis)` | kalenicowej), słupek i zastrzały wiązara z przekroju wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk albo na węgłach, słup frontu w osi kalenicy, automatyczny dobór przekroju płatwi i trójkąta nad tarasem (śnieg z kilku stref). |
-| 251 | `dodatki_r12(r, p, opis)` | Dodatki rundy 12: boczne zadaszenie (słupy albo przybudówka, strona, szerokość, kąt mniejszy niż dachu – czasem nie, okap, przekroje, rozstaw słupów); dom z tarasem, jednospadowy albo L – zadaszenie pominięte z ostrzeżeniem. |
-| 268 | `parametry(r)` | Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5). |
-| 286 | `otwory(r, dlugosci)` | Losowe otwory na ścianach W-1…W-4 (długości lica ścian w kolejności numeracji). |
-| 300 | `sprawdz(dom, belki = true)` | Sprawdzenie domu: lista problemów (pusta – w porządku) i plan. |
-| 353 | `bez_zamka_w_narozniku(pl)` | Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy. |
-| 367 | `problemy_polaci(pl)` | Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora; podpory (płatwie, ściana wysoka) w granicy aplikacji (wierzch w osi pod połacią o ≤ b/2·sin α + 30 mm po normalnej). |
-| 382 | `podpory_poza(pl)` | Podpory, których aplikacja do dachów nie uzna (za wysoko, za nisko albo nie równolegle do okapu) – opisy. |
-| 395 | `siatka(poz)` | Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }. |
-| 403 | `min_krawedz(sciany)` | Najkrótsza krawędź pętli ścian siatki [mm] (SketchUp scala punkty bliższe niż 0,0254 mm). |
+| 37 | `ZIARNA_R13` | Od tego ziarna – nowości rundy 13 (dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce do wyboru). |
+| 42 | `wybierz(r, lista)` | Losowy wybór z listy. |
+| 47 | `dom(ziarno)` | Dom z ziarna: { ziarno:, opis:, segmenty:, parametry:, otwory: }. |
+| 104 | `dodatki(r, p, dl_w1, opis)` | Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą, węgły ręczne na W-1; zwraca ustawienia ścian (parametry uzupełnia w p, opis w opis). |
+| 134 | `dodatki_r5(r, p, opis)` | Dodatki rundy 5 (osobne losowanie – domy z ziaren rund 1–4 bez zmian): krokwie z aplikacji do dachów (połacie), luzy stolarki (boczny, osiadanie ścian – luz górny z podpowiedzi), dach jednospadowy. |
+| 153 | `taras(r, p, opis)` | Taras (osobne losowanie, tylko ziarna od ZIARNA_Z_TARASEM – domy z ziaren wcześniejszych rund bez zmian): wariant 1100 albo 1200, strona, głębokość, podciąg, wejście, balustrada, słupy. |
+| 169 | `dodatki_r7(r, p, opis)` | Dodatki rundy 7 (osobne losowanie, ziarna od ZIARNA_R7): podbitka w czterech położeniach, zamki płatwi, płatwie na pełnym balu, styki w zamku działowej, węgieł na środku, działowa do dachu, podwalina 50 × 150 na śruby, fundamenty, szczyt nad tarasem. |
+| 188 | `dodatki_r8(r, p, opis)` | Dodatki rundy 8 (osobne losowanie, ziarna od ZIARNA_R8): wypuszczone górne wieńce okapowe, węgły pod okapem do nawisu, węgły niesymetryczne, podciąg na równo, fundament okrągły, balustrada z wieńców ścian, trójkątny wieniec. |
+| 207 | `dodatki_r9(r, p, opis)` | Dodatki rundy 9 (osobne losowanie, ziarna od ZIARNA_R9): węgły pod płatwiami, węgieł na wolnym końcu, wiązar nad tarasem (rodzaj, na balach albo na słupach, słupek, zastrzał); szczyt pusty częściej. |
+| 222 | `dodatki_r10(r, p, opis)` | Dodatki rundy 10: wiązar pod płatwiami (głębokość gniazda, kąt zastrzałów), poziom podciągu; domy L mają dwa dachy z koszem przy każdym ziarnie (rdzen/skrzydla.rb). |
+| 234 | `dodatki_r11(r, p, opis)` | kalenicowej), słupek i zastrzały wiązara z przekroju wiązara, zamek płatwi nad tarasem tylko od spodu, front tarasu łączony na styk albo na węgłach, słup frontu w osi kalenicy, automatyczny dobór przekroju płatwi i trójkąta nad tarasem (śnieg z kilku stref). |
+| 254 | `dodatki_r12(r, p, opis)` | Dodatki rundy 12: boczne zadaszenie (słupy albo przybudówka, strona, szerokość, kąt mniejszy niż dachu – czasem nie, okap, przekroje, rozstaw słupów); dom z tarasem, jednospadowy albo L – zadaszenie pominięte z ostrzeżeniem. |
+| 271 | `dodatki_r13(r, p, opis)` | Dodatki rundy 13: dobór przekrojów zadaszenia (automatycznie / z wyboru), dobór krokwi, podłoga w przybudówce. |
+| 279 | `parametry(r)` | Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5). |
+| 297 | `otwory(r, dlugosci)` | Losowe otwory na ścianach W-1…W-4 (długości lica ścian w kolejności numeracji). |
+| 311 | `sprawdz(dom, belki = true)` | Sprawdzenie domu: lista problemów (pusta – w porządku) i plan. |
+| 364 | `bez_zamka_w_narozniku(pl)` | Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy. |
+| 378 | `problemy_polaci(pl)` | Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora; podpory (płatwie, ściana wysoka) w granicy aplikacji (wierzch w osi pod połacią o ≤ b/2·sin α + 30 mm po normalnej). |
+| 393 | `podpory_poza(pl)` | Podpory, których aplikacja do dachów nie uzna (za wysoko, za nisko albo nie równolegle do okapu) – opisy. |
+| 406 | `siatka(poz)` | Siatka pozycji: { ok: zamknięta i z objętością profilu, min_krawedz: najkrótsza krawędź ścian [mm] }. |
+| 414 | `min_krawedz(sciany)` | Najkrótsza krawędź pętli ścian siatki [mm] (SketchUp scala punkty bliższe niż 0,0254 mm). |
 
 ### testy/okno_dane.rb (36 wierszy)
 
@@ -3358,7 +3514,7 @@ Używają: ręcznie (python3 testy/podglad.py dom.obj wynik.png)
 | 34 | `rysuj(ax, grupy, filtr=None)` |  |
 | 44 | `main()` |  |
 
-### testy/podglad.rb (111 wierszy)
+### testy/podglad.rb (114 wierszy)
 
 zapis domu testowego do pliku OBJ (siatki pozycji ułożone jak w modelu) – do obejrzenia bez SketchUpa (testy/podglad.py).
 
@@ -3497,7 +3653,7 @@ Używają: testy/uruchom.sh
 |---:|---|---|
 | 15 | `ZIARNA` | Ziarno => co ujawniło (runda 3, runda 4 – r4, runda 5 – r5). |
 
-### testy/t_okno.js (410 wierszy)
+### testy/t_okno.js (453 wierszy)
 
 okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
 
@@ -3640,6 +3796,22 @@ Używają: testy/uruchom.sh
 | 20 | `belki(pl, prefiks)` | Elementy planu o prefiksie. |
 | 24 | `BAZA` |  |
 
+### testy/t_statyka_zadaszenia.rb (167 wierszy)
+
+runda 13 – dobór przekrojów bocznego zadaszenia (płatwie z oczepem, belki poprzeczne, słupy – automatycznie albo z wyboru), słup z wyboczeniem, dobór krokwi całego dachu, podłoga w przybudówce do wyboru, parametry zadaszenia w osobnej zakładce okna.
+
+Zależy od: testy/pomoc.rb, testy/losowe_domy.rb (sprawdzenie domu), testy/atrapa/sketchup.rb
+Używają: testy/uruchom.sh
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 17 | `plan(seg, par)` | Plan domu z parametrami (pełny przebieg z doborem). |
+| 22 | `podp(pl, sekcja)` | Podpowiedzi sekcji okna. |
+| 27 | `liczba_po(tekst, slowo)` | Liczba po słowie (np. „przęsło 2.0 m”) z tekstu podpowiedzi. |
+| 33 | `zakres(e, k)` | Zakres elementu w osi k (wszystkie naroża prostopadłościanu) [min, max]. |
+| 40 | `DOM` |  |
+| 41 | `WIATA` |  |
+
 ### testy/t_szczyty.rb (274 wierszy)
 
 testy szczytów i dachu – wieńce do kalenicy, skos bali pod linią dachu, gniazda płatwi, krokwie przy szczycie, belki dachu bez kolizji.
@@ -3693,7 +3865,7 @@ Używają: testy/uruchom.sh
 | 15 | `pole(pts)` | Pole wielokąta [[s, z]] (wzór Gaussa). |
 | 22 | `pole_profilu(b, t)` | Pole boku bala z profilu (rzut na płaszczyznę ściany). |
 
-### testy/t_zadaszenie.rb (199 wierszy)
+### testy/t_zadaszenie.rb (200 wierszy)
 
 boczne zadaszenie (runda 12) – linia dachu z załamaniem, płatwie zadaszenia, słupy z belkami poprzecznymi i słupkami, przybudówka z bali (obrys, role ścian, niska ściana, szczyty z załamaniem), krokwie zadaszenia z generatora, połacie z załamaniem dla aplikacji do dachów, przeszkody (kąt, taras, jednospadowy), przekazanie załamania w modelu (atrapa).
 
@@ -3706,9 +3878,9 @@ Używają: testy/uruchom.sh
 | 25 | `TG12` |  |
 | 27 | `el(pl, rodzaj)` |  |
 | 32 | `zakres(e, k)` | Zakres elementu w osi k układu domu (wszystkie naroża prostopadłościanu) [min, max]. |
-| 185 | `module Roof` |  |
-| 186 | `module API` |  |
-| 187 | `wersja_wtyczki` |  |
+| 186 | `module Roof` |  |
+| 187 | `module API` |  |
+| 188 | `wersja_wtyczki` |  |
 
 ### testy/t_zamek.rb (95 wierszy)
 
@@ -3724,7 +3896,7 @@ zestawienie CSV (rdzeń) i zapis pliku z okna (atrapa SketchUpa) – kolumny, pr
 Zależy od: testy/pomoc.rb, testy/atrapa/sketchup.rb, Plugins/.../rdzen/zestawienie.rb, sketchup/eksport.rb
 Używają: testy/uruchom.sh
 
-### testy/uruchom.sh (80 wierszy)
+### testy/uruchom.sh (81 wierszy)
 
 wszystkie testy i kontrole jednym poleceniem – ostatnia linia „WSZYSTKIE ZESTAWY: FAILURES n”.
 

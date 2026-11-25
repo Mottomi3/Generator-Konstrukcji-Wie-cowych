@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy – testy
   Plik: testy/t_okno.js
   Zadanie: okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
-  Tematy: test okna, przesuwanie węgłów w teście okna, Playwright, formularz, sekcje, podpowiedzi, szablony, wywołania Ruby, zrzut okna
+  Tematy: test okna, zakładki w teście okna, przesuwanie węgłów w teście okna, Playwright, formularz, sekcje, podpowiedzi, szablony, wywołania Ruby, zrzut okna
   Zależy od: testy/okno_dane.rb, Plugins/.../html/okno.html
   Używają: testy/uruchom.sh
 
@@ -63,6 +63,49 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(etykiety.indexOf('W-1') >= 0 && etykiety.indexOf('W-5') >= 0, 'rzut z opisami ścian');
   var wiersze = await page.evaluate(function () { return document.querySelectorAll('#tab-sciany tbody tr').length; });
   sprawdz(wiersze === dane.init.podsumowanie.sciany.length, 'tabela ścian');
+
+  // Zakładki (runda 13): „Dom” i „Zadaszenie boczne / tylne” – sekcje zadaszenia tylko w swojej zakładce, przełączanie,
+  // liczba zmienionych pól w nazwie zakładki.
+  var zk = await page.evaluate(function (d) {
+    var v = function (id) { var e = document.getElementById(id); return !!e && e.offsetParent !== null; };
+    var wZakl = d.sekcje.every(function (s) {
+      var det = document.getElementById('sekcja-' + s.klucz);
+      return det && det.parentNode.id === 'sekcje-' + s.zakladka;
+    });
+    return [document.querySelectorAll('#zakladki button').length, wZakl, v('sekcje-dom'), v('sekcje-zadaszenie'),
+            document.getElementById('zakl-dom').className];
+  }, dane.init);
+  sprawdz(zk[0] === dane.init.zakladki.length && zk[0] === 2, 'dwie zakładki (' + zk[0] + ')');
+  sprawdz(zk[1], 'każda sekcja w pojemniku swojej zakładki');
+  sprawdz(zk[2] && !zk[3] && zk[4] === 'wybrany', 'na starcie zakładka Dom, zadaszenie ukryte (' + zk.join(',') + ')');
+  sprawdz(dane.init.sekcje.filter(function (s) { return s.zakladka === 'zadaszenie'; }).length === 2,
+          'sekcje zadaszenia w zakładce zadaszenia');
+  var domPrzed = await page.evaluate(function () { return document.getElementById('zakl-dom').textContent; });
+  await page.click('#zakl-zadaszenie');
+  zk = await page.evaluate(function () {
+    var v = function (id) { var e = document.getElementById(id); return !!e && e.offsetParent !== null; };
+    return [v('sekcje-dom'), v('sekcje-zadaszenie'), v('p-zadaszenie'), v('p-dach_kat'), document.getElementById('zakl-zadaszenie').className];
+  });
+  sprawdz(!zk[0] && zk[1] && zk[2] && !zk[3] && zk[4] === 'wybrany', 'zakładka zadaszenia: tylko pola zadaszenia (' + zk.join(',') + ')');
+  await page.selectOption('#p-zadaszenie', 'slupy');
+  zk = await page.evaluate(function () {
+    var v = function (id) { var e = document.getElementById(id); return !!e && e.offsetParent !== null; };
+    return [document.getElementById('zakl-zadaszenie').textContent, document.getElementById('zakl-dom').textContent,
+            v('p-zadaszenie_dobor'), v('p-zadaszenie_platwa_przekroj')];
+  });
+  sprawdz(zk[0].indexOf('zmienione: 1') >= 0 && zk[1] === domPrzed, 'liczba zmian w nazwie zakładki (' + zk[0] + ' / ' + zk[1] + ')');
+  sprawdz(zk[2] && !zk[3], 'dobór automatyczny – pola przekrojów zadaszenia ukryte');
+  await page.click('#btn-tryb-wszystkie');
+  await page.selectOption('#p-zadaszenie_dobor', 'reczny');
+  sprawdz(await page.evaluate(function () { return document.getElementById('p-zadaszenie_platwa_przekroj').offsetParent !== null; }),
+          'dobór z wyboru – przekroje zadaszenia widoczne');
+  await page.click('#btn-tryb-podstawowe');
+  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  zk = await page.evaluate(function () {
+    return [document.getElementById('sekcje-zadaszenie').style.display, document.getElementById('zakl-zadaszenie').textContent];
+  });
+  sprawdz(zk[0] === '' && zk[1] === 'Zadaszenie boczne / tylne', 'przebudowa formularza zostawia wybraną zakładkę (' + zk.join(',') + ')');
+  await page.click('#zakl-dom');
 
   // Tryb pól: „Podstawowe” (z ustawień) – pola zaawansowane, sekcja rysunku i wymiary zamka ukryte; „Wszystkie” – wszystko.
   var widoczne = function () {

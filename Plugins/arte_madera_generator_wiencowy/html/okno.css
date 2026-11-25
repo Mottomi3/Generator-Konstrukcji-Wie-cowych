@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.css
   Zadanie: wygląd okna parametrów.
-  Tematy: wygląd okna, pytajnik i objaśnienie, rysunki objaśniające, przeliczenia przy sekcji, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany, przełącznik pól, panel ustawień ściany
+  Tematy: wygląd okna, zakładki, pytajnik i objaśnienie, rysunki objaśniające, przeliczenia przy sekcji, kolory, tabela, formularz, komunikaty, podpowiedzi pól, szablony, pola zmienione, widok ściany, przełącznik pól, panel ustawień ściany
   Zależy od: –
   Używają: html/okno.html
 */
@@ -190,3 +190,9 @@ summary { cursor: pointer; font-weight: 600; padding: 2px 0; }
 .przeliczenia .blad { background: var(--blad-tlo); color: var(--blad); }
 #zmiana-podgladu { font-size: 12px; color: var(--szary); margin: 4px 0; min-height: 16px; }
 #tab-wegly-przesun input { width: 90px; }
+/* Zakładki parametrów: Dom / Zadaszenie boczne / tylne (html/zakladki.js). */
+.zakladki { display: flex; gap: 0; border-bottom: 2px solid var(--akcent); }
+.zakladki button { flex: 1; border-radius: 6px 6px 0 0; border-bottom: none; padding: 7px 10px; background: var(--tlo); color: var(--szary); }
+.zakladki button + button { margin-left: 4px; }
+.zakladki button.wybrany { background: var(--akcent); border-color: var(--akcent); color: #fff; font-weight: 600; }
+.zakladka { gap: 10px; }

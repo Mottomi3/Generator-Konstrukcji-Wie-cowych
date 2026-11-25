@@ -4,7 +4,7 @@
 # Plik: rdzen/fundamenty.rb
 # Zadanie: fundamenty punktowe pod podłogą – siatka rzędów w obu kierunkach w obrysie (skrajne licem z licem podwalin), stopy pod podwalinami, podciągami i podwalinami działowych.
 # Tematy: fundamenty punktowe, fundament okrągły, średnica fundamentu, rzędy w osiach działowych, stopy fundamentowe, siatka fundamentów, rozstaw fundamentów, fundament pod działową, fundament w obrysie, rząd fundamentów
-# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb
+# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/podloga_przybudowki.rb (pole podłogi – stopy pod podciągami)
 # Używają: rdzen/podloga.rb (linie podciągów, elementy F), rdzen/podciagi.rb (rozpiętość podciągu między fundamentami)
 #
 # Układ podłogi u (rdzen/podloga.rb#uklad): d – wzdłuż legarów (indeks id), e – w poprzek (ie), ext – zasięg obrysu po licach
@@ -19,6 +19,7 @@
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
+require File.join(File.dirname(__FILE__), 'podloga_przybudowki') unless defined?(ArteMadera::GeneratorWiencowy::PodlogaPrzybudowki)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -93,7 +94,10 @@ module ArteMadera
           brzeg = i.zero? || i == s[:d].length - 1
           pod = !brzeg && podciagi.any? { |x| (x - d).abs < 1.0 }
           s[:e].each_with_index do |e, j|
-            next unless brzeg || pod || j.zero? || j == s[:e].length - 1
+            brzeg_e = j.zero? || j == s[:e].length - 1
+            next unless brzeg || pod || brzeg_e
+            # Pod podciągiem tylko w jego zasięgu (przybudówka bez podłogi – podciągi kończą się na dawnej ścianie okapowej).
+            next if pod && !brzeg_e && !PodlogaPrzybudowki.w_polu?(u, u[:ie], e)
             wynik << [d, e, pod ? z_pd : z_pw]
           end
         end

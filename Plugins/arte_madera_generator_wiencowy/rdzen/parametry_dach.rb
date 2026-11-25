@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_dach.rb
-# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie, oparcie dachu, poszycie i podbitka.
-# Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, podbitka – parametry
+# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka.
+# Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, dobór przekroju krokwi – parametry, podbitka – parametry
 # Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
@@ -64,8 +64,21 @@ module ArteMadera
                    ['na_szczycie', 'na szczycie (krokiew oparta na balach)']],
           podpowiedz: 'Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod ' \
                       'nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami.' },
+        { klucz: 'krokwie_dobor', podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój krokwi – dobór', rodzaj: :wybor,
+          sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] },
+          wybory: [['reczny', 'z wyboru – przekrój podany niżej (ze sprawdzeniem nośności)'],
+                   ['auto', 'automatycznie – najmniejszy wystarczający z listy']],
+          podpowiedz: 'Jeden przekrój krokwi całego dachu – także krokwi bocznego zadaszenia. Automatycznie: generator liczy śnieg ' \
+                      'i ciężar pokrycia na krokiew (rozstaw krokwi, przęsło między płatwiami, okap jako wspornik) i bierze ' \
+                      'najlżejszy przekrój z listy. Z aplikacją do dachów – wartość na start KROKU 2 (tam pełna kontrola).' },
         { klucz: 'krokiew_przekroj', domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
-          rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
+          rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['reczny'] },
+          podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2. Wynik sprawdzenia – pod sekcją.' },
+        { klucz: 'krokwie_katalog', domyslna: '45x145, 45x170, 45x195, 50x150, 50x175, 50x200, 60x120, 60x140, 60x160, 60x180, ' \
+                                              '60x200, 60x240, 80x160, 80x200, 80x240',
+          etykieta: 'Dostępne przekroje krokwi', rodzaj: :tekst, sekcja: 'szczyty',
+          gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['auto'] },
+          podpowiedz: 'Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy wystarczający.' },
         { klucz: 'krokwie_rozstaw', domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
         { klucz: 'platwie_dobor', podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój płatwi – dobór', rodzaj: :wybor,

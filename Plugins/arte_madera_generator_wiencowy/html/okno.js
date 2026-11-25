@@ -2,8 +2,8 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
-  Tematy: formularz parametrów, sekcje pól, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło)
+  Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło), html/zakladki.js (AMGW_ZAKLADKI – zakładki Dom / Zadaszenie)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -12,7 +12,7 @@
 var AMGW = (function () {
   'use strict';
 
-  var stan = { opisy: [], sekcje: [], presety: {}, opisyZamka: [], sciany: [], timer: null, otwarte: {}, widok: '' };
+  var stan = { opisy: [], sekcje: [], zakladki: [], presety: {}, opisyZamka: [], sciany: [], timer: null, otwarte: {}, widok: '' };
 
   var $ = AMGW_DOM.$;
   var el = AMGW_DOM.el;
@@ -28,13 +28,14 @@ var AMGW = (function () {
 
   // ---- formularz ----
 
-  // Sekcje formularza (rozwijane) z listy sekcji; zachowuje rozwinięcie przy przebudowie.
+  // Sekcje formularza (rozwijane) z listy sekcji, każda w pojemniku swojej zakładki (AMGW_ZAKLADKI); zachowuje
+  // rozwinięcie przy przebudowie.
   function zbudujSekcje() {
     var box = $('sekcje');
     var i;
     var stare = box.querySelectorAll('details');
     for (i = 0; i < stare.length; i++) { stan.otwarte[stare[i].getAttribute('data-sekcja')] = stare[i].open; }
-    wyczysc(box);
+    AMGW_ZAKLADKI.zbuduj(stan.zakladki);
     for (i = 0; i < stan.sekcje.length; i++) {
       var s = stan.sekcje[i];
       var det = el('details', { id: 'sekcja-' + s.klucz, 'data-sekcja': s.klucz });
@@ -43,7 +44,7 @@ var AMGW = (function () {
       det.appendChild(el('div', { id: 'pola-' + s.klucz, 'class': 'pola' }));
       if (s.klucz === 'przekroj') { det.appendChild(el('div', { id: 'pola-zamek', 'class': 'pola' })); }
       if (s.klucz === 'sciany') { det.appendChild(el('div', { id: 'wysokosci', 'class': 'wysokosci' })); }
-      box.appendChild(det);
+      AMGW_ZAKLADKI.pojemnik(s.zakladka).appendChild(det);
     }
   }
 
@@ -57,6 +58,7 @@ var AMGW = (function () {
     zbudujZamek(parametry);
     AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
     AMGW_ZMIANY.oznacz(stan.opisy);
+    AMGW_ZAKLADKI.oznacz();
     AMGW_TRYB.zastosuj(stan.opisy);
   }
 
@@ -102,6 +104,7 @@ var AMGW = (function () {
     pole.addEventListener('change', function () {
       AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
       AMGW_ZMIANY.oznacz(stan.opisy);
+      AMGW_ZAKLADKI.oznacz();
       AMGW_TRYB.zastosuj(stan.opisy);
       zaplanujPodglad();
     });
@@ -236,6 +239,7 @@ var AMGW = (function () {
   function init(d) {
     stan.opisy = d.opisy || [];
     stan.sekcje = d.sekcje || [];
+    stan.zakladki = d.zakladki || [];
     stan.presety = d.presety || {};
     stan.opisyZamka = d.opisy_zamka || [];
     $('info').textContent = d.info || '';

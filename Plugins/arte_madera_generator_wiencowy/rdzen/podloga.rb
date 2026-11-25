@@ -4,7 +4,7 @@
 # Plik: rdzen/podloga.rb
 # Zadanie: podłoga domu prostokątnego – podwaliny pod ścianami (zakład albo styk na śruby w narożnikach), legary między podwalinami, dobór przekroju legara i podpowiedzi; podciągi i fundamenty punktowe w osobnych plikach.
 # Tematy: podłoga, podwalina, podwalina na styk, łączenie podwalin na śruby, legar, rozstaw legarów, kierunek legarów, dobór przekroju legara, izolacja podłogi, podpowiedzi podłogi, zakład podwalin
-# Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/podciagi.rb (położenia i belki podciągów), rdzen/fundamenty.rb
+# Zależy od: rdzen/parametry.rb, rdzen/geometria.rb, rdzen/statyka.rb, rdzen/elementy.rb, rdzen/podciagi.rb (położenia i belki podciągów), rdzen/fundamenty.rb, rdzen/podloga_przybudowki.rb (pole legarów bez przybudówki)
 # Używają: rdzen/projekt.rb
 #
 # Poziom 0 = spód pierwszego bala = wierzch podwalin i legarów (legary między podwalinami, wierzchem równo, jak 900).
@@ -18,6 +18,7 @@ require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera:
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'podciagi') unless defined?(ArteMadera::GeneratorWiencowy::Podciagi)
 require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMadera::GeneratorWiencowy::Fundamenty)
+require File.join(File.dirname(__FILE__), 'podloga_przybudowki') unless defined?(ArteMadera::GeneratorWiencowy::PodlogaPrzybudowki)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -70,22 +71,29 @@ module ArteMadera
                                                              format('%.2f', roz[0] / 1000.0), format('%.2f', roz[1] / 1000.0)) }
       end
 
-      # Układ podłogi: kierunek legarów (id – indeks osi wzdłuż legarów), zasięgi, ściany zewnętrzne i działowe z podwalinami.
+      # Układ podłogi: kierunek legarów (id – indeks osi wzdłuż legarów), zasięgi (obrys; pole legarów – bez przybudówki bez
+      # podłogi), ściany zewnętrzne i działowe z podwalinami.
       def uklad(sciany, p)
         t = Parametry.grubosc(p)
         zewn = sciany.select { |w| w[:rodzaj] == :zewnetrzna }
         xs = zewn.map { |w| [w[:a][0], w[:b][0]] }.flatten
         ys = zewn.map { |w| [w[:a][1], w[:b][1]] }.flatten
         ext = [[xs.min - t / 2.0, xs.max + t / 2.0], [ys.min - t / 2.0, ys.max + t / 2.0]]
-        dl = [ext[0][1] - ext[0][0], ext[1][1] - ext[1][0]]
-        id = case p['legary_kierunek']
-             when 'x' then 0
-             when 'y' then 1
-             when 'dluzszy' then dl[0] >= dl[1] ? 0 : 1
-             else dl[0] <= dl[1] ? 0 : 1
-             end
         dz = Parametry.tak?(p, 'podwaliny_pod_dzialowymi') ? sciany.select { |w| w[:rodzaj] == :dzialowa } : []
-        { id: id, ie: 1 - id, ext: ext, t: t, dzialowe: dz, pw: Parametry.przekroj(p, 'podwalina_przekroj') }
+        # Dawna ściana okapowa przy przybudówce niesie dom – zawsze na podwalinie.
+        dz |= sciany.select { |w| PodlogaPrzybudowki.sciana_domu?(w) }
+        u = { ext: ext, t: t, dzialowe: dz, pw: Parametry.przekroj(p, 'podwalina_przekroj') }
+        PodlogaPrzybudowki.ogranicz!(u, sciany, p)
+        pole = PodlogaPrzybudowki.pole(u)
+        dl = [pole[0][1] - pole[0][0], pole[1][1] - pole[1][0]]
+        u[:id] = case p['legary_kierunek']
+                 when 'x' then 0
+                 when 'y' then 1
+                 when 'dluzszy' then dl[0] >= dl[1] ? 0 : 1
+                 else dl[0] <= dl[1] ? 0 : 1
+                 end
+        u[:ie] = 1 - u[:id]
+        u
       end
 
       # Podwaliny: zewnętrzne licem z licem ściany i na zakład w narożnikach, pod działowymi w osi (dosunięte do podwalin).
@@ -154,12 +162,12 @@ module ArteMadera
         end
       end
 
-      # Przęsła legarów: [[f1, f2], …] – między licami podwalin prostopadłych do legarów na całej szerokości.
+      # Przęsła legarów: [[f1, f2], …] – między licami podwalin prostopadłych do legarów na całej szerokości pola podłogi.
       def przesla(u)
         b = u[:pw][0]
-        d0, d1 = u[:ext][u[:id]]
+        d0, d1 = PodlogaPrzybudowki.pole(u)[u[:id]]
         lica = [[d0 + b, :start]]
-        u[:dzialowe].each do |w|
+        PodlogaPrzybudowki.dzialowe_pola(u).each do |w|
           next if wzdluz_legarow?(u, w) || !pelna?(w)
           c = w[:a][u[:id]]
           lica << [c - b / 2.0, :koniec] << [c + b / 2.0, :start]
@@ -171,9 +179,9 @@ module ArteMadera
       # Linie legarów (współrzędna e poprzecznie): równo w polach między podwalinami bocznymi i działowymi wzdłuż legarów.
       def linie_legarow(u, p)
         b = u[:pw][0]
-        e0, e1 = u[:ext][u[:ie]]
+        e0, e1 = PodlogaPrzybudowki.pole(u)[u[:ie]]
         gr = [e0 + b, e1 - b]
-        u[:dzialowe].each do |w|
+        PodlogaPrzybudowki.dzialowe_pola(u).each do |w|
           next unless wzdluz_legarow?(u, w) && pelna?(w)
           c = w[:a][u[:ie]]
           gr << c - b / 2.0 << c + b / 2.0
@@ -268,7 +276,7 @@ module ArteMadera
       def objetosc(u, p, bh, przes, n)
         linie = linie_legarow(u, p).length
         bp, hp = Parametry.przekroj(p, 'podpora_przekroj')
-        e0, e1 = u[:ext][u[:ie]]
+        e0, e1 = PodlogaPrzybudowki.pole(u)[u[:ie]]
         szer = e1 - e0 - 2.0 * u[:pw][0]
         leg = linie * przes.inject(0.0) { |s, l| s + l } * bh[0] * bh[1]
         pod = n.inject(0) { |s, x| s + x } * szer * bp * hp
@@ -320,7 +328,7 @@ module ArteMadera
         b, h = bh
         bp = u[:pw][0]
         bd = Parametry.przekroj(p, 'podpora_przekroj')[0]
-        d0, d1 = u[:ext][u[:id]]
+        d0, d1 = PodlogaPrzybudowki.pole(u)[u[:id]]
         wynik = []
         linie_legarow(u, p).each do |e|
           # Podciąg na równo z podwaliną – legar dzielony na nim (kawałki od podwaliny do podciągu).

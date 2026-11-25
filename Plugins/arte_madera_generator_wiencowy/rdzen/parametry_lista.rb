@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
 # Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb (listy sekcji)
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
@@ -20,7 +20,7 @@ end
 module ArteMadera
   module GeneratorWiencowy
     module ParametryLista
-      # Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie].
+      # Sekcje okna w kolejności wyświetlania: [klucz, tytuł, otwarta na starcie, zakładka (brak – pierwsza z ZAKLADKI)].
       SEKCJE = [
         ['przekroj', 'Przekrój bala i zamek', true],
         ['sciany', 'Ściany', true],
@@ -29,11 +29,20 @@ module ArteMadera
         ['szczyty', 'Szczyty i dach', false],
         ['poszycie', 'Poszycie dachu (aplikacja do dachów)', false],
         ['taras', 'Taras', false],
-        ['zadaszenie', 'Boczne zadaszenie', false],
+
         ['podloga', 'Podłoga i fundamenty', false],
         ['otwory', 'Okna i drzwi – stolarka i luzy', false],
-        ['rysunek', 'Rozpoznanie rysunku i waga', false]
+        ['rysunek', 'Rozpoznanie rysunku i waga', false],
+        ['zadaszenie', 'Zadaszenie – rodzaj i wymiary', true, 'zadaszenie'],
+        ['zadaszenie_przekroje', 'Zadaszenie – przekroje (dobór)', true, 'zadaszenie']
       ].freeze unless const_defined?(:SEKCJE)
+
+      # Zakładki okna: [klucz, tytuł]; sekcja bez czwartego elementu w SEKCJE należy do pierwszej zakładki. Wymóg użytkownika
+      # (2026-11-25): „cała część bocznego zadaszenia – lub tylnego – w osobnej zakładce, by się nic nie myliło”.
+      ZAKLADKI = [
+        ['dom', 'Dom'],
+        ['zadaszenie', 'Zadaszenie boczne / tylne']
+      ].freeze unless const_defined?(:ZAKLADKI)
 
       TAK_NIE = [['tak', 'tak'], ['nie', 'nie']].freeze unless const_defined?(:TAK_NIE)
 

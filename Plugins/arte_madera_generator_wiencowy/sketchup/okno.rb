@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/okno.rb
 # Zadanie: okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
-# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
+# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, zakładki okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
 # Zależy od: rdzen/parametry_lista.rb, sketchup/ustawienia.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
 # Używają: sketchup/sterowanie.rb (pokaz)
 #
@@ -51,7 +51,10 @@ module ArteMadera
         def dane_startowe
           d = @dane || {}
           { 'tryb' => d['tryb'] || 'nowy', 'kompilacja' => PLUGIN_BUILD, 'opisy' => opisy_pol,
-            'sekcje' => ParametryLista::SEKCJE.map { |k, tytul, otwarta| { 'klucz' => k, 'tytul' => tytul, 'otwarta' => otwarta } },
+            'sekcje' => ParametryLista::SEKCJE.map do |k, tytul, otwarta, zakladka|
+              { 'klucz' => k, 'tytul' => tytul, 'otwarta' => otwarta, 'zakladka' => zakladka || ParametryLista::ZAKLADKI[0][0] }
+            end,
+            'zakladki' => ParametryLista::ZAKLADKI.map { |k, tytul| { 'klucz' => k, 'tytul' => tytul } },
             'presety' => ParametryLista::PRESETY, 'opisy_zamka' => ParametryLista::OPISY_ZAMKA,
             'parametry' => d['parametry'] || {}, 'szablony' => Ustawienia.nazwy_szablonow, 'plik_ustawien' => Ustawienia.sciezka,
             'otwory' => d['otwory'] || [], 'wegly' => d['wegly'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,

@@ -56,11 +56,12 @@ module ArteMadera
           dom('Typ 200 – taras na słupach, balustrada, wejście z lewej', prostokat(0, 0, 4000, 4000),
               { 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'taras_wejscie' => 'lewa', 'liczba_wiencow' => 20 },
               [otwor('W-5', 1000, 930, 2100, 0, 'D1')]),
-          dom('Boczne zadaszenie na słupach – wiata 2 m, 12° przy dachu 30°', prostokat(0, 0, 6000, 4000),
+          dom('Boczne zadaszenie na słupach – wiata 2 m, 12° przy dachu 30°, przekroje dobrane', prostokat(0, 0, 6000, 4000),
               { 'zadaszenie' => 'slupy', 'dach_kat' => 30, 'liczba_wiencow' => 14 }, [otwor('W-3', 2500, 930, 2100, 0, 'D1')]),
-          dom('Przybudówka z bali po obu stronach, płatwie i krokwie z generatora', prostokat(0, 0, 6000, 4500),
+          dom('Przybudówki z bali po obu stronach bez podłogi, krokwie dobrane, z generatora', prostokat(0, 0, 6000, 4500),
               { 'zadaszenie' => 'bale', 'zadaszenie_strona' => 'obie', 'dach_kat' => 35, 'zadaszenie_kat' => 15,
-                'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'podloga' => 'nie' }, [])
+                'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'krokwie_dobor' => 'auto',
+                'zadaszenie_podloga' => 'nie' }, [])
         ]
       end
 
