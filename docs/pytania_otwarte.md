@@ -48,7 +48,7 @@ Uwaga: numer Z1 występuje dwa razy (drewno w zamku przy skosie – runda 5; lin
 | L2 | Dach domu L | **rozstrzygnięte (runda 10)**: dwa dachy z koszem; skrzydło główne = większa rozpiętość (równe – parametr „kalenica”); płatwie skrzydła bocznego do kosza albo na styk do płatwi dachu głównego – podparcie ich końców (belka koszowa?) do potwierdzenia z praktyką |
 | L3 | Wspólny poziom okapu w domu L | linia dachu obu skrzydeł na tej samej wysokości; ściany okapowe skrzydła bocznego (wyższe o pół bala) – górny bal ścięty do dachu |
 | P5 | Poziom podciągu | **rozstrzygnięte (runda 10)**: na wysokości podwalin (legary dzielone); obniżony w opcji |
-| T8 | Łączenie na styk | **rozstrzygnięte 2026-11-25 20:26**: „można na styk z przesunięciem o 300 mm” – wieńce szczytów ścian domu jak front tarasu (runda 11), pół zamka tylko tam, gdzie zamek zostaje niedomknięty pod połacią; wykonanie – runda 15 (`docs/zadanie_r15.md` §0.1–0.2) |
+| T8 | Łączenie na styk | **rozstrzygnięte 2026-11-25 20:26**: „można na styk z przesunięciem o 300 mm” – wieńce szczytów ścian domu jak front tarasu (runda 11), wykonane w rundzie 15 (`szczyt_styk`, `rdzen/styki_szczytu.rb`); pół zamka w ostatnim połączeniu pod dachem – kod w rundzie 15 (`polzamek`, wyłączony do akceptacji rysunku) |
 | T9 | Słup w osi kalenicy | domyślnie tak; słup wejścia bliżej niż 500 od osi staje w osi (wejście szersze / węższe) |
 | T10 | Zamek płatwi nad szczytem tarasu | domyślnie tylko od spodu (wrąb 8–10 na grubości trójkąta), boczne w opcji |
 | D1a | Obciążenia dachu do doboru | śnieg gruntu 0,9 kN/m² (strefa 2), pokrycie z poszyciem 0,35 kN/m² połaci, ugięcie L/200, drewno jak podłoga (C24) – do potwierdzenia dla miejsc, gdzie stoją domy |

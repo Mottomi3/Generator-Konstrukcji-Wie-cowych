@@ -4,9 +4,50 @@ Wydzielone z `docs/stan_prac.md` w rundzie 14 (2026-11-25), żeby stan bieżący
 najpierw opis nowości kolejnych kompilacji (od najnowszej), potem stan kompilacji 6, przebieg rund z prośbami użytkownika
 i lista modułów dodawanych w rundach. Bieżący stan, kolejka decyzji i plan – `docs/stan_prac.md`.
 
-Runda 14 (kompilacja 14) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r14.md`; przy następnej rundzie przenieść tutaj.
+Runda 15 (kompilacja 15) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r15.md`; przy następnej rundzie przenieść tutaj.
 
-# Część A – nowości kompilacji 7–13
+# Część A – nowości kompilacji 7–14
+
+## 1h. Nowe w kompilacji 14 (prośba z 2026-11-25 19:00: „wprowadź te zaległe zmiany”)
+
+Zaległe rozstrzygnięcia z 2026-11-14 (`claude/zadanie_r11.md`) i prostszy odbiór.
+
+- **Dom L z działową w linii uskoku nie wywraca się** (`rdzen/sciana_w_linii.rb`, `rdzen/sciany.rb#dzialowe`,
+  `rdzen/obrys.rb#przytnij_do_obrysu`). Działowa narysowana w linii ściany obrysu dostaje oś tej ściany (rysowana jest
+  po linii lica, 22 mm obok osi) i łączy się z nią w zamku ściany poprzecznej: obie kończą się w jej osi, bez ostatków
+  wchodzących w siebie. Żadnych nowych węgłów w węźle („samo skrzyżowanie ma zostać”). Sama jednowierszowa poprawka
+  z 14 listopada usuwała wyjątek, ale zostawiała bale dwóch ścian w tym samym miejscu (244 × 22 mm w każdym wieńcu) –
+  dlatego poprawka jest szersza. Linia narysowana jednym ruchem przez wcięcie obrysu (U, H) daje osobną działową po
+  każdej stronie wcięcia; część linii na boku obrysu znika bez ostrzeżenia „poza obrysem”.
+- **Kontrola ścian równoległych** (`rdzen/kontrola_rownoleglych.rb`): bale dwóch ścian o tym samym kierunku nie mogą
+  zajmować tego samego miejsca. Wynik w „Kontroli” z menu, w raporcie z testu działania i jako ostrzeżenie w oknie
+  („Ściany W-a i W-b zajmują to samo miejsce…” – np. dwie działowe narysowane bliżej niż długość węgła).
+- **Komunikat zamiast wyjątku** (`rdzen/awaria.rb`, `rdzen/projekt.rb#oblicz`, `sketchup/sterowanie.rb#okienko_awarii`):
+  nieprzewidziany błąd obliczeń daje zdanie po polsku (co się stało, co sprawdzić, krótki opis do zgłoszenia z plikiem,
+  wierszem i numerem kompilacji) – w okienku przy starcie i przy „Generuj”, na liście błędów w oknie przy podglądzie;
+  pełny ślad w dzienniku i w dzienniku pracy.
+- **Narożnik wklęsły – podpowiedź, nie ostrzeżenie** (`rdzen/sciany.rb#podpowiedz_wklesle`): jedna podpowiedź w sekcji
+  „Ściany” ze wszystkimi narożnikami („przy balu 44 mm tak ma być”).
+- **Podpowiedzi podłogi** (`rdzen/podloga.rb#bez_podciagow`, `rdzen/podciagi.rb#sprawdzenie`): „Bez podciągów trzeba by
+  legara …” w trybie przypuszczającym (albo „Bez podciągów się nie da…”); podciąg z nośnością od 90 % – poziom „uwaga”
+  z radą (większy podciąg z listy albo gęstsze fundamenty); poprawiona literówka „zzmniejsz”.
+- **Listy przekrojów z hurtowni z długościami** (`rdzen/wykaz_drewna.rb`, `rdzen/dlugosci_handlowe.rb`): zapis
+  „45x145:4.2/5.4/6”; listy fabryczne legarów, płatwi, krokwi, belek i słupów zadaszenia z wykazu użytkownika z 14
+  listopada (wypadły przekroje, których nie ma: 50 × …, 63 × …, 75 × …, 100 × 150, 180 × 180). Dobór płatwi i członów
+  zadaszenia bierze najlżejszy wystarczający przekrój **dostępny w całej długości belki**; gdy takiego nie ma – najlżejszy
+  wystarczający i podpowiedź „… szt. o długości do 11 m, a najdłuższa belka tego przekroju z listy ma 8 m – połącz je nad
+  podporą”. Podpowiedź także dla legarów, podciągów, krokwi i belek trójkąta. Plik ustawień w wersji 3: listy ze
+  starszych kompilacji (także we własnych szablonach) zastępowane nowymi.
+- **Pasek narzędzi i prawy przycisk** (`sketchup/pasek.rb`, `ikony/`): pasek „ArteMadera Generator Wieńcowy” z trzema
+  przyciskami (dom – nowy z linii albo edycja; kontrola; test działania); pod prawym przyciskiem na zaznaczonym domu
+  „Edytuj dom wieńcowy…” i „Kontrola domu wieńcowego”, na zaznaczonych liniach (od 4) „Dom wieńcowy z zaznaczonych linii…”.
+- **Prosty odbiór** (`sketchup/dziennik_pracy.rb`, `sketchup/raport.rb`): test działania zapisuje raport sam do folderu
+  `raporty\` (bez okna zapisu), okienko zaczyna się od „WSZYSTKO W PORZĄDKU – 11 z 11…” albo „PROBLEMY w …”. Po każdym
+  „Generuj” wtyczka dopisuje wiersz do `raporty\dziennik_pracy.jsonl` (czasy obliczeń i budowy modelu, liczby, ustawienia
+  zmienione względem fabrycznych, awarie) – nic nie jest wysyłane, pliki czyta się z podłączonego folderu na starcie rundy.
+- Znalezione przy okazji: działowa przez wcięcie obrysu U / H biegła także po ścianie wcięcia (bale w tym samym miejscu
+  na całej jej długości); radzony „większy” podciąg bywał mniejszy od obecnego (rada liczona teraz tylko z przekrojów,
+  które wystarczają z zapasem).
 
 ## 1g. Nowe w kompilacji 13 (prośba z 2026-11-25 17:19)
 

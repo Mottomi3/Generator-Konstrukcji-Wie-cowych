@@ -25,12 +25,15 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 1a. Raporty z dysku (od rundy 14): `device_request_folder_access` na folder z tabeli „Stałe”, potem w `raporty\` najnowszy
    `raport_*.json` (pole `wynik`, `przyklady[].czas_budowy_s`) i `dziennik_pracy.jsonl` (czasy z prawdziwej pracy,
    ustawienia zmienione przez użytkownika, awarie). Awaria albo dom z problemem = pierwsza pozycja rundy.
-2. Kod: `add_repo` (push) i `git clone https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych` (pełna historia).
+2. Kod: `add_repo` (push); gdy odpowiada „already attached”, repozytorium jest już w
+   `/home/claude/generator-konstrukcji-wie-cowych` (`git rev-parse HEAD`) – nie klonuj drugi raz. Inaczej
+   `git clone https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych` (pełna historia).
    Gdy repozytorium nie istnieje: `device_list_dir` na folderze z dysku, `device_stage_files` pliku `repozytorium_rN.bundle`
    (najnowszy) i `git clone repozytorium_rN.bundle /home/claude/gw` – pełna historia; brak paczki → pliki z `Plugins\`,
    `testy\`, `docs\`, `CLAUDE.md` i `git init -b main`.
 3. Zgodność z dyskiem: `PLUGIN_BUILD` w `Plugins\arte_madera_generator_wiencowy.rb` na dysku = w kodzie; inaczej zapytaj.
-4. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` (ok. 6 min; aplikacja do dachów obok repozytorium –
+4. `bash testy/uruchom.sh` → `WSZYSTKIE ZESTAWY: FAILURES 0` (ok. 13 min na 2 rdzeniach – uruchamiaj na kopii katalogu
+   w tle z `AM_GW_APLIKACJA_DACHOW=<ścieżka aplikacji>` i pracuj dalej; aplikacja do dachów obok repozytorium –
    `../aplikacja-do-konstrukcji-dach-w` – do zestawu „dach_aplikacja”). Zależności: ruby, node, playwright
    (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, `NODE_PATH=$(npm root -g)`), acorn, zip, python3 + matplotlib (podgląd).
 5. Lista zadań (TaskCreate); ostatnie – sprawdzenie i zapis.
@@ -52,9 +55,12 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
    zmianie zasad. `stan_prac.md` ma zostać krótki – historia do `historia_rund.md`.
 5. Commit `rN: <co zrobiono>` z wynikiem testów i stopką z przypomnienia systemowego; `git push origin main`
    (gdy repozytorium istnieje). Bez znaczników.
-6. Dysk: `device_list_dir` (rekurencyjnie) → kopie plików do `/mnt/user-data/outputs/gw/<ścieżka>` →
-   `device_commit_files` (`expectedMtimeMs` dla istniejących, ≤ 50 plików na wywołanie). Na koniec `device_list_dir` –
-   rozmiary się zgadzają.
+6. Dysk – najprościej przez paczkę (od rundy 15): `git bundle create repozytorium_rN.bundle --all` → kopia do
+   `/mnt/user-data/outputs/gw/` → `device_commit_files` (jeden plik) → w `device_bash`: `git clone` paczki do katalogu
+   roboczego i `cp -r Plugins testy docs CLAUDE.md README.md *.rbz` do folderu z dysku (usuwanie na dysku jest wyłączone;
+   plik usunięty w repozytorium trzeba zgłosić użytkownikowi). Bez `device_bash`: `device_list_dir` (rekurencyjnie) →
+   kopie plików do `/mnt/user-data/outputs/gw/<ścieżka>` → `device_commit_files` (≤ 50 plików na wywołanie). Na koniec
+   `PLUGIN_BUILD` na dysku = numer rundy.
 7. Projekt: `project_write` dokumentów z tabeli „Stałe”.
 8. Odpowiedź: co zmieniła runda, kompilacja N, które kroki scenariusza odbioru sprawdzić (zainstalować `.rbz`,
    zrestartować SketchUpa), decyzje do podjęcia.

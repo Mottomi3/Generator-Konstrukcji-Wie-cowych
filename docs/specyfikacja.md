@@ -496,8 +496,32 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   wieńce na całej długości, zostają przy węgłach) i frontu tarasu (`taras_styk`). `szczyt_styk` = wegly – jak do
   kompilacji 14. `Kontrola.styki_bez_zamka` nie liczy styków wieńców szczytu łączonych na styk; mijanka – liczy.
 - Pomiar (600 losowych domów, ziarna 1–300 i 6001–6300): domy ze stykiem bez zamka w ścianie ze szczytem 31 → 10
-  (zostały: ściana wysoka dachu jednospadowego i ściana domu L pod dachem skrzydła bocznego – do pół zamka), bale
-  węgłów pod styki na ścianach ze szczytem 30 542 → 22 056 (−28 %).
+  (zostały: ściana wysoka dachu jednospadowego i ściana domu L pod dachem skrzydła bocznego – węgieł kończy się tam pod
+  podbitką albo krokwiami), bale węgłów pod styki na ścianach ze szczytem 30 542 → 22 056 (−28 %).
+- **Pół zamka w ostatnim połączeniu pod dachem** (`rdzen/pol_zamka.rb`, `polzamek` = tak | nie – fabrycznie nie, do
+  akceptacji rysunku `docs/ostatnie_polaczenie_r15.png`): zwykły zamek to gniazdo 36 od wierzchu bala niższego i 36 od
+  spodu wyższego (razem 72 = pół wieńca 69,5 + luz 2,5). Bal ścięty skosem dachu, któremu nad gniazdem od spodu zostaje
+  mniej niż `zamek_min_drewno` (20), był ucinany przy licu ściany poprzecznej (`rdzen/skos_przy_narozniku.rb`). Pół
+  zamka: gdy ściana poprzeczna ma bal poziom niżej i żadnego poziom wyżej, a pod skosem jest ≥ 20 mm, bal zostaje
+  w narożniku bez gniazda (`b[:polzamek]` – osie zamków), a `Zamek.nanies` daje balowi niższemu gniazdo
+  `PolZamka.gniazdo_nizszego` (2 × `gniazdo_gleb` = 72; zostaje mu 139 − 36 − 72 = 31). `polzamek_gleb` > 0 – tyle w balu
+  niższym (36…72), reszta od spodu wyższego. Pomiar (444 domy ze szczytami): 370 bali uciętych przy narożniku mimo bala
+  pod spodem (głównie dach na ścianie nośnej, bez płatwi ściennej), 324 mieszczą pół zamka; 510 bali bez partnera (nad
+  ścianą okapową) – bez zmian.
+- **Deski** (`rdzen/parametry_dach.rb`): nadbitka i podbitka 14 × 115 (krycie) × 4000; fabrycznie `poszycie_nadbitka`
+  = tak, `poszycie_deski` = nie. Przy podbitce pod płatwiami nadbitka zostaje poszyciem na płatwiach. Plik ustawień
+  w wersji 4 (`Ustawienia::DESKI`, `DO_FABRYCZNYCH[4]`).
+- **Osiadanie słupów** (`rdzen/osiadanie.rb`): luz = wysokość do głowicy słupa × `osiadanie_scian` %, w górę do 1 mm;
+  wierzch pełnego przekroju słupa tarasu = spód podciągu − luz − `slup_regulacja_wysokosc` (śruba; podkładki – bez
+  dodatku); zamek górny dłuższy o śrubę (po osiadaniu obejmuje bal na `taras_slup_zamek_gora`). `slup_osiadanie` = nie –
+  jak do kompilacji 14. Element słupa niesie `e[:osiadanie]` = { luz, okucie, razem, regulacja }.
+- **Zestawienie materiałów** (`rdzen/materialy.rb`, `plan[:materialy]`, parametry `rdzen/parametry_materialy.rb`):
+  powierzchnia połaci domu prostokątnego = (długość + 2 × `dach_okap_szczyt`) × (rozpiętość + okapy) / cos kąta (boczne
+  zadaszenie osobno, po jego stronie połać domu do linii załamania); inny obrys – (pole obrysu + obwód × okap) / cos,
+  z dopiskiem. Deski i płyty: m² × (1 + `material_zapas` %) / (krycie × długość), w górę. Taśma: długość bali poza
+  najniższym wieńcem × `tasma_pasy`. Okucia: regulacja i podstawy słupów, kotwy podwalin co `kotwy_podwalin_rozstaw`
+  (≥ 2 na podwalinę), łącznik na każde przecięcie osi krokwi z generatora z płatwią w rzucie. Impregnacja: lica bali,
+  obwód × długość belek, spód desek; litry = m² × `impregnat_warstwy` / `impregnat_wydajnosc`. Blok CSV pod sumami.
 
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 

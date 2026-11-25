@@ -74,7 +74,30 @@ impregnatu). Pozostałe – w kolejce `docs/stan_prac.md` §5 jako propozycje do
 Tabela podziału 185 pól na Standard warsztatu / Typ domu / Ten dom (projekt cechy `poziom:`) i szkic okna (kroki w kolejności
 budowy, wynik przyklejony z prawej) – pokazać użytkownikowi, akceptację zapisać w §1–2. Kod okna dopiero w rundzie 16.
 
+### 0.7 Wykonanie w rundzie 15 (2026-11-25, kompilacja 15)
+
+- 0.1 **zrobione**: `rdzen/styki_szczytu.rb`, parametr `szczyt_styk`; szczyt płaski (ściana wysoka dachu jednospadowego –
+  także ziarno 6502) zostaje przy węgłach – tam styk nad końcem węgła nadal daje ostrzeżenie (węgieł kończy się pod
+  podbitką, pół zamka się nie mieści: zostaje < 20 mm).
+- 0.2 pomiar i rysunki **pokazane** (`docs/pol_zamka_r15.png`, prościej `docs/ostatnie_polaczenie_r15.png`); użytkownik
+  22:23: „Nie rozumiem twoich koncepcji z tym balem. Do dziś robiliśmy tak, że tam był zamek, ale jeżeli zachodzi taka
+  potrzeba, to by można było to zaprojektować inaczej, tak by ten kawałek z jednej czy drugiej strony nie odpadał, tylko
+  dlatego że zostało za mało materiału po wyfrezowaniu zamka – mowa tutaj tylko o tym jednym ostatnim niefortunnym
+  połączeniu”. Kod narożnika gotowy (`rdzen/pol_zamka.rb`), **wyłączony fabrycznie do akceptacji** wymiarów (bal górny bez
+  gniazda, w balu dolnym 72). Po akceptacji: `polzamek` = tak fabrycznie i ta sama zasada na górze węgła.
+- 0.3 **zrobione**, nadbitka fabrycznie włączona i deskowanie pełne wyłączone (odpowiedź „1. tak” z 21:42 – do
+  potwierdzenia, czy dotyczyła tego pytania). 0.4 **zrobione**. 0.5 **zrobione** (P1 – `rdzen/osiadanie.rb`, W2 –
+  `rdzen/materialy.rb`).
+- 0.6 **pokazane**: `docs/podzial_pol_r16.md`, `docs/szkic_okna_r16.png` – **akceptacja użytkownika: czeka** (wpisać tutaj
+  i w §1–2 po odpowiedzi).
+- Odpowiedzi z 21:42 na pytania z `docs/propozycje_r15.md` §6: „1. tak” (kolejność propozycji), „2. Okna drewniane, mają
+  maskownice na stałe do ramy, które przykręcam od zewnątrz do ściany” (N2 – bez wpustu / czopa w czołach bali; zostaje
+  samo przyciąganie otworu do krawędzi wieńca), „3. nie w tych konstrukcjach” (N6 odpada).
+
 ## 1. Typy domów ustawiane przez użytkownika (runda 16)
+
+**Propozycja podziału z rundy 15 (akceptacja: czeka):** `docs/podzial_pol_r16.md` – Ten dom 16 pól, Typ domu 49, Standard
+warsztatu 129; typ zapamiętuje pola „Typ domu” i wartości startowe pól „Ten dom”.
 
 **Decyzja:** podział ustawień przyjęty; typy domów użytkownik chce **sam ustawiać i predefiniować w wolnych chwilach**.
 
@@ -96,6 +119,10 @@ Co z tego wynika:
 - Do pomocy: `raporty\dziennik_pracy.jsonl` (pole `zmienione`) pokaże, których pól użytkownik faktycznie dotyka.
 
 ## 2. Okno: wynik zawsze na widoku (runda 16)
+
+**Szkic z rundy 15 (akceptacja: czeka):** `docs/szkic_okna_r16.png` (źródło `docs/szkic_okna_r16.html`, 1060 × 860) – typ
+domu w górnym pasku, sześć kroków ze znacznikiem stanu, po lewej pola „Ten dom” i zwinięta grupa „Z typu domu” („zmień
+tylko w tym domu”), po prawej stale rzut, liczby i lista „Do poprawy / Sprawdzone”.
 
 **Decyzja:** „nr 2 są spoko, to można wdrożyć”.
 

@@ -279,13 +279,14 @@ module LosoweDomy
   end
 
   # Dodatki rundy 15: łączenie wieńców szczytu (na styk – fabrycznie – albo w zamkach węgłów, jak do kompilacji 14),
-  # słupy krótsze o osiadanie ścian (śruba / podkładki / wyłączone) przy różnym osiadaniu.
+  # słupy krótsze o osiadanie ścian (śruba / podkładki / wyłączone) przy różnym osiadaniu, pół zamka w ostatnim połączeniu.
   def dodatki_r15(r, p, opis)
     p['szczyt_styk'] = wybierz(r, %w[styk styk wegly])
     p['slup_osiadanie'] = wybierz(r, %w[tak tak nie])
     p['slup_regulacja'] = wybierz(r, %w[sruba podkladki])
     p['osiadanie_scian'] = wybierz(r, %w[1.5 1.5 3 5])
-    opis << "r15: szczyt #{p['szczyt_styk']}, słupy osiadanie #{p['slup_osiadanie']} / #{p['slup_regulacja']} / #{p['osiadanie_scian']} %"
+    p['polzamek'] = wybierz(r, %w[tak tak nie])
+    opis << "r15: szczyt #{p['szczyt_styk']}, słupy osiadanie #{p['slup_osiadanie']} / #{p['slup_regulacja']} / #{p['osiadanie_scian']} %, pół zamka #{p['polzamek']}"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
