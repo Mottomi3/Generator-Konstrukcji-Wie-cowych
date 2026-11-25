@@ -1,7 +1,7 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
 Stan na: runda 15, kompilacja 15 (2026-11-25), wersja 1.0.0. Poprzednio: runda 14, kompilacja 14 (2026-11-25).
-Testy: `bash testy/uruchom.sh` – 32 zestawy (nowe `t_styki_szczytu`, `t_osiadanie`, `t_materialy`, `t_pol_zamka`), 2089 sprawdzeń,
+Testy: `bash testy/uruchom.sh` – 32 zestawy (nowe `t_styki_szczytu`, `t_osiadanie`, `t_materialy`, `t_pol_zamka`), 2090 sprawdzeń,
 FAILURES 0; zestaw „Ruby 2.7.8” pominięty (brak Rubiego 2.7 w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem:
 600 losowych domów po szczytach na styk (ziarna 1–300 i 6001–6300), 150 z nowościami rundy 15 (9001–9150), 200 z pół zamkiem
 włączonym i 120 złożonych (10001–10120) – bez nowych problemów (znane sprzed rundy: 94, 153, 6110, 6269; 9015 i 9087 to ten
