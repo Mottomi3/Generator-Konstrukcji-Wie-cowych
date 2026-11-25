@@ -47,6 +47,8 @@ uruchom t_podbitka ruby -I testy/atrapa testy/t_podbitka.rb
 uruchom t_statyka_dachu ruby -I testy/atrapa testy/t_statyka_dachu.rb
 uruchom t_zadaszenie ruby -I testy/atrapa testy/t_zadaszenie.rb
 uruchom t_statyka_zadaszenia ruby -I testy/atrapa testy/t_statyka_zadaszenia.rb
+uruchom t_zlozone ruby -I testy/atrapa testy/t_zlozone.rb
+uruchom t_dlugosci ruby -I testy/atrapa testy/t_dlugosci.rb
 
 echo "Aplikacja do dachów (prawdziwa wtyczka na jej atrapie):"
 KD="${AM_GW_APLIKACJA_DACHOW:-../aplikacja-do-konstrukcji-dach-w}"

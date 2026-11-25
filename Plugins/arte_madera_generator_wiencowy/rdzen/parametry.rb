@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry.rb
 # Zadanie: sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy.
-# Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów, wymiary zamka, mijanka 300, tak/nie
-# Zależy od: rdzen/parametry_lista.rb, log.rb
+# Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów, długości handlowe z listy przekrojów, wymiary zamka, mijanka 300, tak/nie
+# Zależy od: rdzen/parametry_lista.rb, rdzen/wykaz_drewna.rb, log.rb
 # Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), sketchup/okno.rb, sketchup/ustawienia.rb
 #
 # Definicje parametrów (domyślne, opisy, sekcje) są w rdzen/parametry_lista.rb – tu tylko sprawdzanie i odczyt.
@@ -133,9 +133,15 @@ module ArteMadera
         "#{fmt(bh[0])}x#{fmt(bh[1])}"
       end
 
-      # Katalog przekrojów (lista „szer×wys” po przecinku) → [[b, h], …] bez niepoprawnych wpisów.
+      # Katalog przekrojów (lista „szer×wys” albo „szer×wys:długości” po przecinku – rdzen/wykaz_drewna.rb) → [[b, h], …]
+      # bez niepoprawnych wpisów i powtórzeń.
       def katalog(p, klucz = 'przekroje_katalog')
-        p[klucz].to_s.split(/[;,\n]/).map { |t| przekroj_z(t) }.compact.uniq
+        WykazDrewna.wpisy(p[klucz]).map { |b, h, _dl| [b, h] }.uniq
+      end
+
+      # Długości handlowe przekrojów z listy: { [mniejszy, większy] => [mm rosnąco] } (tylko wpisy z długościami).
+      def dlugosci_katalogu(p, klucz = 'przekroje_katalog')
+        WykazDrewna.dlugosci(p[klucz])
       end
 
       # Liczba z tekstu lub liczby (przecinek dziesiętny dozwolony); nil gdy się nie da.

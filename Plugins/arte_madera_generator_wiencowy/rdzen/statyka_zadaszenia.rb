@@ -28,6 +28,7 @@ require File.join(File.dirname(__FILE__), 'statyka_dachu') unless defined?(ArteM
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'zadaszenie') unless defined?(ArteMadera::GeneratorWiencowy::Zadaszenie)
 require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
+require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -106,17 +107,17 @@ module ArteMadera
             next if u3 - u0 < 1.0
             dod = linie.select { |x| pl[:rodzaj] == 'oczep' || Zadaszenie.nad_belka?(pl, c, x[:v_konca]) }.map { |x| { v: pl[:v], u: x[:u] } }
             d = { przejscia: (dom[:przejscia] || []) + dod, podparcia: dom[:podparcia] || [] }
-            wynik[PLATWIE] << { l: StatykaDachu.przeslo(d, pl, u0, u3, p), pas: pas, rodzaj: pl[:rodzaj] }
+            wynik[PLATWIE] << { l: StatykaDachu.przeslo(d, pl, u0, u3, p), pas: pas, rodzaj: pl[:rodzaj], dl: u3 - u0 }
           end
           koniec = (c[:v_s] - c[:v_k]) * c[:kier] + p['zadaszenie_okap'].to_f
           pasy_u(linie, p).each_with_index do |pas_u, i|
             x = linie[i]
             l_belki = (x[:v_slupa] - x[:v_konca]).abs
-            wynik[BELKI] << { l: l_belki, pas: pas_u }
+            wynik[BELKI] << { l: l_belki, pas: pas_u, dl: l_belki }
             szer = l_belki / 2.0 + koniec - (x[:v_slupa] - c[:v_k]) * c[:kier]
             # Ciężar własny na słup: połowa belki poprzecznej i oczep na pasie słupa [kN].
             g_wl = rho * 9.81e-12 * (bb * hb * l_belki / 2.0 + bo * ho * pas_u)
-            wynik[SLUPY] << { l: x[:z_slupa] - x[:z_dol], a: pas_u * szer / 1.0e6, g_wl: g_wl }
+            wynik[SLUPY] << { l: x[:z_slupa] - x[:z_dol], a: pas_u * szer / 1.0e6, g_wl: g_wl, dl: x[:z_slupa] - x[:z_dol] }
           end
         end
         wynik.reject { |_k, v| v.empty? }
@@ -152,9 +153,11 @@ module ArteMadera
         Parametry.katalog(p, KATALOGI[pole]).sort_by { |b, h| [b * h, -h] }
       end
 
-      # Najlżejszy przekrój z listy wystarczający dla grupy; nil – żaden.
+      # Najlżejszy przekrój z listy wystarczający dla grupy – w pierwszej kolejności dostępny w hurtowni w całej długości
+      # najdłuższego członu grupy (rdzen/dlugosci_handlowe.rb); nil – żaden nie wystarcza.
       def dobierz(pole, grupa, p)
-        kandydaci(pole, p).find { |b, h| ocena(pole, grupa, b, h, p)[:ok] }
+        dobre = kandydaci(pole, p).select { |b, h| ocena(pole, grupa, b, h, p)[:ok] }
+        DlugosciHandlowe.najlzejszy(dobre, grupa.map { |x| x[:dl] }.compact.max, p, KATALOGI[pole])
       end
 
       # Sprawdzenie i dobór zadaszenia domu: { podpowiedzi: [{ poziom:, tekst: }], nadpis: { pole => 'b×h' } }; tryb jak

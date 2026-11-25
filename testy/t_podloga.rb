@@ -149,7 +149,23 @@ Testy.sprawdz(!pd.empty? && pd.all? { |e| (e[:dl] - 7000.0).abs < 0.01 }, 'podci
 pw_h = Parametry.przekroj(pl[:parametry], 'podwalina_przekroj')[1]
 Testy.sprawdz(pd.all? { |e| e[:polozenie][:poczatek][2] + e[:h] <= -pw_h + 0.01 }, 'podciągi pod podwalinami')
 Testy.sprawdz(pd.all? { |e| f.any? { |x| (x[:polozenie][:poczatek][2] + x[:dl] - e[:polozenie][:poczatek][2]).abs < 0.01 } }, 'fundamenty pod podciągami')
-Testy.sprawdz(podp?(pl, 'ok', 'Fundamenty punktowe') && podp?(pl, 'ok', 'między fundamentami'), 'podpowiedzi: fundamenty i podciąg wystarczy')
+Testy.sprawdz(podp?(pl, 'ok', 'Fundamenty punktowe') && podp?(pl, 'uwaga', 'między fundamentami'), 'podpowiedzi: fundamenty i podciąg (97 % – bez zapasu)')
+
+Testy.grupa('Podpowiedzi podłogi po rozstrzygnięciach z 2026-11-14 (runda 14)')
+h = pl[:podpowiedzi].find { |x| x[:tekst].include?('między fundamentami') }
+Testy.sprawdz(h[:tekst] =~ /nośność 9\d %/ && h[:tekst].include?('bez zapasu (nośność od 90 %)'), "nośność od 90 % – poziom uwaga (#{h[:tekst]})")
+Testy.sprawdz(h[:tekst] =~ /podciąg \d+x\d+ albo gęstsze fundamenty dadzą zapas/, 'rada: większy podciąg z listy albo gęstsze fundamenty')
+m = h[:tekst].match(/podciąg (\d+)x(\d+) albo/)
+Testy.sprawdz(m && m[1].to_f * m[2].to_f**2 > 100.0 * 150.0**2, 'radzony podciąg mocniejszy od obecnego 100 × 150')
+Testy.sprawdz(podp?(pl, 'ok', 'Bez podciągów trzeba by legara'), 'zdanie o legarze bez podciągów w trybie przypuszczającym')
+Testy.sprawdz(pl[:podpowiedzi].none? { |x| x[:tekst].start_with?('Bez podciągów (') }, 'bez dawnego „Bez podciągów (rozpiętość…)”')
+pl = plan_pelny(prostokat(0, 0, 6000, 5000), {})
+Testy.sprawdz(podp?(pl, 'ok', 'między fundamentami') && podp?(pl, 'ok', '– wystarczy.'), 'nośność 70 % – nadal „wystarczy” (ok)')
+pl = plan_pelny(prostokat(0, 0, 12_000, 9000), {})
+Testy.sprawdz(podp?(pl, 'ok', 'Bez podciągów się nie da'), 'dom 12 × 9 m: bez podciągów się nie da – powiedziane wprost')
+pl = plan_pelny(prostokat(0, 0, 12_000, 9000), 'fundamenty_rozstaw_max' => 3000)
+h = pl[:podpowiedzi].find { |x| x[:tekst].include?('między fundamentami') }
+Testy.sprawdz(h[:poziom] == 'blad' && h[:tekst] =~ /za słaby: weź podciąg \d+x\d+ albo zmniejsz rozstaw/, "za słaby podciąg – zdanie bez literówki (#{h[:tekst]})")
 pl = plan_pelny(prostokat(0, 0, 6000, 4000), 'fundamenty' => 'nie', 'podciagi' => 'nie', 'legary_dobor' => 'minimalny')
 Testy.rowne([el(pl, 'Pd').length, el(pl, 'F').length], [0, 0], 'bez podciągów i fundamentów')
 Testy.sprawdz(pl[:podloga][:legar] && pl[:podloga][:legar][1] >= 150.0, "bez podciągów – wyższy legar (#{pl[:podloga][:legar].inspect})")

@@ -65,17 +65,44 @@ d.entities.to_a.find { |e| e.is_a?(Sketchup::Face) }.instance_variable_set(:@val
 b = Raport.bryly(pl, zb[:defs])
 Testy.rowne(b['niezamkniete'], [poz[:nazwa]], 'niezamknięta bryła na liście')
 
-Testy.grupa('Menu: zapis raportu i podsumowanie')
-plik = File.join(ENV['AM_GW_USTAWIENIA'], 'raport')
+Testy.grupa('Test działania z menu i paska: raport zapisuje się sam, wynik jednym zdaniem (runda 14)')
 FileUtils.mkdir_p(ENV['AM_GW_USTAWIENIA'])
-UI.plik_zapisu = plik
+UI.plik_zapisu = nil
 UI.komunikaty.clear
 Sketchup.model = m
-Raport.uruchom
-Testy.sprawdz(File.exist?(plik + '.json') && JSON.parse(File.read(plik + '.json', encoding: 'UTF-8'))['przyklady'].length == Przyklady.lista.length,
-              'raport zapisany w wybranym pliku')
-Testy.sprawdz(UI.komunikaty.last.to_s.include?('w porządku') && UI.komunikaty.last.to_s.include?('Raport zapisano'), 'okienko z podsumowaniem')
-UI.plik_zapisu = nil
+r = Raport.uruchom
+pliki = Dir.glob(File.join(DziennikPracy.katalog, "raport_*_k#{PLUGIN_BUILD}.json"))
+Testy.rowne(pliki.length, 1, 'jeden plik raportu w folderze raportów – bez okna zapisu')
+Testy.sprawdz(DziennikPracy.katalog.start_with?(ENV['AM_GW_USTAWIENIA']), 'testy: folder raportów pod katalogiem tymczasowym (nie w katalogu domowym)')
+zap = JSON.parse(File.read(pliki[0], encoding: 'UTF-8'))
+Testy.rowne(zap['przyklady'].length, Przyklady.lista.length, 'raport w pliku: wszystkie przykłady')
+Testy.rowne([zap['wynik']['domy'], zap['wynik']['w_porzadku'], zap['wynik']['problemy']], [Przyklady.lista.length, Przyklady.lista.length, []],
+            'raport w pliku: wynik – wszystkie domy w porządku')
+Testy.sprawdz(zap['przyklady'].all? { |w| w['kontrola'].key?('nakladanie') && w['kontrola']['nakladanie'].zero? }, 'kontrola ścian równoległych w raporcie')
+Testy.sprawdz(zap['dziennik_pracy'].is_a?(Array) && zap['dziennik_pracy'].any? { |w| w['zdarzenie'] == 'generowanie' },
+              'raport zawiera dziennik pracy (wygenerowany wcześniej dom)')
+ok = UI.komunikaty.last.to_s
+Testy.sprawdz(ok.start_with?("WSZYSTKO W PORZĄDKU – #{Przyklady.lista.length} z #{Przyklady.lista.length}"), "okienko zaczyna się od wyniku (#{ok[0, 60]})")
+Testy.sprawdz(ok.include?('Raport zapisał się sam') && ok.include?(pliki[0]), 'okienko: gdzie jest raport')
+# Dom z problemem – wynik mówi o problemach.
+zly = r.merge('przyklady' => r['przyklady'].map.with_index { |w, i| i == 1 ? w.merge('zgodny' => false, 'niezamkniete' => ['1-3600']) : w })
+Testy.rowne(Raport.wynik(zly)['problemy'], [Przyklady.lista[1]['nazwa']], 'wynik: dom niezgodny na liście problemów')
+Testy.sprawdz(Raport.podsumowanie(zly.merge('wynik' => Raport.wynik(zly))).start_with?("PROBLEMY w 1 z #{Przyklady.lista.length}"), 'okienko: problemy na początku')
+
+Testy.grupa('Dziennik pracy: wiersz po każdym wygenerowaniu domu (runda 14)')
+wp = DziennikPracy.ostatnie(10).select { |w| w['zdarzenie'] == 'generowanie' }.last
+Testy.sprawdz(wp && wp['tryb'] == 'nowy' && wp['kompilacja'] == PLUGIN_BUILD, 'wpis: tryb i kompilacja')
+Testy.sprawdz(wp['bale'] > 0 && wp['sciany'] >= 4 && wp['definicje'] > 0 && wp['ms_obliczen'].to_f > 0 && wp['ms_budowy'].to_f > 0, 'wpis: liczby i czasy obliczeń i budowy')
+Testy.rowne([wp['obrys']['boki'], wp['obrys']['x'], wp['obrys']['y'], wp['zmienione']], [4, 5000, 4000, {}], 'wpis: obrys 5 × 4 m, ustawienia fabryczne')
+m.selection.clear
+m.selection.add(dom)
+Sterowanie.start
+Sterowanie.generuj('parametry' => { 'liczba_wiencow' => '12', 'dach_kat' => '30' }, 'otwory' => [])
+wp = DziennikPracy.ostatnie(1).last
+Testy.rowne([wp['tryb'], wp['zmienione']], ['edycja', { 'liczba_wiencow' => 12, 'dach_kat' => 30.0 }], 'edycja domu: tryb i zmienione ustawienia')
+(DziennikPracy::MAX_WIERSZY + DziennikPracy::ZAPAS + 5).times { |i| DziennikPracy.dopisz('zdarzenie' => 'próba', 'nr' => i) }
+Testy.sprawdz(File.readlines(File.join(DziennikPracy.katalog, DziennikPracy::PLIK)).length <= DziennikPracy::MAX_WIERSZY + DziennikPracy::ZAPAS,
+              'dziennik nie rośnie bez końca')
 
 FileUtils.rm_rf(ENV['AM_GW_USTAWIENIA'])
 Testy.koniec

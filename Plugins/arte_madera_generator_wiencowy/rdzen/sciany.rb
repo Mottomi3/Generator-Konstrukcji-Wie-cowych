@@ -4,19 +4,21 @@
 # Plik: rdzen/sciany.rb
 # Zadanie: ściany z rozpoznanego obrysu – osie, zasięgi bali z ostatkami, skrzyżowania, kontrfory, kierunek względem kalenicy, numeracja W-n.
 # Tematy: ściana, oś ściany, ostatek, wypust węgła wewnątrz i na zewnątrz, narożnik L, połączenie T, skrzyżowanie X, kontrfor, wolny koniec, numeracja ścian, kierunek A/B, kalenica, narożnik wklęsły
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/skrzydla.rb, rdzen/sciana_w_linii.rb
 # Używają: rdzen/projekt.rb, rdzen/styki.rb (dodaj_kontrfor), rdzen/wience.rb, rdzen/bale.rb, rdzen/zamek.rb
 #
 # Ściana (Hash): k (klucz), id ('W-n'), rodzaj (:zewnetrzna | :dzialowa | :kontrfor), kierunek (:A wzdłuż kalenicy –
 # półbal na dole | :B szczytowa), a, b (oś), kier, nor (normalna w lewo), dl_osi, s_od, s_do (zasięg bali wzdłuż osi
 # z ostatkami, s liczone od a), ref (s punktu odniesienia otworów), skrzyzowania [{s:, inna:, punkt:, typ:}], gospodarz,
-# ostatki_param ([początek, koniec] – ostatek z parametrów przed ustawieniami ściany; nil – wolny koniec).
+# ostatki_param ([początek, koniec] – ostatek z parametrów przed ustawieniami ściany; nil – wolny koniec), w_linii ([początek,
+# koniec] – koniec bez ostatka, w osi ściany poprzecznej: działowa w linii ściany obrysu – rdzen/sciana_w_linii.rb).
 # Ściana zewnętrzna: lico zewnętrzne po prawej stronie kier (obrys przeciwnie do wskazówek zegara).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
+require File.join(File.dirname(__FILE__), 'sciana_w_linii') unless defined?(ArteMadera::GeneratorWiencowy::ScianaWLinii)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -25,14 +27,16 @@ module ArteMadera
 
       module_function
 
-      # Ściany i skrzyżowania z obrysu: { sciany:, os_kalenicy:, ostrzezenia:, bledy: } (bez numeracji – numeruj!).
+      # Ściany i skrzyżowania z obrysu: { sciany:, os_kalenicy:, ostrzezenia:, podpowiedzi:, bledy: } (bez numeracji –
+      # numeruj!). Podpowiedzi – narożniki wklęsłe (wklesle – ich punkty, zbierane w zewnetrzne).
       def zbuduj(obrys, p)
-        wynik = { sciany: [], os_kalenicy: :x, ostrzezenia: [], bledy: [] }
+        wynik = { sciany: [], os_kalenicy: :x, ostrzezenia: [], podpowiedzi: [], wklesle: [], bledy: [] }
         t = Parametry.grubosc(p)
         tol = p['tolerancja_rysunku'].to_f
         wynik[:os_kalenicy] = obrys[:os_kalenicy] || Skrzydla.os(obrys[:obrys], p['kalenica']) || os_kalenicy(obrys[:obrys], p['kalenica'])
         licznik = [0]
         zewn = zewnetrzne(obrys[:obrys], t, p, licznik, wynik)
+        wynik[:podpowiedzi] << podpowiedz_wklesle(wynik[:wklesle]) unless wynik[:wklesle].empty?
         dzial = dzialowe(obrys[:dzialowe], zewn, t, p, licznik, wynik, tol)
         wynik[:sciany] = zewn + dzial
         wynik[:sciany].each { |w| w[:kierunek] = (w[:os] == wynik[:os_kalenicy]) ? :A : :B }
@@ -84,15 +88,23 @@ module ArteMadera
           d = osie[i][2]
           wklesly_a = G.cross(osie[i - 1][2], d) < 0
           wklesly_b = G.cross(d, osie[(i + 1) % n][2]) < 0
-          if wklesly_a || wklesly_b
-            wynik[:ostrzezenia] << "Narożnik wklęsły przy #{G.txt(wklesly_a ? boki[i][0] : boki[i][1])} – " \
-                                   'ostatki bali wchodzą do wnętrza budynku.'
-          end
+          wynik[:wklesle] << boki[i][0] if wklesly_a
+          wynik[:wklesle] << boki[i][1] if wklesly_b
           sciana(licznik, :zewnetrzna, a, b, d).merge(
             wklesle: [wklesly_a, wklesly_b], s_od: -(t / 2.0 + o), s_do: G.odl(a, b) + t / 2.0 + o,
             ref: G.dot(G.sub(boki[i][0], a), d), bok: boki[i], ostatki_param: [o, o]
           )
         end
+      end
+
+      # Podpowiedź o narożnikach wklęsłych (punkty bez powtórzeń): ostatki bali wchodzą tam do wnętrza budynku. Decyzja
+      # użytkownika (2026-11-14): ostatki zostają – przy balu 44 mm nie ma lepszego rozwiązania – a informacja jest
+      # podpowiedzią, nie ostrzeżeniem (przyda się przy grubszym balu).
+      def podpowiedz_wklesle(punkty)
+        opis = punkty.map { |q| G.txt(q) }.uniq
+        { poziom: 'ok', tekst: format('%s %s – ostatki bali wchodzą tam do wnętrza budynku (przy balu 44 mm tak ma być).',
+                                      opis.length == 1 ? 'Narożnik wklęsły przy' : "Narożniki wklęsłe (#{opis.length}) przy",
+                                      opis.join(', ')) }
       end
 
       # Ściany działowe: końce na obrysie = przez ścianę zewnętrzną na zewnątrz o wypust węgła na zewnątrz (jak słupek węgła,
@@ -107,12 +119,25 @@ module ArteMadera
         end
         lista.map do |l|
           d = G.norm(G.sub(l[:b], l[:a]))
+          # Działowa w linii ściany obrysu (rdzen/sciana_w_linii.rb): oś tej ściany, koniec w osi ściany poprzecznej.
+          w_linii = ScianaWLinii.konce(l, zewn, t + tol)
+          l.merge!(ScianaWLinii.na_osi(l, w_linii[0][1])) unless w_linii.empty?
           a = l[:a]
           b = l[:b]
           wydl = [0.0, 0.0]
+          konce_w_linii = [false, false]
           [0, 1].each do |koniec|
             pt = koniec == 0 ? a : b
-            zew = zewn.find { |w| przy_boku?(pt, w[:bok], t + tol) }
+            kont = w_linii.find { |k, w, _poprz| k == koniec && ScianaWLinii.na_linii?(a, b, w) }
+            if kont
+              c = G.przeciecie_prostych(a, b, kont[2][:a], kont[2][:b])
+              koniec == 0 ? a = c : b = c
+              ScianaWLinii.bez_ostatka!(kont[1], c)
+              konce_w_linii[koniec] = true
+              next
+            end
+            # Tylko ściany nierównoległe: ze ścianą równoległą linia działowej nie ma punktu przecięcia.
+            zew = zewn.find { |w| przy_boku?(pt, w[:bok], t + tol) && !ScianaWLinii.rownolegle?(d, w) }
             if zew
               c = G.przeciecie_prostych(a, b, zew[:a], zew[:b])
               koniec == 0 ? a = c : b = c
@@ -121,8 +146,10 @@ module ArteMadera
               wydl[koniec] = t / 2.0 + o
             end
           end
-          sciana(licznik, :dzialowa, a, b, d).merge(s_od: -wydl[0], s_do: G.odl(a, b) + wydl[1], ref: 0.0,
-                                                    ostatki_param: wydl.map { |x| x > 0.0 ? x - t / 2.0 : nil })
+          w = sciana(licznik, :dzialowa, a, b, d).merge(s_od: -wydl[0], s_do: G.odl(a, b) + wydl[1], ref: 0.0,
+                                                        ostatki_param: wydl.map { |x| x > 0.0 ? x - t / 2.0 : nil })
+          w[:w_linii] = konce_w_linii if konce_w_linii.any?
+          w
         end
       end
 

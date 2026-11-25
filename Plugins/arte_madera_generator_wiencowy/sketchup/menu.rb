@@ -33,9 +33,12 @@ module ArteMadera
         UI.messagebox("#{PLUGIN_NAME}\nWersja #{PLUGIN_VERSION}, kompilacja #{PLUGIN_BUILD} (#{PLUGIN_BUILD_DATE})\n\n" \
                       "1. Narysuj linie (albo prostokąt): zamknięty obrys = lico zewnętrzne ścian, linie w środku = osie\n" \
                       "   ścian działowych, krótka linia w poprzek ściany = węgieł (kontrfor).\n" \
-                      "2. Zaznacz linie i wybierz „Generuj dom…”.\n" \
-                      "3. Żeby zmienić dom, zaznacz go i wybierz to samo polecenie.\n\n" \
-                      '„Test działania i raport” buduje przykładowe domy (model zostaje bez zmian) i zapisuje raport do wysłania.')
+                      "2. Zaznacz linie i kliknij pierwszy przycisk paska „ArteMadera Generator Wieńcowy” (albo prawy\n" \
+                      "   przycisk myszy → „Dom wieńcowy z zaznaczonych linii…”).\n" \
+                      "3. Żeby zmienić dom, zaznacz go i kliknij ten sam przycisk (albo prawy przycisk myszy →\n" \
+                      "   „Edytuj dom wieńcowy…”).\n\n" \
+                      '„Test działania i raport” buduje przykładowe domy (model zostaje bez zmian) i sam zapisuje raport ' \
+                      'w folderze raportów.')
       end
     end
   end

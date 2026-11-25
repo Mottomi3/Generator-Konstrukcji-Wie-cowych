@@ -4,12 +4,14 @@
 # Plik: rdzen/parametry_zadaszenie.rb
 # Zadanie: parametry zakładki „Zadaszenie boczne / tylne” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, podłoga w przybudówce, dobór przekrojów (automatycznie albo z wyboru) płatwi, słupów i belek poprzecznych.
 # Tematy: boczne zadaszenie – parametry, wiata boczna – parametry, przybudówka – parametry, załamanie dachu – parametry, podłoga w przybudówce – parametr, dobór przekrojów zadaszenia – parametry
-# Zależy od: –
+# Zależy od: rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
+
+require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -74,15 +76,15 @@ module ArteMadera
                  'z wyboczeniem na całej wysokości (od fundamentu do belki), obciążenie z połowy szerokości zadaszenia i okapu ' \
                  'między sąsiednimi słupami. Bez wiatru – słupy wolnostojące wymagają stężeń (zastrzały, belka poprzeczna ' \
                  'przykręcona do ściany).' },
-        { klucz: 'zadaszenie_katalog', domyslna: '60x100, 60x120, 60x140, 60x160, 60x200, 60x240, 80x160, 80x180, 80x200, 80x220, ' \
-                                                 '100x200, 120x200, 140x200, 140x240, 160x200, 160x280',
+        { klucz: 'zadaszenie_katalog', domyslna: WykazDrewna.lista(:platwie),
           etykieta: 'Dostępne przekroje belek zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['auto'] },
-          podpowiedz: 'Płatwie, oczep i belki poprzeczne – lista „szer.×wys.” po przecinku; dobór bierze najlżejszy wystarczający.' },
-        { klucz: 'zadaszenie_slupy_katalog', domyslna: '100x100, 120x120, 140x140, 160x160, 180x180, 200x200',
+          podpowiedz: 'Płatwie, oczep i belki poprzeczne – lista z hurtowni „szer.×wys.:długości w metrach” po przecinku; ' \
+                      'dobór bierze najlżejszy wystarczający.' },
+        { klucz: 'zadaszenie_slupy_katalog', domyslna: WykazDrewna.lista(:slupy),
           etykieta: 'Dostępne przekroje słupów zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['auto'] },
-          podpowiedz: 'Lista „wzdłuż ściany×w poprzek” po przecinku; dobór bierze najlżejszy wystarczający.' },
+          podpowiedz: 'Lista z hurtowni „wzdłuż ściany×w poprzek:długości w metrach” po przecinku; dobór bierze najlżejszy wystarczający.' },
         { klucz: 'zadaszenie_platwa_przekroj', domyslna: '80x160', etykieta: 'Płatew zadaszenia (szer. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak ' \

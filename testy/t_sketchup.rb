@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '13', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '14', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
@@ -295,8 +295,75 @@ File.open(Ustawienia.sciezka, 'w') { |f| f.write(JSON.generate('wersja' => 1, 'o
 Testy.rowne(Ustawienia.ostatnie, { 'liczba_wiencow' => '14' }, 'plik wersji 1: zapamiętany poziom podciągu pominięty, reszta zostaje')
 Testy.rowne(Parametry.normalizuj(Ustawienia.ostatnie)[0]['podciag_poziom'], 'rowno', 'podciąg na wysokości podwalin')
 Ustawienia.zapamietaj('podciag_poziom' => 'pod', 'liczba_wiencow' => '10')
-Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podciag_poziom']], [2, 'pod'],
-            'plik wersji 2: wybór użytkownika (obniżony) zapamiętany')
+Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podciag_poziom']], [Ustawienia::WERSJA, 'pod'],
+            'plik bieżącej wersji: wybór użytkownika (obniżony) zapamiętany')
+
+Testy.grupa('Ustawienia z kompilacji 13 – listy przekrojów zastąpione wykazem z hurtowni (runda 14)')
+stara = '45x95, 45x120, 50x100, 63x175'
+File.open(Ustawienia.sciezka, 'w') do |f|
+  f.write(JSON.generate('wersja' => 2, 'ostatnie' => { 'przekroje_katalog' => stara, 'platwie_katalog' => '60x100, 60x120', 'liczba_wiencow' => '14' },
+                        'szablony' => { 'Mój dom' => { 'krokwie_katalog' => '50x150, 50x175', 'dach_kat' => '35' } }))
+end
+Testy.rowne(Ustawienia.ostatnie, { 'liczba_wiencow' => '14' }, 'plik wersji 2: stare listy przekrojów pominięte, reszta zostaje')
+Testy.rowne(Ustawienia.szablon('Mój dom'), { 'dach_kat' => '35' }, 'własny szablon: stara lista krokwi pominięta, reszta zostaje')
+pn = Parametry.normalizuj(Ustawienia.ostatnie)[0]
+Testy.sprawdz(pn['przekroje_katalog'].include?('45x145:4.2/5.4/6') && pn['platwie_katalog'].include?('80x200:5/7/8'),
+              'po wczytaniu – listy z długościami handlowymi')
+Ustawienia.zapamietaj(pn.merge('przekroje_katalog' => '45x145:6, 45x195:7'))
+Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['przekroje_katalog']], [Ustawienia::WERSJA, '45x145:6, 45x195:7'],
+            'plik bieżącej wersji: własna lista użytkownika zapamiętana')
+Ustawienia.zapamietaj('liczba_wiencow' => '10')
+
+Testy.grupa('Pasek narzędzi i menu pod prawym przyciskiem (runda 14)')
+pasek = Pasek.pasek
+Testy.sprawdz(pasek && pasek.nazwa == 'ArteMadera Generator Wieńcowy' && pasek.polecenia.length == 3, 'pasek z trzema przyciskami założony przy ładowaniu')
+Testy.sprawdz(pasek.pokazany, 'pierwsze uruchomienie – pasek pokazany')
+pasek.polecenia.each do |c|
+  Testy.sprawdz(File.exist?(c.small_icon) && File.exist?(c.large_icon) && File.size(c.small_icon) > 100, "ikony przycisku „#{c.nazwa}” są w paczce")
+  Testy.sprawdz(!c.tooltip.to_s.empty? && !c.status_bar_text.to_s.empty?, "opisy przycisku „#{c.nazwa}”")
+end
+%w[dom kontrola test].each do |n|
+  Testy.sprawdz(%W[#{n}.svg #{n}_24.png #{n}_32.png].all? { |f| File.exist?(File.join(KATALOG_WTYCZKI, 'ikony', f)) }, "ikona #{n}: SVG i PNG 24 / 32")
+end
+UI::Toolbar.ostatni_stan = TB_HIDDEN
+p2 = Pasek.dodaj
+Testy.sprawdz(!p2.pokazany && !p2.przywrocony, 'pasek schowany przez użytkownika zostaje schowany')
+UI::Toolbar.ostatni_stan = TB_VISIBLE
+p3 = Pasek.dodaj
+Testy.sprawdz(p3.przywrocony && !p3.pokazany, 'pasek widoczny poprzednio – przywrócony')
+UI::Toolbar.ostatni_stan = nil
+UI.menu_kontekstowe.replace([UI.menu_kontekstowe.last])
+m = model_z_liniami(prostokat(0, 0, 4000, 3000))
+Testy.rowne(UI.prawy_przycisk.pozycje.map(&:first), ['Dom wieńcowy z zaznaczonych linii…'], 'prawy przycisk na czterech liniach – nowy dom')
+UI.prawy_przycisk.pozycje[0][1].call
+Testy.sprawdz(Okno.dialog && Okno.dialog.visible?, 'polecenie spod prawego przycisku otwiera okno')
+Sterowanie.generuj('parametry' => {}, 'otwory' => [])
+Testy.rowne(UI.prawy_przycisk.pozycje.map(&:first), ['Edytuj dom wieńcowy…', 'Kontrola domu wieńcowego'], 'prawy przycisk na zaznaczonym domu – edycja i kontrola')
+UI.komunikaty.clear
+UI.prawy_przycisk.pozycje[1][1].call
+Testy.sprawdz(UI.komunikaty.last.to_s.include?('Zamki: bez kolizji') && UI.komunikaty.last.to_s.include?('Ściany równoległe: bez nakładania'),
+              'kontrola spod prawego przycisku – z wynikiem ścian równoległych')
+m.selection.clear
+m.selection.add(m.entities.add_line(Geom::Point3d.new(0, 0, 0), Geom::Point3d.new(10, 0, 0)))
+Testy.rowne(UI.prawy_przycisk.pozycje, [], 'jedna zaznaczona linia – bez poleceń wtyczki w menu')
+UI.komunikaty.clear
+pasek.polecenia[0].wywolaj
+Testy.sprawdz(UI.komunikaty.last.to_s.include?('Zaznacz narysowane linie') || (Okno.dialog && Okno.dialog.visible?), 'pierwszy przycisk paska uruchamia generator')
+
+Testy.grupa('Awaria obliczeń – okienko po polsku i wpis w dzienniku pracy (runda 14)')
+m = model_z_liniami(prostokat(0, 0, 4000, 3000))
+Sterowanie.start
+zepsute = Projekt.method(:przebieg)
+Projekt.define_singleton_method(:przebieg) { |*_a| raise NoMethodError, 'próba awarii' }
+UI.komunikaty.clear
+wy = Sterowanie.generuj('parametry' => {}, 'otwory' => [])
+Projekt.define_singleton_method(:przebieg, zepsute)
+Testy.sprawdz(UI.komunikaty.last.to_s.start_with?('Nie udało się policzyć domu') && UI.komunikaty.last.to_s.include?("kompilacja #{PLUGIN_BUILD}"),
+              "okienko z komunikatem po polsku i numerem kompilacji (#{UI.komunikaty.last.to_s[-70, 70]})")
+Testy.sprawdz(wy['bledy'].length == 1 && wy['zbudowano'].nil?, 'wynik dla okna: jeden błąd, bez budowy')
+aw = DziennikPracy.ostatnie(3).select { |w| w['zdarzenie'] == 'awaria' }.last
+Testy.sprawdz(aw && aw['opis'].include?('NoMethodError') && aw['linie'].length == 4, 'awaria w dzienniku pracy z liniami rysunku')
+Testy.rowne(Sterowanie.podglad('parametry' => {}, 'otwory' => [])['bledy'], [], 'po awarii – podgląd znów działa')
 
 Testy.grupa('Otwarcie od nowa – zaznaczony dom razem z liniami (runda 10)')
 m = model_z_liniami(prostokat(0, 0, 4000, 3000))

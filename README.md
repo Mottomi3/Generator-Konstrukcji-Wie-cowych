@@ -12,7 +12,12 @@ W widoku ściany: ostatek każdego końca, węgły kliknięciem, działowa niżs
 dopełniony odcinkami); bal prosty albo pełny profil (pióra i wpust) do wizualizacji.
 
 - Instalacja: Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`.
-- Użycie: zaznacz linie → Rozszerzenia → ArteMadera Generator Wieńcowy → Generuj dom…
-- Dokumentacja: `docs/specyfikacja.md`, parametry: `docs/parametry.md`, stan prac: `docs/stan_prac.md`,
+- Użycie: zaznacz linie → pierwszy przycisk paska „ArteMadera Generator Wieńcowy” (albo prawy przycisk myszy →
+  „Dom wieńcowy z zaznaczonych linii…”, albo menu Rozszerzenia → ArteMadera Generator Wieńcowy). Edycja: zaznacz dom →
+  ten sam przycisk albo prawy przycisk → „Edytuj dom wieńcowy…”.
+- Odbiór kompilacji: `docs/scenariusz_odbioru.md` (trzy kroki; raport z testu działania i dziennik pracy zapisują się
+  same w folderze `raporty\`).
+- Dokumentacja: `docs/specyfikacja.md`, parametry: `docs/parametry.md`, stan prac: `docs/stan_prac.md` (historia rund:
+  `docs/historia_rund.md`),
   mapa kodu: `docs/SPIS_TRESCI.md`.
 - Testy: `bash testy/uruchom.sh`.

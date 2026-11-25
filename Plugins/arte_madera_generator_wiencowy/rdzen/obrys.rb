@@ -241,8 +241,7 @@ module ArteMadera
           end
         end
         dlugie.each do |s|
-          przyciete = przytnij_do_obrysu(s, obrys, boki, tol, wynik)
-          wynik[:dzialowe] << przyciete if przyciete
+          wynik[:dzialowe].concat(przytnij_do_obrysu(s, obrys, boki, tol, wynik))
         end
       end
 
@@ -264,7 +263,10 @@ module ArteMadera
         pt
       end
 
-      # Oś działowej przycięta do obrysu (część poza obrysem odrzucona z ostrzeżeniem); nil gdy całość na zewnątrz.
+      # Oś działowej przycięta do obrysu: lista odcinków leżących w środku domu. Część poza obrysem odrzucona z ostrzeżeniem;
+      # część biegnąca po boku obrysu – bez ostrzeżenia (tam stoi już ściana zewnętrzna). Linia narysowana jednym ruchem
+      # przez wcięcie obrysu (U, H) daje osobną działową po każdej stronie wcięcia – wcześniej jedna działowa od pierwszego
+      # do ostatniego kawałka wchodziła w ścianę wcięcia (runda 14).
       def przytnij_do_obrysu(s, obrys, boki, tol, wynik)
         punkty = [s[0], s[1]]
         boki.each do |w|
@@ -273,19 +275,24 @@ module ArteMadera
         end
         d = G.sub(s[1], s[0])
         punkty = punkty.uniq { |pt| G.klucz(pt, tol / 10.0) }.sort_by { |pt| G.dot(G.sub(pt, s[0]), d) }
-        wewnatrz = []
+        odcinki = []
+        ciag = false
         (0...(punkty.length - 1)).each do |i|
           a = punkty[i]
           b = punkty[i + 1]
+          next if G.odl(a, b) <= tol
           srodek = G.mul(G.add(a, b), 0.5)
-          if G.wewnatrz?(srodek, obrys) && G.odl(a, b) > tol
-            wewnatrz << [a, b]
-          elsif G.odl(a, b) > tol
+          if boki.any? { |w| G.na_odcinku?(srodek, w[0], w[1], tol) }
+            ciag = false
+          elsif G.wewnatrz?(srodek, obrys)
+            ciag ? odcinki.last[1] = b : odcinki << [a, b]
+            ciag = true
+          else
             wynik[:ostrzezenia] << "Linia #{G.txt(a)} – #{G.txt(b)} leży poza obrysem – pominięta."
+            ciag = false
           end
         end
-        return nil if wewnatrz.empty?
-        [wewnatrz.first[0], wewnatrz.last[1]]
+        odcinki
       end
     end
   end

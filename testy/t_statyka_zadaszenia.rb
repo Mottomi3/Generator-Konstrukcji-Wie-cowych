@@ -20,7 +20,8 @@ end
 
 # Podpowiedzi sekcji okna.
 def podp(pl, sekcja)
-  pl[:podpowiedzi].select { |h| h[:sekcja] == sekcja }
+  # Bez podpowiedzi o długościach handlowych (runda 14 – testy/t_dlugosci.rb): tu sprawdzane są wyniki statyki.
+  pl[:podpowiedzi].select { |h| h[:sekcja] == sekcja && !h[:tekst].include?('najdłuższa belka tego przekroju') }
 end
 
 # Liczba po słowie (np. „przęsło 2.0 m”) z tekstu podpowiedzi.

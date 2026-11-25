@@ -28,6 +28,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera::GeneratorWiencowy::Statyka)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
+require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -99,7 +100,7 @@ module ArteMadera
         (przesla + [2.0 * (pkt.first - u0), 2.0 * (u3 - pkt.last)]).max
       end
 
-      # Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas: }].
+      # Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas:, dl: (cała długość) }].
       def platwie(dom, p)
         Skrzydla.domy(dom).flat_map do |d|
           geo = Dach.geo(d)
@@ -107,7 +108,7 @@ module ArteMadera
           lista.map do |pl|
             u0, u3 = Skrzydla.zasieg_platwi(d, pl, p)
             next nil if u3 - u0 < 1.0
-            { rodzaj: pl[:rodzaj], b: pl[:b], h: pl[:h], l: przeslo(d, pl, u0, u3, p), pas: pas(geo, lista, pl, p) }
+            { rodzaj: pl[:rodzaj], b: pl[:b], h: pl[:h], l: przeslo(d, pl, u0, u3, p), pas: pas(geo, lista, pl, p), dl: u3 - u0 }
           end.compact
         end
       end
@@ -136,9 +137,11 @@ module ArteMadera
         Parametry.katalog(p, 'platwie_katalog').sort_by { |b, h| [b * h, -h] }
       end
 
-      # Najlżejszy przekrój z listy wystarczający dla grupy; nil – żaden.
+      # Najlżejszy przekrój z listy wystarczający dla grupy – w pierwszej kolejności dostępny w hurtowni w całej długości
+      # najdłuższej płatwi grupy (rdzen/dlugosci_handlowe.rb); nil – żaden nie wystarcza.
       def dobierz(grupa, p)
-        kandydaci(p).find { |b, h| ocena(grupa, b, h, p)[:ok] }
+        dobre = kandydaci(p).select { |b, h| ocena(grupa, b, h, p)[:ok] }
+        DlugosciHandlowe.najlzejszy(dobre, grupa.map { |x| x[:dl] }.compact.max, p, 'platwie_katalog')
       end
 
       # Sprawdzenie i dobór dla domu: { podpowiedzi: [{ poziom:, tekst: }], nadpis: { pole => 'b×h' do następnego przebiegu },

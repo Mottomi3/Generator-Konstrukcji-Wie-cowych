@@ -4,7 +4,7 @@
 # Plik: sketchup/raport.rb
 # Zadanie: test działania w prawdziwym SketchUpie i raport do wysłania – przykładowe domy budowane w operacji cofanej na końcu (model bez zmian), bryły zamknięte i objętości, zaznaczony dom, środowisko, dziennik.
 # Tematy: test działania, raport do testów, raport JSON, bryła zamknięta w SketchUpie, objętość bryły, środowisko SketchUpa, porównanie modelu z planem, czas budowy
-# Zależy od: rdzen/przyklady.rb, rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/bryla.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/eksport.rb, sketchup/ustawienia.rb, log.rb
+# Zależy od: sketchup/dziennik_pracy.rb (folder raportów, dziennik pracy), rdzen/przyklady.rb, rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/bryla.rb, sketchup/budowa.rb, sketchup/atrybuty.rb, sketchup/eksport.rb, sketchup/ustawienia.rb, log.rb
 # Używają: sketchup/menu.rb („Test działania i raport…”)
 #
 # Raport (JSON) ma pozwolić sprawdzić wtyczkę bez dostępu do komputera użytkownika: wersje SketchUpa i Ruby, dla każdego
@@ -24,15 +24,15 @@ module ArteMadera
 
       module_function
 
-      # Menu: test działania, zapis raportu (okno zapisu) i podsumowanie w okienku.
+      # Menu i pasek: test działania; raport zapisuje się sam w folderze raportów (sketchup/dziennik_pracy.rb – bez okna
+      # zapisu, prośba użytkownika z 2026-11-25 o prosty odbiór), w okienku wynik jednym zdaniem i lista problemów.
       def uruchom
         model = Sketchup.active_model
         return UI.messagebox('Brak aktywnego modelu SketchUpa.') if model.nil?
         raport = Log.time('test działania') { zbierz(model) }
-        sciezka = Eksport.wybierz_plik('Zapisz raport testu działania (do wysłania)',
-                                       "ArteMadera_GW_raport_#{Time.now.strftime('%Y-%m-%d_%H%M')}.json", '.json')
-        Eksport.zapisz(sciezka, JSON.pretty_generate(raport)) if sciezka
-        UI.messagebox(podsumowanie(raport) + (sciezka ? "\n\nRaport zapisano:\n#{sciezka}" : "\n\nRaportu nie zapisano."))
+        sciezka = DziennikPracy.zapisz_raport(raport, PLUGIN_BUILD)
+        UI.messagebox(podsumowanie(raport) + (sciezka ? "\n\nRaport zapisał się sam – nie trzeba go wysyłać:\n#{sciezka}" :
+                                                         "\n\nRaportu nie udało się zapisać (szczegóły w Konsoli Ruby)."))
         raport
       rescue => e
         Log.error('Raport.uruchom', e)
@@ -47,6 +47,8 @@ module ArteMadera
                    'srodowisko' => srodowisko(model), 'zaznaczony_dom' => dom ? sprawdz_dom(dom) : nil }
         raport['przyklady'] = przyklady(model)
         raport['dziennik'] = { 'wpisy' => Log.wpisy.last(60), 'czasy' => Log.czasy.last(40) }
+        raport['dziennik_pracy'] = DziennikPracy.ostatnie(60)
+        raport['wynik'] = wynik(raport)
         raport
       end
 
@@ -98,7 +100,7 @@ module ArteMadera
         wynik.merge!(bryly(plan, zb[:defs]))
         k = Kontrola.wszystko(plan)
         wynik['kontrola'] = { 'kolizje' => k[:kolizje].length, 'mijanka' => k[:mijanka].length, 'za_dlugie' => k[:za_dlugie].length,
-                              'styki_bez_zamka' => k[:styki_bez_zamka].length }
+                              'styki_bez_zamka' => k[:styki_bez_zamka].length, 'nakladanie' => k[:nakladanie].length }
         wynik['zgodny'] = zgodny?(wynik)
         wynik
       end
@@ -164,10 +166,23 @@ module ArteMadera
           'plan' => liczby_planu(plan), 'model' => liczby_modelu(dom) }
       end
 
-      # Tekst okienka po teście.
+      # Wynik testu jednym spojrzeniem: { 'domy' => liczba, 'w_porzadku' => liczba, 'problemy' => [nazwy], 'czas_budowy_s' => suma }.
+      def wynik(r)
+        domy = r['przyklady'] || []
+        dobre = domy.select { |w| w['wyjatek'].nil? && (w['bledy'] || []).empty? && w['zgodny'] }
+        { 'domy' => domy.length, 'w_porzadku' => dobre.length, 'problemy' => (domy - dobre).map { |w| w['nazwa'] },
+          'czas_budowy_s' => domy.inject(0.0) { |s, w| s + w['czas_budowy_s'].to_f }.round(1),
+          'czas_obliczen_s' => domy.inject(0.0) { |s, w| s + w['czas_obliczen_s'].to_f }.round(1) }
+      end
+
+      # Tekst okienka po teście: wynik jednym zdaniem, potem domy (z problemami opisane, pozostałe krótko).
       def podsumowanie(r)
-        linie = ["Test działania – SketchUp #{r['srodowisko']['sketchup']}, Ruby #{r['srodowisko']['ruby']}, " \
-                 "kompilacja #{r['srodowisko']['kompilacja']}"]
+        wy = r['wynik'] || wynik(r)
+        werdykt = if wy['problemy'].empty? then "WSZYSTKO W PORZĄDKU – #{wy['w_porzadku']} z #{wy['domy']} przykładowych domów."
+                  else "PROBLEMY w #{wy['problemy'].length} z #{wy['domy']} przykładowych domów – daj znać, raport ma szczegóły."
+                  end
+        linie = [werdykt, "SketchUp #{r['srodowisko']['sketchup']}, Ruby #{r['srodowisko']['ruby']}, " \
+                          "kompilacja #{r['srodowisko']['kompilacja']}; budowa modeli razem #{wy['czas_budowy_s']} s.", '']
         r['przyklady'].each do |w|
           stan = if w['wyjatek'] then "BŁĄD: #{w['wyjatek']}"
                  elsif !w['bledy'].empty? then "błędy: #{w['bledy'].first}"

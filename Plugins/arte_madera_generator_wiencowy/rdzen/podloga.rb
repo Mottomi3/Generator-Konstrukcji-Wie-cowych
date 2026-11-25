@@ -305,9 +305,7 @@ module ArteMadera
         unless poz.flatten.empty?
           min = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_minimalne'].to_f)
           zal = Statyka.dobierz(lmax, p, rozstaw, p['ugiecie_zalecane'].to_f)
-          podp << { poziom: 'ok', tekst: format('Bez podciągów (rozpiętość %s m): najmniejszy wystarczający przekrój %s, zalecany %s.',
-                                                format('%.2f', lmax / 1000.0), min ? Parametry.tekst_przekroju(min) : 'brak w katalogu',
-                                                zal ? Parametry.tekst_przekroju(zal) : 'brak w katalogu') }
+          podp << { poziom: 'ok', tekst: bez_podciagow(lmax, min, zal) }
         end
         izol = p['izolacja_podlogi'].to_f
         if bh[1] < izol - 0.01
@@ -320,6 +318,17 @@ module ArteMadera
           podp << { poziom: 'uwaga', tekst: format('Legar (%s mm) wyższy niż podwalina (%s mm) – spód legara %s mm poniżej spodu podwaliny.',
                                                    Parametry.fmt(bh[1]), Parametry.fmt(hp), Parametry.fmt(bh[1] - hp)) }
         end
+      end
+
+      # Zdanie „co by było bez podciągów” (rozpiętość lmax, przekrój najmniejszy i zalecany z listy albo nil): tryb
+      # przypuszczający – podciągi są, to tylko porównanie (uwaga użytkownika z 2026-11-14: czytało się jak stan faktyczny).
+      def bez_podciagow(lmax, min, zal)
+        l = format('%.2f', lmax / 1000.0)
+        if min.nil?
+          return "Bez podciągów się nie da: żaden przekrój z listy nie przeniesie rozpiętości #{l} m – dlatego są podciągi."
+        end
+        zalecany = zal ? "zalecany #{Parametry.tekst_przekroju(zal)}" : 'zalecanego ugięcia nie spełnia żaden z listy'
+        "Bez podciągów trzeba by legara #{Parametry.tekst_przekroju(min)} (#{zalecany}) na rozpiętość #{l} m – z podciągami wystarcza mniejszy."
       end
 
       # Legary: każda linia dzielona na licach podwalin poprzecznych (także działowych częściowych) i podciągów na równo

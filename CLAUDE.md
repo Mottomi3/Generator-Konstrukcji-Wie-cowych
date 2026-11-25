@@ -6,7 +6,9 @@ Odpowiedzi dla użytkownika zawsze po polsku, krótko, bez opisu kroków pracy.
 
 ## Zanim zmienisz kod
 
-1. Przeczytaj `docs/stan_prac.md` (stan, decyzje, otwarte pytania) i najnowsze `docs/przekazanie_rN.md`.
+1. Przeczytaj `docs/stan_prac.md` (stan bieżący, kolejka decyzji §5, pytania §6) i najnowsze `docs/przekazanie_rN.md`.
+   Historia rund – `docs/historia_rund.md` (tylko gdy potrzebna). Zaległe pozycje z §5 przed nowymi prośbami; na starcie
+   rundy raporty z dysku użytkownika (`raporty\` – raport z testu działania i dziennik pracy).
 2. **Szukaj w `docs/SPIS_TRESCI.md`**: tabela tematów → plik, potem lista metod z numerami wierszy. Nie przeszukuj
    wszystkich plików na ślepo.
 3. Zasady kodu i rundy: `docs/skille/gw-zasady-kodu/SKILL.md`, `docs/skille/gw-runda/SKILL.md`.
@@ -40,7 +42,7 @@ siatki, SketchUp na atrapie, okno w Chromium, zasady, aktualność spisu treści
 | `Plugins/arte_madera_generator_wiencowy/sketchup/` | wejście z zaznaczenia, budowa modelu, atrybuty, okno, menu, połacie i KROK 2 w aplikacji do dachów |
 | `Plugins/arte_madera_generator_wiencowy/html/` | okno parametrów (HTML, CSS, JS ES5) |
 | `testy/` | testy, atrapa API (`testy/atrapa/`), kontrola zasad, spis treści, paczka .rbz, podgląd 3D |
-| `docs/` | spis treści, specyfikacja, stan prac, scenariusz odbioru, przekazania |
+| `docs/` | spis treści, specyfikacja, stan prac, historia rund, pytania otwarte, scenariusz odbioru, przekazania, zadania |
 
 Pliki źródłowe projektów (PDF, zdjęcia, BVN) są na dysku użytkownika:
 `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\Pliki źródłowe\`, analiza w `00_Analiza\`.

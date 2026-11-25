@@ -4,12 +4,14 @@
 # Plik: rdzen/parametry_dach.rb
 # Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka.
 # Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, dobór przekroju krokwi – parametry, podbitka – parametry
-# Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
+# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
+
+require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -74,11 +76,11 @@ module ArteMadera
         { klucz: 'krokiew_przekroj', domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['reczny'] },
           podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2. Wynik sprawdzenia – pod sekcją.' },
-        { klucz: 'krokwie_katalog', domyslna: '45x145, 45x170, 45x195, 50x150, 50x175, 50x200, 60x120, 60x140, 60x160, 60x180, ' \
-                                              '60x200, 60x240, 80x160, 80x200, 80x240',
+        { klucz: 'krokwie_katalog', domyslna: WykazDrewna.lista(:krokwie),
           etykieta: 'Dostępne przekroje krokwi', rodzaj: :tekst, sekcja: 'szczyty',
           gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['auto'] },
-          podpowiedz: 'Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy wystarczający.' },
+          podpowiedz: 'Lista z hurtowni: „szer.×wys.:długości w metrach”, np. 45x195:4.2/5.4/6/7 – po przecinku; dobór bierze ' \
+                      'najlżejszy wystarczający.' },
         { klucz: 'krokwie_rozstaw', domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
         { klucz: 'platwie_dobor', podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój płatwi – dobór', rodzaj: :wybor,
@@ -92,11 +94,10 @@ module ArteMadera
           pomoc: 'Przęsło płatwi to odległość między ścianami, które ją podpierają: szczyty, działowe ze szczytem, ściana domu ' \
                  'przy tarasie, trójkąt nad tarasem. Im dłuższe przęsło i większy rozstaw płatwi, tym większy przekrój. Ręcznie – ' \
                  'przy polach przekroju pojawia się wynik sprawdzenia i najmniejszy wystarczający przekrój z listy.' },
-        { klucz: 'platwie_katalog', domyslna: '60x100, 60x120, 60x140, 60x160, 60x200, 60x240, 80x160, 80x180, 80x200, 80x220, ' \
-                                              '100x200, 120x200, 140x200, 140x240, 160x200, 160x280',
+        { klucz: 'platwie_katalog', domyslna: WykazDrewna.lista(:platwie),
           etykieta: 'Dostępne przekroje płatwi', rodzaj: :tekst, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
-          podpowiedz: 'Lista „szer.×wys.” po przecinku (drewno widoczne Nsi / DUO / BSH z hurtowni) – dobór bierze najlżejszy ' \
-                      'wystarczający.' },
+          podpowiedz: 'Lista z hurtowni (drewno widoczne Nsi / DUO / BSH): „szer.×wys.:długości w metrach”, np. 80x200:5/7/8 – ' \
+                      'po przecinku. Dobór bierze najlżejszy wystarczający; płatew dłuższa niż najdłuższa belka z listy – uwaga w wynikach.' },
         { klucz: 'dach_snieg', domyslna: 0.9, etykieta: 'Śnieg – obciążenie gruntu', jednostka: 'kN/m²', min: 0.0, max: 6.0,
           rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
           podpowiedz: 'Strefy śniegowe Polski: 1 – 0,7; 2 – 0,9 (większość kraju); 3 – 1,2; 4 – 1,6; 5 (góry) – 2,0 i więcej.',

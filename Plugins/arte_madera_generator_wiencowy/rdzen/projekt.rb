@@ -16,7 +16,7 @@ unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
   %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
-     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka kontrola].each do |plik|
+     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka dlugosci_handlowe kontrola_rownoleglych kontrola awaria].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -34,6 +34,8 @@ module ArteMadera
       # pierwszy przebieg liczy dom z przekrojami z pól i dobiera najmniejsze wystarczające,
       # następny liczy dom od nowa z dobranymi (płatwie, gniazda, trójkąt nad tarasem) i je potwierdza; gdyby po zmianie
       # geometrii nie wystarczały – jeszcze raz z większymi.
+      # Nieprzewidziany wyjątek obliczeń nie wychodzi na zewnątrz: plan z jednym błędem po polsku (plan[:wyjatek] – opis
+      # techniczny), pełny ślad w dzienniku (rdzen/awaria.rb; decyzja użytkownika z 2026-11-14).
       def oblicz(wejscie)
         plan = przebieg(wejscie, {}, :pierwszy)
         nadpis = {}
@@ -44,6 +46,8 @@ module ArteMadera
           plan = przebieg(wejscie, nadpis, i == PRZEBIEGI_DOBORU - 1 ? :koniec : :potwierdz)
         end
         plan
+      rescue StandardError => e
+        Awaria.plan(wejscie, e)
       end
 
       # Jeden przebieg: obrys (z tarasem) → ściany → ustawienia ścian → role ścian tarasu → szczyty → otwory → styki → węgły →
@@ -67,6 +71,7 @@ module ArteMadera
         sc = Sciany.zbuduj(ob, p)
         plan[:os_kalenicy] = sc[:os_kalenicy]
         plan[:ostrzezenia].concat(sc[:ostrzezenia])
+        plan[:podpowiedzi].concat((sc[:podpowiedzi] || []).map { |h| h.merge(sekcja: 'sciany') })
         plan[:bledy].concat(sc[:bledy])
         return plan unless plan[:bledy].empty?
         sciany = sc[:sciany]
@@ -101,6 +106,7 @@ module ArteMadera
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
+        plan[:ostrzezenia].concat(KontrolaRownoleglych.ostrzezenia(plan))
         plan[:pozycje] = Pozycje.numeruj(bale[:bale], p)
         belki(plan, sz[:dom], p, tryb)
         plan[:podsumowanie] = podsumowanie(plan)
@@ -143,6 +149,7 @@ module ArteMadera
         plan[:elementy].concat(pod[:elementy])
         plan[:podpowiedzi].concat(pod[:podpowiedzi].map { |h| h.merge(sekcja: 'podloga') })
         plan[:podloga] = { legar: pod[:legar], podpory: pod[:podpory] }
+        plan[:podpowiedzi].concat(DlugosciHandlowe.podpowiedzi(plan[:elementy], p))
         plan[:pozycje_elementow] = Elementy.numeruj(plan[:elementy], plan[:pozycje].length + 1)
       end
 

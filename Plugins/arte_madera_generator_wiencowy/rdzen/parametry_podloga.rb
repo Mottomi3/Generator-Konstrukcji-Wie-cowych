@@ -4,12 +4,14 @@
 # Plik: rdzen/parametry_podloga.rb
 # Zadanie: parametry sekcji „Podłoga i fundamenty” – podwaliny (przekrój, łączenie), legary, podciągi, fundamenty punktowe, obciążenia.
 # Tematy: podłoga – parametry, podwalina – parametry, legar – parametry, podciąg – parametry, obciążenia, fundamenty punktowe – parametry
-# Zależy od: rdzen/parametry_lista.rb (TAK_NIE)
+# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
+
+require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -102,10 +104,10 @@ module ArteMadera
                  '„sprężynuje”, szklanki w kredensie dzwonią). Im większa liczba, tym sztywniej.' },
         { klucz: 'ugiecie_minimalne', domyslna: 250.0, etykieta: 'Ugięcie dopuszczalne L /', jednostka: '', min: 100.0,
           max: 1000.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Granica – mniej sztywna podłoga już niedopuszczalna.' },
-        { klucz: 'przekroje_katalog', domyslna: '45x95, 45x120, 45x145, 45x170, 45x195, 45x220, 50x100, 50x150, 50x175, ' \
-                                                '50x200, 50x225, 63x175, 63x200, 63x225, 75x200, 75x225, 75x250, 100x100, 100x150',
-          etykieta: 'Dostępne przekroje legarów', rodzaj: :tekst, sekcja: 'podloga',
-          podpowiedz: 'Lista „szer.×wys.” po przecinku – dobór bierze najlżejszy spełniający warunki.' }
+        { klucz: 'przekroje_katalog', domyslna: WykazDrewna.lista(:legary),
+          etykieta: 'Dostępne przekroje legarów i podciągów', rodzaj: :tekst, sekcja: 'podloga',
+          podpowiedz: 'Lista z hurtowni: „szer.×wys.:długości w metrach”, np. 45x145:4.2/5.4/6 – po przecinku. Dobór bierze ' \
+                      'najlżejszy spełniający warunki; belka dłuższa niż najdłuższa z listy – uwaga w wynikach.' }
       ].freeze unless const_defined?(:LISTA)
     end
   end

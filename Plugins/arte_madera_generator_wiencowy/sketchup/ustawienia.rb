@@ -3,12 +3,12 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/ustawienia.rb
 # Zadanie: zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony.
-# Tematy: zapis ustawień, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
+# Tematy: zapis ustawień, wersja pliku ustawień, listy przekrojów ze starszej kompilacji, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
 # Zależy od: rdzen/parametry_lista.rb (szablony wbudowane), log.rb
 # Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
-# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 2, 'ostatnie' => {…},
+# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 3, 'ostatnie' => {…},
 # 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
 # (teksty); sprawdza je Parametry.normalizuj.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -20,10 +20,16 @@ module ArteMadera
   module GeneratorWiencowy
     module Ustawienia
       PLIK = 'ustawienia.json'.freeze unless const_defined?(:PLIK)
-      # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną.
-      WERSJA = 2 unless const_defined?(:WERSJA)
+      # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną; 3 (runda 14) – listy przekrojów z hurtowni
+      # z długościami handlowymi.
+      WERSJA = 3 unless const_defined?(:WERSJA)
+      # Listy przekrojów (rdzen/wykaz_drewna.rb) – w pliku starszym niż wersja 3 zastępowane fabrycznymi także w szablonach.
+      LISTY_PRZEKROJOW = %w[przekroje_katalog platwie_katalog krokwie_katalog zadaszenie_katalog zadaszenie_slupy_katalog].freeze unless
+        const_defined?(:LISTY_PRZEKROJOW)
       # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze.
-      DO_FABRYCZNYCH = { 2 => %w[podciag_poziom] }.freeze unless const_defined?(:DO_FABRYCZNYCH)
+      DO_FABRYCZNYCH = { 2 => %w[podciag_poziom], 3 => LISTY_PRZEKROJOW }.freeze unless const_defined?(:DO_FABRYCZNYCH)
+      # To samo we własnych szablonach: wersja pliku => klucze.
+      DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW }.freeze unless const_defined?(:DO_FABRYCZNYCH_W_SZABLONACH)
 
       module_function
 
@@ -53,6 +59,12 @@ module ArteMadera
         if d['ostatnie'].is_a?(Hash)
           # Plik starszej wersji: zmienione wartości fabryczne zastępują zapamiętane (np. poziom podciągu – wymóg użytkownika).
           DO_FABRYCZNYCH.each { |wersja, klucze| klucze.each { |k| d['ostatnie'].delete(k) } if d['wersja'].to_i < wersja }
+        end
+        if d['szablony'].is_a?(Hash)
+          DO_FABRYCZNYCH_W_SZABLONACH.each do |wersja, klucze|
+            next unless d['wersja'].to_i < wersja
+            d['szablony'].each_value { |sz| klucze.each { |k| sz.delete(k) } if sz.is_a?(Hash) }
+          end
         end
         pusty.merge('ostatnie' => d['ostatnie'].is_a?(Hash) ? d['ostatnie'] : {},
                     'szablony' => d['szablony'].is_a?(Hash) ? d['szablony'] : {},

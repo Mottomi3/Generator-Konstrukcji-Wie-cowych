@@ -21,7 +21,7 @@ module ArteMadera
     PLUGIN_VERSION = '1.0.0'.freeze unless const_defined?(:PLUGIN_VERSION)
     PLUGIN_AUTHOR  = 'Arte Madera'.freeze unless const_defined?(:PLUGIN_AUTHOR)
     # Numer kompilacji – rośnie z każdą rundą prac; ten sam w arte_madera_generator_wiencowy.rb.
-    PLUGIN_BUILD      = '13'.freeze unless const_defined?(:PLUGIN_BUILD)
+    PLUGIN_BUILD      = '14'.freeze unless const_defined?(:PLUGIN_BUILD)
     PLUGIN_BUILD_DATE = '2026-11-25'.freeze unless const_defined?(:PLUGIN_BUILD_DATE)
 
     unless const_defined?(:EXTENSION_DIR)
@@ -39,13 +39,13 @@ module ArteMadera
 
     # Moduły w kolejności zależności: rdzeń (czysty Ruby), potem warstwa SketchUpa.
     MODULE_FILES = %w[
-      rdzen/geometria rdzen/parametry_dach rdzen/parametry_taras rdzen/parametry_zadaszenie rdzen/parametry_podloga rdzen/parametry_lista rdzen/parametry rdzen/skrzydla rdzen/obrys rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras_sciany rdzen/taras rdzen/taras_balustrada rdzen/taras_slupy rdzen/taras_szczyt rdzen/stolarka rdzen/otwory
+      rdzen/geometria rdzen/wykaz_drewna rdzen/parametry_dach rdzen/parametry_taras rdzen/parametry_zadaszenie rdzen/parametry_podloga rdzen/parametry_lista rdzen/parametry rdzen/skrzydla rdzen/obrys rdzen/sciana_w_linii rdzen/sciany rdzen/ustawienia_scian rdzen/wience rdzen/taras_sciany rdzen/taras rdzen/taras_balustrada rdzen/taras_slupy rdzen/taras_szczyt rdzen/stolarka rdzen/otwory
       rdzen/usztywnienie rdzen/wegly_tabela rdzen/symetria_wegly rdzen/wypusty_okapu rdzen/styki_dzialowe rdzen/styki_tarasu rdzen/styki rdzen/bryla rdzen/profil_bala rdzen/pryzmat rdzen/zamek_platwi rdzen/elementy rdzen/platwie_wience rdzen/dach_jednospadowy rdzen/dach rdzen/zadaszenie rdzen/szczyty rdzen/taras_wiazar rdzen/wegly_konstrukcyjne rdzen/podbitka rdzen/krok2 rdzen/polacie rdzen/dopelnienie rdzen/pod_dachem rdzen/bale
       rdzen/skos_przy_narozniku rdzen/sciecie_dachu
       rdzen/zamek
-      rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/statyka_dachu rdzen/statyka_wiazara rdzen/statyka_slupa rdzen/statyka_zadaszenia rdzen/statyka_krokwi rdzen/podloga_przybudowki rdzen/fundamenty rdzen/podciagi rdzen/podloga rdzen/projekt rdzen/kontrola rdzen/widok rdzen/zestawienie
-      rdzen/przyklady sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/dach_aplikacja sketchup/eksport
-      sketchup/okno sketchup/sterowanie sketchup/raport sketchup/menu
+      rdzen/siatka rdzen/pozycje rdzen/statyka rdzen/dlugosci_handlowe rdzen/statyka_dachu rdzen/statyka_wiazara rdzen/statyka_slupa rdzen/statyka_zadaszenia rdzen/statyka_krokwi rdzen/podloga_przybudowki rdzen/fundamenty rdzen/podciagi rdzen/podloga rdzen/awaria rdzen/projekt rdzen/kontrola_rownoleglych rdzen/kontrola rdzen/widok rdzen/zestawienie
+      rdzen/przyklady sketchup/konwersja sketchup/atrybuty sketchup/ustawienia sketchup/wejscie sketchup/budowa sketchup/dach_aplikacja sketchup/eksport sketchup/dziennik_pracy
+      sketchup/okno sketchup/sterowanie sketchup/raport sketchup/menu sketchup/pasek
     ].freeze unless const_defined?(:MODULE_FILES)
 
     MODULE_FILES.each do |plik|
@@ -62,6 +62,7 @@ module ArteMadera
 
     unless file_loaded?(__FILE__)
       Menu.dodaj if defined?(Menu)
+      Pasek.dodaj if defined?(Pasek)
       file_loaded(__FILE__)
     end
   end

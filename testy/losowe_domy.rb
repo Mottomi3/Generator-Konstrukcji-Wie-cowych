@@ -320,6 +320,11 @@ module LosoweDomy
     k = G::Kontrola.wszystko(pl)
     problemy << "kolizje w zamkach: #{k[:kolizje].length} (#{k[:kolizje].first.inspect})" unless k[:kolizje].empty?
     problemy << "mijanka: #{k[:mijanka].first(3).inspect}" unless k[:mijanka].empty?
+    # Ściany równoległe (runda 14): bale ścian i działowych nigdy nie mogą zajmować tego samego miejsca; węgły dwóch ścian
+    # narysowanych bliżej niż długość węgła – tylko z ostrzeżeniem dla użytkownika.
+    wegly = pl[:sciany].select { |w| w[:rodzaj] == :kontrfor }.map { |w| w[:id] }
+    nak = k[:nakladanie].reject { |n| (n[:sciany] - wegly).empty? && pl[:ostrzezenia].any? { |u| u.include?('zajmują to samo miejsce') } }
+    problemy << "bale ścian równoległych w tym samym miejscu: #{nak.length} (#{nak.first.inspect})" unless nak.empty?
     if !k[:styki_bez_zamka].empty? && pl[:ostrzezenia].none? { |u| u.include?('styk bez zamka') }
       problemy << "styki bez zamka bez ostrzeżenia: #{k[:styki_bez_zamka].first(3).inspect}"
     end

@@ -590,8 +590,19 @@ module Sketchup
   end
 
   class Selection
+    # Jak w SketchUpie: zaznaczenie można przeglądać (each, any?, find…).
+    include Enumerable
+
     def initialize
       @lista = []
+    end
+
+    def each(&blk)
+      @lista.dup.each(&blk)
+    end
+
+    def length
+      @lista.length
     end
 
     def to_a
@@ -691,6 +702,10 @@ class SketchupExtension
   end
 end
 
+TB_HIDDEN = 0 unless defined?(TB_HIDDEN)
+TB_VISIBLE = 1 unless defined?(TB_VISIBLE)
+TB_NEVER_SHOWN = -1 unless defined?(TB_NEVER_SHOWN)
+
 module UI
   @komunikaty = []
   @odpowiedz = 6
@@ -737,6 +752,70 @@ module UI
 
     def menu(_nazwa)
       Menu.new
+    end
+
+    # Menu pod prawym przyciskiem: bloki zapisane w UI.menu_kontekstowe; test woła UI.prawy_przycisk i dostaje Menu
+    # z pozycjami, które dodały.
+    def menu_kontekstowe
+      @menu_kontekstowe ||= []
+    end
+
+    def add_context_menu_handler(&blk)
+      menu_kontekstowe << blk
+      menu_kontekstowe.length
+    end
+
+    def prawy_przycisk
+      m = Menu.new
+      menu_kontekstowe.each { |blk| blk.call(m) }
+      m
+    end
+  end
+
+  # Polecenie paska narzędzi (nazwa, blok, ikony, opisy); wywolaj – kliknięcie przycisku.
+  class Command
+    attr_accessor :small_icon, :large_icon, :tooltip, :status_bar_text, :menu_text
+    attr_reader :nazwa
+
+    def initialize(nazwa, &blk)
+      @nazwa = nazwa
+      @blk = blk
+    end
+
+    def wywolaj
+      @blk.call if @blk
+    end
+  end
+
+  # Pasek narzędzi: Toolbar.ostatni_stan ustawia test (nil – pierwsze uruchomienie, TB_NEVER_SHOWN).
+  class Toolbar
+    class << self
+      attr_accessor :ostatni_stan
+    end
+    attr_reader :nazwa, :polecenia, :pokazany, :przywrocony
+
+    def initialize(nazwa)
+      @nazwa = nazwa
+      @polecenia = []
+      @pokazany = false
+      @przywrocony = false
+    end
+
+    def add_item(polecenie)
+      @polecenia << polecenie
+      self
+    end
+
+    def get_last_state
+      self.class.ostatni_stan.nil? ? TB_NEVER_SHOWN : self.class.ostatni_stan
+    end
+
+    def show
+      @pokazany = true
+    end
+
+    def restore
+      @przywrocony = true
     end
   end
 

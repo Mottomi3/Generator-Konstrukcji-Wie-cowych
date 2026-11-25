@@ -3,9 +3,9 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/sterowanie.rb
 # Zadanie: przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
-# Tematy: sterowanie, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan, dach z aplikacji po budowie
-# Zależy od: rdzen/projekt.rb, rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/dach_aplikacja.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, log.rb
-# Używają: sketchup/menu.rb, sketchup/okno.rb (wywołania z okna)
+# Tematy: sterowanie, okienko po awarii obliczeń, wpis do dziennika pracy po generowaniu, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan, dach z aplikacji po budowie
+# Zależy od: rdzen/projekt.rb, rdzen/awaria.rb (plan[:wyjatek]), rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/dach_aplikacja.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, sketchup/dziennik_pracy.rb, log.rb
+# Używają: sketchup/menu.rb, sketchup/pasek.rb, sketchup/okno.rb (wywołania z okna)
 #
 # Wejście domu (Hash zapisywany w modelu): segmenty, z0, parametry, otwory, sciany (ustawienia ścian z widoku ściany).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -44,6 +44,7 @@ module ArteMadera
           end
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
           @plan = plan
+          okienko_awarii(plan, @wejscie)
           Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'wegly' => @wejscie['wegly'] || [],
                      'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan))
         rescue => e
@@ -93,8 +94,10 @@ module ArteMadera
           wej = scal(dane)
           Ustawienia.zapamietaj(wej['parametry'])
           plan = Log.time('obliczenia') { Projekt.oblicz(wej) }
+          ms_obliczen = ostatni_czas
           @plan = plan
           wynik = dla_okna(plan)
+          okienko_awarii(plan, wej)
           return wynik unless plan[:bledy].empty?
           stary = @dom && @dom.valid? ? @dom : nil
           if stary && Atrybuty.zmieniony_recznie?(stary)
@@ -104,6 +107,7 @@ module ArteMadera
           end
           stary_id = stary ? Atrybuty.dom_id(stary) : nil
           zb = Log.time('budowa modelu') { Budowa.zbuduj(model, plan, wej, stary) }
+          ms_budowy = ostatni_czas
           @dom = zb[:grupa]
           @wejscie = wej
           model.selection.clear
@@ -111,6 +115,7 @@ module ArteMadera
           Log.info(format('Dom wygenerowany: %d ścian, %d bali, %d pozycji.', plan[:sciany].length, plan[:bale].length,
                           plan[:pozycje].length))
           dach = DachAplikacja.po_budowie(model, @dom, plan, stary_id)
+          DziennikPracy.generowanie(plan, wej, stary ? 'edycja' : 'nowy', ms_obliczen, ms_budowy, zb, dach, PLUGIN_BUILD)
           wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany], 'dach' => dach)
         end
 
@@ -122,18 +127,34 @@ module ArteMadera
           wej = Atrybuty.czytaj_wejscie(dom)
           return UI.messagebox('Zaznaczony dom nie ma zapisanych parametrów – wygeneruj go ponownie z linii.') if wej.nil?
           plan = Projekt.oblicz(wej)
+          return UI.messagebox(plan[:bledy].join("\n\n")) unless plan[:bledy].empty?
           k = Log.time('kontrola') { Kontrola.wszystko(plan) }
           tekst = []
           tekst << (k[:kolizje].empty? ? 'Zamki: bez kolizji.' : "Zamki: #{k[:kolizje].length} miejsc kolizji (szczegóły w Konsoli Ruby).")
           tekst << (k[:mijanka].empty? ? 'Mijanka styków: w porządku (min. 300 mm).' : "Mijanka: #{k[:mijanka].length} naruszeń.")
           tekst << (k[:za_dlugie].empty? ? 'Długości bali: w porządku.' : "Za długie bale: #{k[:za_dlugie].length}.")
           tekst << (k[:styki_bez_zamka].empty? ? 'Styki w zamkach: w porządku.' : "Styki bez zamka: #{k[:styki_bez_zamka].length}.")
+          tekst << (k[:nakladanie].empty? ? 'Ściany równoległe: bez nakładania.' : "Ściany równoległe: bale w tym samym miejscu – #{k[:nakladanie].map { |n| n[:sciany].join(' i ') }.uniq.join(', ')}.")
           k[:kolizje].first(20).each { |c| Log.warn("Kolizja #{c[:sciany].join('/')} przy #{c[:punkt].inspect}, z #{c[:z].inspect}") }
           k[:mijanka].each { |m| Log.warn("Mijanka #{m[:sciana]} wieniec #{m[:wieniec]}: #{m[:odstep]} mm") }
           UI.messagebox(tekst.join("\n"))
         rescue => e
           Log.error('Sterowanie.kontrola', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}")
+        end
+
+        # Okienko z komunikatem, gdy obliczenia przerwał nieprzewidziany błąd (plan[:wyjatek] – rdzen/awaria.rb): przy
+        # starcie i przy „Generuj”; podgląd po zmianie pola pokazuje ten sam komunikat tylko na liście błędów w oknie.
+        def okienko_awarii(plan, wejscie = nil)
+          return unless plan && plan[:wyjatek]
+          DziennikPracy.awaria(plan, wejscie, PLUGIN_BUILD)
+          UI.messagebox(plan[:bledy].first.to_s)
+        end
+
+        # Czas ostatniego zmierzonego etapu (Log.time) w milisekundach.
+        def ostatni_czas
+          c = Log.czasy.last
+          c ? c['ms'] : nil
         end
 
         # Wejście domu: zapamiętane linie i poziom + parametry, otwory i ustawienia ścian (widok ściany) z okna.

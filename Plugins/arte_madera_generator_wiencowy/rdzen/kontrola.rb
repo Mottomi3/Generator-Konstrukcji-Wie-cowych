@@ -4,7 +4,7 @@
 # Plik: rdzen/kontrola.rb
 # Zadanie: kontrola wyniku – kolizje bali w słupach zamków, mijanka styków w sąsiednich wieńcach, styki poza zamkiem, długości bali.
 # Tematy: kontrola, kolizje, nachodzenie bali, sprawdzenie zamka, mijanka – sprawdzenie, styk bez zamka, długość – sprawdzenie, luz pionowy
-# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk)
+# Zależy od: rdzen/bryla.rb, rdzen/bale.rb (polozenie), rdzen/zamek.rb (bale_w_zamku), rdzen/parametry.rb, rdzen/styki_tarasu.rb (front tarasu łączony na styk), rdzen/kontrola_rownoleglych.rb (ściany równoległe)
 # Używają: testy, sketchup/sterowanie.rb (menu „Kontrola”)
 #
 # Kolizje liczone dokładnie dla brył z obróbek prostokątnych: siatka komórek z granic przedziałów wszystkich bali
@@ -15,15 +15,18 @@ require File.join(File.dirname(__FILE__), 'bryla') unless defined?(ArteMadera::G
 require File.join(File.dirname(__FILE__), 'bale') unless defined?(ArteMadera::GeneratorWiencowy::Bale)
 require File.join(File.dirname(__FILE__), 'zamek') unless defined?(ArteMadera::GeneratorWiencowy::Zamek)
 require File.join(File.dirname(__FILE__), 'styki_tarasu') unless defined?(ArteMadera::GeneratorWiencowy::StykiTarasu)
+require File.join(File.dirname(__FILE__), 'kontrola_rownoleglych') unless defined?(ArteMadera::GeneratorWiencowy::KontrolaRownoleglych)
 
 module ArteMadera
   module GeneratorWiencowy
     module Kontrola
       module_function
 
-      # Wszystkie kontrole: { kolizje:, mijanka:, za_dlugie:, styki_bez_zamka: } (puste listy = w porządku).
+      # Wszystkie kontrole: { kolizje:, mijanka:, za_dlugie:, styki_bez_zamka:, nakladanie: } (puste listy = w porządku);
+      # nakladanie – bale ścian równoległych w tym samym miejscu (rdzen/kontrola_rownoleglych.rb).
       def wszystko(plan)
-        { kolizje: kolizje(plan), mijanka: mijanka(plan), za_dlugie: za_dlugie(plan), styki_bez_zamka: styki_bez_zamka(plan) }
+        { kolizje: kolizje(plan), mijanka: mijanka(plan), za_dlugie: za_dlugie(plan), styki_bez_zamka: styki_bez_zamka(plan),
+          nakladanie: KontrolaRownoleglych.nakladanie(plan) }
       end
 
       # Kolizje w słupach zamków: [{ sciany: [id, id], punkt: [x, y], bale: [nr, nr], z: [z0, z1], objetosc: mm³ }].

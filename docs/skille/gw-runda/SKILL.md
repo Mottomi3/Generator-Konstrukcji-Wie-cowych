@@ -11,7 +11,7 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 
 | Co | Gdzie |
 |---|---|
-| Repozytorium | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`; od rundy 5 publiczne) |
+| Repozytorium | `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`); użytkownik chce prywatnego (2026-11-25) – stan w najnowszym `przekazanie_rN.md` §0 |
 | Kontener | `/home/claude/gw` (testy liczą ścieżki względem siebie – katalog może być inny) |
 | Dysk użytkownika | `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` – `Plugins\`, `testy\`, `docs\` (z `docs\skille\`), `CLAUDE.md`, `README.md`, paczka `.rbz`, `repozytorium_rN.bundle` (historia git); obok `00_Analiza\`, `Pliki źródłowe\` (nie ruszać) |
 | Projekt claude.ai | `claude/stan_prac.md`, `claude/przekazanie_rN.md`, `claude/specyfikacja.md`, `claude/scenariusz_odbioru.md`, `claude/parametry.md`, `claude/decyzje_projektowe.md`, `claude/analiza_plikow_zrodlowych.md`, `claude/zadanie_*.md` |
@@ -19,7 +19,12 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 
 ## A. Start
 
-1. Kontekst: `CLAUDE.md`, `docs/stan_prac.md`, najnowsze `docs/przekazanie_rN.md`; nowa runda N = ostatnia + 1.
+1. Kontekst: `CLAUDE.md`, `docs/stan_prac.md` (stan bieżący; historia w `docs/historia_rund.md` – tylko gdy potrzebna),
+   najnowsze `docs/przekazanie_rN.md`; nowa runda N = ostatnia + 1. **Najpierw kolejka z `stan_prac.md` §5** (zaległe
+   poprawki i decyzje), potem nowe prośby.
+1a. Raporty z dysku (od rundy 14): `device_request_folder_access` na folder z tabeli „Stałe”, potem w `raporty\` najnowszy
+   `raport_*.json` (pole `wynik`, `przyklady[].czas_budowy_s`) i `dziennik_pracy.jsonl` (czasy z prawdziwej pracy,
+   ustawienia zmienione przez użytkownika, awarie). Awaria albo dom z problemem = pierwsza pozycja rundy.
 2. Kod: `add_repo` (push) i `git clone https://github.com/Mottomi3/Generator-Konstrukcji-Wie-cowych` (pełna historia).
    Gdy repozytorium nie istnieje: `device_list_dir` na folderze z dysku, `device_stage_files` pliku `repozytorium_rN.bundle`
    (najnowszy) i `git clone repozytorium_rN.bundle /home/claude/gw` – pełna historia; brak paczki → pliki z `Plugins\`,
@@ -41,8 +46,10 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 1. Data z `current_time`; `PLUGIN_BUILD` i `PLUGIN_BUILD_DATE` w rejestratorze **i** `main.rb`.
 2. `ruby testy/spis_tresci.rb`, `bash testy/uruchom.sh` → FAILURES 0 (zanotuj liczbę sprawdzeń z `testy/wyniki/*.txt`).
 3. `ruby testy/buduj_rbz.rb` → `arte_madera_generator_wiencowy_1.0.0.rbz` w katalogu głównym.
-4. Dokumenty: `docs/stan_prac.md` (nagłówek, §5 „Co zrobiła runda N”, pytania, plan), `docs/przekazanie_rN.md`,
-   `docs/scenariusz_odbioru.md` (kompilacja N, nowe kroki), `docs/specyfikacja.md` przy zmianie zasad.
+4. Dokumenty: `docs/stan_prac.md` (nagłówek, §1 „Nowe w kompilacji N” – poprzednie §1 przenieś do
+   `docs/historia_rund.md`; §5 kolejka decyzji, §6 pytania, §8 ograniczenia, §9 plan), `docs/przekazanie_rN.md`,
+   `docs/scenariusz_odbioru.md` (krótki: instalacja, test działania, co nowego obejrzeć), `docs/specyfikacja.md` przy
+   zmianie zasad. `stan_prac.md` ma zostać krótki – historia do `historia_rund.md`.
 5. Commit `rN: <co zrobiono>` z wynikiem testów i stopką z przypomnienia systemowego; `git push origin main`
    (gdy repozytorium istnieje). Bez znaczników.
 6. Dysk: `device_list_dir` (rekurencyjnie) → kopie plików do `/mnt/user-data/outputs/gw/<ścieżka>` →

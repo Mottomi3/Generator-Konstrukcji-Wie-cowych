@@ -28,6 +28,9 @@ module ArteMadera
       G = Geometria unless const_defined?(:G)
       # Zapas oparcia doliczany do światła przęsła w obliczeniach [mm] (jak w rdzen/podloga.rb).
       OPARCIE = 50.0 unless const_defined?(:OPARCIE)
+      # Nośność wykorzystana od tylu w górę (0,9 = 90 %) to „bez zapasu” – podpowiedź z poziomem „uwaga” zamiast „ok”
+      # (rozstrzygnięcie użytkownika z 2026-11-14).
+      ZAPAS = 0.9 unless const_defined?(:ZAPAS)
 
       module_function
 
@@ -129,6 +132,11 @@ module ArteMadera
         wynik
       end
 
+      # Czy belka o wyniku s (Statyka.belka) wystarcza bez zapasu: nośność wykorzystana od ZAPAS w górę.
+      def na_styk?(s)
+        s[:ok] && [s[:wyk_m], s[:wyk_v]].max >= ZAPAS - 1e-9
+      end
+
       # Sprawdzenie najbardziej obciążonego podciągu: rozpiętość między fundamentami (rzędy e), szerokość zbierania
       # (połowa luk po obu stronach).
       def sprawdzenie(u, p, poz, przesla)
@@ -144,12 +152,22 @@ module ArteMadera
         nazwa = Parametry.tekst_przekroju([bp, hp])
         txt = format('Podciąg %s między fundamentami co %s m (zbiera %s m podłogi): nośność %d %%, ugięcie L/%d', nazwa,
                      format('%.2f', l / 1000.0), format('%.2f', szer / 1000.0), ([s[:wyk_m], s[:wyk_v]].max * 100).round, s[:l_przez_u].round)
-        return { poziom: 'ok', tekst: txt + ' – wystarczy.' } if s[:ok]
-        lepszy = Parametry.katalog(p).sort_by { |b, h| [b * h, -h] }.find do |b, h|
+        lista = Parametry.katalog(p).sort_by { |b, h| [b * h, -h] }
+        if s[:ok]
+          return { poziom: 'ok', tekst: txt + ' – wystarczy.' } unless na_styk?(s)
+          # Wystarcza bez zapasu (uwaga użytkownika z 2026-11-14: „nośność 99 % – wystarczy” na zielono wprowadzało w błąd).
+          zapas = lista.find do |b, h|
+            x = Statyka.belka(l, b, h, g, q, p['drewno_klasa'], p['ugiecie_minimalne'].to_f)
+            x[:ok] && !na_styk?(x)
+          end
+          return { poziom: 'uwaga', tekst: txt + format(' – wystarcza, ale bez zapasu (nośność od %d %%): %sgęstsze fundamenty dadzą zapas.',
+                                                        (ZAPAS * 100).round, zapas ? "podciąg #{Parametry.tekst_przekroju(zapas)} albo " : '') }
+        end
+        lepszy = lista.find do |b, h|
           Statyka.belka(l, b, h, g, q, p['drewno_klasa'], p['ugiecie_minimalne'].to_f)[:ok]
         end
         { poziom: 'blad', tekst: txt + format(' – za słaby: %szmniejsz rozstaw fundamentów (dodatkowy rząd w poprzek, np. co %s mm).',
-                                              lepszy ? "podciąg #{Parametry.tekst_przekroju(lepszy)} albo z" : 'z',
+                                              lepszy ? "weź podciąg #{Parametry.tekst_przekroju(lepszy)} albo " : '',
                                               Parametry.fmt(((l * 0.75) / 50.0).floor * 50.0)) }
       end
     end

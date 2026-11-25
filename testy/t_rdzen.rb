@@ -128,7 +128,9 @@ Testy.grupa('Obrys w kształcie L')
 pl = plan(wielokat([[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]]))
 Testy.rowne(pl[:bledy], [], 'brak błędów')
 Testy.rowne(pl[:sciany].count { |w| w[:rodzaj] == :zewnetrzna }, 6, '6 ścian')
-Testy.sprawdz(pl[:ostrzezenia].any? { |u| u.include?('wklęsły') }, 'ostrzeżenie o narożniku wklęsłym')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('wklęsły') && h[:sekcja] == 'sciany' && h[:poziom] == 'ok' },
+              'narożnik wklęsły – podpowiedź w sekcji „Ściany” (runda 14)')
+Testy.sprawdz(pl[:ostrzezenia].none? { |u| u.include?('wklęsły') }, 'narożnik wklęsły nie jest już ostrzeżeniem')
 bez_kolizji(pl, 'obrys L')
 
 Testy.grupa('Linia ukośna – błąd')

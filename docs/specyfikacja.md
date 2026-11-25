@@ -434,6 +434,48 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   obrysie (także pod ścianami przybudówki) i siatka fundamentów na całym obrysie, fundamenty pod podciągami tylko w polu
   podłogi. Kierunek legarów (krótszy / dłuższy bok) z pola podłogi. Dawna ściana okapowa zawsze na podwalinie.
 
+## 8i. Runda 14 – zaległe rozstrzygnięcia z 2026-11-14, długości z hurtowni, pasek narzędzi, prosty odbiór
+
+- **Działowa w linii ściany obrysu** (`rdzen/sciana_w_linii.rb`): koniec linii działowej leży w narożniku obrysu (w zasięgu
+  grubość + tolerancja od boku), jedna ściana obrysu jest do niej równoległa, druga poprzeczna, a działowa odchodzi od
+  narożnika (drugi koniec poza bokiem ściany równoległej). Wtedy: linia działowej przesuwana w poprzek na oś ściany
+  równoległej; koniec działowej = przecięcie z osią ściany poprzecznej, bez wypustu; ściana równoległa traci ostatek na tym
+  końcu (`s_od` = 0 albo `s_do` = `dl_osi`, `ostatki_param` = nil, `w_linii` = true). Bale obu ścian stykają się w osi
+  zamka, każdy ma na końcu połowę gniazda; ściana poprzeczna przechodzi przez węzeł z ostatkiem i trzyma oba końce.
+  Drugi koniec działowej tak samo, gdy oś drugiej ściany równoległej leży na tej samej linii (± 1 mm); inaczej – zwykłe
+  przejście przez ścianę poprzeczną.
+- **Linia działowej a obrys** (`rdzen/obrys.rb#przytnij_do_obrysu`): linia dzielona na punktach przecięcia z bokami;
+  kawałek na boku obrysu – pomijany bez ostrzeżenia; kawałek poza obrysem – ostrzeżenie; każdy ciąg kawałków w środku domu
+  to osobna działowa.
+- **Ściany równoległe** (`rdzen/kontrola_rownoleglych.rb`): pary ścian o tym samym kierunku z osiami bliżej niż grubość
+  bala; bale porównywane jako prostopadłościany (wzdłuż, w poprzek, w pionie), wspólna część powyżej 0,5 mm w każdym
+  kierunku = nakładanie. Wynik: `Kontrola.wszystko[:nakladanie]` i ostrzeżenie w oknie. W teście losowym bale ścian
+  i działowych nie mogą się nakładać nigdy; węgły dwóch ścian bliższych niż długość węgła – tylko z ostrzeżeniem.
+- **Awaria obliczeń** (`rdzen/awaria.rb`): `Projekt.oblicz` nie wypuszcza wyjątku – plan bez ścian, `bledy` = [zdanie po
+  polsku], `wyjatek` = „Klasa – treść [plik:wiersz, kompilacja N]”. Okienko przy starcie i „Generuj”; przy podglądzie tylko
+  lista błędów w oknie.
+- **Wykaz drewna** (`rdzen/wykaz_drewna.rb`): przekrój = mniejszy × większy wymiar; lista w parametrze
+  „b×h:długości w metrach przez ukośnik”, wpis bez dwukropka = bez ograniczenia; liczba poniżej 100 to metry, od 100 –
+  milimetry. Listy fabryczne: legary (C24 od 45 × 95 i drewno widoczne), płatwie i belki zadaszenia (widoczne prostokątne
+  od szerokości 60), krokwie (C24 od 45 × 145, widoczne 45 i 60 × ≥ 120, 80 × 160 / 200), słupy zadaszenia (kwadratowe).
+- **Długości handlowe** (`rdzen/dlugosci_handlowe.rb`): dobór płatwi (`StatykaDachu.dobierz`) i członów zadaszenia
+  (`StatykaZadaszenia.dobierz`) – spośród wystarczających najlżejszy, którego najdłuższa belka z listy ≥ długość
+  najdłuższego członu grupy; gdy żaden – najlżejszy wystarczający. Podpowiedź (poziom „uwaga”, sekcja grupy) dla belek
+  modelu dłuższych niż najdłuższa handlowa ich przekroju: legary, podciągi, płatwie, krokwie, belki trójkąta, płatwie,
+  belki i słupy zadaszenia; przekrój spoza listy albo bez długości – bez podpowiedzi.
+- **Podpowiedzi podłogi**: podciąg wystarczający z nośnością ≥ 90 % (`Podciagi::ZAPAS`) – poziom „uwaga” z radą; zdanie
+  o legarze bez podciągów w trybie przypuszczającym.
+- **Pasek narzędzi** (`sketchup/pasek.rb`): trzy polecenia (start, kontrola, test działania); pierwsze uruchomienie – pasek
+  pokazany, potem stan zapamiętany przez SketchUpa. Menu pod prawym przyciskiem: dom z generatora w zaznaczeniu – edycja
+  i kontrola; co najmniej 4 zaznaczone linie bez domu – nowy dom.
+- **Folder raportów i dziennik pracy** (`sketchup/dziennik_pracy.rb`): `Dokumenty\ArteMadera Generator Konstrukcji
+  Wieńcowych\raporty\` (gdy folder projektu istnieje; inaczej `raporty` obok pliku ustawień). Raport z testu działania:
+  `raport_RRRR-MM-DD_GGMMSS_kN.json` z polem `wynik` (domy, w porządku, problemy, czasy). Dziennik: `dziennik_pracy.jsonl`,
+  wiersz po każdym „Generuj” (tryb, obrys, liczby, `ms_obliczen`, `ms_budowy`, ostrzeżenia, ustawienia zmienione względem
+  fabrycznych) i po awarii; najwyżej 400 ostatnich wierszy.
+- **Plik ustawień wersja 3** (`sketchup/ustawienia.rb`): listy przekrojów z pliku starszej wersji (ostatnie parametry
+  i własne szablony) zastępowane fabrycznymi.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):
@@ -517,7 +559,8 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   o objętości innej niż z profilu (> 0,2 %), ściany, których nie narysowano, kontrola zamków i styków, czasy;
 - zaznaczony dom: kompilacja, ręczne zmiany, zgodność modelu z parametrami;
 - środowisko (SketchUp, Ruby, jednostki modelu, plik ustawień) i dziennik (błędy, ostrzeżenia, czasy);
-- zapis do pliku JSON (okno zapisu) i okienko z podsumowaniem – plik do wysłania przy zgłoszeniu problemu.
+- zapis do pliku JSON w folderze raportów – sam, bez okna zapisu (od rundy 14, §8i) – i okienko z wynikiem jednym zdaniem;
+  w raporcie także ostatnie wpisy dziennika pracy i kontrola ścian równoległych.
 
 ## 11. Etapy dalej
 
