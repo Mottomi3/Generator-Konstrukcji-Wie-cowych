@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/szczyty.rb
 # Zadanie: szczyty z bali – które ściany mają szczyt, wieńce szczytu do kalenicy, skos bali wg linii dachu, gniazda pod płatwie.
-# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, gniazdo płatwi w węgle pod nią, czop węgła we wrębie płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu
-# Zależy od: rdzen/parametry.rb, rdzen/podbitka.rb (węgły przy szczycie pod podbitką), rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi)
+# Tematy: szczyt, ściana szczytowa, bal szczytowy, skos bala, gniazdo płatwi, gniazdo płatwi w węgle pod nią, czop węgła we wrębie płatwi, płatew przez szczyt, szczyt na działowej, wysokość szczytu, prefiks Sz, szczyt skośny (jednospadowy), szczyt płaski ściany wysokiej, zasięg pod linią dachu, załom linii szczytu, załamanie zadaszenia w szczycie, ściana przybudówki pod połacią
+# Zależy od: rdzen/parametry.rb, rdzen/podbitka.rb (węgły przy szczycie pod podbitką), rdzen/wience.rb, rdzen/dach.rb (linia szczytu, płatwie), rdzen/dach_jednospadowy.rb (ściana wysoka), rdzen/taras.rb (szczyt ściany domu przy tarasie), rdzen/zamek_platwi.rb (gniazdo pod wrąb płatwi), rdzen/zadaszenie.rb (przekrój dachu z zadaszeniem, płatwie zadaszenia)
 # Używają: rdzen/projekt.rb, rdzen/wience.rb (liczba wieńców szczytu), rdzen/bale.rb (zasięg i skos bali), rdzen/pozycje.rb (prefiks Sz)
 #
 # Szczyt ściany (w[:szczyt]): { v_a:, v_b: (osie ścian okapowych w kierunku v), v0: (v punktu a ściany), kv: (±1 – znak
@@ -22,6 +22,7 @@ require File.join(File.dirname(__FILE__), 'podbitka') unless defined?(ArteMadera
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 require File.join(File.dirname(__FILE__), 'zamek_platwi') unless defined?(ArteMadera::GeneratorWiencowy::ZamekPlatwi)
 require File.join(File.dirname(__FILE__), 'otwory') unless defined?(ArteMadera::GeneratorWiencowy::Otwory)
+require File.join(File.dirname(__FILE__), 'zadaszenie') unless defined?(ArteMadera::GeneratorWiencowy::Zadaszenie)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -47,7 +48,8 @@ module ArteMadera
         szczytowe.each do |w|
           va = w[:a][idx]
           vb = w[:b][idx]
-          geo = { v_a: [va, vb].min, v_b: [va, vb].max }
+          # Boczne zadaszenie (rdzen/zadaszenie.rb): opis załamania, przy przybudówce osie ścian okapowych domu.
+          geo = Zadaszenie.geo({ v_a: [va, vb].min, v_b: [va, vb].max }, sciany, p, idx)
           w[:szczyt] = geo.merge(iv: idx, v0: va, kv: vb >= va ? 1.0 : -1.0, z_okap: z_okap)
           w[:szczyt][:z_max] = z_max(w, p)
         end
@@ -57,6 +59,7 @@ module ArteMadera
           wynik[:uwagi] << 'Dach: belki dachu (płatwie, krokwie) tylko dla obrysu prostokątnego i w kształcie L – szczyty liczone dla każdej ściany osobno.'
         end
         dzialowe_do_dachu!(sciany, wynik[:dom], p, z_okap)
+        sciany_przybudowki!(sciany, wynik[:dom], p, z_okap)
         wynik
       end
 
@@ -88,6 +91,8 @@ module ArteMadera
         t2 = Parametry.grubosc(p) / 2.0
         sciany.each do |w|
           next unless w[:rodzaj] == :dzialowa && w[:nizsza].nil? && w[:szczyt].nil?
+          # Dawna ściana okapowa przy przybudówce (rdzen/zadaszenie.rb) – wysokość i oparcie dachu jak ściany okapowej.
+          next if Zadaszenie.rola(w) == :dom
           # Dom L: dach, w którego strefie leży działowa (rdzen/skrzydla.rb).
           d = Skrzydla.dom_sciany(dom, w, p)
           next if d.nil? || w[:os] != d[:os]
@@ -97,6 +102,21 @@ module ArteMadera
           z = Dach.linia_podparcia(geo, v, p)
           next if z <= Wience.wysokosc(w, p) + 1.0
           w[:szczyt] = geo.merge(iv: iv, v0: v, kv: 0.0, z_okap: z_okap, z_max: z, plaski: true, dzialowa: true)
+        end
+      end
+
+      # Ściana zewnętrzna przybudówki (rdzen/zadaszenie.rb): szczyt płaski do połaci zadaszenia – wieńce do linii podparcia na
+      # licu od strony domu (wyższym), wyższe pominięte, górny bal ścięty do płaszczyzny zadaszenia (rdzen/sciecie_dachu.rb).
+      def sciany_przybudowki!(sciany, dom, p, z_okap)
+        return if dom.nil? || dom[:zad].nil?
+        t2 = Parametry.grubosc(p) / 2.0
+        iv = dom[:iv]
+        geo = Dach.geo(dom)
+        sciany.each do |w|
+          next unless Zadaszenie.rola(w) == :przybudowka
+          v = w[:a][iv] - w[:zadaszenie][:kier] * t2
+          z = Dach.linia_podparcia(geo, v, p)
+          w[:szczyt] = geo.merge(iv: iv, v0: v, kv: 0.0, z_okap: z_okap, z_max: z, plaski: true, przybudowka: true)
         end
       end
 
@@ -137,7 +157,9 @@ module ArteMadera
         u = szcz.map { |w| w[:a][iu] }.sort
         g = szcz[0][:szczyt]
         wewn = szczytowe.select { |w| w[:rodzaj] == :dzialowa }.map { |w| w[:a][iu] }.sort
-        { os: os, iv: 1 - iu, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1], wewn: wewn }
+        d = { os: os, iv: 1 - iu, v_a: g[:v_a], v_b: g[:v_b], u1: u[0], u2: u[1], wewn: wewn }
+        d[:zad] = g[:zad] if g[:zad]
+        d
       end
 
       # Współrzędna v punktu s ściany ze szczytem.
@@ -172,12 +194,12 @@ module ArteMadera
         l.last[:z0] + l.last[:h]
       end
 
-      # Załom linii szczytu (kalenica) – s ściany; dach jednospadowy i szczyt płaski – nil (linia prosta).
+      # Załomy linii szczytu – s ściany: kalenica i linie załamania bocznego zadaszenia; dach jednospadowy i szczyt płaski –
+      # [] (linia prosta).
       def zalom(w, p)
         g = w[:szczyt]
-        return nil if g.nil? || g[:plaski]
-        v = Dach.zalom_v(g, p)
-        v.nil? ? nil : s_z_v(w, v)
+        return [] if g.nil? || g[:plaski]
+        Dach.zalomy_v(g, p).map { |v| s_z_v(w, v) }
       end
 
       # Czy wysokość z w miejscu s ściany jest pod linią szczytu (ściana bez szczytu – zawsze).
@@ -194,12 +216,15 @@ module ArteMadera
       end
 
       # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek (szczyt płaski –
-      # najcieńszy pasek górnego bala ściany wysokiej, jednospad_min_pasek); nil – brak bala.
+      # najcieńszy pasek górnego bala ściany wysokiej, jednospad_min_pasek; ściana przybudówki – pasek na niższym licu);
+      # nil – brak bala.
       def zasieg(w, z0, p)
         g = w[:szczyt]
         return [w[:s_od], w[:s_do]] if g.nil?
         m = p['szczyt_min_wysokosc'].to_f
         m = [m, p['jednospad_min_pasek'].to_f].max if g[:plaski]
+        # Ściana przybudówki: najcieńszy pasek na licu zewnętrznym (niższym) – połać opada w poprzek ściany o t · tg kąta.
+        m += Parametry.grubosc(p) * Zadaszenie.tg(p) if g[:przybudowka]
         return zasieg_czesci(w, z0, m, p) if g[:s_zakres]
         zasieg_linii(w[:s_od], w[:s_do], zalom(w, p), z0 + m) { |s| linia(w, s, p) }
       end
@@ -216,11 +241,10 @@ module ArteMadera
         pod.nil? ? poza : [[pod[0], poza[0]].min, [pod[1], poza[1]].max]
       end
 
-      # Zasięg [s0, s1] odcinka s_od…s_do, na którym linia dachu (blok: s → wysokość; prosta albo łamana z załomem sk,
-      # wypukła w górę) jest wyżej niż z_min; nil – nigdzie (krócej niż 1 mm).
+      # Zasięg [s0, s1] odcinka s_od…s_do, na którym linia dachu (blok: s → wysokość; prosta albo łamana z załomami sk –
+      # liczba albo lista; rośnie do kalenicy i maleje za nią) jest wyżej niż z_min; nil – nigdzie (krócej niż 1 mm).
       def zasieg_linii(s_od, s_do, sk, z_min)
-        punkty = [s_od, s_do]
-        punkty.insert(1, sk) if sk && sk > s_od && sk < s_do
+        punkty = [s_od] + Array(sk).select { |x| x > s_od && x < s_do }.sort + [s_do]
         lo = nil
         hi = nil
         punkty.each_cons(2) do |a, b|
@@ -249,11 +273,10 @@ module ArteMadera
         end
       end
 
-      # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załom w sk, nil – linia prosta): odcinki, na
-      # których linia schodzi poniżej wierzchu bala.
+      # Skosy kawałka s0…s1 pod linią daszkową (blok: s → wysokość linii; załomy w sk – liczba albo lista, nil – linia
+      # prosta): odcinki, na których linia schodzi poniżej wierzchu bala.
       def skosy_linii(s0, s1, z0, h, sk)
-        punkty = [s0, s1]
-        punkty.insert(1, sk) if sk && sk > s0 + 0.5 && sk < s1 - 0.5
+        punkty = [s0] + Array(sk).select { |x| x > s0 + 0.5 && x < s1 - 0.5 }.sort + [s1]
         wynik = []
         punkty.each_cons(2) do |a, b|
           # Koniec klina wyżej od spodu o mniej niż 0,2 mm – ostrze na spodzie (bez krawędzi krótszej niż tolerancja SketchUpa).
@@ -273,7 +296,8 @@ module ArteMadera
         return unless Parametry.tak?(p, 'szczyty')
         if dom
           Skrzydla.domy(dom).each do |d|
-            platwie = Dach.platwie(Dach.geo(d), p)
+            # Płatwie zadaszenia (rdzen/zadaszenie.rb) – gniazda w ścianach szczytowych i ostatkach, wręby jak płatwie dachu.
+            platwie = Dach.platwie(Dach.geo(d), p) + Zadaszenie.platwie(Dach.geo(d), p)
             d[:przejscia] = []
             d[:podparcia] = []
             sciany.each { |w| gniazda_sciany(w, platwie, d, p) }

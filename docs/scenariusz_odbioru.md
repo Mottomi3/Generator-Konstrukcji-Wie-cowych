@@ -1,14 +1,45 @@
-# Scenariusz odbioru – kompilacja 11
+# Scenariusz odbioru – kompilacja 12
 
 Sprawdzenie w prawdziwym SketchUpie 2023. Przy problemie: zrzut ekranu + wiersze z `[ArteMadera GW]` z Konsoli Ruby
 (Rozszerzenia → Programista → Konsola Ruby) albo raport z kroku 2.
 
 1. **Instalacja.** Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
-   (zastępuje kompilację 10). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 11 (2026-11-16)”.
-   Aplikacja do dachów (ArteMadera Roof) **3.7.0** zainstalowana – do kroków 5, 5a i 6.
+   (zastępuje kompilację 11). **Uruchom SketchUpa ponownie** (bez tego stara i nowa wersja mieszają się w pamięci). W opisie rozszerzenia „Kompilacja 12 (2026-11-25)”.
+   Aplikacja do dachów (ArteMadera Roof) **3.12.0** zainstalowana (`artemadera_roof_3.12.0.rbz` z tej rundy – bez niej
+   zadaszenie nie dostanie połaci) – do kroków 4d–4h, 5, 5a i 6.
 2. **Test działania (najważniejsze).** Pusty model → Rozszerzenia → ArteMadera Generator Wieńcowy → „Test działania
-   i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 9 domów „w porządku” (ósmy: dach
-   jednospadowy, dziewiąty: taras jak 1100). **Prześlij ten plik.** Model po teście pusty.
+   i raport do wysłania…”. Zapisz `ArteMadera_GW_raport_….json`. Każdy z 11 domów „w porządku” (ósmy: dach
+   jednospadowy, dziewiąty: taras jak 1100, dziesiąty: wiata boczna na słupach, jedenasty: przybudówki z bali). **Prześlij
+   ten plik.** Model po teście pusty.
+**Nowe w kompilacji 12 (prośba z 25 listopada – boczne zadaszenie):**
+
+4a. **Wiata na słupach.** Prostokąt 6000 × 4000, dach 30°, sekcja „Boczne zadaszenie” → „na słupach z oczepem”, strona
+   dolna, szerokość 2000, kąt 12°. Podgląd / budowa: dach domu do lica ściany okapowej, dalej połać 12°; cztery słupy na
+   fundamentach (skrajne w osiach ścian szczytowych), na każdym belka poprzeczna do ściany (skrajne do końca ostatków),
+   oczep na belkach nad słupami, płatew pośrednia i płatew przy ścianie na słupkach; płatew przy ścianie przechodzi przez
+   ostatki ścian szczytowych (gniazda). Wszystko w grupie i tagu „Zadaszenie”. W wynikach „Zadaszenie: … prześwit pod
+   belkami …”.
+4b. **Strony i kąt.** „Zadaszenie – przy ścianie okapowej”: po obu stronach → dwie wiaty. Kąt zadaszenia 30° przy dachu
+   30° → ostrzeżenie „musi być mniejszy niż kąt dachu” i dom bez zadaszenia. Taras + zadaszenie → ostrzeżenie (jeszcze nie).
+4c. **Przybudówka z bali.** To samo z „ściany z bali (przybudówka)”: ściany szczytowe dłuższe o 2 m z łamaną linią szczytu
+   (kalenica i załamanie), dawna ściana okapowa jako działowa (wysokość jak była), ściana zewnętrzna przybudówki niska,
+   górny bal ścięty do połaci zadaszenia; płatwie zadaszenia w ścianach szczytowych. Węgieł ręczny / drzwi w ścianie
+   przybudówki – jak w każdej ścianie.
+4d. **Aplikacja do dachów 3.12.0 – połacie z załamaniem.** „Krokwie i poszycie – kto je buduje”: aplikacja → po budowie
+   trzy połacie (dwie dachu i zadaszenie), dolna pod 12°, wszystkie na wierzchu płatwi; okno KROKU 2. Ze starszą aplikacją –
+   komunikat „wymaga aplikacji do dachów 3.12.0”.
+4e. **Łaty pod blachę.** W KROKU 2 włącz łaty (np. moduł 350): nad załamaniem pierwsza łata przy samej linii załamania (jak
+   przy okapie), pod załamaniem ostatnia łata dotyka linii załamania; nowe pole „Pod załamaniem połaci – pełne moduły”
+   (włączone) → okap zadaszenia wydłużony tak, że od okapu do załamania same pełne moduły (podgląd i raport: „Połać pod
+   załamaniem … okap wydłużony o … mm – pełne moduły do linii załamania”). Łaty obu połaci nie nachodzą na siebie.
+4f. **Krokwie przy załamaniu.** Układ „płatwie i krokwie” albo „krokwie” → krokwie dachu kończą się nad załamaniem, krokwie
+   zadaszenia zaczynają się tam – styk w płaszczyźnie dwusiecznej (bez szczeliny na wierzchu). Raport: krokiew zadaszenia
+   od oczepu do załamania (płatew przy ścianie jako podpora u góry), krokiew dachu od załamania bez wspornika.
+4g. **Deski na płatwiach.** Układ „same płatwie”, deskowanie pełne → deski wzdłuż spadku na płatwiach obu połaci, styki na
+   płatwiach, przy załamaniu deski obu połaci się nie nachodzą.
+4h. **Krokwie z generatora.** „Krokwie i poszycie – kto je buduje”: generator → przy zadaszeniu krokiew zadaszenia (12°) od
+   jego okapu do linii załamania obok każdej krokwi dachu.
+
 **Nowe w kompilacji 11 (uwagi z 16 listopada):**
 
 3a. **Słupki z kontrfor pod płatwiami – do wyboru.** Sekcja „Węgły (kontrfory) 244” → „Słupki z kontrfor (węgły) pod

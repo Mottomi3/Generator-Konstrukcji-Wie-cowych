@@ -68,3 +68,21 @@ Temat: współpraca z Generatorem Wieńcowym – uwagi po 3.7.0
    i bez płatwi kalenicowej. Prośba (opcjonalnie): opcja `:zapisz => false` także dla okna (ustawienia tylko na
    start okna, ostatnie użytkownika bez zmian).
 ```
+
+## Część 3 – runda 12 generatora (2026-11-25): załamanie połaci – zrobione w aplikacji 3.12.0
+
+Prośba użytkownika: boczne zadaszenie pod mniejszym kątem niż połać dachu, aplikacja ma wiedzieć, gdzie jest załamanie
+(łaty pod blachę). Decyzja użytkownika: zmiany w obu wtyczkach w jednej sesji – wykonane bezpośrednio w repozytorium
+aplikacji (wersja 3.12.0, `CHANGELOG.md`):
+
+- `API.polacie(..., :zalamania => { nr => { :od, :szerokosc, :okap, :kat } })` – dolna połać za linią załamania;
+- krawędź `:kink` w KROKU 2 (także ręcznie narysowane połacie), docięcie w płaszczyźnie dwusiecznej, „w górę” – każda
+  połać o własną wysokość;
+- łaty: po obu stronach przy linii załamania, nad załamaniem jak od okapu; *Pod załamaniem połaci – pełne moduły*
+  (`:batten_kink_fit`, domyślnie tak) – okap zadaszenia wydłużany;
+- podpora na samej krawędzi połaci (kalenica, załamanie) liczy się dla obu połaci – załatwia prośbę 1 z części 2 (generator
+  może w przyszłości podawać wierzch płatwi kalenicowej wprost w grzbiecie, `Krok2::GRZBIET_NIZEJ` = 0 – do zrobienia po
+  sprawdzeniu w SketchUpie).
+
+Otwarte z części 2: 2 (jednospadowy – podpora przy górnej krawędzi), 3 (osie krokwi z wywołania), 4 (`:zapisz => false` dla
+okna).

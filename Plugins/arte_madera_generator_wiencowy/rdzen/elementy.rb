@@ -7,8 +7,8 @@
 # Zależy od: rdzen/geometria.rb, rdzen/bryla.rb (podpis), rdzen/parametry.rb
 # Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/taras.rb, rdzen/projekt.rb, sketchup/budowa.rb
 #
-# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie, S słupy), rodzaj
-# (tekst do nazwy komponentu), tag (:podloga | :dach | :taras), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
+# Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie, S słupy, Bp belki
+# poprzeczne zadaszenia), rodzaj (tekst do nazwy komponentu), tag (:podloga | :dach | :taras | :zadaszenie), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
 # cechy (obróbki jak u bali), przekroj (opcjonalnie – wielokąt [[y, z]], np. płatew ścięta; rdzen/pryzmat.rb), wreby i wrab
 # (zamki płatwi – rdzen/zamek_platwi.rb),
 # polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).
@@ -30,7 +30,7 @@ module ArteMadera
       RODZAJE = {
         'Pw' => ['Podwalina', :podloga], 'L' => ['Legar', :podloga], 'Pd' => ['Podciąg pod legary', :podloga],
         'P' => ['Płatew', :dach], 'K' => ['Krokiew', :dach], 'S' => ['Słup tarasu', :taras], 'F' => ['Fundament punktowy', :podloga], 'Pb' => ['Podbitka', :dach],
-        'Wt' => ['Wiązar szczytu tarasu', :taras]
+        'Wt' => ['Wiązar szczytu tarasu', :taras], 'Bp' => ['Belka poprzeczna', :zadaszenie]
       }.freeze unless const_defined?(:RODZAJE)
 
       module_function
@@ -104,7 +104,7 @@ module ArteMadera
 
       # Kolejność numeracji: grupa (podłoga, dach, taras, fundamenty), prefiks, długość malejąco.
       def posortowane(elementy)
-        kolej = %w[Pw Pd L P K Pb S F]
+        kolej = %w[Pw Pd L P K Pb S Bp F]
         elementy.sort_by { |e| [kolej.index(e[:prefiks]) || 9, -e[:dl].round, e[:b].round, e[:h].round] }
       end
 

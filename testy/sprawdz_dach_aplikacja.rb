@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/sprawdz_dach_aplikacja.rb
 # Zadanie: dom z bali z prawdziwą aplikacją do dachów (na jej atrapie SketchUpa) przez jej API – połacie na płaszczyźnie wierzchu płatwi, płatwie domu jako podpory, KROK 2 w górę od połaci: krokwie na płatwiach i nad szczytami, przęsła między płatwiami w kontroli nośności; same płatwie – deski na płatwiach wzdłuż spadku, styki na płatwiach; dom odbity.
-# Tematy: aplikacja do dachów – sprawdzenie z prawdziwą wtyczką, API aplikacji do dachów, połacie z API, KROK 2 w górę, krokwie z aplikacji nad płatwiami, kontrola krokwi z aplikacji, przęsła między płatwiami, deski na płatwiach z aplikacji, dach jednospadowy z aplikacją, dom odbity
+# Tematy: aplikacja do dachów – sprawdzenie z prawdziwą wtyczką, boczne zadaszenie z aplikacją, załamanie połaci w aplikacji, API aplikacji do dachów, połacie z API, KROK 2 w górę, krokwie z aplikacji nad płatwiami, kontrola krokwi z aplikacji, przęsła między płatwiami, deski na płatwiach z aplikacji, dach jednospadowy z aplikacją, dom odbity
 # Zależy od: aplikacja do dachów 3.7.0+ (katalog obok repozytorium albo AM_GW_APLIKACJA_DACHOW, jej tests/support), testy/pomoc.rb, testy/kolizje_belek.rb, sketchup/dach_aplikacja.rb, sketchup/konwersja.rb, sketchup/atrybuty.rb
 # Używają: testy/uruchom.sh (gdy aplikacja do dachów jest obok), ręcznie
 #
@@ -239,6 +239,75 @@ L_OBRYS = [[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000
   end
   wzp = wzgledem_polaci(pl)
   Testy.sprawdz(wzp[:bale] <= 0.01 && wzp[:platwie] <= 0.01 && wzp[:dotyk] >= -0.5, 'bale i płatwie generatora pod połacią, płatwie ją podpierają')
+end
+
+# Boczne zadaszenie (runda 12): połacie z załamaniem (API.polacie, opcja :zalamania – aplikacja 3.12): dolna połać pod
+# kątem zadaszenia, krawędź załamania w KROKU 2, podpora przy załamaniu pod obiema połaciami, łaty przy załamaniu i pełne
+# moduły pod nim, deski na płatwiach obu połaci.
+[['Dom 6 × 4 m z wiatą na słupach (same płatwie – deski na płatwiach)', prostokat(0, 0, 6000, 4000),
+  { 'zadaszenie' => 'slupy', 'dach_kat' => 30 }, 0.0, 1, 0],
+ ['Dom 6 × 4,5 m z przybudówkami z bali po obu stronach, płatwie i krokwie, łaty pod blachę', prostokat(0, 0, 6000, 4500),
+  { 'zadaszenie' => 'bale', 'zadaszenie_strona' => 'obie', 'dach_uklad' => 'platwie_krokwie', 'dach_kat' => 35,
+    'zadaszenie_kat' => 15 }, 0.0, 2, 0],
+ ['Dom 5 × 4 m obrócony o 30°, wiata po stronie górnej, krokwie, ściana nośna, łaty', prostokat(0, 0, 5000, 4000),
+  { 'zadaszenie' => 'slupy', 'zadaszenie_strona' => 'max', 'dach_uklad' => 'krokwie', 'platwa_na_scianie' => 'nie',
+    'dach_kat' => 25, 'zadaszenie_kat' => 10, 'zadaszenie_szerokosc' => 1800 }, 150.0, 1, 30]].each do |nazwa, seg, par, z0, ile_z, obrot|
+  Testy.grupa(nazwa)
+  Sketchup.reset_model!
+  Sketchup.defaults.clear
+  model = Sketchup.active_model
+  pl = plan_pelny(obrot.zero? ? seg : obroc_odcinki(seg, obrot), par)
+  pol = pl[:polacie]
+  p = pl[:parametry]
+  Testy.sprawdz(pl[:bledy].empty? && !pol.nil? && (pol[:zalamania] || {}).length == ile_z, "plan z połaciami i #{ile_z} załamaniem")
+  next if pol.nil?
+  dom = dom_w_modelu(model, pl, z0)
+  grupa, info = DachAplikacja.nowe_polacie(model, dom, pol, Krok2.podpory(pl))
+  Testy.sprawdz(!grupa.nil?, "połacie z API aplikacji z załamaniem (#{info.inspect})")
+  next if grupa.nil?
+  Testy.rowne(grupa.entities.grep(Sketchup::Face).length, 2 + ile_z, "połacie: #{2 + ile_z} (dach i zadaszenie)")
+  lo, hi = odchylki(punkty_lokalnie(grupa, dom), pol)
+  Testy.sprawdz(lo > -0.01 && hi < 0.01, format('połacie aplikacji = linia dachu z załamaniem z generatora (%.4f…%.4f mm)', lo, hi))
+  ile_p = Krok2.podpory(pl).length
+  Testy.rowne((ROOF::Supports.stored(grupa) || []).length, ile_p, "podpory zapisane w grupie połaci: #{ile_p}")
+  polacie_ap, blad = ROOF::FaceCollector.from_selection([grupa])
+  Testy.sprawdz(blad.nil? && polacie_ap.length == 2 + ile_z, "KROK 2 widzi #{2 + ile_z} połaci (#{blad.inspect})")
+  next unless blad.nil?
+  Testy.rowne([polacie_ap.count(&:kink_top?), polacie_ap.count(&:kink_bottom?)], [ile_z, ile_z],
+              'krawędź załamania: połać zadaszenia pod nią, połać dachu nad nią')
+  ust = Krok2.ustawienia(p).merge(components: false, batten_on: true, counter_on: !Krok2.bez_krokwi?(p), batten_spacing_mm: 350.0)
+  par2 = ROOF::FramingBuilder.prepare_parameters(ROOF::Config.load_settings(:framing).merge(ust))
+  ROOF::Supports.prepare!(model.active_entities, polacie_ap, par2)
+  dolne = polacie_ap.select(&:kink_top?)
+  gora = dolne.map { |f| f.supports.map { |q| q[:v] }.max.to_f - f.bounds_2d[3] }
+  Testy.sprawdz(dolne.all? { |f| f.supports.length >= 2 } && gora.all? { |d| d > -150.0 / 25.4 },
+                "połać zadaszenia: podpora przy załamaniu i przy okapie (od załamania #{gora.map { |d| (d * 25.4).round }.inspect} mm)")
+  Testy.sprawdz(polacie_ap.select(&:kink_bottom?).all? { |f| !f.supports.empty? }, 'połać dachu nad załamaniem ma podpory')
+  wiezba, raport = ROOF::API.wiezba(grupa, ust, :okno => false)
+  Testy.sprawdz(!wiezba.nil?, "więźba z łatami przez API (#{raport.is_a?(String) ? raport : 'raport'})")
+  next if wiezba.nil?
+  tekst = raport.to_s
+  Testy.sprawdz(tekst.include?('Połać pod załamaniem') && tekst.include?('pełne moduły do linii załamania'),
+                'raport: okap zadaszenia dopasowany do pełnych modułów')
+  laty = czesci(wiezba, 'batten')
+  Testy.sprawdz(laty.length > 10, "łaty: #{laty.length} szt.")
+  spod = laty.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
+  Testy.sprawdz(!spod.empty? && spod.min > -0.5, format('łaty nad połaciami (najniżej %.3f mm)', spod.min || 0))
+  if Krok2.bez_krokwi?(p)
+    deski = czesci(wiezba, 'sheath_plank')
+    ds = deski.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
+    Testy.sprawdz(deski.length > 8 && ds.min > -0.5 && ds.max < 0.5, format('deski na płatwiach obu połaci (%d szt., %.3f…%.3f mm)',
+                                                                         deski.length, ds.min || 0, ds.max || 0))
+  else
+    krokwie = czesci(wiezba, 'rafter')
+    dol = krokwie.map { |k| odchylki(punkty_lokalnie(k, dom), pol) }
+    Testy.sprawdz(krokwie.length >= 8 && dol.map(&:first).min > -0.5 && dol.map(&:first).max < 0.5,
+                  format('krokwie obu połaci leżą na połaciach (%d szt., spód %.3f…%.3f mm)', krokwie.length,
+                         dol.map(&:first).min || 0, dol.map(&:first).max || 0))
+  end
+  wzp = wzgledem_polaci(pl)
+  Testy.sprawdz(wzp[:bale] <= 0.01 && wzp[:platwie] <= 0.01 && wzp[:dotyk] >= -0.5,
+                'bale, płatwie dachu i zadaszenia pod połacią, płatwie ją podpierają')
 end
 
 Testy.koniec

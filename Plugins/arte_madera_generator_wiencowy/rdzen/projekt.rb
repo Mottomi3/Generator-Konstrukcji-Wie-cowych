@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/projekt.rb
 # Zadanie: przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
-# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie, taras w przebiegu
+# Tematy: przebieg generowania, kolejność kroków, plan domu, podsumowanie, lista ścian, ostrzeżenia, błędy, podpowiedzi, wejście (segmenty, parametry, otwory), połacie w planie, taras w przebiegu, boczne zadaszenie w przebiegu
 # Zależy od: wszystkie pliki rdzen/
 # Używają: sketchup/sterowanie.rb, testy
 #
@@ -15,7 +15,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach szczyty polacie
+  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara fundamenty podciagi podloga podbitka kontrola].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
@@ -61,6 +61,7 @@ module ArteMadera
         plan[:bledy].concat(ob[:bledy])
         return plan unless plan[:bledy].empty?
         plan[:ostrzezenia].concat(Taras.przedluz!(ob, p))
+        plan[:ostrzezenia].concat(Zadaszenie.przedluz!(ob, p))
         plan[:obrys] = ob[:obrys]
         sc = Sciany.zbuduj(ob, p)
         plan[:os_kalenicy] = sc[:os_kalenicy]
@@ -72,6 +73,7 @@ module ArteMadera
         plan[:ostrzezenia].concat(UstawieniaScian.zastosuj(sciany, wej['sciany'], p, sc[:os_kalenicy]))
         Sciany.numeruj!(sciany)
         Taras.oznacz!(sciany, ob[:taras], p)
+        Zadaszenie.oznacz!(sciany, ob[:zadaszenie], p)
         sz = Szczyty.przygotuj(sciany, p, sc[:os_kalenicy])
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
@@ -94,6 +96,7 @@ module ArteMadera
         plan[:pary_zamkow] = Zamek.nanies(sciany, p)
         ProfilBala.oznacz(bale[:bale], p)
         SciecieDachu.wyrownaj!(bale[:bale], p)
+        SciecieDachu.wyrownaj_skosy!(bale[:bale])
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
@@ -111,6 +114,11 @@ module ArteMadera
       def belki(plan, dom, p, tryb = :pierwszy)
         TarasWiazar.przejscia!(plan[:sciany], dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        zad = Zadaszenie.elementy(dom, plan[:sciany], p)
+        plan[:elementy].concat(zad)
+        plan[:podpowiedzi].concat(Zadaszenie.podpowiedzi(dom, p, zad).map { |h| h.merge(sekcja: 'zadaszenie') })
+        u = Zadaszenie.przeszkoda(p)
+        plan[:ostrzezenia] << u if u
         st = StatykaDachu.sprawdz(dom, p, tryb)
         sw = StatykaWiazara.sprawdz(plan[:sciany], dom, p, tryb)
         plan[:dobor_przekrojow] = st[:nadpis].merge(sw[:nadpis])

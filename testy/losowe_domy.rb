@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/losowe_domy.rb
 # Zadanie: losowe domy do testów – obrys (prostokąt, L), działowe, węgły, otwory i parametry z ziarna; sprawdzenie jednego domu.
-# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras, podpory dla aplikacji do dachów w teście losowym
+# Tematy: losowe domy, test losowy, ziarno, sprawdzenie domu, kolizje, bryły zamknięte, krótkie krawędzie brył, mijanka, długości bali, styki bez zamka, losowe ustawienia ścian, losowy pełny profil, losowe krokwie z aplikacji, połacie w teście losowym, losowe luzy stolarki, losowy dach jednospadowy, bal w narożniku bez zamka, losowy taras, podpory dla aplikacji do dachów w teście losowym, losowe boczne zadaszenie
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb
 # Używają: testy/t_losowe.rb, ręcznie (ruby -I testy/atrapa testy/losowe_domy.rb [liczba] [ziarno])
 #
@@ -31,6 +31,8 @@ module LosoweDomy
   # Od tego ziarna – nowości rundy 11 (słupki tylko pod kalenicową, węgieł w osi płatwi, przekroje wiązara, zamek płatwi
   # nad tarasem tylko od spodu, front tarasu łączony na styk, słup w osi kalenicy).
   ZIARNA_R11 = 7000 unless const_defined?(:ZIARNA_R11)
+  # Od tego ziarna – nowości rundy 12 (boczne zadaszenie: wiata na słupach albo przybudówka z bali).
+  ZIARNA_R12 = 8000 unless const_defined?(:ZIARNA_R12)
 
   module_function
 
@@ -90,6 +92,7 @@ module LosoweDomy
     dodatki_r9(Random.new(ziarno * 4_256_249 + 17), p, opis) if ziarno >= ZIARNA_R9
     dodatki_r10(Random.new(ziarno * 5_117_113 + 19), p, opis) if ziarno >= ZIARNA_R10
     dodatki_r11(Random.new(ziarno * 6_700_417 + 23), p, opis) if ziarno >= ZIARNA_R11
+    dodatki_r12(Random.new(ziarno * 7_368_791 + 29), p, opis) if ziarno >= ZIARNA_R12
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
   end
 
@@ -243,6 +246,24 @@ module LosoweDomy
             "(jeden przekrój #{p['platwie_jeden_przekroj']}, śnieg #{p['dach_snieg']}), trójkąt z przekroju #{p['taras_wieniec']}"
   end
 
+  # Dodatki rundy 12: boczne zadaszenie (słupy albo przybudówka, strona, szerokość, kąt mniejszy niż dachu – czasem nie,
+  # okap, przekroje, rozstaw słupów); dom z tarasem, jednospadowy albo L – zadaszenie pominięte z ostrzeżeniem.
+  def dodatki_r12(r, p, opis)
+    return if r.rand < 0.4
+    kat = p['dach_kat'].to_f
+    p['zadaszenie'] = wybierz(r, %w[slupy slupy bale])
+    p['zadaszenie_strona'] = wybierz(r, %w[min max obie])
+    p['zadaszenie_szerokosc'] = wybierz(r, %w[900 1500 2000 2000 2600 3200])
+    p['zadaszenie_kat'] = (r.rand < 0.1 ? kat + 1 : [3.0, kat - 1 - r.rand([kat - 4, 1].max).to_i].max).to_s
+    p['zadaszenie_okap'] = wybierz(r, %w[0 200 300 500])
+    p['zadaszenie_platwa_przekroj'] = wybierz(r, %w[80x160 60x120 100x200])
+    p['zadaszenie_slup_przekroj'] = wybierz(r, %w[120x120 100x100 140x140])
+    p['zadaszenie_belka_przekroj'] = wybierz(r, %w[80x160 60x140 100x200])
+    p['zadaszenie_slupy_rozstaw'] = wybierz(r, %w[1500 2500 3500])
+    opis << "r12: zadaszenie #{p['zadaszenie']} #{p['zadaszenie_strona']} #{p['zadaszenie_szerokosc']} mm, " \
+            "#{p['zadaszenie_kat']}° (dach #{p['dach_kat']}°), okap #{p['zadaszenie_okap']}"
+  end
+
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
@@ -311,12 +332,14 @@ module LosoweDomy
     nazwy = (pl[:pozycje] + pl[:pozycje_elementow]).map { |x| x[:nazwa] }
     problemy << 'powtórzone nazwy pozycji' unless nazwy.uniq.length == nazwy.length
     if belki
-      %w[P K S Pb Wt].each do |pr|
+      %w[P K S Pb Wt Bp].each do |pr|
         n = kolizje_belek(pl, pr, 4)
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end
-      [%w[Wt P], %w[Wt S], %w[Wt Wt]].each do |a, b|
-        n = kolizje_elementow(pl, a, b, 4)
+      # Boczne zadaszenie (runda 12): belki poprzeczne, słupy i słupki zadaszenia, płatwie i oczep (słupy tarasu z płatwiami –
+      # osobno, §8 stanu prac).
+      [%w[Wt P], %w[Wt S], %w[Wt Wt], %w[Bp P], %w[Bp S], ['S', 'P', :zadaszenie], %w[P P]].each do |a, b, tag|
+        n = kolizje_elementow(pl, a, b, 4, tag)
         problemy << "#{a} z #{b}: kolizje (#{n} punktów)" if n > 0
       end
     end

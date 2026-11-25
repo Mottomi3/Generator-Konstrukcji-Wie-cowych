@@ -64,11 +64,11 @@ module ArteMadera
         Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p) - Podbitka.obnizenie(p)
       end
 
-      # Załom linii dachu nad ścianą (kalenica) – s; dach jednospadowy – nil.
+      # Załomy linii dachu nad ścianą – s: kalenica i linie załamania bocznego zadaszenia; dach jednospadowy – [].
       def zalom(w, p)
         g = w[:pod_dachem]
-        v = g ? Dach.zalom_v(g, p) : nil
-        v.nil? ? nil : (v - w[:a][g[:iv]]) * w[:kier][g[:iv]]
+        return [] if g.nil?
+        Dach.zalomy_v(g, p).map { |v| (v - w[:a][g[:iv]]) * w[:kier][g[:iv]] }
       end
 
       # Zasięg [s0, s1] wieńca o spodzie z0 pod linią dachu (najniższy kawałek jak w szczycie); nil – cały nad dachem.

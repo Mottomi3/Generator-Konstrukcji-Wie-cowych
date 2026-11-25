@@ -370,6 +370,41 @@ Te zasady zastępują wcześniejsze opisy w §8, gdy się różnią.
   w modelu – parametry z okna.
 - Statyka dachu to podpowiedź – nie zastępuje projektu konstruktora.
 
+## 8g. Runda 12 – boczne zadaszenie z załamaniem dachu (`rdzen/zadaszenie.rb`)
+
+Wymóg użytkownika (2026-11-25): boczne zadaszenie doklejone do połaci dachu, **pod mniejszym kątem niż połać**; aplikacja
+do dachów dostaje informację o załamaniu (łaty pod blachę). Wybory: podparcie do wyboru (słupy z oczepem albo ściany
+z bali), na całej długości ściany okapowej, łaty przy załamaniu z obu stron i pełne moduły pod załamaniem.
+
+- **Kiedy**: dom prostokątny, dach dwuspadowy ze szczytami z bali, bez tarasu; kąt zadaszenia co najmniej 0,5° mniejszy
+  niż kąt dachu – inaczej ostrzeżenie i dom bez zadaszenia. Strona: ściana okapowa o mniejszej / większej współrzędnej
+  albo obie (`zadaszenie_strona`).
+- **Linia załamania**: nad licem zewnętrznym ściany okapowej (płatew ścienna stojąca na ścianie, szersza niż ściana – nad
+  jej krawędzią). Dach domu do niej bez zmian, dalej połać zadaszenia pod `zadaszenie_kat` do lica podpory
+  (`zadaszenie_szerokosc` od lica ściany) i okap `zadaszenie_okap` (najmniej – aplikacja wydłuża do pełnych modułów).
+  Linia dachu w przekroju (`Dach.linia_podparcia`) ma dwa załomy: kalenicę i załamanie – szczyty, węgły, ściany pod
+  dachem i bale ścięte dachem liczą się z łamanej (`Dach.zalomy_v`).
+- **Płatwie zadaszenia** (`zadaszenie_platwa_przekroj`, wierzch ścięty do połaci jak płatwie dachu): pierwsza tuż za linią
+  załamania (przechodzi przez ostatki ścian szczytowych – gniazda i wręby jak płatwie dachu), pośrednie co najwyżej
+  `platwie_rozstaw_max` (układy z płatwiami pośrednimi), ostatnia – oczep nad słupami albo płatew ścienna przybudówki;
+  bez sprawdzenia nośności (statyka płatwi – tylko dach domu).
+- **Na słupach**: słupy (`zadaszenie_slup_przekroj`) licem w linii podpory, skrajne w osiach ścian szczytowych, pośrednie
+  równo co najwyżej `zadaszenie_slupy_rozstaw`, na fundamentach punktowych (gdy podłoga ma fundamenty), podstawa – spód
+  podwaliny. Na słupie belka poprzeczna (`zadaszenie_belka_przekroj`, prefiks Bp) od lica podpory do ściany domu (skrajne –
+  do końca ostatków ścian szczytowych; linia pośrednia, w której belka trafiłaby w węgieł albo działową, przesunięta obok),
+  na belkach oczep, pozostałe płatwie na słupkach. Ściana z bali osiada – belka jest tylko oparta o ścianę.
+- **Przybudówka z bali**: obrys poszerzony o szerokość (jak taras), dawna ściana okapowa – działowa o wysokości ściany
+  okapowej z oparciem dachu domu (`w[:zadaszenie][:rola] = :dom`), ściany szczytowe przedłużone ze szczytem łamanym,
+  ściana zewnętrzna przybudówki – szczyt płaski do połaci zadaszenia (wyższe wieńce pominięte, górny bal ścięty), przy
+  ścianie nośnej podpora połaci w KROKU 2.
+- **Aplikacja do dachów** (3.12.0+): połacie z opcją `:zalamania` (krawędź okapowa domu, `od` – linia załamania od
+  krawędzi, `szerokosc`, `okap`, `kat`), płatwie zadaszenia jako podpory; KROK 2 – krawędź załamania, łaty przy linii
+  załamania, okap zadaszenia do pełnych modułów, krokwie i deski docięte w płaszczyźnie dwusiecznej. Starsza aplikacja –
+  komunikat zamiast połaci.
+- **Krokwie z generatora**: przy zadaszeniu krokiew dachu od linii załamania i krokiew zadaszenia od jego okapu do niej
+  (czoła prostopadłe do osi, jak dotąd).
+- Elementy zadaszenia w grupie i tagu „Zadaszenie” (płatwie P, słupy i słupki S, belki Bp, fundamenty F).
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

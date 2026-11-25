@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/dach.rb
 # Zadanie: geometria dachu – linia podparcia (wierzch płatwi), linia szczytu, płatwie w przekroju, krokwie, belki dachu; dwuspadowy tutaj, jednospadowy w rdzen/dach_jednospadowy.rb.
-# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów, rodzaj dachu, załom linii dachu, lico okapu
+# Tematy: dach, kąt dachu, linia dachu, płatew, płatew kalenicowa, płatew ścienna, krokiew, krokwie przy szczycie, rozstaw krokwi, okap, wysunięcie dachu, układ dachu, krokwie z generatora albo z aplikacji do dachów, rodzaj dachu, załom linii dachu, lico okapu, linia dachu z załamaniem zadaszenia, krokwie zadaszenia
 # Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/elementy.rb, rdzen/dach_jednospadowy.rb, rdzen/platwie_wience.rb (obniżenie dachu, położenia płatwi pośrednich, przekroje płatwi)
 # Używają: rdzen/szczyty.rb (linia szczytu, gniazda), rdzen/projekt.rb (belki dachu), rdzen/polacie.rb (linia podparcia), rdzen/pod_dachem.rb, rdzen/dach_jednospadowy.rb
 #
@@ -33,6 +33,7 @@ module ArteMadera
       def geo(dom)
         g = { v_a: dom[:v_a], v_b: dom[:v_b] }
         g[:obnizenie] = dom[:obnizenie] if dom[:obnizenie]
+        g[:zad] = dom[:zad] if dom[:zad]
         g
       end
 
@@ -106,9 +107,19 @@ module ArteMadera
         z_ref(p) - PlatwieWience.obnizenie(geo, p)
       end
 
-      # Linia podparcia w punkcie v przekroju [mm].
+      # Linia podparcia w punkcie v przekroju [mm]; za linią załamania bocznego zadaszenia (geo[:zad], rdzen/zadaszenie.rb)
+      # – połać zadaszenia: od wysokości dachu w linii załamania w dół o tg kąta zadaszenia.
       def linia_podparcia(geo, v, p)
         return DachJednospadowy.linia_podparcia(geo, v, p) if jednospadowy?(p)
+        (geo[:zad] || []).each do |c|
+          next unless (v - c[:v_k]) * c[:kier] > 0.0
+          return linia_glowna(geo, c[:v_k], p) - c[:tg] * (v - c[:v_k]).abs
+        end
+        linia_glowna(geo, v, p)
+      end
+
+      # Linia podparcia dachu dwuspadowego bez zadaszenia w punkcie v [mm].
+      def linia_glowna(geo, v, p)
         t = Parametry.grubosc(p)
         pol = (geo[:v_b] - geo[:v_a]) / 2.0
         vk = (geo[:v_a] + geo[:v_b]) / 2.0
@@ -129,6 +140,11 @@ module ArteMadera
       # Załom linii dachu (kalenica) w przekroju – v; dach jednospadowy – nil (linia prosta).
       def zalom_v(geo, p)
         jednospadowy?(p) ? nil : (geo[:v_a] + geo[:v_b]) / 2.0
+      end
+
+      # Wszystkie załomy linii dachu w przekroju – kalenica i linie załamania bocznego zadaszenia (v, rosnąco).
+      def zalomy_v(geo, p)
+        ([zalom_v(geo, p)] + (geo[:zad] || []).map { |c| c[:v_k] }).compact.sort
       end
 
       # Lico zewnętrzne ściany okapowej (niskiej), nad którym połać przechodzi w okap – v.
@@ -296,9 +312,18 @@ module ArteMadera
         wynik = []
         krokwie_u(dom[:u1], dom[:u2], p, dom[:wewn] || []).each do |u|
           [[geo[:v_a] - t / 2.0 - p['dach_okap'].to_f, 1.0], [geo[:v_b] + t / 2.0 + p['dach_okap'].to_f, -1.0]].each do |v0, kier|
+            d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
+            # Boczne zadaszenie po tej stronie: krokiew dachu od linii załamania, krokiew zadaszenia od jego okapu do niej.
+            c = (geo[:zad] || []).find { |x| x[:kier] == -kier }
+            if c
+              v0 = c[:v_k]
+              ve = c[:v_s] + c[:kier] * p['zadaszenie_okap'].to_f
+              q = xy(dom, u, ve)
+              wynik << Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, ve, p) + uniesienie_krokwi(p)], d, c[:kat],
+                                       (c[:v_k] - ve).abs / Math.cos(c[:kat]), bk, hk)
+            end
             dl = (vk - v0).abs / Math.cos(a)
             q = xy(dom, u, v0)
-            d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
             wynik << Elementy.ukosna('K', [q[0], q[1], linia_podparcia(geo, v0, p) + uniesienie_krokwi(p)], d, a, dl, bk, hk)
           end
         end

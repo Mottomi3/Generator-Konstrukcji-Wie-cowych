@@ -169,6 +169,20 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `taras_przekladka` | Balustrada – długość przekładki | 300 mm | 50 … 1000 | Odcinek bala między balami balustrady (typ 200: 300). |
 | `taras_przekladka_odstep` | Balustrada – największy prześwit między przekładkami | 600 mm | 50 … 2000 | Przekładki przy obu końcach przęsła i równo między nimi. |
 
+## Boczne zadaszenie
+
+| Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|
+| `zadaszenie` | Boczne zadaszenie przy ścianie okapowej | nie | `nie` – bez zadaszenia; `slupy` – na słupach z oczepem (wiata, drewutnia); `bale` – ściany z bali (przybudówka) | Połać dachu za ścianą okapową schodzi dalej pod mniejszym kątem – załamanie nad licem zewnętrznym ściany. Narysuj sam dom: słupy, belki i płatwie zadaszenia albo ściany przybudówki dokłada generator. Aplikacja do dachów dostaje połacie z załamaniem (łaty przy załamaniu, pełne moduły pod nim). Dom prostokątny, dach dwuspadowy, bez tarasu. |
+| `zadaszenie_strona` | Zadaszenie – przy ścianie okapowej | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry); `obie` – po obu stronach | Kalenica wzdłuż X – ściana dolna / górna rysunku, wzdłuż Y – lewa / prawa. |
+| `zadaszenie_szerokosc` | Zadaszenie – szerokość | 2000 mm | 600 … 6000 | Od lica zewnętrznego ściany domu do lica zewnętrznego podpory (słupów albo ściany przybudówki), w poziomie. |
+| `zadaszenie_kat` | Zadaszenie – kąt (mniejszy niż kąt dachu) | 12 ° | 3 … 50 | Musi być mniejszy niż kąt dachu (załamanie). Blachodachówka zwykle od 9–12°, blacha na rąbek od 3–5° – sprawdź kartę pokrycia. |
+| `zadaszenie_okap` | Zadaszenie – okap za podporą (najmniej) | 300 mm | 0 … 1500 | W poziomie, od lica podpory. Aplikacja do dachów wydłuża go do pełnych modułów łat (0 … 1 moduł). |
+| `zadaszenie_platwa_przekroj` | Płatew zadaszenia (szer. × wys.) | 80x160 mm | szer. × wys. | Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak płatwie dachu. Bez sprawdzenia nośności. |
+| `zadaszenie_slup_przekroj` | Słup zadaszenia (wzdłuż ściany × w poprzek) | 120x120 mm | szer. × wys. | Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory. |
+| `zadaszenie_slupy_rozstaw` | Słupy zadaszenia – największy rozstaw (osiowo) | 2500 mm | 800 … 6000 | Skrajne słupy w osiach ścian szczytowych, pośrednie równo; słup w miejscu węgła albo działowej przesunięty obok. |
+| `zadaszenie_belka_przekroj` | Belka poprzeczna na słupie (szer. × wys.) | 80x160 mm | szer. × wys. | Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, na słupkach płatwie zadaszenia. Ściana domu osiada (bale) – belka tylko oparta o ścianę. |
+
 ## Podłoga i fundamenty
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |

@@ -105,9 +105,10 @@ def w_belce?(e, q, m = 0.5)
   g::Bryla.zawiera?(g::Bryla.profil(e[:dl], e[:b], e[:h], e[:cechy]), le[0], le[1], le[2], m)
 end
 
-# Liczba punktów wspólnych belek o prefiksach a i b (punkty próbne n × n × n we wspólnej części otoczek) – 0 = bez kolizji.
-def kolizje_elementow(pl, a, b, n = 6)
-  lista_a = pl[:elementy].select { |e| e[:prefiks] == a }
+# Liczba punktów wspólnych belek o prefiksach a i b (punkty próbne n × n × n we wspólnej części otoczek) – 0 = bez kolizji;
+# tag_a – tylko belki a z tym tagiem (np. słupy zadaszenia).
+def kolizje_elementow(pl, a, b, n = 6, tag_a = nil)
+  lista_a = pl[:elementy].select { |e| e[:prefiks] == a && (tag_a.nil? || e[:tag] == tag_a) }
   lista_b = pl[:elementy].select { |e| e[:prefiks] == b }
   ile = 0
   lista_a.each do |ea|
@@ -139,13 +140,22 @@ end
 def z_polaci(pol, x, y)
   n = pol[:punkty].length
   return z_polaci_l(pol, x, y) if n > 4
-  d = (0...n).reject { |i| pol[:szczyty].include?(i + 1) }.map do |i|
+  tg = Math.tan(pol[:kat] * Math::PI / 180.0)
+  z = (0...n).reject { |i| pol[:szczyty].include?(i + 1) }.map do |i|
     a = pol[:punkty][i]
     b = pol[:punkty][(i + 1) % n]
     l = Math.hypot(b[0] - a[0], b[1] - a[1])
-    ((x - a[0]) * -(b[1] - a[1]) + (y - a[1]) * (b[0] - a[0])) / l
+    d = ((x - a[0]) * -(b[1] - a[1]) + (y - a[1]) * (b[0] - a[0])) / l
+    # Załamanie połaci (boczne zadaszenie – opcja :zalamania aplikacji 3.12): za linią załamania (od krawędzi o „od” na
+    # zewnątrz) połać schodzi dalej pod kątem zadaszenia.
+    zl = (pol[:zalamania] || {})[i + 1]
+    if zl && d < -zl[:od]
+      tg * -zl[:od] + Math.tan(zl[:kat] * Math::PI / 180.0) * (d + zl[:od])
+    else
+      tg * d
+    end
   end.min
-  pol[:z] + Math.tan(pol[:kat] * Math::PI / 180.0) * d
+  pol[:z] + z
 end
 
 # Połać domu L: krawędzie okapowe w dwóch kierunkach = dwa dachy dwuspadowe. Dach główny ma trzy krawędzie okapowe (z

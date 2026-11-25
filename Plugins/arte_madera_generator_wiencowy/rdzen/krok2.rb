@@ -97,7 +97,10 @@ module ArteMadera
       def sciany_wysokie(sciany, p)
         szczyt = sciany.map { |w| w[:szczyt] }.compact.first
         return [] if szczyt.nil?
-        glowne = sciany.select { |w| w[:rodzaj] == :zewnetrzna && w[:kierunek] == :A && w[:szczyt].nil? }
+        # Także dawna ściana okapowa przy przybudówce (działowa – rdzen/zadaszenie.rb), dalej oparcie dachu domu.
+        glowne = sciany.select do |w|
+          (w[:rodzaj] == :zewnetrzna || (w[:zadaszenie] && w[:zadaszenie][:rola] == :dom)) && w[:kierunek] == :A && w[:szczyt].nil?
+        end
         nosne = Parametry.tak?(p, 'platwa_na_scianie') ? [] : glowne + sciany.select { |w| w[:okap_boczny] && w[:szczyt].nil? }
         pod_platwia = lambda { |w| (w[:otwory] || []).any? { |o| o[:gniazdo] && o[:s0] < w[:s_od] + 0.5 } }
         (sciany.select { |w| w[:szczyt] && w[:szczyt][:plaski] && !pod_platwia.call(w) } + nosne).map do |w|
@@ -108,7 +111,8 @@ module ArteMadera
                 else sciany.map { |x| x[:szczyt] }.compact.find { |g| g[:iv].nil? || g[:iv] == iv } || szczyt
                 end
           z = Dach.linia_podparcia(geo, w[:a][iv], p)
-          nazwa = if w[:rodzaj] == :dzialowa then 'Działowa'
+          nazwa = if w[:zadaszenie] then (w[:zadaszenie][:rola] == :dom ? 'Ściana okapowa' : 'Ściana przybudówki')
+                  elsif w[:rodzaj] == :dzialowa then 'Działowa'
                   elsif w[:szczyt] then 'Ściana wysoka'
                   else 'Ściana okapowa'
                   end

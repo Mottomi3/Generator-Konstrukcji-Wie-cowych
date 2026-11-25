@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/polacie.rb
 # Zadanie: połacie dachu dla aplikacji do dachów – obrys, wysokość, kąt, okap i krawędzie szczytowe tak, żeby płaszczyzna połaci leżała na wierzchu płatwi generatora (spód krokwi albo spód poszycia na samych płatwiach).
-# Tematy: połacie dachu, aplikacja do dachów, ArteMadera Roof, KROK 1 z generatora, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, wysunięcie za szczyt w połaciach, dach z aplikacji, podpowiedź dachu, połać dachu jednospadowego, połacie przy samych płatwiach
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, lico okapu), rdzen/dach_jednospadowy.rb (ściana niska i wysoka), rdzen/krok2.rb (podpowiedź KROKU 2)
+# Tematy: połacie dachu, aplikacja do dachów, ArteMadera Roof, KROK 1 z generatora, płaszczyzna spodu krokwi, krawędzie szczytowe, okap połaci, wysunięcie za szczyt w połaciach, dach z aplikacji, podpowiedź dachu, połać dachu jednospadowego, połacie przy samych płatwiach, załamanie połaci dla aplikacji do dachów
+# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, lico okapu, opis bocznego zadaszenia), rdzen/dach_jednospadowy.rb (ściana niska i wysoka), rdzen/krok2.rb (podpowiedź KROKU 2)
 # Używają: rdzen/projekt.rb (plan[:polacie], podpowiedzi), sketchup/dach_aplikacja.rb
 #
 # Aplikacja do dachów (API.polacie) prowadzi płaszczyznę połaci przez krawędź obrysu na wysokości obrysu,
@@ -48,14 +48,38 @@ module ArteMadera
         u0 = dom[:u1] - t / 2.0 - przesuw
         u3 = dom[:u2] + t / 2.0 + przesuw
         return nil if u3 - u0 < MIN_DLUGOSC
-        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
+        geo = Dach.geo(dom)
         v_okap = Dach.lico_okapu_v(geo, p)
         v0, v3 = Dach.jednospadowy?(p) ? [v_okap, v_gora(geo, p)].minmax : [dom[:v_a] - t / 2.0, dom[:v_b] + t / 2.0]
         uv = [[u0, v0], [u3, v0], [u3, v3], [u0, v3]]
         punkty = uv.map { |u, v| dom[:os] == :x ? [u, v] : [v, u] }
         punkty.reverse! if pole(punkty) < 0.0
-        { punkty: punkty, z: Dach.linia_podparcia(geo, v_okap, p) + Dach.uniesienie_krokwi(p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
-          szczyty: szczytowe(punkty, dom[:os] == :x ? 1 : 0, Dach.jednospadowy?(p) ? [v_okap] : [v0, v3]) }
+        iv = dom[:os] == :x ? 1 : 0
+        wynik = { punkty: punkty, z: Dach.linia_podparcia(geo, v_okap, p) + Dach.uniesienie_krokwi(p), kat: p['dach_kat'].to_f,
+                  okap: p['dach_okap'].to_f, szczyty: szczytowe(punkty, iv, Dach.jednospadowy?(p) ? [v_okap] : [v0, v3]) }
+        z = zalamania(punkty, iv, geo, [v0, v3], p)
+        wynik[:zalamania] = z unless z.empty?
+        wynik
+      end
+
+      # Załamania połaci dla aplikacji do dachów (boczne zadaszenie, rdzen/zadaszenie.rb – geo[:zad]): { nr krawędzi okapowej
+      # => { od: (linia załamania od krawędzi na zewnątrz), szerokosc: (do lica podpory), okap:, kat: } } – opcja
+      # :zalamania API.polacie (aplikacja 3.12).
+      def zalamania(punkty, iv, geo, okapy, p)
+        wynik = {}
+        n = punkty.length
+        (geo[:zad] || []).each do |c|
+          v_kraw = c[:kier] < 0 ? okapy.min : okapy.max
+          i = (0...n).find do |k|
+            a = punkty[k]
+            b = punkty[(k + 1) % n]
+            (a[iv] - b[iv]).abs < 0.5 && (a[iv] - v_kraw).abs < 0.5
+          end
+          next if i.nil?
+          wynik[i + 1] = { od: (c[:v_k] - v_kraw) * c[:kier], szerokosc: (c[:v_s] - c[:v_k]).abs,
+                           okap: p['zadaszenie_okap'].to_f, kat: p['zadaszenie_kat'].to_f }
+        end
+        wynik
       end
 
       # Połacie domu L (rdzen/skrzydla.rb – dwa dachy z koszem): obrys domu po licach zewnętrznych, krawędzie ścian ze

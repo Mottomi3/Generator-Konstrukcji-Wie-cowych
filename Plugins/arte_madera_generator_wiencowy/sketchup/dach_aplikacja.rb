@@ -4,7 +4,7 @@
 # Plik: sketchup/dach_aplikacja.rb
 # Zadanie: dach z aplikacji do dachów (ArteMadera Roof) po budowie domu – przez jej stałe API: połacie z planu (KROK 1), płatwie domu jako podpory, okno KROKU 2 z ustawieniami domu z bali, więźba powiązana z domem, zastąpienie poprzednich połaci i więźby.
 # Tematy: aplikacja do dachów w modelu, API aplikacji do dachów, połacie w modelu, KROK 2 z generatora, więźba z aplikacji, więźba powiązana z domem, podpory w modelu, poprzednie połacie przy przebudowie, brak aplikacji do dachów, stara aplikacja do dachów, dom w innym kontekście, krawędzie szczytowe w modelu
-# Zależy od: rdzen/polacie.rb (plan[:polacie]), rdzen/krok2.rb (ustawienia KROKU 2, podpory), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb; ArteMadera::Roof::API (wersja 1, aplikacja 3.7.0+)
+# Zależy od: rdzen/polacie.rb (plan[:polacie]), rdzen/krok2.rb (ustawienia KROKU 2, podpory), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb; ArteMadera::Roof::API (wersja 1, aplikacja 3.7.0+, załamanie połaci – 3.12.0+)
 # Używają: sketchup/sterowanie.rb (po budowie domu)
 #
 # Tylko stałe wejście aplikacji (jej API.md): API.polacie(model, punkty, z, kąt, okap, szczyty, :operacja => false) –
@@ -114,7 +114,13 @@ module ArteMadera
           Log.warn("Dach: #{blad}")
           return [nil, { 'tekst' => blad, 'ok' => false }]
         end
-        grupa, tekst = api.polacie(model, punkty(dom, pol), nil, pol[:kat], pol[:okap], pol[:szczyty], :operacja => false)
+        opcje = { :operacja => false }
+        if pol[:zalamania]
+          stara = za_stara_na_zalamania
+          return [nil, { 'tekst' => stara, 'ok' => false }] if stara
+          opcje[:zalamania] = pol[:zalamania]
+        end
+        grupa, tekst = api.polacie(model, punkty(dom, pol), nil, pol[:kat], pol[:okap], pol[:szczyty], opcje)
         if grupa.nil?
           Log.warn("Dach: aplikacja do dachów nie utworzyła połaci: #{tekst}")
           return [nil, { 'tekst' => "Połacie dachu nie powstały: #{tekst}", 'ok' => false }]
@@ -123,6 +129,14 @@ module ArteMadera
         ok, info = api.podpory(grupa, w_kontekscie(dom, podpory))
         ok ? Log.info("Dach: #{info}") : Log.warn("Dach: podpory nie zapisane – #{info}")
         [grupa, nil]
+      end
+
+      # Boczne zadaszenie (załamanie połaci – opcja :zalamania) wymaga aplikacji do dachów 3.12.0 lub nowszej: komunikat albo nil.
+      def za_stara_na_zalamania
+        wersja = api.respond_to?(:wersja_wtyczki) ? api.wersja_wtyczki.to_s : ''
+        return nil if (wersja.split('.').map(&:to_i) <=> [3, 12, 0]) >= 0
+        "Połacie dachu nie powstały: boczne zadaszenie (załamanie połaci) wymaga aplikacji do dachów 3.12.0 lub nowszej " \
+          "(jest #{wersja.empty? ? 'starsza' : wersja}) – zaktualizuj ją."
       end
 
       # Co nie pozwala zrobić połaci (komunikat) – brak lub stara aplikacja, dom poza aktywnym kontekstem; nil – można.

@@ -45,7 +45,7 @@ Testy.sprawdz(sciana(pl, 'W-2')[:bale].any? { |b| b[:pozycja][:prefiks] == 'Sz' 
 nad = %w[W-2 W-3 W-4].map { |id| nad_linia(pl, id) }.max
 Testy.sprawdz(nad <= 0.01, format('bale pod linią dachu (najwyżej %.3f mm)', nad))
 w2 = sciana(pl, 'W-2')
-Testy.rowne([Szczyty.linia(w2, w2[:s_od], p) < Szczyty.linia(w2, w2[:s_do], p), Szczyty.zalom(w2, p)], [true, nil],
+Testy.rowne([Szczyty.linia(w2, w2[:s_od], p) < Szczyty.linia(w2, w2[:s_do], p), Szczyty.zalom(w2, p)], [true, []],
             'szczyt skośny rośnie od ściany niskiej, bez załomu')
 pp = pl[:elementy].select { |e| e[:prefiks] == 'P' }
 Testy.rowne(pp.map { |e| e[:b] }, [80.0, 80.0, 80.0, 80.0], 'płatwie (jeden przekrój): ścienna przy ścianie niskiej + 3 pośrednie, bez kalenicowej')

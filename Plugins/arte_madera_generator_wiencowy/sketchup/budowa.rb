@@ -25,10 +25,11 @@ module ArteMadera
         szczyt: 'Szczyty',
         podloga: 'Podłoga',
         dach: 'Dach',
-        taras: 'Taras'
+        taras: 'Taras',
+        zadaszenie: 'Zadaszenie'
       }.freeze unless const_defined?(:TAGI)
       # Grupy belek w domu: tag => nazwa grupy.
-      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras' }.freeze unless const_defined?(:GRUPY_BELEK)
+      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras', zadaszenie: 'Zadaszenie' }.freeze unless const_defined?(:GRUPY_BELEK)
 
       module_function
 
@@ -97,7 +98,7 @@ module ArteMadera
         Konwersja.transformacja_domu(plan[:kat], wejscie['z0'].to_f)
       end
 
-      # Grupy „Podłoga”, „Dach” i „Taras” z instancjami belek (pozycje elementów).
+      # Grupy „Podłoga”, „Dach”, „Taras” i „Zadaszenie” z instancjami belek (pozycje elementów).
       def dodaj_belki(grupa, plan, defs, tagi)
         GRUPY_BELEK.each do |tag, nazwa|
           lista = (plan[:elementy] || []).select { |e| e[:tag] == tag }

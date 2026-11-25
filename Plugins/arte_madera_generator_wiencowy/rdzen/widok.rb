@@ -139,8 +139,7 @@ module ArteMadera
         else
           return []
         end
-        s = [w[:s_od], w[:s_do]]
-        s.insert(1, sk) if sk && sk > w[:s_od] && sk < w[:s_do]
+        s = [w[:s_od], w[:s_do]] + Array(sk).select { |x| x > w[:s_od] && x < w[:s_do] }
         # Szczyt na części ściany (dom L): uskok linii na granicy szczytu – dalej góra ściany okapowej skrzydła bocznego.
         zakres = w[:szczyt] ? w[:szczyt][:s_zakres] : nil
         (zakres || []).each do |g|

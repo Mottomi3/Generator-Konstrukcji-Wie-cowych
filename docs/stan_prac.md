@@ -1,10 +1,36 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 11, kompilacja 11 (2026-11-16), wersja 1.0.0. Poprzednio: runda 10, kompilacja 10 (2026-11-11). Testy: `bash testy/uruchom.sh` – 24 zestawy
-(w tym nowy `t_statyka_dachu`; sprawdzenie z prawdziwą aplikacją do dachów 3.9.1 – także dom L), 1567 sprawdzeń, FAILURES 0; zestaw „Ruby 2.7.8” w tej
-rundzie pominięty (brak Rubiego 2.7 i sieci do jego zbudowania w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 250 losowych domów
-z nowościami rundy 11 (ziarna 7001–7120, 6001–6070, 5001–5060) – bez nowych problemów (dwa ziarna z błędem sprzed rundy 11, §8).
-Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–11) + kopia `repozytorium_r11.bundle` na dysku.
+Stan na: runda 12, kompilacja 12 (2026-11-25), wersja 1.0.0. Poprzednio: runda 11, kompilacja 11 (2026-11-16). Testy: `bash testy/uruchom.sh` – 25 zestawów
+(nowy `t_zadaszenie`; sprawdzenie z prawdziwą aplikacją do dachów **3.12.0** – także trzy domy z bocznym zadaszeniem), FAILURES 0; zestaw „Ruby 2.7.8”
+pominięty (brak Rubiego 2.7 i sieci do jego zbudowania w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 108 wariantów domów z zadaszeniem
+(słupy / bale × strona × układ dachu × oparcie dachu × kto robi krokwie) i losowe domy rundy 12 (ziarna od 8000) – bez problemów (§5 runda 12).
+Aplikacja do dachów 3.12.0 (ta sama sesja – `Mottomi3/Aplikacja-do-konstrukcji-dach-w`): 414 testów, 0 błędów.
+Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–12).
+
+## 1f. Nowe w kompilacji 12 (prośba z 2026-11-25 15:10)
+
+- **Boczne zadaszenie z załamaniem dachu** (`rdzen/zadaszenie.rb`, sekcja okna „Boczne zadaszenie”): połać za ścianą
+  okapową schodzi dalej pod mniejszym kątem (`zadaszenie_kat` < `dach_kat`), na całej długości ściany, po jednej albo obu
+  stronach. Linia załamania nad licem zewnętrznym ściany okapowej. Do wyboru:
+  - **na słupach z oczepem** (wiata, drewutnia): słupy na fundamentach punktowych, belka poprzeczna na każdym słupie do
+    ściany domu (skrajne – do końca ostatków, pośrednie omijają węgły i działowe), oczep na belkach, płatwie zadaszenia na
+    słupkach, pierwsza płatew przy ścianie – w gniazdach ostatków ścian szczytowych;
+  - **ściany z bali** (przybudówka): obrys poszerzony, dawna ściana okapowa jako działowa z oparciem dachu domu, ściany
+    szczytowe przedłużone z łamaną linią szczytu, niska ściana zewnętrzna ścięta do połaci zadaszenia.
+- **Linia dachu z dwoma załomami** (`rdzen/dach.rb#linia_podparcia`, `#zalomy_v`): kalenica i załamanie – szczyty, bale pod
+  dachem, węgły, ścięcia dachu, widok ściany.
+- **Aplikacja do dachów 3.12.0 zna załamanie** (zmiany w tej sesji, decyzja użytkownika „tutaj, w obu”): połacie z opcją
+  `:zalamania`, krawędź załamania w KROKU 2, łaty po obu stronach przy linii załamania, **pełne moduły pod załamaniem**
+  (okap zadaszenia wydłużany), krokwie / kontrłaty / deski docięte w płaszczyźnie dwusiecznej, podpora na krawędzi połaci
+  liczona dla obu połaci (wcześniej prośba 1 z części 2 zadania). Generator przekazuje załamanie (`rdzen/polacie.rb#zalamania`,
+  `sketchup/dach_aplikacja.rb`) – ze starszą aplikacją komunikat zamiast połaci.
+- Krokwie z generatora: krokiew zadaszenia od okapu zadaszenia do linii załamania.
+- Test działania: 11 przykładów (dziesiąty – wiata, jedenasty – przybudówki po obu stronach).
+- Poprawka znaleziona losowymi domami: skos bala (szczyt, bal pod dachem) przechodzący bliżej niż 0,2 mm od naroża gniazda
+  zamka – obniżony do naroża albo do odstępu 0,2 mm (`rdzen/sciecie_dachu.rb#wyrownaj_skosy!`; krawędzie 0,003–0,015 mm
+  w węgłach ściany przybudówki, ziarna 8180, 8209).
+- Ściana przybudówki: najcieńszy górny bal liczony na niższym licu zewnętrznym (połać opada w poprzek ściany o grubość ·
+  tg kąta zadaszenia) – koniec cienkich klinów w górnym balu (`rdzen/szczyty.rb#zasieg`, ziarno 9056 z wymuszonym zadaszeniem).
 
 ## 1e. Nowe w kompilacji 11 (uwagi z 2026-11-16 16:08 i 20:44)
 
@@ -371,6 +397,36 @@ płatwie lub krokwie, na płatwiach, pod krokwiami lub na krokwiach w zależnoś
   deskach); obniżenie ścian pod podbitką liczone w pionie (grubość / cos kąta) – wcześniej węgły na ścianach okapowych
   wchodziły 0,6 mm w deski pod płatwiami.
 
+### Runda 12 (kompilacja 12) – boczne zadaszenie z załamaniem dachu
+
+Wiadomość użytkownika (2026-11-25 15:10): „Chcę, by była możliwość dawania także bocznego zadaszenia, z tymże musi być pod
+mniejszym kątem niż połać dachu, do której została doklejona. Generator dachów powinien dostać informacje o tym, że w tym
+a tym miejscu jest załamanie dachu, by np. łaty pod blachę rozstawiał poprawnie.” Odpowiedzi na pytania (15:2x): podparcie –
+„Do wyboru – oba” (słupy z oczepem albo ściany z bali); zasięg – cała ściana okapowa (strona parametrem); łaty – każda połać
+od dołu, łata przy linii załamania z obu stron **i pełne moduły pod załamaniem**; aplikacja do dachów – zmiany „tutaj,
+w obu” (generator i aplikacja w tej sesji).
+- Wykonanie – §1f. Nowe pliki: `rdzen/zadaszenie.rb`, `rdzen/parametry_zadaszenie.rb`, `testy/t_zadaszenie.rb`; zmiany:
+  `rdzen/dach.rb` (linia z załamaniem, krokwie zadaszenia), `rdzen/szczyty.rb` (opis zadaszenia w przekroju, wiele załomów,
+  gniazda płatwi zadaszenia, ściana przybudówki), `rdzen/pod_dachem.rb`, `rdzen/widok.rb` (wiele załomów), `rdzen/polacie.rb`
+  (załamania dla aplikacji), `rdzen/krok2.rb` (ściany domu i przybudówki jako podpory), `rdzen/projekt.rb`, `rdzen/elementy.rb`
+  (prefiks Bp), `sketchup/budowa.rb` (grupa i tag „Zadaszenie”), `sketchup/dach_aplikacja.rb` (opcja `:zalamania`,
+  aplikacja 3.12.0+), `rdzen/przyklady.rb` (dwa przykłady).
+- Aplikacja do dachów 3.12.0 (`Mottomi3/Aplikacja-do-konstrukcji-dach-w`): `artemadera_roof/07b_kinks.rb` (nowy, `[ZL]`),
+  `08_face_analysis.rb` (krawędź `:kink`, przesuwanie krawędzi), `10_joints.rb` (`[JN-2e]` dwusieczna), `14_battens.rb`
+  (`[BT-1b]`, `[BT-5b]`), `15_framing_builder.rb` (podniesienie każdej połaci o własną wysokość, dopasowanie okapu pod
+  załamaniem), `14h_supports.rb` (`[SP-3b]`), `15b_rafter_check.rb`, `15a_preview.rb`, `16_ui_dialogs.rb` (pole „Pod
+  załamaniem połaci – pełne moduły”), `18_api.rb`, testy `tests/test_zalamanie.rb` (8), CHANGELOG, API.md, INSTRUKCJA.
+- Testy generatora: `t_zadaszenie` (wiata, przybudówka, krokwie, przeszkody, atrapa API), `sprawdz_dach_aplikacja` – trzy
+  domy z zadaszeniem na prawdziwej aplikacji (połacie ±0,01 mm względem generatora, podpory przy załamaniu pod obiema
+  połaciami, łaty, deski na płatwiach, krokwie na obu połaciach), losowe domy od ziarna 8000 (`dodatki_r12`), kolizje
+  Bp, S, P między sobą i z balami w każdym losowym domu.
+- Decyzje przyjęte bez pytania (do potwierdzenia, §6 Z1–Z5): linia załamania nad licem zewnętrznym ściany (przy płatwi
+  ściennej stojącej na ścianie – nad jej krawędzią); płatew zadaszenia przy samej ścianie w gniazdach ostatków ścian
+  szczytowych; słupy na słupach – belka poprzeczna oparta o ścianę (bez gniazda – osiadanie bali); wszystkie płatwie
+  zadaszenia z jednego przekroju bez sprawdzenia nośności; zadaszenie z tarasem, w domu L i przy dachu jednospadowym – jeszcze
+  nie (ostrzeżenie).
+- Rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`) – nadal na rundę 13.
+
 ### Runda 11 (kompilacja 11) – uwagi z 2026-11-16
 
 Wiadomość użytkownika (16:08, 6 punktów): słupek z kontrfor pod każdą płatwią – do wyboru („przy niewielkich domkach
@@ -496,16 +552,28 @@ kawałków), co druga belka wysunięta o 100 mm – zakładka pod barierkę, zak
 | D1a | Obciążenia dachu do doboru | śnieg gruntu 0,9 kN/m² (strefa 2), pokrycie z poszyciem 0,35 kN/m² połaci, ugięcie L/200, drewno jak podłoga (C24) – do potwierdzenia dla miejsc, gdzie stoją domy |
 | D1b | Lista przekrojów płatwi | 60×100 … 160×280 z wykazu „od ręki” (Nsi / DUO / BSH) z 2026-11-14, bez długości handlowych (długości – runda 12 razem z katalogiem legarów) |
 | D1c | Dobór domyślnie | ręcznie ze sprawdzeniem (jak dotąd przekroje z pól); automatyczny – wybór użytkownika |
+| Z1 | Linia załamania bocznego zadaszenia | nad licem zewnętrznym ściany okapowej (płatew ścienna na ścianie, szersza niż ściana – nad jej krawędzią); dach domu do niej bez zmian |
+| Z2 | Płatwie zadaszenia | jeden przekrój (80 × 160), wierzch ścięty do połaci, rozstaw jak płatwie dachu (≤ 1000), pierwsza przy samej ścianie w gniazdach ostatków ścian szczytowych; bez sprawdzenia nośności |
+| Z3 | Zadaszenie na słupach | słup 120 × 120 co ≤ 2500 (skrajne w osiach szczytów), na fundamencie punktowym; belka poprzeczna 80 × 160 na słupie do ściany domu (oparta, bez gniazda – osiadanie); oczep na belkach, płatwie na słupkach |
+| Z4 | Przybudówka z bali | dawna ściana okapowa – działowa o wysokości ściany okapowej (bez „do dachu”), ściana przybudówki ścięta do połaci; podłoga także pod przybudówką |
+| Z5 | Łaty przy załamaniu (aplikacja 3.12) | po obu stronach łata przy linii załamania (górne krawędzie w dwusiecznej); nad załamaniem jak od okapu (nakładka i podwójna łata jak przy okapie), pod załamaniem pojedyncza; pełne moduły pod załamaniem – okap zadaszenia wydłużany 0…1 moduł |
 
 ## 7. Do sprawdzenia w SketchUpie
 
-`docs/scenariusz_odbioru.md` – kompilacja 11 (kroki 3a–3h rundy 11, 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
+`docs/scenariusz_odbioru.md` – kompilacja 12 (kroki 4a–4h rundy 12 – boczne zadaszenie, aplikacja do dachów 3.12.0; 3a–3h rundy 11, 2v–2z rundy 10, 2q–2u rundy 9, 2i–2p rundy 8; kroki rundy 7: płatwie, ściana nośna, zamki płatwi, działowe, węgły
 z tabeli, taras, podłoga z fundamentami, podbitka, okno); dalej kroki kompilacji 6 (z aplikacją do dachów 3.7.0): najpierw menu „Test działania i raport
 do wysłania…” (plik JSON), potem dom na samych płatwiach (deski na płatwiach z KROKU 2), krokwie z aplikacji
 (podpory, przęsła, poszycie), przebudowa z więźbą, stara aplikacja; dalej kroki kompilacji 5 (stolarka, płatwie,
 dach jednospadowy, taras).
 
-## 8. Ograniczenia (kompilacja 11)
+## 8. Ograniczenia (kompilacja 12)
+
+- Boczne zadaszenie: tylko dom prostokątny, dach dwuspadowy, bez tarasu; na całej długości ściany okapowej (bez odcinka
+  od–do); płatwie zadaszenia bez sprawdzenia nośności; zadaszenie na słupach – belka poprzeczna w modelu dosunięta do lica
+  ściany (mocowanie z luzem na osiadanie do wykonania na budowie); ścian szczytowych zadaszenia na słupach (zamknięcia
+  boku) generator nie robi; podbitka tylko w domu (od lica wewnętrznego ściany okapowej do kalenicy).
+- Aplikacja do dachów 3.12: deski poszycia przy załamaniu docięte pionowo (warstwy nad krokwiami – stopień kilku mm na
+  wierzchu), krokwie, kontrłaty i łaty – w dwusiecznej; załamanie tylko wklęsłe (mansarda – jak dotąd).
 
 - Tylko ściany pod kątem prostym; linie ukośne – błąd.
 - Dach z generatora: obrys prostokątny i L (dwa dachy z koszem); inne obrysy (T, U…) – szczyty liczone każdy osobno,
@@ -546,8 +614,9 @@ dach jednospadowy, taras).
 
 ## 9. Plan kolejnych rund
 
-1. Odbiór kompilacji 11: raport z testu działania (JSON) + scenariusz (kroki 3a–3h, potem 2v–2z) → poprawki.
-1b. Runda 12 – rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`): poprawka działowej współliniowej
+1. Odbiór kompilacji 12: raport z testu działania (JSON, 11 domów) + scenariusz (kroki 4a–4h – boczne zadaszenie z aplikacją
+   do dachów 3.12.0, potem 3a–3h) → poprawki.
+1b. Runda 13 – rozstrzygnięcia z 2026-11-14 (Projekt: `claude/zadanie_r11.md`): poprawka działowej współliniowej
    z nowym zestawem domów złożonych, pół zamka w wieńcu szczytowym (po decyzji T8), katalog przekrojów z długościami
    (legary i płatwie – wspólny format), komunikat zamiast wyjątku, podbitka w polach zależnych, ostrzeżenie o ostatkach
    do podpowiedzi; przy okazji dom L z podbitką na płatwiach.
