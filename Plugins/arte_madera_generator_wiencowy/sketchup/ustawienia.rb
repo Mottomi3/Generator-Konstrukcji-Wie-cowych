@@ -3,12 +3,12 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/ustawienia.rb
 # Zadanie: zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony.
-# Tematy: zapis ustawień, wersja pliku ustawień, listy przekrojów ze starszej kompilacji, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
+# Tematy: zapis ustawień, wersja pliku ustawień, listy przekrojów ze starszej kompilacji, deski ze starszej kompilacji, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
 # Zależy od: rdzen/parametry_lista.rb (szablony wbudowane), log.rb
 # Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
-# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 3, 'ostatnie' => {…},
+# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 4, 'ostatnie' => {…},
 # 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
 # (teksty); sprawdza je Parametry.normalizuj.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -21,15 +21,21 @@ module ArteMadera
     module Ustawienia
       PLIK = 'ustawienia.json'.freeze unless const_defined?(:PLIK)
       # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną; 3 (runda 14) – listy przekrojów z hurtowni
-      # z długościami handlowymi.
-      WERSJA = 3 unless const_defined?(:WERSJA)
+      # z długościami handlowymi; 4 (runda 15) – deski nadbitki i podbitki 14 × 115, przekrój 45 × 120 w długościach 5,4 / 6 m.
+      WERSJA = 4 unless const_defined?(:WERSJA)
       # Listy przekrojów (rdzen/wykaz_drewna.rb) – w pliku starszym niż wersja 3 zastępowane fabrycznymi także w szablonach.
       LISTY_PRZEKROJOW = %w[przekroje_katalog platwie_katalog krokwie_katalog zadaszenie_katalog zadaszenie_slupy_katalog].freeze unless
         const_defined?(:LISTY_PRZEKROJOW)
-      # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze.
-      DO_FABRYCZNYCH = { 2 => %w[podciag_poziom], 3 => LISTY_PRZEKROJOW }.freeze unless const_defined?(:DO_FABRYCZNYCH)
+      # Wymiary desek nadbitki i podbitki (rdzen/parametry_dach.rb) – w pliku starszym niż wersja 4 wracają do fabrycznych
+      # 14 × 115 (decyzja użytkownika z 2026-11-25), także w szablonach.
+      DESKI = %w[podbitka_grubosc podbitka_krycie nadbitka_grubosc nadbitka_krycie].freeze unless const_defined?(:DESKI)
+      # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze
+      # (wersja 4: deski, lista legarów z przekrojem 45 × 120 i wybór warstw poszycia – nadbitka fabrycznie włączona).
+      DO_FABRYCZNYCH = { 2 => %w[podciag_poziom], 3 => LISTY_PRZEKROJOW,
+                         4 => DESKI + %w[przekroje_katalog poszycie_nadbitka poszycie_deski] }.freeze unless const_defined?(:DO_FABRYCZNYCH)
       # To samo we własnych szablonach: wersja pliku => klucze.
-      DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW }.freeze unless const_defined?(:DO_FABRYCZNYCH_W_SZABLONACH)
+      DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW, 4 => DESKI + %w[przekroje_katalog] }.freeze unless
+        const_defined?(:DO_FABRYCZNYCH_W_SZABLONACH)
 
       module_function
 

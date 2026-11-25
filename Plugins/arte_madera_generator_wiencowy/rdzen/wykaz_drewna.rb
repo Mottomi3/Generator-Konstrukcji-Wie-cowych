@@ -19,7 +19,7 @@ module ArteMadera
     module WykazDrewna
       # Drewno konstrukcyjne C24 (niewidoczne): [szerokość, wysokość, [długości w metrach]].
       KONSTRUKCYJNE = [
-        [38, 58, [4.2]], [45, 45, [4.8]], [45, 70, [5.4, 6]], [45, 95, [6]], [45, 120, [5, 5.4]], [45, 145, [4.2, 5.4, 6]],
+        [38, 58, [4.2]], [45, 45, [4.8]], [45, 70, [5.4, 6]], [45, 95, [6]], [45, 120, [5.4, 6]], [45, 145, [4.2, 5.4, 6]],
         [45, 170, [5.4, 6]], [45, 195, [4.2, 5.4, 6]], [45, 220, [5.4, 6]], [45, 245, [5.4, 6]]
       ].freeze unless const_defined?(:KONSTRUKCYJNE)
       # Drewno widoczne (Nsi, klejone DUO / TRIO / BSH): [szerokość, wysokość, [długości w metrach]].

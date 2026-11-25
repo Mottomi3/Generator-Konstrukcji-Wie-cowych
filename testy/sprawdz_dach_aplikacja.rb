@@ -91,8 +91,10 @@ PRZYPADKI = [
   ['Dom 5 × 4 m obrócony o 120°, jednospadowy ze spadkiem w stronę większych współrzędnych',
    obroc_odcinki(prostokat(0, 0, 5000, 4000), 120), { 'dach_rodzaj' => 'jednospadowy', 'dach_spadek' => 'max', 'dach_uklad' => 'krokwie' },
    300.0, 1, false],
-  ['Dom 6 × 4,5 m, same płatwie (jak 900) – deski 2 m na płatwiach', prostokat(0, 0, 6000, 4500), { 'deski_dlugosc' => 2000 }, 0.0, 2,
-   false],
+  ['Dom 6 × 4,5 m, same płatwie (jak 900) – deski 2 m na płatwiach', prostokat(0, 0, 6000, 4500),
+   { 'poszycie_deski' => 'tak', 'poszycie_nadbitka' => 'nie', 'deski_dlugosc' => 2000 }, 0.0, 2, false],
+  ['Dom 6 × 4,5 m, same płatwie – nadbitka 14 × 115 długości 2 m na płatwiach (fabrycznie nadbitka, runda 15)', prostokat(0, 0, 6000, 4500),
+   { 'nadbitka_dlugosc' => 2000 }, 0.0, 2, false],
   ['Dom 7 × 5 m, same płatwie, nadbitka i OSB 22', prostokat(0, 0, 7000, 5000),
    { 'poszycie_nadbitka' => 'tak', 'nadbitka_dlugosc' => 2500, 'poszycie_deski' => 'nie', 'poszycie_osb' => 'tak', 'osb_grubosc' => 22 },
    0.0, 2, false],
@@ -294,7 +296,8 @@ end
   spod = laty.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
   Testy.sprawdz(!spod.empty? && spod.min > -0.5, format('łaty nad połaciami (najniżej %.3f mm)', spod.min || 0))
   if Krok2.bez_krokwi?(p)
-    deski = czesci(wiezba, 'sheath_plank')
+    # Pierwsza warstwa poszycia: fabrycznie nadbitka (runda 15), z wyboru deskowanie pełne.
+    deski = czesci(wiezba, Parametry.tak?(p, 'poszycie_nadbitka') ? 'sheath_ceiling' : 'sheath_plank')
     ds = deski.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
     Testy.sprawdz(deski.length > 8 && ds.min > -0.5 && ds.max < 0.5, format('deski na płatwiach obu połaci (%d szt., %.3f…%.3f mm)',
                                                                          deski.length, ds.min || 0, ds.max || 0))

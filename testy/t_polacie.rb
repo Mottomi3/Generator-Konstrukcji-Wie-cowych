@@ -128,7 +128,8 @@ Testy.grupa('Same płatwie (domyślnie, jak 900) – połacie na wierzchu płatw
 pl = plan_pelny(seg)
 p = pl[:parametry]
 pol = pl[:polacie]
-Testy.rowne([p['dach_uklad'], p['dach_wiezba'], p['poszycie_deski']], %w[platwie aplikacja tak], 'domyślnie: same płatwie, aplikacja, deski')
+Testy.rowne([p['dach_uklad'], p['dach_wiezba'], p['poszycie_nadbitka'], p['poszycie_deski']], %w[platwie aplikacja tak nie],
+            'domyślnie: same płatwie, aplikacja, nadbitka bez deskowania pełnego (od rundy 15)')
 Testy.sprawdz(!pol.nil?, 'są połacie')
 Testy.rowne(pol[:z], Dach.z_ref(p) - Dach.tg(p) * Parametry.grubosc(p), 'połać na linii podparcia (wierzch płatwi)', 0.001)
 wz = wzgledem_polaci(pl)
@@ -138,10 +139,13 @@ u = Krok2.ustawienia(p)
 Testy.rowne([u[:build_dir], u[:rafter_on], u[:ridge_on], u[:seat_on], u[:purlin_supports_on]], ['up', false, false, false, true],
             'KROK 2: bez krokwi, w górę od połaci, płatwie jako podpory')
 Testy.rowne([u[:sheath_plank_on], u[:sheath_plank_t_mm], u[:sheath_plank_w_mm], u[:sheath_plank_gap_mm], u[:sheath_plank_len_mm]],
-            [true, 25.0, 100.0, 3.0, 4000.0], 'deskowanie z parametrów')
-Testy.rowne([u[:sheath_ceiling_on], u[:sheath_osb_on]], [false, false], 'nadbitka i OSB wyłączone')
-Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'ok' && h[:tekst].include?('deskowanie na płatwiach') },
-              'podpowiedź: deskowanie na płatwiach w KROKU 2')
+            [false, 25.0, 100.0, 3.0, 4000.0], 'deskowanie pełne wyłączone, wymiary z parametrów')
+Testy.rowne([u[:sheath_ceiling_on], u[:sheath_ceiling_t_mm], u[:sheath_ceiling_w_mm], u[:sheath_ceiling_len_mm], u[:sheath_osb_on]],
+            [true, 14.0, 115.0, 4000.0, false], 'nadbitka 14 × 115 × 4000 włączona, OSB wyłączone')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'ok' && h[:tekst].include?('nadbitka na płatwiach') },
+              'podpowiedź: nadbitka na płatwiach w KROKU 2')
+ud = Krok2.ustawienia(plan_pelny(seg, 'poszycie_nadbitka' => 'nie', 'poszycie_deski' => 'tak')[:parametry])
+Testy.rowne([ud[:sheath_ceiling_on], ud[:sheath_plank_on]], [false, true], 'z wyboru: samo deskowanie pełne (jak do kompilacji 14)')
 pp = Krok2.podpory(pl)
 Testy.rowne(pp.length, pl[:elementy].count { |e| e[:prefiks] == 'P' }, "podpora z każdej płatwi (#{pp.length})")
 Testy.sprawdz(pp.length > 3, 'są płatwie pośrednie')
@@ -152,12 +156,12 @@ Testy.sprawdz(pp.all? { |q| (q[:od][1] - q[:do][1]).abs < 1e-6 && (q[:od][0] - q
 b, h = Parametry.przekroj(p, 'platwa_przekroj')
 Testy.sprawdz(pp.any? { |q| (q[:szerokosc] - b).abs < 1e-6 && (q[:wysokosc] - h).abs < 1e-6 }, 'szerokość i wysokość płatwi pośredniej')
 Testy.sprawdz(pp.all? { |q| q[:nazwa].start_with?('Płatew ') }, "nazwy pozycji (#{pp.first[:nazwa]})")
-pl = plan_pelny(seg, 'poszycie_deski' => 'nie')
+pl = plan_pelny(seg, 'poszycie_deski' => 'nie', 'poszycie_nadbitka' => 'nie')
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'uwaga' && h[:tekst].include?('bez poszycia') }, 'same płatwie bez poszycia – uwaga')
 pl = plan_pelny(seg, 'poszycie_deski' => 'nie', 'poszycie_osb' => 'tak', 'osb_grubosc' => 22, 'poszycie_nadbitka' => 'tak')
 u = Krok2.ustawienia(pl[:parametry])
 Testy.rowne([u[:sheath_ceiling_on], u[:sheath_ceiling_t_mm], u[:sheath_plank_on], u[:sheath_osb_on], u[:sheath_osb_t_mm],
-             u[:sheath_osb_len_mm], u[:sheath_osb_w_mm]], [true, 19.0, false, true, 22.0, 2500.0, 1250.0], 'nadbitka i OSB 22')
+             u[:sheath_osb_len_mm], u[:sheath_osb_w_mm]], [true, 14.0, false, true, 22.0, 2500.0, 1250.0], 'nadbitka 14 (fabryczna od rundy 15) i OSB 22')
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('nadbitka + OSB na płatwiach') }, 'podpowiedź: warstwy od spodu')
 
 Testy.grupa('Krokwie z aplikacji – ustawienia KROKU 2 i podpory: płatwie ścienne i kalenicowa')
@@ -167,7 +171,7 @@ pol = pl[:polacie]
 u = Krok2.ustawienia(p)
 Testy.rowne([u[:rafter_on], u[:rafter_mode], u[:rafter_w_mm], u[:rafter_h_mm], u[:rafter_spacing_mm], u[:timber_class], u[:check_on]],
             [true, 'max', 60.0, 180.0, 800.0, 'C30', true], 'krokiew, rozstaw, klasa drewna, kontrola')
-Testy.rowne(u[:sheath_plank_on], true, 'deskowanie na krokwiach (domyślnie)')
+Testy.rowne([u[:sheath_ceiling_on], u[:sheath_plank_on]], [true, false], 'nadbitka na krokwiach, bez deskowania pełnego (domyślnie)')
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:poziom] == 'ok' && h[:tekst].include?('przęsła między płatwiami') }, 'podpowiedź o przęsłach')
 pp = Krok2.podpory(pl)
 Testy.rowne(pp.length, 3, 'podpory: 2 płatwie ścienne + kalenicowa')

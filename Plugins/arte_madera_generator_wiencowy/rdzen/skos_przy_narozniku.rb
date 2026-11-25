@@ -4,20 +4,22 @@
 # Plik: rdzen/skos_przy_narozniku.rb
 # Zadanie: bale ścięte dachem przy narożnikach – przez narożnik (słup zamka) tylko w prawdziwym zamku; inaczej bal kończy się przy licu wewnętrznym ściany poprzecznej.
 # Tematy: bal przy narożniku pod dachem, drewno w zamku przy skosie, mostek nad gniazdem, bal bez zamka przy narożniku, ostatek nad ścianą wysoką, dach jednospadowy przy narożniku, cienki mostek nad gniazdem
-# Zależy od: rdzen/parametry.rb, rdzen/bale.rb (skosy, okruch)
+# Zależy od: rdzen/parametry.rb, rdzen/bale.rb (skosy, okruch), rdzen/pol_zamka.rb (ostatnie połączenie pod dachem bez gniazda od spodu)
 # Używają: rdzen/projekt.rb (po Bale.zbuduj, przed Zamek.nanies)
 #
 # Dotyczy bali ze skosem dachu (szczyt, ściana wysoka dachu jednospadowego, ściana pod połacią) zachodzących na słup
 # zamka narożnika [c − t/2, c + t/2]. Bal zostaje w narożniku, gdy ściana poprzeczna ma w słupie bal na sąsiednim
 # poziomie i w zamku zostaje dość drewna (zamek_min_drewno): bal na niższym (lvl − 1) – nad gniazdem od spodu, do
 # gniazda z góry, gdy jest też bal wyżej; tylko bal wyżej (lvl + 1) – ponad dno gniazda z góry. Drewno liczone
-# z wierzchu bala po skosie w obu krawędziach gniazda. Inaczej bal kończy się przy licu wewnętrznym ściany
+# z wierzchu bala po skosie w obu krawędziach gniazda. Za mało drewna w ostatnim połączeniu (bal niżej jest, wyżej nie ma)
+# – pół zamka, gdy włączone (rdzen/pol_zamka.rb): bal zostaje bez gniazda. Inaczej bal kończy się przy licu wewnętrznym ściany
 # poprzecznej: ostatek bez oparcia i cienki mostek nad gniazdem znikają, kawałek krótszy niż okruch – cały.
 # Powtarzane do skutku, bo przycięty bal zabiera partnera innym (ściana wysoka i bal szczytu nad nią).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'bale') unless defined?(ArteMadera::GeneratorWiencowy::Bale)
+require File.join(File.dirname(__FILE__), 'pol_zamka') unless defined?(ArteMadera::GeneratorWiencowy::PolZamka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -79,7 +81,12 @@ module ArteMadera
                  else
                    gora - (b[:h] - gleb)
                  end
-        drewno >= p['zamek_min_drewno'].to_f - 0.01
+        return true if drewno >= p['zamek_min_drewno'].to_f - 0.01
+        # Pół zamka (rdzen/pol_zamka.rb): ostatnie połączenie pod dachem – bal bez gniazda od spodu, bal pod nim wycięty
+        # do połowy wysokości; koniec bala nie odpada.
+        return false unless nizej && !wyzej && PolZamka.miesci_sie?(gora, p)
+        PolZamka.oznacz!(b, c)
+        true
       end
 
       # Najniższy wierzch bala (od spodu, po skosach) w krawędziach gniazda szerokości sz w osi c; nil – bal nie

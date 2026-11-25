@@ -277,6 +277,12 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(niebieskie === 1, 'otwór na rzucie');
   var lista = await page.evaluate(function () { return document.querySelectorAll('#tab-lista tbody tr').length; });
   sprawdz(lista === dane.wynik.lista.length, 'lista bali i belek');
+  var materialy = await page.evaluate(function () {
+    var w = document.querySelectorAll('#tab-materialy tbody tr');
+    return { ile: w.length, pierwszy: w.length ? w[0].textContent : '' };
+  });
+  sprawdz(materialy.ile === dane.wynik.materialy.length && materialy.ile >= 5 && materialy.pierwszy.indexOf('Poszycie dachu') === 0,
+          'tabela materiałów (' + materialy.ile + ' wierszy, runda 15)');
   var lp = await page.evaluate(function () { return document.querySelectorAll('#lista-podpowiedzi li').length; });
   sprawdz(lp === dane.wynik.podpowiedzi.length && lp > 0, 'podpowiedzi w wynikach (' + lp + ')');
 

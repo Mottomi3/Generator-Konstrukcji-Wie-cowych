@@ -94,7 +94,7 @@ Testy.rowne([fr[:build_dir], fr[:ridge_on], fr[:seat_on], fr[:rafter_on], fr[:ra
             ['up', false, false, true, 'max', true], 'KROK 2: w górę od połaci, bez płatwi kalenicowej i zamków dolnych, płatwie jako podpory')
 Testy.rowne([fr[:rafter_w_mm], fr[:rafter_h_mm], fr[:rafter_spacing_mm], fr[:timber_class], fr[:check_on]], [50.0, 150.0, 900.0, 'C24', true],
             'KROK 2: krokiew, rozstaw i klasa drewna z generatora, kontrola nośności')
-Testy.rowne([fr[:sheath_ceiling_on], fr[:sheath_plank_on], fr[:sheath_osb_on]], [false, true, false], 'poszycie: deskowanie (domyślnie)')
+Testy.rowne([fr[:sheath_ceiling_on], fr[:sheath_plank_on], fr[:sheath_osb_on]], [true, false, false], 'poszycie: nadbitka (domyślnie od rundy 15)')
 Testy.sprawdz(ow.fetch(:okno, true) && ow[:po_generowaniu].respond_to?(:call), 'okno KROKU 2 z procedurą po OK')
 Testy.sprawdz(UI.zatrzymane.include?(1), 'licznik zatrzymany na starcie (bez powtórzeń)')
 Testy.sprawdz(dom.entities.to_a.none? { |g| g.respond_to?(:name) && g.name == 'Dach - polacie' }, 'połacie poza grupą domu (podpis domu bez zmian)')
@@ -167,8 +167,8 @@ _, _g, lista = AtrapaDachow.ostatnie(:podpory)
 Testy.rowne(lista.length, pl[:elementy].count { |e| e[:prefiks] == 'P' }, "podpory: wszystkie płatwie (#{lista.length})")
 UI.uruchom_liczniki
 fr = AtrapaDachow.ostatnie(:wiezba)[2]
-Testy.rowne([fr[:rafter_on], fr[:build_dir], fr[:sheath_plank_on], fr[:sheath_plank_t_mm], fr[:sheath_plank_len_mm]], [false, 'up', true, 25.0, 4000.0],
-            'KROK 2 bez krokwi, deskowanie z parametrów')
+Testy.rowne([fr[:rafter_on], fr[:build_dir], fr[:sheath_ceiling_on], fr[:sheath_ceiling_t_mm], fr[:sheath_ceiling_w_mm], fr[:sheath_ceiling_len_mm],
+             fr[:sheath_plank_on]], [false, 'up', true, 14.0, 115.0, 4000.0, false], 'KROK 2 bez krokwi, nadbitka 14 × 115 × 4000 z parametrów')
 
 Testy.grupa('KROK 2 – odmowa aplikacji, połacie cofnięte przed oknem')
 AtrapaDachow.wyczysc

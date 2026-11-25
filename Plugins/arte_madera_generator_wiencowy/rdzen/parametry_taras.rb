@@ -56,6 +56,20 @@ module ArteMadera
           min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },
           podpowiedz: 'Część słupa obok podwaliny schodzi w dół (najwyżej na wysokość podwaliny). 0 – słup stoi na podwalinie. ' \
                       'Tylko z podłogą.' },
+        { klucz: 'slup_osiadanie', domyslna: 'tak', etykieta: 'Słupy krótsze o osiadanie ścian', rodzaj: :wybor, sekcja: 'taras',
+          wybory: TAK_NIE, gdy: { 'taras' => ['podciag'] },
+          podpowiedz: 'Ściany z bali siadają („Osiadanie ścian” w sekcji okien i drzwi), słup nie. Słup krótszy o osiadanie bali ' \
+                      'stojących obok niego (wysokość do głowicy × osiadanie) – inaczej bale podciągu zostają na słupach, gdy ' \
+                      'reszta ściany opada. Nie – słup do spodu bali, jak do kompilacji 14.' },
+        { klucz: 'slup_regulacja', domyslna: 'sruba', etykieta: 'Słup – regulacja w głowicy', rodzaj: :wybor, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'slup_osiadanie' => ['tak'] },
+          wybory: [['sruba', 'śruba regulacyjna – dokręcana, gdy ściany siadają'],
+                   ['podkladki', 'podkładki – wyjmowane, gdy ściany siadają']],
+          podpowiedz: 'Okucie między głowicą słupa a balem trzyma podciąg na wysokości ścian domu. Trafia do zestawienia materiałów.' },
+        { klucz: 'slup_regulacja_wysokosc', domyslna: 40.0, etykieta: 'Śruba regulacyjna – wysokość po skręceniu', jednostka: 'mm',
+          min: 0.0, max: 300.0, rodzaj: :liczba, sekcja: 'taras',
+          gdy: { 'taras' => ['podciag'], 'slup_osiadanie' => ['tak'], 'slup_regulacja' => ['sruba'] },
+          podpowiedz: 'Słup krótszy dodatkowo o tyle – tyle zajmuje śruba po osiadaniu ścian (z płytkami).' },
         { klucz: 'taras_szczyt', domyslna: 'pelny', etykieta: 'Szczyt nad tarasem', rodzaj: :wybor, sekcja: 'taras',
           gdy: { 'taras' => ['podciag'] },
           wybory: [['pelny', 'pełny (typ 200)'], ['azurowy', 'ażurowy – bale na przemian z przekładkami, jak balustrada'],

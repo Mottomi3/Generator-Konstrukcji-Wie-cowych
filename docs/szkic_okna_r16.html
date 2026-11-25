@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Szkic okna – runda 16 (do akceptacji)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 13px/1.35 "Segoe UI", Arial, sans-serif; color: #1f2a33; background: #eef1f4; width: 1060px; height: 860px; overflow: hidden; }
+  .pasek { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: #24323d; color: #fff; }
+  .pasek b { font-size: 14px; margin-right: 8px; }
+  .typ { background: #fff; color: #1f2a33; border-radius: 4px; padding: 4px 10px; min-width: 330px; display: flex; justify-content: space-between; }
+  .pasek button { background: #3d5566; color: #fff; border: 0; border-radius: 4px; padding: 5px 10px; font: inherit; }
+  .pasek .prawo { margin-left: auto; }
+  .kroki { display: flex; background: #fff; border-bottom: 1px solid #cfd6dc; padding: 0 8px; }
+  .krok { padding: 9px 13px; border-bottom: 3px solid transparent; color: #4a5a66; white-space: nowrap; }
+  .krok.akt { border-color: #1f6fb2; color: #10202b; font-weight: 600; }
+  .znak { display: inline-block; min-width: 17px; height: 17px; border-radius: 9px; font-size: 11px; line-height: 17px; text-align: center; color: #fff; margin-left: 5px; }
+  .ok { background: #2e8b57; } .uw { background: #d9822b; } .bl { background: #c0392b; }
+  .uklad { display: flex; height: 760px; }
+  .lewa { flex: 1; padding: 12px 14px; overflow: hidden; }
+  .prawa { width: 392px; background: #fff; border-left: 1px solid #cfd6dc; padding: 10px 12px; display: flex; flex-direction: column; }
+  h2 { font-size: 15px; margin: 0 0 2px; } .opis { color: #5b6b77; margin: 0 0 10px; }
+  .grupa { background: #fff; border: 1px solid #d5dbe0; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; }
+  .grupa h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #1f6fb2; }
+  .pola { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }
+  .pole label { display: block; color: #40505c; margin-bottom: 2px; }
+  .pole .w { border: 1px solid #b9c3cb; border-radius: 4px; padding: 5px 8px; background: #fff; display: flex; justify-content: space-between; }
+  .pole.fokus .w { border-color: #1f6fb2; box-shadow: 0 0 0 2px rgba(31,111,178,.2); }
+  .pole.blad .w { border-color: #d9822b; background: #fff7ec; }
+  .dymek { grid-column: 1 / 3; background: #f0f6fc; border: 1px solid #b7d1ea; border-radius: 4px; padding: 6px 9px; color: #29465e; }
+  .typowe { background: #f7f8fa; border: 1px dashed #c3ccd4; }
+  .typowe h3 { color: #5b6b77; display: flex; justify-content: space-between; }
+  .wiersz { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #e6eaee; }
+  .wiersz:last-child { border: 0; } .wiersz a { color: #1f6fb2; }
+  .std { color: #5b6b77; padding: 2px 2px 0; } .std a { color: #1f6fb2; }
+  .rzut { border: 1px solid #d5dbe0; border-radius: 6px; background: #fbfcfd; height: 232px; margin-bottom: 8px; }
+  .liczby { display: flex; justify-content: space-between; color: #40505c; margin-bottom: 8px; font-size: 12px; } .liczby span { white-space: nowrap; } .liczby b { color: #10202b; }
+  .lista h3 { font-size: 12px; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .poz { padding: 5px 8px; border-radius: 4px; margin-bottom: 4px; display: flex; gap: 8px; }
+  .poz small { color: #1f6fb2; white-space: nowrap; margin-left: auto; }
+  .p-uw { background: #fff3e2; border-left: 4px solid #d9822b; } .p-ok { background: #edf7f0; border-left: 4px solid #2e8b57; color: #2c4a38; padding: 3px 8px; }
+  .dol { margin-top: auto; display: flex; gap: 8px; }
+  .dol button { flex: 1; padding: 9px; border-radius: 4px; border: 1px solid #1f6fb2; background: #fff; color: #1f6fb2; font: inherit; font-weight: 600; }
+  .dol .glowny { background: #1f6fb2; color: #fff; }
+  .nav { display: flex; justify-content: space-between; margin-top: 4px; } .nav span { color: #1f6fb2; }
+</style>
+</head>
+<body>
+<div class="pasek">
+  <b>ArteMadera – Generator Wieńcowy</b>
+  <span>Typ domu:</span>
+  <span class="typ"><span>Typ 200 – parterowy wysoki, taras na słupach</span><span>▾</span></span>
+  <button>Zapisz jako typ…</button>
+  <button class="prawo">Standard warsztatu…</button>
+</div>
+<div class="kroki">
+  <div class="krok">1. Ściany <span class="znak ok">✓</span></div>
+  <div class="krok">2. Okna i drzwi <span class="znak ok">✓</span></div>
+  <div class="krok akt">3. Dach <span class="znak uw">1</span></div>
+  <div class="krok">4. Taras i zadaszenie <span class="znak uw">1</span></div>
+  <div class="krok">5. Podłoga <span class="znak ok">✓</span></div>
+  <div class="krok">6. Zestawienie</div>
+</div>
+<div class="uklad">
+  <div class="lewa">
+    <h2>3. Dach</h2>
+    <p class="opis">Pola tego domu. To, co wynika z typu i ze standardu warsztatu, jest zwinięte niżej.</p>
+    <div class="grupa">
+      <h3>Ten dom</h3>
+      <div class="pola">
+        <div class="pole fokus"><label>Kąt dachu</label><div class="w"><span>20</span><span>°</span></div></div>
+        <div class="pole"><label>Kalenica</label><div class="w"><span>wzdłuż dłuższego boku</span><span>▾</span></div></div>
+        <div class="dymek"><b>Kąt dachu.</b> Kąt połaci od poziomu. Wysokość kalenicy przy tym kącie: 3,51 m nad podwaliną. Typ 200 zaczyna od 20°.</div>
+        <div class="pole"><label>Okap – wysunięcie krokwi za ścianę</label><div class="w"><span>500</span><span>mm</span></div></div>
+        <div class="pole blad"><label>Wysunięcie płatwi za szczyt</label><div class="w"><span>900</span><span>mm</span></div></div>
+      </div>
+    </div>
+    <div class="grupa typowe">
+      <h3><span>Z typu domu (9 pól)</span><span>▴ zwiń</span></h3>
+      <div class="wiersz"><span>Układ dachu: <b>same płatwie (deski na płatwiach)</b></span><a>zmień tylko w tym domu</a></div>
+      <div class="wiersz"><span>Krokwie i poszycie buduje: <b>aplikacja do dachów</b></span><a>zmień tylko w tym domu</a></div>
+      <div class="wiersz"><span>Poszycie: <b>nadbitka 14 × 115 × 4000</b></span><a>zmień tylko w tym domu</a></div>
+      <div class="wiersz"><span>Płatew: <b>80 × 200</b>, kalenicowa <b>80 × 200</b></span><a>zmień tylko w tym domu</a></div>
+      <div class="wiersz"><span>Słupki z kontrfor pod płatwiami: <b>ściany zewnętrzne</b></span><a>zmień tylko w tym domu</a></div>
+    </div>
+    <p class="std">Standard warsztatu (36 pól dachu: zamki płatwi, obciążenia, dopasowanie płatwi, listy przekrojów) – <a>otwórz</a></p>
+    <div class="nav"><span>← 2. Okna i drzwi</span><span>4. Taras i zadaszenie →</span></div>
+  </div>
+  <div class="prawa">
+    <svg class="rzut" viewBox="0 0 368 232">
+      <rect x="54" y="36" width="210" height="150" fill="none" stroke="#24323d" stroke-width="4"/>
+      <rect x="264" y="36" width="62" height="150" fill="none" stroke="#24323d" stroke-width="2" stroke-dasharray="6 4"/>
+      <line x1="150" y1="36" x2="150" y2="186" stroke="#24323d" stroke-width="3"/>
+      <line x1="54" y1="111" x2="326" y2="111" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="8 5"/>
+      <line x1="100" y1="36" x2="130" y2="36" stroke="#4a90c2" stroke-width="6"/><line x1="54" y1="90" x2="54" y2="130" stroke="#4a90c2" stroke-width="6"/>
+      <g fill="#24323d"><rect x="262" y="34" width="6" height="6"/><rect x="262" y="182" width="6" height="6"/><rect x="323" y="34" width="6" height="6"/><rect x="323" y="182" width="6" height="6"/><rect x="323" y="108" width="6" height="6"/></g>
+      <text x="58" y="26" font-size="11" fill="#5b6b77">W-3 · 8000</text><text x="14" y="114" font-size="11" fill="#5b6b77">W-4</text>
+      <text x="272" y="204" font-size="11" fill="#5b6b77">taras 2000</text><text x="160" y="106" font-size="11" fill="#c0392b">kalenica</text>
+    </svg>
+    <div class="liczby"><span>Bale: <b>412</b></span><span>Drewno: <b>9,84 m³</b></span><span>Kalenica: <b>3,51 m</b></span><span>Dach: <b>86,6 m²</b></span></div>
+    <div class="lista">
+      <h3 style="color:#b5651d">Do poprawy (2)</h3>
+      <div class="poz p-uw"><span>Wysunięcie płatwi za szczyt 900 mm – płatew 80 × 200 ugina się za bardzo; zmniejsz do 700 albo weź 80 × 220.</span><small>3. Dach →</small></div>
+      <div class="poz p-uw"><span>Front tarasu 6400 mm bez słupa pośredniego – największy rozstaw 2000.</span><small>4. Taras →</small></div>
+      <h3 style="color:#2e8b57">Sprawdzone (6)</h3>
+      <div class="poz p-ok">Zamki bez kolizji, styki z mijanką ≥ 400</div>
+      <div class="poz p-ok">Szczyty: wieńce na styk przy kalenicy, bez węgłów pod styki</div>
+      <div class="poz p-ok">Płatwie: nośność i ugięcie w normie (śnieg 0,9 kN/m²)</div>
+      <div class="poz p-ok">Podłoga: legar 45 × 145 co 600, podciągi wystarczają</div>
+      <div class="poz p-ok">Okna i drzwi: luz górny 35 mm (osiadanie 1,5 %)</div>
+      <div class="poz p-ok">Bale nie dłuższe niż 5100 mm</div>
+    </div>
+    <div class="dol"><button>Podgląd w modelu</button><button class="glowny">Generuj dom</button></div>
+  </div>
+</div>
+</body>
+</html>

@@ -35,7 +35,7 @@ module LosoweDomy
   ZIARNA_R12 = 8000 unless const_defined?(:ZIARNA_R12)
   # Od tego ziarna – nowości rundy 13 (dobór przekrojów zadaszenia i krokwi, podłoga w przybudówce do wyboru).
   ZIARNA_R13 = 8500 unless const_defined?(:ZIARNA_R13)
-  # Od tego ziarna – nowości rundy 15 (wieńce szczytu łączone na styk albo w zamkach węgłów).
+  # Od tego ziarna – nowości rundy 15 (wieńce szczytu łączone na styk albo w zamkach węgłów, słupy krótsze o osiadanie).
   ZIARNA_R15 = 9000 unless const_defined?(:ZIARNA_R15)
 
   module_function
@@ -278,10 +278,14 @@ module LosoweDomy
     opis << "r13: dobór zadaszenia #{p['zadaszenie_dobor']}, krokwi #{p['krokwie_dobor']}, podłoga przybudówki #{p['zadaszenie_podloga']}"
   end
 
-  # Dodatki rundy 15: łączenie wieńców szczytu (na styk – fabrycznie – albo w zamkach węgłów, jak do kompilacji 14).
+  # Dodatki rundy 15: łączenie wieńców szczytu (na styk – fabrycznie – albo w zamkach węgłów, jak do kompilacji 14),
+  # słupy krótsze o osiadanie ścian (śruba / podkładki / wyłączone) przy różnym osiadaniu.
   def dodatki_r15(r, p, opis)
     p['szczyt_styk'] = wybierz(r, %w[styk styk wegly])
-    opis << "r15: szczyt #{p['szczyt_styk']}"
+    p['slup_osiadanie'] = wybierz(r, %w[tak tak nie])
+    p['slup_regulacja'] = wybierz(r, %w[sruba podkladki])
+    p['osiadanie_scian'] = wybierz(r, %w[1.5 1.5 3 5])
+    opis << "r15: szczyt #{p['szczyt_styk']}, słupy osiadanie #{p['slup_osiadanie']} / #{p['slup_regulacja']} / #{p['osiadanie_scian']} %"
   end
 
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
@@ -374,14 +378,16 @@ module LosoweDomy
     [problemy, pl]
   end
 
-  # Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy.
+  # Bale ścięte dachem, które zachodzą na słup zamka narożnika bez gniazda w jego osi (ostatek bez oparcia) – opisy;
+  # bal wyższy półzamka (rdzen/pol_zamka.rb) nie ma gniazda z założenia – leży w gnieździe bala pod nim.
   def bez_zamka_w_narozniku(pl)
     t = G::Parametry.grubosc(pl[:parametry])
     pl[:sciany].select { |w| w[:szczyt] || w[:pod_dachem] }.flat_map do |w|
       w[:skrzyzowania].select { |k| k[:typ] == :naroznik }.flat_map do |k|
         w[:bale].select do |b|
           b[:s0] < k[:s] + t / 2.0 - 0.01 && b[:s1] > k[:s] - t / 2.0 + 0.01 && b[:cechy].any? { |c| c[:typ] == 'skos_gora' } &&
-            b[:cechy].none? { |c| c[:typ].start_with?('gniazdo') && c[:os] && (c[:os] - k[:s]).abs < 0.01 }
+            b[:cechy].none? { |c| c[:typ].start_with?('gniazdo') && c[:os] && (c[:os] - k[:s]).abs < 0.01 } &&
+            !G::PolZamka.w_osi?(b, k[:s])
         end.map { |b| "#{w[:id]} wieniec #{b[:wieniec][:nr]}" }
       end
     end

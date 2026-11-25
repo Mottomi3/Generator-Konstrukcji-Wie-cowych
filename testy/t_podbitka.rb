@@ -45,7 +45,7 @@ hp = Parametry.przekroj(p, 'platwa_przekroj')[1]
 Testy.sprawdz(deski(pl).length > 20, "deski podbitki (#{deski(pl).length})")
 Testy.rowne(odchylka(pl, :wierzch, -hp), 0.0, 'wierzch desek na płaszczyźnie spodu płatwi pośrednich', 0.05)
 Testy.rowne(kolizje_belek(pl, 'Pb', 5), 0, 'deski bez kolizji z balami')
-Testy.sprawdz(!Krok2.ustawienia(p)[:sheath_ceiling_on], 'KROK 2 bez nadbitki')
+Testy.sprawdz(!Krok2.ustawienia(p.merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on], 'podbitka pod płatwiami sama nie włącza nadbitki w KROKU 2')
 
 Testy.grupa('Na płatwiach – same płatwie z aplikacją: nadbitka KROKU 2 z wymiarami podbitki')
 pl = plan_pelny(DOM, 'podbitka' => 'na_platwiach', 'podbitka_grubosc' => 22, 'podbitka_krycie' => 140)
@@ -80,7 +80,8 @@ Testy.sprawdz(deski(pl).length > 20, 'deski rysuje generator (aplikacja kładzie
 Testy.rowne(pl[:polacie][:z] - pl0[:polacie][:z], g, 'połać wyżej o grubość deski w pionie')
 Testy.rowne(Krok2.podpory(pl).map { |q| q[:od][2] }.zip(Krok2.podpory(pl0).map { |q| q[:od][2] }).map { |a, b| (a - b).round(3) }.uniq,
             [g.round(3)], 'podpory (płatwie) wyżej o grubość deski')
-Testy.sprawdz(!Krok2.ustawienia(pl[:parametry])[:sheath_ceiling_on], 'KROK 2 bez nadbitki (podbitka już jest)')
+Testy.sprawdz(!Krok2.ustawienia(pl[:parametry].merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on],
+              'podbitka na płatwiach z generatora sama nie włącza nadbitki w KROKU 2')
 
 Testy.grupa('Pod krokwiami – krokwie z generatora: wierzch desek na spodzie krokwi, między płatwiami')
 pl = plan_pelny(DOM, 'podbitka' => 'pod_krokwiami', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator')
@@ -109,6 +110,7 @@ Testy.grupa('Wybór niepasujący do układu dachu – pominięty z uwagą')
 pl = plan_pelny(DOM, 'podbitka' => 'na_krokwiach', 'dach_uklad' => 'platwie')
 Testy.rowne(deski(pl).length, 0, 'bez desek')
 Testy.sprawdz(pl[:ostrzezenia].any? { |x| x.include?('Podbitka') }, 'uwaga o podbitce')
-Testy.sprawdz(!Krok2.ustawienia(pl[:parametry])[:sheath_ceiling_on], 'KROK 2 bez nadbitki')
+Testy.sprawdz(!Krok2.ustawienia(pl[:parametry].merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on],
+              'pominięta podbitka nie włącza nadbitki w KROKU 2')
 
 Testy.koniec

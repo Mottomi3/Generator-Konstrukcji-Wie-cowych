@@ -2,9 +2,9 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/zestawienie.rb
-# Zadanie: zestawienie bali i belek do pliku CSV (Excel) – pozycje z długością, ilością i objętością, sumy grup i całości.
+# Zadanie: zestawienie bali i belek do pliku CSV (Excel) – pozycje z długością, ilością i objętością, sumy grup i całości, pod nimi blok materiałów.
 # Tematy: zestawienie CSV, lista do zamówienia w pliku, sumy grup, objętość, Excel, przecinek dziesiętny
-# Zależy od: rdzen/parametry.rb, rdzen/projekt.rb (podsumowanie)
+# Zależy od: rdzen/parametry.rb, rdzen/projekt.rb (podsumowanie), rdzen/materialy.rb (blok materiałów)
 # Używają: sketchup/eksport.rb (zapis pliku)
 #
 # Format dla polskiego Excela: średnik między kolumnami, przecinek dziesiętny, nagłówek w pierwszym wierszu.
@@ -12,6 +12,7 @@
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'materialy') unless defined?(ArteMadera::GeneratorWiencowy::Materialy)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -36,6 +37,10 @@ module ArteMadera
         end
         wiersze << []
         sumy(lista).each { |s| wiersze << s }
+        # Drugi blok – materiały poza balami i belkami (deski, taśma, okucia, impregnacja – rdzen/materialy.rb).
+        mat = Materialy.wiersze_csv(plan[:materialy])
+        wiersze << [] unless mat.empty?
+        wiersze.concat(mat)
         wiersze.map { |w| w.map { |k| pole(k) }.join(';') }.join("\r\n") + "\r\n"
       end
 

@@ -170,6 +170,15 @@ module ArteMadera
           min: 0.0, max: 100.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad ' \
                       'gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego).' },
+        { klucz: 'polzamek', domyslna: 'nie', etykieta: 'Pół zamka w ostatnim połączeniu pod dachem', rodzaj: :wybor, sekcja: 'szczyty',
+          wybory: TAK_NIE, gdy: { 'szczyty' => ['tak'] },
+          podpowiedz: 'Ostatni bal pod skosem dachu, któremu zwykłe gniazdo od spodu zostawia za mało drewna, przechodzi przez ' \
+                      'zamek bez gniazda, a bal pod nim dostaje gniazdo do połowy wysokości – koniec ostatniego bala nie odpada. ' \
+                      'Nie – taki bal kończy się przy licu ściany poprzecznej (jak do kompilacji 14).' },
+        { klucz: 'polzamek_gleb', domyslna: 0.0, etykieta: 'Pół zamka – gniazdo w balu dolnym (0 = do połowy bala)', jednostka: 'mm',
+          min: 0.0, max: 150.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'], 'polzamek' => ['tak'] },
+          podpowiedz: '0 – całe wycięcie w balu dolnym (dwie głębokości gniazda, np. 72), bal górny bez gniazda. Mniej – reszta ' \
+                      'od spodu bala górnego (nie mniej niż zwykłe gniazdo).' },
         { klucz: 'szczyt_min_kawalek', domyslna: 10.0, etykieta: 'Najkrótszy kawałek bala przy skosie i gnieździe', jednostka: 'mm',
           min: 0.0, max: 500.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; typ 100: najkrótszy ' \
@@ -210,24 +219,24 @@ module ArteMadera
                  'połacią kończą się pod podbitką „pod”. Na krokwiach (i na samych płatwiach) z aplikacją do dachów – robi ją ' \
                  'aplikacja jako nadbitkę (pierwszą warstwę poszycia, wymiary stąd); inaczej robi ją generator (grupa Dach). ' \
                  'Wybory zależą od układu dachu.' },
-        { klucz: 'podbitka_grubosc', domyslna: 19.0, etykieta: 'Podbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
+        { klucz: 'podbitka_grubosc', domyslna: 14.0, etykieta: 'Podbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
           rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] } },
-        { klucz: 'podbitka_krycie', domyslna: 121.0, etykieta: 'Podbitka – szerokość deski (krycie)', jednostka: 'mm', min: 50.0,
+        { klucz: 'podbitka_krycie', domyslna: 115.0, etykieta: 'Podbitka – szerokość deski (krycie)', jednostka: 'mm', min: 50.0,
           max: 300.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] } },
         { klucz: 'podbitka_dlugosc', domyslna: 4000.0, etykieta: 'Podbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
           max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] },
           podpowiedz: 'Dłuższe deski dzielone na płatwiach (pod i na płatwiach) albo równo (pod i na krokwiach).' },
-        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Nadbitka – pierwsza warstwa poszycia (aplikacja do dachów)',
+        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'tak', etykieta: 'Nadbitka – pierwsza warstwa poszycia (aplikacja do dachów)',
           rodzaj: :wybor, sekcja: 'poszycie', wybory: TAK_NIE,
           podpowiedz: 'Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych ' \
                       'płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja).' },
-        { klucz: 'nadbitka_grubosc', domyslna: 19.0, etykieta: 'Nadbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
+        { klucz: 'nadbitka_grubosc', domyslna: 14.0, etykieta: 'Nadbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
           rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
-        { klucz: 'nadbitka_krycie', domyslna: 121.0, etykieta: 'Nadbitka – szerokość krycia', jednostka: 'mm', min: 50.0,
+        { klucz: 'nadbitka_krycie', domyslna: 115.0, etykieta: 'Nadbitka – szerokość krycia', jednostka: 'mm', min: 50.0,
           max: 300.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
         { klucz: 'nadbitka_dlugosc', domyslna: 4000.0, etykieta: 'Nadbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
           max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
-        { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'tak', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
+        { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'nie', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
           sekcja: 'poszycie', wybory: TAK_NIE,
           podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (typ 100) ' \
                       '– deski na płatwiach wzdłuż spadku, styki na płatwiach.' },

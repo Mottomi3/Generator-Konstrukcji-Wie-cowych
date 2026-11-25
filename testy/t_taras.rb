@@ -70,7 +70,9 @@ Testy.rowne(ys_front, [60.0, 1380.0, 2000.0, 3940.0], 'słupy frontu licem z lic
 Testy.rowne(sl.length - ys_front.length, 2, 'po jednym słupie pośrednim pod ścianami bocznymi (2444 > 2000)')
 Testy.sprawdz(xs.length == 2, "słupy tylko pod frontem i w połowie ścian bocznych (#{xs.inspect})")
 Testy.rowne(sl.map { |e| [e[:b], e[:h]] }.uniq, [[120.0, 120.0]], 'przekrój słupa 120 × 120')
-Testy.rowne(sl.map { |e| e[:dl] }.uniq, [100.0 + z_bok + 150.0], 'słupy: zamek dolny 100 + do spodu podciągu + zamek górny 150')
+luz_os = Osiadanie.luz(z_bok, pl[:parametry])
+Testy.rowne(sl.map { |e| e[:dl] }.uniq, [100.0 + z_bok - luz_os + 150.0],
+            'słupy: zamek dolny 100 + do spodu podciągu − luz osiadania + zamek górny 150 (runda 15 – t_osiadanie.rb)')
 Testy.sprawdz(sl.all? { |e| e[:polozenie][:x] == [0.0, 0.0, 1.0] && e[:polozenie][:poczatek][2] == -100.0 }, 'słupy pionowe od −100 (zamek dolny)')
 Testy.sprawdz(sl.all? { |e| e[:cechy].count { |c| c[:typ] =~ /wyciecie/ } == 2 }, 'słupy: pas pod balem i pas podwaliny wycięte')
 Testy.rowne(sl.count { |e| e[:cechy].any? { |c| c[:typ] == 'podciecie' } }, 2, 'słupy narożne: także pasy ściany bocznej')

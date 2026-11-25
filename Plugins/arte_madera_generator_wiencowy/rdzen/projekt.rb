@@ -9,17 +9,19 @@
 #
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
 # 'parametry' {…}, 'otwory' [{…}], 'wegly' [{…} – rdzen/wegly_tabela.rb], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
-# podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
+# podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), dach (opis dachu domu prostokątnego / L albo nil),
+# materialy (rdzen/materialy.rb), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
+  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada osiadanie taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka dlugosci_handlowe kontrola_rownoleglych kontrola awaria].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
+require File.join(File.dirname(__FILE__), 'materialy') unless defined?(ArteMadera::GeneratorWiencowy::Materialy)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -108,7 +110,9 @@ module ArteMadera
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
         plan[:ostrzezenia].concat(KontrolaRownoleglych.ostrzezenia(plan))
         plan[:pozycje] = Pozycje.numeruj(bale[:bale], p)
+        plan[:dach] = sz[:dom]
         belki(plan, sz[:dom], p, tryb)
+        plan[:materialy] = Materialy.lista(plan)
         plan[:podsumowanie] = podsumowanie(plan)
         plan[:ostrzezenia].uniq!
         plan
@@ -141,6 +145,7 @@ module ArteMadera
         u = Podbitka.uwaga(p)
         plan[:ostrzezenia] << u if u
         plan[:elementy].concat(TarasSlupy.slupy(plan[:sciany], p))
+        plan[:podpowiedzi].concat(Osiadanie.podpowiedzi(plan[:elementy], p).map { |h| h.merge(sekcja: 'taras') })
         plan[:elementy].concat(TarasWiazar.elementy(plan[:sciany], p))
         plan[:ostrzezenia].concat(TarasWiazar.uwagi(plan[:sciany], p))
         plan[:polacie] = Polacie.dla_domu(dom, p)

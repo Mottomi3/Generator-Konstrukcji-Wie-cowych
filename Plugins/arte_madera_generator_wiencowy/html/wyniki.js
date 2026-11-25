@@ -1,8 +1,8 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/wyniki.js
-  Zadanie: wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, rzut.
-  Tematy: wyniki w oknie, podpowiedzi podłogi, tabela ścian, lista bali, liczby wyniku, wysokości ścian
+  Zadanie: wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, tabela materiałów, rzut.
+  Tematy: wyniki w oknie, podpowiedzi podłogi, tabela ścian, lista bali, tabela materiałów w oknie, liczby wyniku, wysokości ścian
   Zależy od: html/wspolne.js (AMGW_DOM), html/rzut.js (AMGW_RZUT)
   Używają: html/okno.js (pokazWynik)
 
@@ -63,8 +63,10 @@ var AMGW_WYNIKI = (function () {
     wyczysc(liczby);
     var tbS = $('tab-sciany').getElementsByTagName('tbody')[0];
     var tbL = $('tab-lista').getElementsByTagName('tbody')[0];
+    var tbM = $('tab-materialy').getElementsByTagName('tbody')[0];
     wyczysc(tbS);
     wyczysc(tbL);
+    wyczysc(tbM);
     if ($('wysokosci')) { $('wysokosci').textContent = ''; }
     if (!d.sciany) { return; }
     var n = d.liczby;
@@ -93,6 +95,12 @@ var AMGW_WYNIKI = (function () {
     for (i = 0; i < d.lista.length; i++) {
       var l = d.lista[i];
       wiersz(tbL, [l.prefiks, l.nazwa, l.przekroj, l.dl, l.ilosc, Number(l.objetosc_m3).toFixed(3)], [false, false, false, true, true, true]);
+    }
+    // Materiały poza balami i belkami (rdzen/materialy.rb): deski, taśma, okucia, impregnacja.
+    var mat = d.materialy || [];
+    for (i = 0; i < mat.length; i++) {
+      var m = mat[i];
+      wiersz(tbM, [m.grupa, m.nazwa, m.wymiar, String(m.ilosc).replace('.', ','), m.jednostka, m.uwagi], [false, false, false, true, false, false]);
     }
   }
 

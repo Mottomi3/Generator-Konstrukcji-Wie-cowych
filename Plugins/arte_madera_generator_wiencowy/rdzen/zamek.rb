@@ -4,7 +4,7 @@
 # Plik: rdzen/zamek.rb
 # Zadanie: obróbki zamka na każdym skrzyżowaniu – gniazda górne/dolne i podcięcia boczne bali (zamek 44 × 146 z rysunku IMG-20250930-WA0005).
 # Tematy: zamek, gniazdo górne, gniazdo dolne, podcięcie boczne, labirynt, ustawienie bala licem, luz w zamku, półzamek przy styku
-# Zależy od: rdzen/parametry.rb
+# Zależy od: rdzen/parametry.rb, rdzen/pol_zamka.rb (ostatnie połączenie pod dachem – gniazdo do połowy bala niższego)
 # Używają: rdzen/projekt.rb, testy/t_zamek.rb (sprawdzenie kolizji)
 #
 # Na skrzyżowaniu w osi c (współrzędna s ściany): gniazdo szerokości gniazdo_szer wycentrowane w c, głębokości gniazdo_gleb
@@ -15,6 +15,7 @@
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'pol_zamka') unless defined?(ArteMadera::GeneratorWiencowy::PolZamka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -46,8 +47,15 @@ module ArteMadera
               bale2.each do |b2|
                 next unless (b1[:lvl] - b2[:lvl]).abs == 1
                 nizszy, wyzszy, cn, cw = b1[:lvl] < b2[:lvl] ? [b1, b2, k[:s], k2[:s]] : [b2, b1, k2[:s], k[:s]]
-                gniazdo(nizszy, cn, 'gniazdo_gora', z)
-                gniazdo(wyzszy, cw, 'gniazdo_dol', z)
+                if PolZamka.w_osi?(wyzszy, cw)
+                  # Pół zamka (rdzen/pol_zamka.rb): gniazdo do połowy bala niższego, bal wyższy bez gniazda (albo z resztą).
+                  gniazdo(nizszy, cn, 'gniazdo_gora', PolZamka.zamek_z_gniazdem(z, PolZamka.gniazdo_nizszego(p)))
+                  reszta = PolZamka.gniazdo_wyzszego(p)
+                  gniazdo(wyzszy, cw, 'gniazdo_dol', PolZamka.zamek_z_gniazdem(z, reszta)) if reszta > 0.01
+                else
+                  gniazdo(nizszy, cn, 'gniazdo_gora', z)
+                  gniazdo(wyzszy, cw, 'gniazdo_dol', z)
+                end
                 podciecia(nizszy, cn, z, orientacja)
                 podciecia(wyzszy, cw, z, orientacja)
                 pary += 1

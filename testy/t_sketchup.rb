@@ -314,6 +314,33 @@ Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ost
             'plik bieżącej wersji: własna lista użytkownika zapamiętana')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
 
+Testy.grupa('Ustawienia z kompilacji 14 – deski 14 × 115 i 45 × 120 w długościach 5,4 / 6 (runda 15)')
+p15 = Parametry.normalizuj({})[0]
+Testy.rowne([p15['podbitka_grubosc'], p15['podbitka_krycie'], p15['podbitka_dlugosc'], p15['nadbitka_grubosc'], p15['nadbitka_krycie'],
+             p15['nadbitka_dlugosc']], [14.0, 115.0, 4000.0, 14.0, 115.0, 4000.0], 'wartości fabryczne desek: 14 × 115 (krycie) × 4000')
+Testy.rowne(Ustawienia::WERSJA, 4, 'plik ustawień w wersji 4')
+stara_lista = '45x95:6, 45x120:5/5.4, 45x145:4.2/5.4/6'
+File.open(Ustawienia.sciezka, 'w') do |f|
+  f.write(JSON.generate('wersja' => 3,
+                        'ostatnie' => { 'podbitka_grubosc' => '19', 'podbitka_krycie' => '121', 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121',
+                                        'przekroje_katalog' => stara_lista, 'poszycie_nadbitka' => 'nie', 'poszycie_deski' => 'tak',
+                                        'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14' },
+                        'szablony' => { 'Mój dom' => { 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121', 'przekroje_katalog' => stara_lista,
+                                                       'poszycie_nadbitka' => 'nie', 'dach_kat' => '35' } }))
+end
+Testy.rowne(Ustawienia.ostatnie, { 'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14' },
+            'plik wersji 3: deski 19 × 121, lista legarów i wybór warstw poszycia pominięte, reszta zostaje')
+Testy.rowne(Ustawienia.szablon('Mój dom'), { 'poszycie_nadbitka' => 'nie', 'dach_kat' => '35' },
+            'własny szablon: deski i lista legarów pominięte, wybór warstw poszycia zostaje')
+pn = Parametry.normalizuj(Ustawienia.ostatnie)[0]
+Testy.rowne([pn['nadbitka_grubosc'], pn['nadbitka_krycie'], pn['podbitka_grubosc'], pn['podbitka_krycie']], [14.0, 115.0, 14.0, 115.0],
+            'po wczytaniu – deski 14 × 115')
+Testy.sprawdz(pn['przekroje_katalog'].include?('45x120:5.4/6'), 'po wczytaniu – 45 × 120 w długościach 5,4 / 6')
+Ustawienia.zapamietaj(pn.merge('nadbitka_grubosc' => '19', 'przekroje_katalog' => '45x145:6'))
+Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['nadbitka_grubosc'].to_f, Ustawienia.ostatnie['przekroje_katalog']],
+            [4, 19.0, '45x145:6'], 'plik bieżącej wersji: własna deska i lista użytkownika zapamiętane')
+Ustawienia.zapamietaj('liczba_wiencow' => '10')
+
 Testy.grupa('Pasek narzędzi i menu pod prawym przyciskiem (runda 14)')
 pasek = Pasek.pasek
 Testy.sprawdz(pasek && pasek.nazwa == 'ArteMadera Generator Wieńcowy' && pasek.polecenia.length == 3, 'pasek z trzema przyciskami założony przy ładowaniu')

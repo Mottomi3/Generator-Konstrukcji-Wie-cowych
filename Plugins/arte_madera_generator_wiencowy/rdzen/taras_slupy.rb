@@ -4,7 +4,7 @@
 # Plik: rdzen/taras_slupy.rb
 # Zadanie: słupy tarasu z podciągiem – licem równo z licami ścian zewnętrznych, zamek górny (część słupa za balem idzie w górę obok bala) i zamek dolny (część słupa obok podwaliny schodzi w dół).
 # Tematy: słupy tarasu, słup pod węgłem, słup licem z lica ściany, zamek górny słupa, zamek dolny słupa, słup na podwalinie, słup narożny tarasu
-# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie), rdzen/taras_sciany.rb (balustrada z wieńców – pas słupa), rdzen/taras_wiazar.rb (front bez bali – lico wiązara)
+# Zależy od: rdzen/parametry.rb, rdzen/elementy.rb, rdzen/taras.rb (role ścian, słupy frontu, słupy pośrednie), rdzen/taras_sciany.rb (balustrada z wieńców – pas słupa), rdzen/taras_wiazar.rb (front bez bali – lico wiązara), rdzen/osiadanie.rb (słup krótszy o osiadanie ścian)
 # Używają: rdzen/projekt.rb (belki – słupy S)
 #
 # Słup stoi pod podciągiem (spód bali frontu i ścian bocznych nad tarasem – ten sam poziom, Taras.z_podciagu). Zewnętrzne
@@ -14,6 +14,9 @@
 # węgłem albo działową – bez zamka górnego (słup kończy się pod balem).
 # Zamek dolny (gdy jest podłoga z podwalinami): poniżej poziomu 0 słup schodzi o taras_slup_zamek_dol (najwyżej wysokość
 # podwaliny), bez pasa podwaliny (jej szerokość od lica) – słup obejmuje podwalinę od środka.
+# Osiadanie (runda 15, rdzen/osiadanie.rb): wierzch pełnego przekroju słupa jest niżej od spodu podciągu o luz osiadania
+# ścian i wysokość okucia regulacyjnego; część słupa obok bala (zamek górny) dłuższa o okucie – po osiadaniu obejmuje bal
+# na pełną wysokość zamka. Opis skrócenia w elemencie: e[:osiadanie].
 # Układ belki słupa: x w górę (od spodu zamka dolnego), y wzdłuż ściany, z = normalna ściany w lewo (układ prawoskrętny);
 # obróbki – wyciecie_dol / wyciecie_gora (pas przy licu z = 0 albo z = g) i podciecie (pas ściany poprzecznej przy y = 0
 # albo y = b).
@@ -23,6 +26,7 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 require File.join(File.dirname(__FILE__), 'taras_wiazar') unless defined?(ArteMadera::GeneratorWiencowy::TarasWiazar)
+require File.join(File.dirname(__FILE__), 'osiadanie') unless defined?(ArteMadera::GeneratorWiencowy::Osiadanie)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -78,14 +82,18 @@ module ArteMadera
         lico ||= t
         gora = p['taras_slup_zamek_gora'].to_f
         gora = 0.0 if skrzyzowanie_nad?(w, s, b, t)
+        # Słup krótszy o osiadanie ścian i okucie regulacyjne (rdzen/osiadanie.rb): z_s – wierzch pełnego przekroju.
+        os = Osiadanie.slupa(z_gora, p)
+        z_s = z_gora - (os ? os[:razem] : 0.0)
+        gora += os[:okucie] if os && gora > 0.5
         dol = zamek_dolny(p, g)
         ld = dol ? dol[0] : 0.0
-        dl = ld + z_gora + gora
+        dl = ld + z_s + gora
         do_srodka = nor_do_srodka?(w, srodek)
         cechy = []
         if gora > 0.5
-          cechy << pas_lica(ld + z_gora, dl, lico, do_srodka)
-          cechy << pas_boku(ld + z_gora, dl, t, naroznik) if naroznik
+          cechy << pas_lica(ld + z_s, dl, lico, do_srodka)
+          cechy << pas_boku(ld + z_s, dl, t, naroznik) if naroznik
         end
         if dol
           cechy << pas_lica(0.0, ld, dol[1], do_srodka)
@@ -97,8 +105,10 @@ module ArteMadera
           cechy << pas_lica(ld, ld + bal, t, do_srodka)
           cechy << pas_boku(ld, ld + bal, t, naroznik) if naroznik
         end
-        Elementy.nowy('S', dl, b, g, poczatek(w, s, b, g, t, do_srodka, -ld), [0.0, 0.0, 1.0],
-                      [w[:kier][0], w[:kier][1], 0.0], [w[:nor][0], w[:nor][1], 0.0], cechy)
+        e = Elementy.nowy('S', dl, b, g, poczatek(w, s, b, g, t, do_srodka, -ld), [0.0, 0.0, 1.0],
+                          [w[:kier][0], w[:kier][1], 0.0], [w[:nor][0], w[:nor][1], 0.0], cechy)
+        e[:osiadanie] = os if os
+        e
       end
 
       # Czy nad słupem w miejscu s ściany w stoi węgieł albo działowa (nie narożnik) – zamek górny wszedłby w jej bale.

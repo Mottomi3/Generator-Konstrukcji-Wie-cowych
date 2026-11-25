@@ -36,6 +36,9 @@ Testy.rowne(Parametry.dlugosci_katalogu(p), { [45.0, 145.0] => [4200.0, 6000.0],
 Testy.grupa('Listy fabryczne z wykazu hurtowni (2026-11-14)')
 p0 = Parametry.normalizuj({})[0]
 leg = Parametry.katalog(p0)
+Testy.sprawdz(p0['przekroje_katalog'].include?('45x120:5.4/6') && !p0['przekroje_katalog'].include?('45x120:5/5.4'),
+              '45 × 120 w długościach 5,4 / 6 m (decyzja z 2026-11-25)')
+Testy.rowne(Parametry.dlugosci_katalogu(p0)[[45.0, 120.0]], [5400.0, 6000.0], 'długości 45 × 120 do doboru')
 Testy.sprawdz(leg.include?([45.0, 245.0]) && leg.include?([200.0, 200.0]) && !leg.include?([38.0, 58.0]), 'legary: od 45 × 95 w górę, z drewnem widocznym')
 %w[50x100 50x150 50x175 50x200 50x225 63x175 63x200 63x225 75x200 75x225 75x250 100x150].each do |t|
   Testy.sprawdz(!leg.include?(Parametry.przekroj_z(t)), "legary: #{t} nie ma w hurtowni – wypadł z listy")
