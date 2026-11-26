@@ -1,7 +1,8 @@
-# Podział pól na trzy poziomy – propozycja do akceptacji (runda 15, kod w rundzie 16)
+# Podział pól na trzy poziomy – przyjęty w rundzie 16 (propozycja z rundy 15)
 
-Stan: kompilacja 15, 194 pól z listy parametrów (`rdzen/parametry_lista.rb` i pliki sekcji). Plik powstał ze skryptu – po zmianie
-przydziału w rundzie 16 źródłem będzie cecha `poziom:` przy każdym polu.
+**Od kompilacji 16 źródłem przydziału jest cecha `poziom:` każdego pola w `rdzen/parametry_*.rb`** (dom 18, typ 48, standard
+131 – razem 197; lista z poziomami: `docs/parametry.md`). Tabele poniżej to stan propozycji z kompilacji 15 (194 pola) –
+zostają jako zapis tego, co użytkownik zaakceptował 2026-11-25 („Możemy spróbować, wygląda dobrze”).
 
 ## 1. Zasada
 

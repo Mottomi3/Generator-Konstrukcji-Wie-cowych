@@ -39,7 +39,8 @@ ZIARNA = {
   5083 => 'r9: węgieł ręczny w miejscu słupa tarasu (kolizja ze słupem)',
   13 => 'r10: dom L – dwa dachy z koszem, połacie dla aplikacji',
   204 => 'r10: dom L – płatew skrzydła bocznego kończy się w koszu w swojej osi (podpora w granicy aplikacji)',
-  77 => 'r10: dom L – płatew ścienna skrzydła bocznego na ścianie wyższej o pół bala'
+  77 => 'r10: dom L – płatew ścienna skrzydła bocznego na ścianie wyższej o pół bala',
+  6201 => 'r16: pełny profil – klin szczytu 7 mm nad węgłem bez półzamka (podcięcia na klinie cieńszym niż wpust – bryła niezamknięta)'
 }.freeze
 
 ZIARNA.each do |z, opis|

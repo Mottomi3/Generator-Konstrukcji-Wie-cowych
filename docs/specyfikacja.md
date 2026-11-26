@@ -523,6 +523,51 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   (≥ 2 na podwalinę), łącznik na każde przecięcie osi krokwi z generatora z płatwią w rzucie. Impregnacja: lica bali,
   obwód × długość belek, spód desek; litry = m² × `impregnat_warstwy` / `impregnat_wydajnosc`. Blok CSV pod sumami.
 
+## 8k. Runda 16 – pół zamka pod całym dachem, jedno pole desek, trzy poziomy ustawień, okno krokami, dom z wymiarów, powierzchnie
+
+- **Pół zamka fabrycznie** (`polzamek` = tak; odpowiedź z 2026-11-25: „dobry pomysł, z tymże trzeba i tak podfrezować
+  gniazda na bokach górnego elementu”): bal górny nie ma wycięcia od spodu, ale ma podcięcia boczne zamka
+  (`Zamek.podciecia`: 2 × `podciecie_gleb` 2,5 – szyjka 39 w gnieździe 40), bal pod nim gniazdo 72 od wierzchu.
+  Rysunek `docs/ostatnie_polaczenie_r16.png`.
+- **To samo poza narożnikiem** (`PolZamka.ostatnie?`, `Zamek.ostatnie_polaczenia!`): w każdym skrzyżowaniu (góra węgła,
+  działowa pod połacią, ściana wysoka dachu jednospadowego) para bali jest ostatnim połączeniem, gdy balowi wyższemu
+  pod skosem albo ścięciem dachu zostaje nad zwykłym gniazdem mniej niż `zamek_min_drewno` (20), ale sam ma w zamku
+  co najmniej tyle (cieńszy klin – zwykłe gniazdo jak dotąd), żaden bal nie siada na nim pełnym gniazdem, a balowi
+  niższemu po gnieździe 72 (i jego własnym gnieździe od spodu) zostaje ≥ 20 mm. W węźle ścian w jednej linii (§8i), gdzie
+  dwa bale tego samego wieńca stykają się czołami nad wspólnym gniazdem, oba są balami półzamka albo – gdy na drugim coś
+  leży – drugi zostaje ze zwykłym gniazdem nad głębszym (`Zamek.wspolne_polzamki!`; z dwóch gniazd w tym samym miejscu
+  zostaje głębsze).
+  Decyzje zapadają na liście par od najniższej, obróbki nanoszone są potem w dotychczasowej kolejności. Para, w której
+  bal pół zamka nie sięga bala nad sobą, nie dostaje gniazda (koniec pustych gniazd).
+- **Ostatni bal węgła** (`Bale.kontrfor_obecny?`, `#ostatni_bal_wegla?`): węgieł ma bal także w wieńcu, w którym pod
+  dachem zostaje od `PolZamka.min_wysokosc` (20 mm zamiast 36 + 20), gdy nad nim nie ma już wieńca ściany; przy ścianie
+  szczytowej – gdy wyższy wieniec szczytu nie przechodzi przez oś węgła.
+- **Styk bali zawsze w zamku** (odpowiedź z 2026-11-26: „jak dotąd były tam zamki i chciałbym tego nie zmieniać – bez
+  zamka będzie to uciekać przy montażu oraz będzie mieć tendencję do skręcania się”): przy podbitce pod płatwiami węgieł,
+  w którego osi ściana ma styk, nie jest obniżany pod deski (`Podbitka.obnizenie_wegla` = 0, `#wegiel_do_polaci?`) –
+  dochodzi do połaci, a deski podbitki są na nim przerwane z luzem 2 mm + grubość deski × sin kąta (`#bez_wegla`).
+  Ostrzeżenie o styku bez zamka zostaje ostrzeżeniem. Pomiar (600 domów, 6001–6600): 23 → 8 domów; zostały działowa pod
+  podbitką niosąca styk ściany okapowej i styk ściany szczytowej nad końcem węgła (`docs/zadanie_r16.md` §4).
+- **Jedno pole położenia desek** `podbitka` (odpowiedź z 2026-11-25): na_platwiach | na_krokwiach | pod_krokwiami |
+  pod_platwiami | nie; fabrycznie na_krokwiach. Wartość niezgodna z układem dachu (`dach_uklad`) zamienia się na
+  odpowiednik (`ParametryDach::DESKI_ZAMIENNIKI`: krokwie ↔ płatwie) w `Parametry.normalizuj` i w oknie. Deski „na …”
+  robi aplikacja do dachów (warstwa „podbitka” KROK 2), „pod …” – generator. Dawne pola `poszycie_nadbitka`
+  i `nadbitka_*` są przenoszone przy wczytaniu domu i ustawień (`#przenies_nadbitke`).
+- **Trzy poziomy ustawień** (`rdzen/poziomy.rb`, cecha `poziom:` każdego pola – :dom 18, :typ 48, :standard 131):
+  parametry nowego domu = fabryczne ← standard warsztatu ← pola typu; dom w modelu ma swoje (edycja). Szczegóły – §10.
+- **Dom z wymiarów** (`rdzen/dom_z_wymiarow.rb`): generator uruchomiony bez zaznaczenia buduje prostokąt
+  `dom_dlugosc` × `dom_szerokosc` (lica zewnętrzne, 6000 × 4000) od początku układu, kalenica wzdłuż długości;
+  pola widać tylko w takim domu (`z_wymiarow: true`), edycja domu zmienia wymiary bez rysowania.
+- **Powierzchnie i limity** (`rdzen/powierzchnie.rb`, `plan[:powierzchnie]`): zabudowa = pole obrysu po licach
+  zewnętrznych z tarasem; pomieszczenia = obszary między licami wewnętrznymi ścian (siatka z krawędzi ścian, zalewanie;
+  węgły nie dzielą), z wymiarami; dach = połacie z okapami (jak w zestawieniu materiałów); wysokość = najwyższy punkt
+  konstrukcji dachu nad terenem (`teren_pod_balem` 300 pod spodem pierwszego bala). `limit_zabudowy` [m²]
+  i `limit_wysokosci` [m] (0 = bez limitu) – po przekroczeniu ostrzeżenie, od 95 % podpowiedź. Trzeci blok w CSV.
+- **Lista uwag z miejscem** (`rdzen/uwagi_pola.rb`): każde ostrzeżenie i podpowiedź dostaje pole, sekcję i krok
+  (tabela wzorców) – okno prowadzi kliknięciem do pola.
+- **Opcje zależne od obrysu** (cecha `obrys:` pola: `tylko`, `zostaje`, `powod`): rodzaj obrysu (prostokąt, L, inny)
+  z podglądu; wybory niedostępne są wyszarzone, pod polem powód, wartość niedostępna wraca do dozwolonej.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):
@@ -569,23 +614,37 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   licem z licem obrysu (nie wychodzą poza dom), stopy pod podwalinami, podciągami i podwalinami działowych; wierzch
   stopy = spód tego, co na niej leży. Legar za słaby na rozstaw – dodatkowy rząd z podpowiedzią.
 
-## 10. Okno, ustawienia, szablony
+## 10. Okno, ustawienia, typy domów
 
-- Formularz budowany z `rdzen/parametry_lista.rb` (SEKCJE, LISTA): sekcje rozwijane, pod polem podpowiedź (skąd
-  wartość). Nowy parametr = jeden wpis w LISTA – pole pojawia się samo w swojej sekcji.
-- Ostatnio użyte parametry zapisują się przy każdym podglądzie i generowaniu w pliku ustawień na komputerze
-  (Windows: `%APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json`) – nowy dom startuje z nimi po ponownym
-  uruchomieniu SketchUpa. Dom w modelu ma swoje parametry (edycja).
-- Szablony: wbudowane (jak 900, jak 1800, 1,5 kondygnacji, 1,5 kondygnacji ze stropem nad parterem, bez łączenia,
-  podłoga 150, pełny profil bala) i własne (zapisz / wczytaj / usuń); „Przywróć fabryczne”. Szablony obejmują
-  parametry – ustawienia pojedynczych ścian należą do domu.
-- Pola zmienione względem ustawień fabrycznych – wyróżniona etykieta (w dymku wartość fabryczna), w nagłówku sekcji
-  liczba zmian.
-- **Pola: Podstawowe / Wszystkie** (`html/tryb.js`): w trybie podstawowym tylko parametry oznaczone `podstawowy: true`
-  w liście i te zmienione względem fabrycznych (nic, co zmienia dom, nie znika); sekcje bez widocznych pól i wymiary
-  zamka ukryte. Tryb zapamiętany na komputerze (domyślnie podstawowe).
+- Formularz budowany z `rdzen/parametry_lista.rb` (SEKCJE, LISTA): pod polem podpowiedź (skąd wartość). Nowy parametr
+  = jeden wpis w LISTA z cechą `poziom:` – pole pojawia się samo w swojej sekcji, kroku i na swoim poziomie.
+- **Plik ustawień** (Windows: `%APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json`, wersja 5,
+  `sketchup/ustawienia.rb`): `standard` (tylko pola inne niż fabryczne), `typy` (własne), `typ` (ostatnio wybrany),
+  `okno` (układ, tryb pól). Starszy plik jest przenoszony raz: ostatnie parametry → pola standardu do standardu, reszta
+  do typu „Ostatnie ustawienia (do kompilacji 15)”, szablony → typy; kopia w `ustawienia_przed_r16.json`.
+  Podgląd i generowanie niczego nie zapisują w ustawieniach.
+- **Typy domów** (`sketchup/typy_domow.rb`, `html/typy.js`): wbudowane Typ 100–400 i własne. Typ = nazwa, zdanie opisu
+  i wartości pól poziomu „typ” oraz startowe pól „dom”, różne od standardu. Nowy dom startuje z ostatnio wybranego
+  typu. „Zapisz jako typ…”, „Zapisz zmiany w typie” (własny), „Powiel…”, „Usuń” (własny, dwa kliknięcia),
+  „Przywróć z typu”. Wymiary zamka należą do standardu.
+- **Standard warsztatu** (`html/standard.js`, przycisk w nagłówku): pola poziomu „standard” z wyszukiwarką, wymiary
+  zamka; „Zapisz standard”, „Przywróć fabryczne”. Po zapisie pola domu równe dotychczasowemu standardowi dostają nową
+  wartość, zmienione tylko w tym domu – zostają.
+- **Zmienione tylko w tym domu**: pole typu albo standardu o wartości innej niż typ ze standardem – etykieta
+  z dopiskiem, w dymku wartość bazowa, przycisk ↺; licznik pod typem. Pola standardu trafiają do kroku z listy „Zmień
+  pole standardu tylko w tym domu…”.
+- **Układ nowy – kroki** (`html/kroki.js`, `html/uklad.js`, `html/kroki.css`; fabrycznie): Ściany → Okna i drzwi →
+  Dach → Taras i zadaszenie → Podłoga → Zestawienie, przy kroku znacznik (błąd / ostrzeżenie / w porządku / liczba pól
+  zmienionych). W kroku: pola poziomu „dom”, pod przyciskiem pola typu, pola standardu tylko zmienione albo dopięte;
+  karty kroku (widok ściany, tabela otworów, węgły, lista bali i materiały z powierzchniami w „Zestawieniu”). Po prawej
+  stale rzut i „Wynik” z listą „Do poprawy / Sprawdzone” (`html/uwagi.js`) – kliknięcie przechodzi do kroku i pola.
+  Podpowiedź pola pokazuje się po wejściu w pole.
+- **Układ dotychczasowy – zakładki** (do porównania, przełącznik w nagłówku; wybór zapamiętany): sekcje rozwijane,
+  „Pola: Podstawowe / Wszystkie” (`html/tryb.js`), wszystkie karty w prawej kolumnie. Do usunięcia po wyborze użytkownika.
+- Przebudowa okna po zmianie pola czeka na puszczenie przycisku myszy (`AMGW_DOM.poKliknieciu`) – kliknięcie
+  przycisku zaraz po wpisaniu wartości działa za pierwszym razem. Liczby w polach bez zaokrąglania (`fmtPola`).
 - Rzut z numerami ścian i punktami odniesienia, tabela okien i drzwi (nowe okno / drzwi z wymiarów w ustawieniach),
-  wynik: liczby (bale, węgły, szczyty, belki), ostrzeżenia, podpowiedzi, ściany ze stykami, lista bali i belek.
+  wynik: liczby (bale, węgły, szczyty, belki, powierzchnie, wysokość), ściany ze stykami, lista bali i belek.
 - **Widok ściany** (`rdzen/widok.rb`, `html/sciana.js`): wybór z listy albo kliknięcie ściany na rzucie; widok od lica
   jak rozkład ściany producenta – bale z gniazdami zamków i skosem dachu, numery pozycji na balach, numery wieńców,
   styki (czerwone), skrzyżowania ze ścianami i węgłami (przerywane; węgieł ręczny – pogrubiony opis), otwory, linia
@@ -593,7 +652,8 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   co nad działową i jej góra, stan węgłów („Przywróć automatyczne”); kliknięcie w rysunek dodaje / usuwa węgieł.
   Cała ściana w szerokości okna (długa i niska – przewijanie w poziomie); na rzucie opisy węgłów w środku domu.
 - **Zestawienie CSV** (przycisk przy liście; `rdzen/zestawienie.rb`, `sketchup/eksport.rb`): grupa, pozycja, rodzaj,
-  przekrój, długość, ilość, objętość; sumy grup i całości; średnik i przecinek dziesiętny, BOM – otwiera się w Excelu.
+  przekrój, długość, ilość, objętość; sumy grup i całości; materiały; powierzchnie; średnik i przecinek dziesiętny,
+  BOM – otwiera się w Excelu.
 
 ## 10a. Test działania i raport (menu)
 

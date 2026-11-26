@@ -42,6 +42,11 @@ Każda sesja, w której zmieniasz kod. Odpowiedzi do użytkownika po polsku, kr�
 
 - Zapisuj na dysk po każdym skończonym kawałku (krok C6), nie tylko na końcu.
 - Po każdej zmianie kodu `ruby testy/spis_tresci.rb`.
+- Po każdej zmianie geometrii (zamki, bale, szczyty, węgły) – od razu, przed commitem punktu: `ruby -I testy/atrapa
+  testy/zlozone_domy.rb 300 10001` (4 min) i `ruby -I testy/atrapa testy/losowe_domy.rb 300 6001` (7 min), w tle na kopii
+  katalogu. W rundzie 16 dwa błędy punktu 1 (ziarna 6201 i 10019) wyszły dopiero przy zamknięciu, bo po punkcie sprawdzone
+  były tylko ziarna 1–200 i 6001–6200. Skrypt diagnostyczny nie może wypisywać `inspect` planu ani ściany (odwołania
+  w kółko – proces staje); wypisuj wybrane pola.
 - Podgląd 3D domu testowego: `ruby -I testy/atrapa testy/podglad.rb dom.obj dom900 && python3 testy/podglad.py dom.obj dom.png`.
 
 ## C. Zamknięcie

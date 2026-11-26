@@ -23,8 +23,8 @@ Używaj przy każdej zmianie w `Plugins/` i przed commitem.
 - Plik > 450 wierszy – UWAGA, > 700 – BŁĄD kontroli: dziel według tematów.
 - Stałe tematu w jego pliku (np. wymiary zamka – `rdzen/parametry_lista.rb` PRESETY, ułożenie lic – `rdzen/zamek.rb`
   ORIENTACJA). **Nowy parametr = jeden wpis w `LISTA` w `rdzen/parametry_lista.rb`** (klucz, domyślna, etykieta,
-  jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź) – okno samo doda pole w sekcji, wartość trafi do zapisanych
-  ustawień i szablonów; potem `ruby testy/lista_parametrow.rb` (docs/parametry.md). Odczyt w kodzie tylko `p['klucz']`
+  jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź, **`poziom:` :dom / :typ / :standard** – `rdzen/poziomy.rb`) –
+  okno samo doda pole w sekcji i kroku, wartość trafi do standardu warsztatu albo typu domu; potem `ruby testy/lista_parametrow.rb` (docs/parametry.md). Odczyt w kodzie tylko `p['klucz']`
   (przekroje: `Parametry.przekroj(p, 'klucz')`). Co tylko można – parametr, nie stała (wymóg użytkownika).
 - Stara wartość parametru z wcześniejszej kompilacji (zapisana w modelach) → `STARE_WARTOSCI` w tym samym pliku.
 

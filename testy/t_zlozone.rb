@@ -103,11 +103,27 @@ Testy.rowne([pl[:sciany], pl[:bale], pl[:podsumowanie]], [[], [], nil], 'plan be
 Testy.sprawdz(Log.wpisy.any? { |w| w.to_s.include?('Projekt.oblicz') }, 'pełny ślad w dzienniku')
 
 Testy.grupa('Domy złożone z ziaren (L, T, U, Z, krzyż, H z działowymi w liniach uskoków)')
-[10_001, 10_003, 10_008, 10_010, 10_013, 10_014, 10_041, 10_061, 10_072, 10_078, 10_106, 10_113].each do |z|
+[10_001, 10_003, 10_008, 10_010, 10_013, 10_014, 10_019, 10_041, 10_061, 10_072, 10_078, 10_106, 10_113].each do |z|
   d = ZlozoneDomy.dom(z)
   problemy, plx = LosoweDomy.sprawdz(d)
   Testy.rowne(problemy, [], "ziarno #{z}: #{d[:opis][0, 90]}")
   Testy.sprawdz(plx && !plx[:bale].empty?, "ziarno #{z}: są bale")
 end
+
+# Ziarno 10019 (runda 16): w węźle czterech ścian w jednej linii bal półzamka i bal ze zwykłym gniazdem stykają się
+# czołami nad tym samym balem – gniazdo bala niższego zostawało płytkie (36) i bal półzamka w nie wchodził.
+Testy.grupa('Pół zamka w węźle ścian w jednej linii (ziarno 10019)')
+d = ZlozoneDomy.dom(10_019)
+pl = Projekt.oblicz('segmenty' => d[:segmenty], 'parametry' => d[:parametry], 'otwory' => d[:otwory], 'sciany' => d[:sciany])
+gorne = pl[:bale].select { |b| b[:lvl] == 26 && %w[W-4 W-12].include?(b[:sciana][:id]) }
+Testy.rowne(gorne.length, 2, 'dwa bale wieńca nad węzłem – ściany zewnętrznej i działowej w jej linii')
+w4 = gorne.find { |b| b[:sciana][:id] == 'W-4' }
+w12 = gorne.find { |b| b[:sciana][:id] == 'W-12' }
+Testy.sprawdz(PolZamka.w_osi?(w4, w4[:s1]) && PolZamka.w_osi?(w12, w12[:s1]), 'oba bale stykające się w węźle są balami półzamka')
+Testy.sprawdz(gorne.all? { |b| b[:cechy].none? { |c| c[:typ] == 'gniazdo_dol' && (c[:os] - b[:s1]).abs < 0.01 } }, 'oba bez gniazda od spodu w węźle')
+dolne = pl[:bale].select { |b| b[:lvl] == 25 && %w[W-5 W-10].include?(b[:sciana][:id]) && b[:s0].abs < 0.01 }
+Testy.rowne(dolne.map { |b| b[:cechy].find { |c| c[:typ] == 'gniazdo_gora' && c[:os].abs < 0.01 }[:gleb] }, [72.0, 72.0],
+            'bale niższe (obie ściany w linii) z gniazdem do połowy wysokości')
+Testy.rowne(Kontrola.kolizje(pl), [], 'bez kolizji w zamkach')
 
 Testy.koniec

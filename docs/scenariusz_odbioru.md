@@ -1,14 +1,14 @@
-# Odbiór – kompilacja 15
+# Odbiór – kompilacja 16
 
 Trzy kroki. Nie trzeba niczego zapisywać ani wysyłać – wtyczka sama odkłada raport i dziennik pracy w folderze
 `Dokumenty\ArteMadera Generator Konstrukcji Wieńcowych\raporty\`, a Claude czyta je stamtąd na początku następnej rozmowy.
-(Na starcie rundy 15 folderu `raporty\` jeszcze nie było – kompilacja 14 nie była uruchamiana.)
+(Na starcie rundy 16 folderu `raporty\` nie było – kompilacje 14 i 15 nie były jeszcze uruchamiane w SketchUpie.)
 
 ## 1. Instalacja
 
 SketchUp → Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`
 (leży w folderze `Dokumenty\ArteMadera Generator Konstrukcji Wieńcowych\`). **Zamknij i uruchom SketchUpa ponownie.**
-W menu Rozszerzenia → ArteMadera Generator Wieńcowy → „O wtyczce” ma być „Kompilacja 15”. Pasek „ArteMadera Generator
+W menu Rozszerzenia → ArteMadera Generator Wieńcowy → „O wtyczce” ma być „Kompilacja 16”. Pasek „ArteMadera Generator
 Wieńcowy” z trzema przyciskami: gdyby go nie było – Widok → Paski narzędzi.
 
 Aplikacja do dachów (ArteMadera Roof) 3.12.0 – bez zmian, zostaje ta, która jest.
@@ -24,28 +24,32 @@ Model po teście zostaje pusty.
 
 ## 3. Zwykła praca
 
-Rysuj i generuj domy jak zawsze. Po każdym „Generuj” wtyczka dopisuje jeden wiersz do `raporty\dziennik_pracy.jsonl`
-(ile trwały obliczenia i budowa modelu, ile bali, które ustawienia były zmienione). Gdy coś wygląda źle, wystarczy jedno
-zdanie i zrzut ekranu.
+Rysuj i generuj domy jak zawsze. Po każdym „Generuj” wtyczka dopisuje jeden wiersz do `raporty\dziennik_pracy.jsonl`.
+Gdy coś wygląda źle, wystarczy jedno zdanie i zrzut ekranu.
 
-## Co nowego warto zobaczyć w tej kompilacji (10 minut)
+## Co nowego warto zobaczyć w tej kompilacji (15 minut)
 
-1. **Szczyt na styk.** Dom ze ścianą szczytową dłuższą niż 5,1 m (np. 8 × 6,4 m). W widoku ściany szczytowej: wieńce nad
-   wysokością ściany łączą się przy kalenicy raz z lewej, raz z prawej (± 200 mm), bez węgła; węgły pod styki kończą się
-   na wysokości ściany okapowej. Sekcja „Długości bali i łączenia” → „Łączenie wieńców szczytu” = „w zamkach węgłów”
-   przywraca dawny układ.
-2. **Deski i poszycie.** Sekcja „Poszycie dachu”: nadbitka włączona, 14 × 115 × 4000; deskowanie pełne wyłączone. Jeśli
-   miałeś zapamiętane 19 × 121 – wróciły do 14 × 115 (jednorazowo, przy pierwszym uruchomieniu kompilacji 15).
-3. **Słupy tarasu.** Dom z tarasem na słupach (Typ 200): słup kończy się kilka centymetrów pod balem podciągu (luz na
-   osiadanie + śruba regulacyjna), w sekcji „Taras” podpowiedź „Słupy … krótsze o osiadanie ścian”. Pola: „Słupy krótsze
-   o osiadanie ścian”, „Słup – regulacja w głowicy”, „Śruba regulacyjna – wysokość po skręceniu”.
-4. **Zestawienie materiałów.** Na dole okna, pod listą bali i belek, tabela „Materiały: deski, taśma, okucia,
-   impregnacja”; to samo w pliku z przycisku „Zapisz zestawienie (CSV)”. Ustawienia: sekcja „Zestawienie materiałów”
-   (zapas na docinki, pasy taśmy, rozstaw kotew, wydajność impregnatu). Sprawdź, czy liczby zgadzają się z tym, co
-   zamawiasz – jeśli nie, napisz, o ile.
-5. **Pół zamka (wyłączone, do Twojej decyzji).** Sekcja „Szczyty i dach” → „Pół zamka w ostatnim połączeniu pod dachem”
-   = tak. Dach na ścianie nośnej („Oparcie dachu przy ścianie okapowej” = ściana nośna – bez płatwi): w narożniku ostatni bal szczytu
-   przechodzi przez zamek cały (bez gniazda od spodu), a górny bal ściany okapowej ma gniazdo 72 mm. Rysunek:
-   `docs\ostatnie_polaczenie_r15.png`.
+1. **Nowe okno.** Zaznacz obrys, otwórz generator. U góry „Typ domu”, pod nim sześć kroków (Ściany → Okna i drzwi → Dach →
+   Taras i zadaszenie → Podłoga → Zestawienie), po prawej stale rzut i lista „Do poprawy / Sprawdzone”. Kliknij uwagę na
+   liście – okno ma przejść do właściwego pola. Wejdź w pole – pod nim pokazuje się podpowiedź. W nagłówku przełącznik
+   **„Układ: nowy / dotychczasowy”** – porównaj oba i napisz, przy którym zostajemy.
+2. **Typy domów.** Wybierz „Typ 200” – pola wieńców i tarasu zmieniają się na wartości typu. Zmień kilka pól, kliknij
+   „Zapisz jako typ…”, wpisz nazwę i zdanie opisu. Zamknij okno, otwórz ponownie na nowym obrysie – ma zacząć od Twojego
+   typu, nie od ostatniego podglądu. Sprawdź też „Zapisz zmiany w typie”, „Powiel…”, „Usuń” (dwa kliknięcia).
+   Jeśli miałeś własne szablony – są na liście typów; dawne „ostatnie ustawienia” to typ „Ostatnie ustawienia (do kompilacji 15)”.
+3. **Standard warsztatu.** Przycisk w nagłówku: 131 pól, które ustawia się rzadko (szukaj po nazwie). Zmień np. mijankę,
+   „Zapisz standard” – nowy dom każdego typu ma ją od razu. W kroku okna: lista „Zmień pole standardu tylko w tym domu…” –
+   pole pojawia się w kroku z dopiskiem „tylko w tym domu” i strzałką powrotu ↺.
+4. **Pół zamka.** Dom ze szczytami, dach na ścianie nośnej („Oparcie dachu przy ścianie okapowej” = ściana nośna): w narożniku
+   ostatni bal przechodzi przez zamek bez wycięcia od spodu, z podfrezowanymi bokami; bal pod nim ma gniazdo 72 mm. To samo
+   na górze węgła i nad działową pod połacią. Rysunek: `docs\ostatnie_polaczenie_r16.png`. Wyłączenie: standard → „Pół zamka
+   w ostatnim połączeniu pod dachem”.
+5. **Nadbitka / podbitka.** Krok „Dach” → „Pola typu domu w tym kroku” → „Nadbitka / podbitka – gdzie leżą deski”: na
+   płatwiach, na krokwiach, pod krokwiami, pod płatwiami, bez. Przy podbitce pod płatwiami węgieł, w którym łączą się bale
+   ściany, przechodzi przez deski do połaci (styk w najwyższym wieńcu ma zamek).
+6. **Dom z wymiarów.** Pusty model, nic nie zaznaczone → przycisk generatora: okno z polami „Długość domu” i „Szerokość domu”.
+7. **Powierzchnie i limity.** Po prawej w „Wynik”: powierzchnia zabudowy, pomieszczeń, dachu i wysokość nad terenem; w kroku
+   „Zestawienie” tabela z każdym pomieszczeniem. Limity (standard → „Powierzchnie i limity”) – po przekroczeniu ostrzeżenie.
+8. **Opcje dla obrysu.** Obrys L: w polach „Taras”, „Podłoga”, „Dach” niedostępne wybory są wyszarzone, pod polem powód.
 
 Dawny scenariusz (59 kroków, kompilacje 5–13) – `docs/scenariusz_archiwum.md`.

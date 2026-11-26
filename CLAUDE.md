@@ -20,10 +20,11 @@ Odpowiedzi dla użytkownika zawsze po polsku, krótko, bez opisu kroków pracy.
 - **Spis treści** `docs/SPIS_TRESCI.md` jest generowany ze źródeł: nagłówki plików (`Plik:`, `Zadanie:`, `Tematy:`,
   `Zależy od:`, `Używają:`) i komentarz nad każdą metodą / funkcją. Po każdej zmianie: `ruby testy/spis_tresci.rb`.
 - Rdzeń (`rdzen/`) to czysty Ruby bez API SketchUpa (mm, tablice) – testowany bez atrapy. API SketchUpa tylko w `sketchup/`.
-- **Co tylko można – parametr** (wymóg użytkownika): nowy parametr = jeden wpis w `rdzen/parametry_lista.rb` (okno,
-  zapis ustawień i szablony – same); lista dla użytkownika `docs/parametry.md` (`ruby testy/lista_parametrow.rb`).
-- Ustawienia użytkownika (ostatnie parametry, szablony) – `sketchup/ustawienia.rb`, plik JSON w AppData; testy
-  ustawiają `AM_GW_USTAWIENIA` na katalog tymczasowy (nie pisać do katalogu domowego).
+- **Co tylko można – parametr** (wymóg użytkownika): nowy parametr = jeden wpis w `rdzen/parametry_lista.rb` albo pliku
+  sekcji `rdzen/parametry_*.rb`, z cechą `poziom:` (:dom / :typ / :standard) – okno, krok, zapis standardu i typów same;
+  lista dla użytkownika `docs/parametry.md` (`ruby testy/lista_parametrow.rb`).
+- Ustawienia użytkownika (standard warsztatu, typy domów, układ okna) – `sketchup/ustawienia.rb`, `sketchup/typy_domow.rb`,
+  plik JSON w AppData; testy ustawiają `AM_GW_USTAWIENIA` na katalog tymczasowy (nie pisać do katalogu domowego).
 - Ruby 2.2 (bez `&.`, `Array#sum`, `<<~`, `rescue` w `do…end` bez `begin`…), JS w oknie ES5, komunikaty przez `Log`,
   zero placeholderów. Kontrola: `ruby testy/sprawdz_zasady.rb`.
 - Każda runda: numer kompilacji = numer rundy (rejestrator i `main.rb`), wersja 1.0.0.

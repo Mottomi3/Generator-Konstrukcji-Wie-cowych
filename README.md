@@ -7,7 +7,7 @@ dwuspadowym albo jednospadowym, tarasem (jak 1100 albo 1200) oraz podłogą (pod
 Krokwie i dalszą więźbę z kontrolą nośności buduje aplikacja do dachów ArteMadera Roof (połacie i KROK 2 z generatora);
 krokwie uproszczone – w generatorze (opcja).
 Każdy bal i belka to komponent z wycięciami i atrybutami dla wtyczki ArteMadera Dokumentacja 2D. Wszystkie ustawienia
-są parametrami w oknie (`docs/parametry.md`; pola Podstawowe / Wszystkie), zapamiętywanymi na komputerze, z szablonami.
+są parametrami w oknie (`docs/parametry.md`) na trzech poziomach: ten dom, typ domu (wbudowane i własne), standard warsztatu.
 W widoku ściany: ostatek każdego końca, węgły kliknięciem, działowa niższa pod stropem / antresolą / półką (zamek
 dopełniony odcinkami); bal prosty albo pełny profil (pióra i wpust) do wizualizacji.
 

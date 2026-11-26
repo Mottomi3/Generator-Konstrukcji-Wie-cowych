@@ -65,6 +65,26 @@ module ArteMadera
           end
         end
         pary.reject! { |x| zbedne.any? { |y| y.equal?(x) } }
+        wspolne_polzamki!(pary, p)
+      end
+
+      # Węzeł ścian w jednej linii (rdzen/sciana_w_linii.rb): dwa bale tego samego wieńca stykają się czołami w osi zamka
+      # nad tym samym balem niższym, a jego gniazdo jest wspólne. Gdy jeden z nich jest balem półzamka, drugi też nim
+      # zostaje (bez gniazda od spodu) – o ile nic na nim nie leży i w zamku ma co najmniej zamek_min_drewno; inaczej
+      # zostaje ze zwykłym gniazdem nad głębszym gniazdem bala niższego.
+      def wspolne_polzamki!(pary, p)
+        szer = p['zamek']['gniazdo_szer'].to_f
+        min = p['zamek_min_drewno'].to_f
+        pary.select { |x| PolZamka.w_osi?(x[:wyzszy], x[:cw]) }.each do |x|
+          pary.each do |y|
+            next if y.equal?(x) || !y[:nizszy].equal?(x[:nizszy]) || (y[:cn] - x[:cn]).abs > 0.01
+            next if y[:wyzszy][:lvl] != x[:wyzszy][:lvl] || PolZamka.w_osi?(y[:wyzszy], y[:cw])
+            next if y[:nad].any? { |b| b[:lvl] == y[:wyzszy][:lvl] + 1 }
+            gora = PolZamka.wierzch_w_pasie(y[:wyzszy], y[:cw], szer, :min)
+            next if gora.nil? || gora < min - 0.01
+            PolZamka.oznacz!(y[:wyzszy], y[:cw])
+          end
+        end
       end
 
       # Pary bali w zamkach wszystkich skrzyżowań (poziomy różne o 1): { nizszy:, wyzszy:, cn:, cw: (osie zamka na ścianach
@@ -132,13 +152,18 @@ module ArteMadera
         (prawe_min ? sig_min : -sig_min) * znak_osi
       end
 
-      # Dopisanie cechy przyciętej do bala (pomija powtórkę tej samej obróbki w tej samej osi).
+      # Dopisanie cechy przyciętej do bala (pomija powtórkę tej samej obróbki w tej samej osi; z dwóch gniazd w tym samym
+      # miejscu zostaje głębsze – gniazdo półzamka pod jednym z dwóch bali stykających się w węźle).
       def dodaj_ceche(b, cecha)
         x0 = [cecha[:x0], 0.0].max
         x1 = [cecha[:x1], b[:dl]].min
         return if x1 - x0 <= 0.01
         c = cecha.merge(x0: x0, x1: x1)
-        return if b[:cechy].any? { |e| e[:typ] == c[:typ] && e[:strona] == c[:strona] && (e[:x0] - x0).abs < 0.01 && (e[:x1] - x1).abs < 0.01 }
+        jest = b[:cechy].find { |e| e[:typ] == c[:typ] && e[:strona] == c[:strona] && (e[:x0] - x0).abs < 0.01 && (e[:x1] - x1).abs < 0.01 }
+        if jest
+          jest[:gleb] = c[:gleb] if c[:gleb] && jest[:gleb] && c[:gleb] > jest[:gleb]
+          return
+        end
         b[:cechy] << c
       end
 

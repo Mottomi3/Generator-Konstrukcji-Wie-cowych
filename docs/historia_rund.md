@@ -4,7 +4,8 @@ Wydzielone z `docs/stan_prac.md` w rundzie 14 (2026-11-25), żeby stan bieżący
 najpierw opis nowości kolejnych kompilacji (od najnowszej), potem stan kompilacji 6, przebieg rund z prośbami użytkownika
 i lista modułów dodawanych w rundach. Bieżący stan, kolejka decyzji i plan – `docs/stan_prac.md`.
 
-Runda 15 (kompilacja 15) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r15.md`; przy następnej rundzie przenieść tutaj.
+Runda 16 (kompilacja 16) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r16.md`; przy następnej rundzie przenieść tutaj.
+Runda 15 (kompilacja 15) – na końcu tego pliku („Nowe w kompilacji 15”) i w `docs/przekazanie_r15.md`.
 
 # Część A – nowości kompilacji 7–14
 
@@ -575,3 +576,36 @@ Nowe w rundzie 5: `rdzen/stolarka.rb`, `rdzen/pryzmat.rb`, `rdzen/polacie.rb`, `
 `testy/atrapa/aplikacja_dachow.rb`), `sprawdz_dach_aplikacja.rb` (prawdziwa aplikacja do dachów na jej atrapie),
 `zrzut_dok2d.rb` (dom dla Dokumentacji 2D).
 
+## Nowe w kompilacji 15 (polecenie z 2026-11-25 21:42 – `docs/prompt_r15.md`)
+
+Zdecydowane zaległości (T8, deski, 45 × 120), propozycje P1 i W2, przygotowanie rundy 16.
+
+- **Szczyty na styk** (`rdzen/styki_szczytu.rb`, parametr „Łączenie wieńców szczytu” `szczyt_styk` = styk | wegly): wieńce
+  szczytu (od góry ściany w górę) dłuższe niż maksymalny bal łączą się na styk bez węgła i zamka – kalenica ∓ pół mijanki
+  na przemian, w szerokim szczycie przy punktach równego podziału; ściana pod szczytem łączy się jak zwykła (także
+  w zamku działowej), a węgły pod jej styki kończą się na wysokości ściany. Szczyt płaski (ściana wysoka dachu
+  jednospadowego) i front tarasu – bez zmian. Na 600 losowych domach: domy ze stykiem bez zamka w ścianie ze szczytem
+  31 → 10, bali węgłów pod styki na ścianach szczytowych o 28 % mniej.
+- **Pół zamka w ostatnim połączeniu pod dachem** (`rdzen/pol_zamka.rb`, parametry `polzamek`, `polzamek_gleb`): bal
+  szczytu, któremu zwykłe gniazdo od spodu zostawia pod skosem mniej niż 20 mm, przechodzi przez narożnik bez gniazda,
+  a bal pod nim dostaje gniazdo do połowy wysokości (72 zamiast 36; zostaje mu 31). **Fabrycznie wyłączone** – czeka na
+  akceptację rysunku `docs/ostatnie_polaczenie_r15.png` (użytkownik 22:23: „tak, by ten kawałek … nie odpadał – mowa tylko
+  o tym jednym ostatnim niefortunnym połączeniu”). Pomiar (444 domy ze szczytami): 370 bali uciętych przy narożniku mimo
+  bala pod spodem, 324 mieszczą pół zamka; z włączonym – 200 domów bez nowych problemów.
+- **Deski 14 × 115 × 4000** (`rdzen/parametry_dach.rb`): grubość i krycie nadbitki i podbitki 19 × 121 → 14 × 115;
+  **nadbitka fabrycznie włączona, deskowanie pełne wyłączone**. **45 × 120** w długościach 5,4 / 6 m
+  (`rdzen/wykaz_drewna.rb`). Plik ustawień w wersji 4 (`sketchup/ustawienia.rb`): zapamiętane 19 / 121, lista legarów
+  i wybór warstw poszycia wracają do fabrycznych (deski i lista – także we własnych szablonach).
+- **Słupy krótsze o osiadanie ścian** (P1 – `rdzen/osiadanie.rb`, `rdzen/taras_slupy.rb`; parametry `slup_osiadanie`,
+  `slup_regulacja`, `slup_regulacja_wysokosc`): wierzch słupa tarasu niżej o luz osiadania (wysokość do głowicy ×
+  „Osiadanie ścian”, np. 34 mm) i śrubę regulacyjną (40 mm) albo podkładki; zamek górny słupa dłuższy o śrubę. Podpowiedź
+  w sekcji tarasu.
+- **Zestawienie materiałów** (W2 – `rdzen/materialy.rb`, sekcja parametrów „Zestawienie materiałów”): deski nadbitki,
+  deskowania, podbitki i płyty OSB w m² i sztukach z zapasem, taśma między wieńcami i izolacja pod pierwszy wieniec
+  w metrach, okucia (śruby regulacyjne i podstawy słupów, kotwy podwalin, łączniki krokwi z płatwiami), powierzchnie do
+  impregnacji i litry impregnatu. Tabela w oknie pod listą bali i drugi blok w pliku CSV.
+- **Przygotowanie rundy 16** – do akceptacji: `docs/podzial_pol_r16.md` (194 pola: Ten dom 16, Typ domu 49, Standard
+  warsztatu 129) i `docs/szkic_okna_r16.png` (`.html`).
+- Parametrów: 194 (nowe: `szczyt_styk`, `polzamek`, `polzamek_gleb`, `slup_osiadanie`, `slup_regulacja`,
+  `slup_regulacja_wysokosc`, `material_zapas`, `tasma_pasy`, `kotwy_podwalin_rozstaw`, `impregnat_wydajnosc`,
+  `impregnat_warstwy`).

@@ -93,7 +93,8 @@ module ArteMadera
       end
 
       # Czy para bali zamka (nizszy, wyzszy w osi cw) to ostatnie połączenie pod dachem: zwykłe gniazdo od spodu zostawia
-      # balowi wyższemu pod skosem albo ścięciem dachu mniej niż zamek_min_drewno, żaden bal nie wycina mu gniazda od wierzchu (nad – bale
+      # balowi wyższemu pod skosem albo ścięciem dachu mniej niż zamek_min_drewno (a sam bal ma w zamku co najmniej tyle),
+      # żaden bal nie wycina mu gniazda od wierzchu (nad – bale
       # ściany bala niższego w słupie zamka), a balowi niższemu po gnieździe do połowy zostaje dość drewna (pod – bale
       # ściany bala wyższego w słupie zamka: bal poziom pod niższym wycina mu gniazdo od spodu).
       def ostatnie?(nizszy, wyzszy, cw, nad, pod, p)
@@ -103,6 +104,9 @@ module ArteMadera
         min = p['zamek_min_drewno'].to_f
         gora = wierzch_w_pasie(wyzszy, cw, z['gniazdo_szer'].to_f, :min)
         return false if gora.nil? || gora >= wyzszy[:h] - 0.01 || gora - gleb >= min - 0.01
+        # Bal, który w zamku ma pod dachem mniej niż zamek_min_drewno, to drzazga (klin między gniazdem płatwi a skosem) –
+        # bez półzamka: zwykłe gniazdo jak do kompilacji 15 (podcięcia boczne na klinie cieńszym niż wpust nie dają bryły).
+        return false if gora < min - 0.01
         # Bal nad nim liczy się tylko wtedy, gdy wycina w bali wyższym prawdziwe gniazdo od wierzchu (wierzch pod dachem
         # sięga ponad dno tego gniazda); bal ścięty niżej nie ma gniazda górnego i zostaje ostatnim połączeniem.
         gmax = wierzch_w_pasie(wyzszy, cw, Parametry.grubosc(p), :max)

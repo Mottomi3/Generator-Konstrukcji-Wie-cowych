@@ -65,9 +65,12 @@ var AMGW_DOM = (function () {
     for (i = 0; i < lista.length; i++) { lista[i](); }
   }
 
-  // Funkcja przebudowy: od razu, gdy przycisk myszy nie jest wciśnięty; inaczej tuż po kliknięciu.
+  // Funkcja przebudowy: od razu, gdy przycisk myszy nie jest wciśnięty; inaczej tuż po kliknięciu (najpóźniej po 0,4 s –
+  // gdy przycisk został puszczony poza oknem).
   function poKliknieciu(fn) {
-    if (mysz.wcisnieta) { mysz.odlozone.push(fn); } else { fn(); }
+    if (!mysz.wcisnieta) { fn(); return; }
+    mysz.odlozone.push(fn);
+    window.setTimeout(function () { if (mysz.odlozone.length) { wykonajOdlozone(); } }, 400);
   }
 
   document.addEventListener('mousedown', function () { mysz.wcisnieta = true; }, true);
