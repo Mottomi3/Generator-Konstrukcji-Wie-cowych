@@ -106,8 +106,7 @@ module ArteMadera
                       liczba(p['material_zapas'].to_f, 0))
           warstwy = Krok2.warstwy(p)
           if warstwy.include?('nadbitka')
-            nb = Podbitka.przez_aplikacje?(p) ? 'podbitka' : 'nadbitka'
-            wynik.concat(deski('Nadbitka – deski pióro-wpust', p["#{nb}_grubosc"].to_f, p["#{nb}_krycie"].to_f, p["#{nb}_dlugosc"].to_f, m2, p, uw))
+            wynik.concat(deski('Nadbitka – deski pióro-wpust', p['podbitka_grubosc'].to_f, p['podbitka_krycie'].to_f, p['podbitka_dlugosc'].to_f, m2, p, uw))
           end
           if warstwy.include?('deskowanie')
             wynik.concat(deski('Deskowanie pełne', p['deski_grubosc'].to_f, p['deski_szerokosc'].to_f + p['deski_szczelina'].to_f,
@@ -130,15 +129,17 @@ module ArteMadera
          wiersz('Poszycie dachu', nazwa, wym, sztuki(m2 * 1.0e6, krycie * dlugosc, p), 'szt.', szer ? '' : 'szerokość krycia')]
       end
 
-      # Podbitka rysowana przez generator (elementy Pb): m² desek i sztuki o długości handlowej.
+      # Deski rysowane przez generator (elementy Pb): m² i sztuki o długości handlowej; na płatwiach albo na krokwiach –
+      # nadbitka, pod nimi – podbitka.
       def podbitka(plan, p)
         pb = (plan[:elementy] || []).select { |e| e[:prefiks] == 'Pb' }
         return [] if pb.empty?
         krycie = p['podbitka_krycie'].to_f
         mm2 = pb.inject(0.0) { |s, e| s + e[:dl] * krycie }
         wym = format('%s × %s × %s', liczba(p['podbitka_grubosc'].to_f, 0), liczba(krycie, 0), liczba(p['podbitka_dlugosc'].to_f, 0))
-        [wiersz('Poszycie dachu', 'Podbitka – deski pióro-wpust', wym, zaokr(mm2 / 1.0e6), 'm²', "#{pb.length} desek w modelu, zapas #{liczba(p['material_zapas'].to_f, 0)} %"),
-         wiersz('Poszycie dachu', 'Podbitka – deski pióro-wpust', wym, sztuki(mm2, krycie * p['podbitka_dlugosc'].to_f, p), 'szt.', 'szerokość krycia')]
+        nazwa = "#{Podbitka.rodzaj(p).start_with?('na_') ? 'Nadbitka' : 'Podbitka'} – deski pióro-wpust"
+        [wiersz('Poszycie dachu', nazwa, wym, zaokr(mm2 / 1.0e6), 'm²', "#{pb.length} desek w modelu, zapas #{liczba(p['material_zapas'].to_f, 0)} %"),
+         wiersz('Poszycie dachu', nazwa, wym, sztuki(mm2, krycie * p['podbitka_dlugosc'].to_f, p), 'szt.', 'szerokość krycia')]
       end
 
       # ---------- uszczelnienie ----------

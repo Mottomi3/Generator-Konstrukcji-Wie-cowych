@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_dach.rb
-# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie i podbitka.
-# Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, dobór przekroju krokwi – parametry, podbitka – parametry
+# Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie, położenie desek nadbitki / podbitki (jedno pole) i przeniesienie dawnych pól nadbitki.
+# Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, dobór przekroju krokwi – parametry, podbitka – parametry, nadbitka – parametry, położenie desek nadbitki i podbitki, zamiennik położenia desek, dawne pola nadbitki
 # Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
@@ -19,6 +19,17 @@ module ArteMadera
       TAK_NIE = [['tak', 'tak'], ['nie', 'nie']].freeze unless const_defined?(:TAK_NIE)
 
       # Parametry sekcji (kolejność = kolejność w oknie).
+      # Położenie desek nadbitki / podbitki, które zastępuje wybrane, gdy układ dachu nie ma płatwi pośrednich albo krokwi
+      # (to samo w oknie – html/zalezne.js).
+      DESKI_ZAMIENNIKI = { 'na_krokwiach' => 'na_platwiach', 'na_platwiach' => 'na_krokwiach', 'pod_krokwiami' => 'pod_platwiami',
+                           'pod_platwiami' => 'pod_krokwiami' }.freeze unless const_defined?(:DESKI_ZAMIENNIKI)
+      # Położenia desek dostępne w układzie dachu bez krokwi i bez płatwi pośrednich (płatwie i krokwie – wszystkie).
+      DESKI_UKLAD = { 'platwie' => %w[na_platwiach pod_platwiami], 'krokwie' => %w[na_krokwiach pod_krokwiami] }.freeze unless
+        const_defined?(:DESKI_UKLAD)
+      # Wymiary nadbitki sprzed rundy 16 (osobne pola) => wymiary wspólnej deski nadbitki / podbitki.
+      NADBITKA_WYMIARY = { 'nadbitka_grubosc' => 'podbitka_grubosc', 'nadbitka_krycie' => 'podbitka_krycie',
+                           'nadbitka_dlugosc' => 'podbitka_dlugosc' }.freeze unless const_defined?(:NADBITKA_WYMIARY)
+
       LISTA = [
         { klucz: 'szczyty', podstawowy: true, domyslna: 'tak', etykieta: 'Szczyty z bali', rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Ściany szczytowe zewnętrzne dostają szczyt z bali ściętych pod kątem dachu.' },
@@ -170,7 +181,7 @@ module ArteMadera
           min: 0.0, max: 100.0, rodzaj: :liczba, sekcja: 'szczyty',
           podpowiedz: 'Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad ' \
                       'gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego).' },
-        { klucz: 'polzamek', domyslna: 'nie', etykieta: 'Pół zamka w ostatnim połączeniu pod dachem', rodzaj: :wybor, sekcja: 'szczyty',
+        { klucz: 'polzamek', domyslna: 'tak', etykieta: 'Pół zamka w ostatnim połączeniu pod dachem', rodzaj: :wybor, sekcja: 'szczyty',
           wybory: TAK_NIE, gdy: { 'szczyty' => ['tak'] },
           podpowiedz: 'Ostatni bal pod skosem dachu, któremu zwykłe gniazdo od spodu zostawia za mało drewna, przechodzi przez ' \
                       'zamek bez gniazda, a bal pod nim dostaje gniazdo do połowy wysokości – koniec ostatniego bala nie odpada. ' \
@@ -201,41 +212,34 @@ module ArteMadera
                  'bez zastrzałów); przy zwykłym okapie zbędne – więcej drewna i czoła bali na deszczu.' },
         { klucz: 'wegly_okap_wience', domyslna: 3, etykieta: 'Węgły pod okapem – liczba górnych bali', jednostka: 'szt.',
           min: 1, max: 8, rodzaj: :calkowita, sekcja: 'szczyty', gdy: { 'wegly_wypust_okap' => ['tak'] } },
-        { klucz: 'podbitka', podstawowy: true, domyslna: 'nie', etykieta: 'Podbitka – boazeria widoczna od spodu', rodzaj: :wybor,
+        { klucz: 'podbitka', podstawowy: true, domyslna: 'na_krokwiach', etykieta: 'Nadbitka / podbitka – gdzie leżą deski', rodzaj: :wybor,
           sekcja: 'poszycie',
-          wybory: [['nie', 'bez podbitki'], ['pod_platwiami', 'pod płatwiami (wzdłuż spadku)'],
-                   ['na_platwiach', 'na płatwiach (wzdłuż spadku)'],
-                   ['pod_krokwiami', 'pod krokwiami (równolegle do okapu, między płatwiami)'],
-                   ['na_krokwiach', 'na krokwiach (równolegle do okapu)']],
+          wybory: [['na_platwiach', 'na płatwiach (nadbitka, deski wzdłuż spadku)'],
+                   ['na_krokwiach', 'na krokwiach (nadbitka, deski równolegle do okapu)'],
+                   ['pod_krokwiami', 'pod krokwiami (podbitka, równolegle do okapu, między płatwiami)'],
+                   ['pod_platwiami', 'pod płatwiami (podbitka, deski wzdłuż spadku)'],
+                   ['nie', 'bez nadbitki i podbitki']],
           wybory_gdy: { 'pod_platwiami' => { 'dach_uklad' => %w[platwie platwie_krokwie] },
                         'na_platwiach' => { 'dach_uklad' => %w[platwie platwie_krokwie] },
                         'pod_krokwiami' => { 'dach_uklad' => %w[krokwie platwie_krokwie] },
                         'na_krokwiach' => { 'dach_uklad' => %w[krokwie platwie_krokwie] } },
+          zamienniki: DESKI_ZAMIENNIKI,
           rysunek: 'podbitka',
-          pomoc: 'Boazeria widoczna od spodu, pod konstrukcją poszycia albo na niej: pod płatwiami – deski wzdłuż spadku przybite ' \
-                 'do spodu płatwi; na płatwiach – deski wzdłuż spadku leżące na płatwiach (krokwie, jeśli są, leżą na nich – ' \
-                 'wyżej o grubość deski); pod krokwiami – deski równolegle do okapu, przybite do spodu krokwi w polach między ' \
-                 'płatwiami; na krokwiach – deski równolegle do okapu na krokwiach, pod deskowaniem. Ściany działowe i węgły pod ' \
-                 'połacią kończą się pod podbitką „pod”. Na krokwiach (i na samych płatwiach) z aplikacją do dachów – robi ją ' \
-                 'aplikacja jako nadbitkę (pierwszą warstwę poszycia, wymiary stąd); inaczej robi ją generator (grupa Dach). ' \
-                 'Wybory zależą od układu dachu.' },
-        { klucz: 'podbitka_grubosc', domyslna: 14.0, etykieta: 'Podbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
+          pomoc: 'Jedno miejsce dla desek pióro-wpust widocznych od spodu (decyzja z 2026-11-25): na płatwiach – nadbitka, deski ' \
+                 'wzdłuż spadku leżą na płatwiach (krokwie, jeśli są, leżą na nich – wyżej o grubość deski); na krokwiach – ' \
+                 'nadbitka, deski równolegle do okapu na krokwiach, pierwsza warstwa poszycia; pod krokwiami – podbitka przybita ' \
+                 'do spodu krokwi w polach między płatwiami; pod płatwiami – podbitka wzdłuż spadku przybita do spodu płatwi; ' \
+                 'bez – dach bez desek od spodu. Ściany działowe i węgły pod połacią kończą się pod podbitką „pod”. Nadbitkę na ' \
+                 'krokwiach (i na samych płatwiach) z aplikacją do dachów robi aplikacja jako pierwszą warstwę poszycia; ' \
+                 'pozostałe rysuje generator (grupa Dach). Wybory zależą od układu dachu: przy samych płatwiach „na krokwiach” ' \
+                 'znaczy „na płatwiach”, przy samych krokwiach odwrotnie.' },
+        { klucz: 'podbitka_grubosc', domyslna: 14.0, etykieta: 'Deska nadbitki / podbitki – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
           rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] } },
-        { klucz: 'podbitka_krycie', domyslna: 115.0, etykieta: 'Podbitka – szerokość deski (krycie)', jednostka: 'mm', min: 50.0,
+        { klucz: 'podbitka_krycie', domyslna: 115.0, etykieta: 'Deska nadbitki / podbitki – szerokość krycia', jednostka: 'mm', min: 50.0,
           max: 300.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] } },
-        { klucz: 'podbitka_dlugosc', domyslna: 4000.0, etykieta: 'Podbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
+        { klucz: 'podbitka_dlugosc', domyslna: 4000.0, etykieta: 'Deska nadbitki / podbitki – długość handlowa', jednostka: 'mm', min: 1000.0,
           max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'podbitka' => %w[pod_platwiami na_platwiach pod_krokwiami na_krokwiach] },
           podpowiedz: 'Dłuższe deski dzielone na płatwiach (pod i na płatwiach) albo równo (pod i na krokwiach).' },
-        { klucz: 'poszycie_nadbitka', podstawowy: true, domyslna: 'tak', etykieta: 'Nadbitka – pierwsza warstwa poszycia (aplikacja do dachów)',
-          rodzaj: :wybor, sekcja: 'poszycie', wybory: TAK_NIE,
-          podpowiedz: 'Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych ' \
-                      'płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja).' },
-        { klucz: 'nadbitka_grubosc', domyslna: 14.0, etykieta: 'Nadbitka – grubość', jednostka: 'mm', min: 10.0, max: 60.0,
-          rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
-        { klucz: 'nadbitka_krycie', domyslna: 115.0, etykieta: 'Nadbitka – szerokość krycia', jednostka: 'mm', min: 50.0,
-          max: 300.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
-        { klucz: 'nadbitka_dlugosc', domyslna: 4000.0, etykieta: 'Nadbitka – długość handlowa', jednostka: 'mm', min: 1000.0,
-          max: 8000.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_nadbitka' => ['tak'] } },
         { klucz: 'poszycie_deski', podstawowy: true, domyslna: 'nie', etykieta: 'Deskowanie pełne', rodzaj: :wybor,
           sekcja: 'poszycie', wybory: TAK_NIE,
           podpowiedz: 'Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (typ 100) ' \
@@ -259,6 +263,32 @@ module ArteMadera
         { klucz: 'osb_szczelina', domyslna: 3.0, etykieta: 'OSB – szczelina przy każdej krawędzi', jednostka: 'mm', min: 0.0,
           max: 20.0, rodzaj: :liczba, sekcja: 'poszycie', gdy: { 'poszycie_osb' => ['tak'] } }
       ].freeze unless const_defined?(:LISTA)
+
+      module_function
+
+      # Położenie desek zgodne z układem dachu: wybrane albo jego zamiennik (same płatwie – na / pod płatwiami, same
+      # krokwie – na / pod krokwiami).
+      def polozenie_desek(v, uklad)
+        dozwolone = DESKI_UKLAD[uklad.to_s]
+        return v if v == 'nie' || dozwolone.nil? || dozwolone.include?(v)
+        DESKI_ZAMIENNIKI[v] || v
+      end
+
+      # Wartości zapisane przed rundą 16 (osobno „Podbitka” i „Nadbitka – pierwsza warstwa poszycia”) → jedno pole położenia
+      # desek: nadbitka włączona bez podbitki = deski na krokwiach (przy samych płatwiach – na płatwiach) z jej wymiarami;
+      # nadbitka wyłączona = bez desek; wybrana podbitka zostaje. Wejście bez dawnych kluczy – bez zmian.
+      def przenies_nadbitke(wej)
+        return wej unless wej.key?('poszycie_nadbitka') || NADBITKA_WYMIARY.keys.any? { |k| wej.key?(k) }
+        w = wej.dup
+        nb = w.delete('poszycie_nadbitka')
+        if (w['podbitka'] || 'nie').to_s == 'nie'
+          wlaczona = nb.nil? || nb.to_s == 'tak'
+          w['podbitka'] = wlaczona ? 'na_krokwiach' : 'nie'
+          NADBITKA_WYMIARY.each { |stary, nowy| w[nowy] = w[stary] if wlaczona && w.key?(stary) }
+        end
+        NADBITKA_WYMIARY.each_key { |k| w.delete(k) }
+        w
+      end
     end
   end
 end

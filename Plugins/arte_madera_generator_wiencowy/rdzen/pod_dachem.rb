@@ -58,10 +58,11 @@ module ArteMadera
         w[:a][g[:iv]] + s * w[:kier][g[:iv]]
       end
 
-      # Linia podparcia nad punktem s ściany [mm] (z podbitką – jej spód, rdzen/podbitka.rb); ściana nie pod dachem – nil.
+      # Linia podparcia nad punktem s ściany [mm] (z podbitką – jej spód, rdzen/podbitka.rb; węgieł ze stykami ściany
+      # wysokiej – połać, Podbitka.obnizenie_wegla); ściana nie pod dachem – nil.
       def linia(w, s, p)
         return nil if w[:pod_dachem].nil?
-        Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p) - Podbitka.obnizenie(p)
+        Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p) - (w[:rodzaj] == :kontrfor ? Podbitka.obnizenie_wegla(w, p) : Podbitka.obnizenie(p))
       end
 
       # Załomy linii dachu nad ścianą – s: kalenica i linie załamania bocznego zadaszenia; dach jednospadowy – [].

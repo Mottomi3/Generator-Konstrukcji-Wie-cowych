@@ -72,7 +72,7 @@ module ArteMadera
           w[:szczyt][:z_max] = z_max(w, p)
         end
         wynik[:dom] = dom
-        if p['podbitka'].to_s != 'nie' && !Podbitka.przez_aplikacje?(p)
+        if Podbitka.rodzaj(p) != 'nie' && !Podbitka.przez_aplikacje?(p)
           wynik[:uwagi] << 'Dach domu L: podbitki generator nie rysuje (tylko dom prostokątny) – pominięta.'
         end
         if Dach.krokwie_generatora?(p) && Parametry.tak?(p, 'dach_elementy')
@@ -210,9 +210,9 @@ module ArteMadera
 
       # Czy wysokość z w miejscu s ściany jest pod linią podparcia (spód krokwi / desek) – dla węgłów przy szczycie,
       # które wystają z obu stron szczytu pod połać; ściana bez szczytu – zawsze.
-      def pod_podparciem?(w, s, z, p)
+      def pod_podparciem?(w, s, z, p, dz = nil)
         return true if w[:szczyt].nil? || !w_zakresie?(w[:szczyt], s)
-        z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) - Podbitka.obnizenie(p) + 0.01
+        z <= Dach.linia_podparcia(w[:szczyt], v_z_s(w, s), p) - (dz || Podbitka.obnizenie(p)) + 0.01
       end
 
       # Zasięg [s0, s1] wieńca o spodzie z0, w którym linia szczytu jest wyżej niż z0 + najniższy kawałek (szczyt płaski –

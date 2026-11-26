@@ -8,7 +8,7 @@
 # Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
-# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 4, 'ostatnie' => {…},
+# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 5, 'ostatnie' => {…},
 # 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
 # (teksty); sprawdza je Parametry.normalizuj.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -21,8 +21,9 @@ module ArteMadera
     module Ustawienia
       PLIK = 'ustawienia.json'.freeze unless const_defined?(:PLIK)
       # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną; 3 (runda 14) – listy przekrojów z hurtowni
-      # z długościami handlowymi; 4 (runda 15) – deski nadbitki i podbitki 14 × 115, przekrój 45 × 120 w długościach 5,4 / 6 m.
-      WERSJA = 4 unless const_defined?(:WERSJA)
+      # z długościami handlowymi; 4 (runda 15) – deski nadbitki i podbitki 14 × 115, przekrój 45 × 120 w długościach 5,4 / 6 m;
+      # 5 (runda 16) – pół zamka fabrycznie włączone (dawne pola nadbitki przenosi Parametry.normalizuj).
+      WERSJA = 5 unless const_defined?(:WERSJA)
       # Listy przekrojów (rdzen/wykaz_drewna.rb) – w pliku starszym niż wersja 3 zastępowane fabrycznymi także w szablonach.
       LISTY_PRZEKROJOW = %w[przekroje_katalog platwie_katalog krokwie_katalog zadaszenie_katalog zadaszenie_slupy_katalog].freeze unless
         const_defined?(:LISTY_PRZEKROJOW)
@@ -32,9 +33,10 @@ module ArteMadera
       # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze
       # (wersja 4: deski, lista legarów z przekrojem 45 × 120 i wybór warstw poszycia – nadbitka fabrycznie włączona).
       DO_FABRYCZNYCH = { 2 => %w[podciag_poziom], 3 => LISTY_PRZEKROJOW,
-                         4 => DESKI + %w[przekroje_katalog poszycie_nadbitka poszycie_deski] }.freeze unless const_defined?(:DO_FABRYCZNYCH)
+                         4 => DESKI + %w[przekroje_katalog poszycie_nadbitka poszycie_deski], 5 => %w[polzamek] }.freeze unless
+        const_defined?(:DO_FABRYCZNYCH)
       # To samo we własnych szablonach: wersja pliku => klucze.
-      DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW, 4 => DESKI + %w[przekroje_katalog] }.freeze unless
+      DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW, 4 => DESKI + %w[przekroje_katalog], 5 => %w[polzamek] }.freeze unless
         const_defined?(:DO_FABRYCZNYCH_W_SZABLONACH)
 
       module_function

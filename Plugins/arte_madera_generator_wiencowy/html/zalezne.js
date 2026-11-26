@@ -8,7 +8,8 @@
 
   Opis pola z Ruby (ParametryLista): gdy – { klucz: [dozwolone wartości] } (wszystkie warunki naraz; pole nadrzędne też
   musi być widoczne), wybory_gdy – { wartość: { klucz: [dozwolone] } } (wybór ukryty, gdy warunek niespełniony; wybrany
-  ukryty – przestawiony na pierwszy dostępny).
+  ukryty – przestawiony na swój zamiennik z opisu pola (zamienniki – { wartość: wartość }, np. deski na krokwiach →
+  na płatwiach przy samych płatwiach) albo na pierwszy dostępny).
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
 */
 var AMGW_ZALEZNE = (function () {
@@ -66,6 +67,10 @@ var AMGW_ZALEZNE = (function () {
       sel.options[i].disabled = !ok;
     }
     if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex].disabled) {
+      var zam = o.zamienniki ? o.zamienniki[sel.options[sel.selectedIndex].value] : null;
+      for (i = 0; i < sel.options.length; i++) {
+        if (zam && sel.options[i].value === zam && !sel.options[i].disabled) { sel.selectedIndex = i; return true; }
+      }
       for (i = 0; i < sel.options.length; i++) {
         if (!sel.options[i].disabled) { sel.selectedIndex = i; zmiana = true; break; }
       }

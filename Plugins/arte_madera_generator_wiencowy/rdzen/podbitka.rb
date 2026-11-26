@@ -63,6 +63,22 @@ module ArteMadera
         end
       end
 
+      # Obniżenie węgła kf pod podbitkę „pod” [mm]: 0 dla węgła, w którym łączą się bale ściany, przy podbitce pod
+      # płatwiami – taki węgieł dochodzi do połaci (jak ściana), żeby styk w najwyższych wieńcach też był w zamku (decyzja
+      # użytkownika z 2026-11-26: „jak dotąd były tam zamki … bez zamka będzie to uciekać przy montażu i skręcać się”);
+      # deski podbitki dochodzą wtedy do węgła (wegly_do_polaci, bez_wegla).
+      def obnizenie_wegla(kf, p)
+        rodzaj(p) == 'pod_platwiami' && wegiel_do_polaci?(kf) ? 0.0 : obnizenie(p)
+      end
+
+      # Czy w węgle kf łączą się bale ściany (styk parzysty albo nieparzysty w jego osi).
+      def wegiel_do_polaci?(kf)
+        g = kf[:gospodarz]
+        return false unless g && g[:styki]
+        s = (kf[:a][0] - g[:a][0]) * g[:kier][0] + (kf[:a][1] - g[:a][1]) * g[:kier][1]
+        ((g[:styki][:parzyste] || []) + (g[:styki][:nieparzyste] || [])).any? { |x| (x - s).abs < 1.0 }
+      end
+
       # Grubość podbitki w pionie pod spodem płatwi [mm] (podbitka pod płatwiami; inaczej 0) – węgły pod płatwią kończą się
       # pod deskami (rdzen/wegly_konstrukcyjne.rb).
       def pod_spodem_platwi(p)
@@ -81,11 +97,12 @@ module ArteMadera
         return [] if dom.nil? || dom[:boczne] || r == 'nie' || przez_aplikacje?(p)
         geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         przerwy = dzialowe_wzdluz(dom, sciany, p)
+        wegly = wegly_do_polaci(dom, sciany, p)
         wynik = []
         pola_u(dom, p).each do |u0, u1|
           spadki(geo, p).each do |v0, v1|
             wynik.concat(case r
-                         when 'pod_platwiami' then pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy)
+                         when 'pod_platwiami' then pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy, wegly)
                          when 'na_platwiach' then na_platwiach(dom, geo, p, u0, u1, v0, v1)
                          when 'pod_krokwiami' then pod_krokwiami(dom, geo, p, u0, u1, v0, v1, przerwy)
                          else na_krokwiach(dom, geo, p, u0, u1, v0, v1)
@@ -120,6 +137,29 @@ module ArteMadera
         sciany.select { |w| w[:rodzaj] == :dzialowa && w[:kierunek] == :A }.map { |w| [w[:a][iv] - t2, w[:a][iv] + t2] }
       end
 
+      # Węgły, które przechodzą przez płaszczyznę podbitki pod płatwiami (łączą się w nich bale ściany – obnizenie_wegla):
+      # obrys w rzucie [{ u: [lo, hi] (wzdłuż kalenicy), v: [lo, hi] (w poprzek) }] – długość z ostatkami × grubość.
+      def wegly_do_polaci(dom, sciany, p)
+        return [] unless rodzaj(p) == 'pod_platwiami'
+        iu, iv = dom[:os] == :x ? [0, 1] : [1, 0]
+        t2 = Parametry.grubosc(p) / 2.0
+        sciany.select { |w| w[:rodzaj] == :kontrfor && wegiel_do_polaci?(w) }.map do |w|
+          konce = [w[:s_od], w[:s_do]].map { |s| [w[:a][iu] + s * w[:kier][iu], w[:a][iv] + s * w[:kier][iv]] }
+          us = konce.map { |q| q[0] }
+          vs = konce.map { |q| q[1] }
+          wzdluz_u = (us[1] - us[0]).abs > (vs[1] - vs[0]).abs
+          { u: wzdluz_u ? us.sort : [us[0] - t2, us[0] + t2], v: wzdluz_u ? [vs[0] - t2, vs[0] + t2] : vs.sort }
+        end
+      end
+
+      # Kawałki deski xa…xb (wzdłuż spadku, pas ua…ub) bez miejsc zajętych przez węgły, które przechodzą przez podbitkę
+      # (luz – odstęp w rzucie z każdej strony węgła: 2 mm i cofnięcie skośnego czoła deski): [[x0, x1]] w kierunku
+      # deski; bez takiego węgła – cała deska.
+      def bez_wegla(xa, xb, ua, ub, wegly, luz)
+        zajete = wegly.select { |w| ub > w[:u][0] + 0.5 && ua < w[:u][1] - 0.5 }.map { |w| [w[:v][0] - luz, w[:v][1] + luz] }
+        zajete.empty? ? [[xa, xb]] : odcinki(xa, xb, zajete)
+      end
+
       # Odcinki v0…v1 (w dowolnej kolejności) bez przedziałów zajętych: [[a, b]] w kierunku od v0 do v1.
       def odcinki(v0, v1, zajete)
         kier = v1 >= v0 ? 1.0 : -1.0
@@ -133,8 +173,8 @@ module ArteMadera
       end
 
       # Pod płatwiami: deski wzdłuż spadku na odcinkach v (bez działowych), kolejne w u co krycie (ostatnia węższa),
-      # podzielone na osiach płatwi, gdy dłuższe niż długość handlowa.
-      def pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy)
+      # podzielone na osiach płatwi, gdy dłuższe niż długość handlowa; przerwane na węgle, który przechodzi przez podbitkę.
+      def pod_platwiami(dom, geo, p, u0, u1, v0, v1, przerwy, wegly = [])
         g = p['podbitka_grubosc'].to_f
         kr = p['podbitka_krycie'].to_f
         hp = wysokosc_platwi(p)
@@ -147,10 +187,13 @@ module ArteMadera
           va += kier * g * Math.sin(a)
           kawalki(va, vb, osie, p['podbitka_dlugosc'].to_f * Math.cos(a)).each do |xa, xb|
             pasy(u0, u1, kr).each do |ua, ub|
-              q = Dach.xy(dom, ua, xa)
-              d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
-              z = Dach.linia_podparcia(geo, xa, p) - hp - g / Math.cos(a)
-              wynik << deska_ukosna(dom, q, d, a, (xb - xa).abs / Math.cos(a), ub - ua, g, z)
+              bez_wegla(xa, xb, ua, ub, wegly, 2.0 + g * Math.sin(a)).each do |ya, yb|
+                next if (yb - ya).abs < 50.0
+                q = Dach.xy(dom, ua, ya)
+                d = dom[:os] == :x ? [0.0, kier] : [kier, 0.0]
+                z = Dach.linia_podparcia(geo, ya, p) - hp - g / Math.cos(a)
+                wynik << deska_ukosna(dom, q, d, a, (yb - ya).abs / Math.cos(a), ub - ua, g, z)
+              end
             end
           end
         end

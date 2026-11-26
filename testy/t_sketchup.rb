@@ -314,31 +314,38 @@ Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ost
             'plik bieżącej wersji: własna lista użytkownika zapamiętana')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
 
-Testy.grupa('Ustawienia z kompilacji 14 – deski 14 × 115 i 45 × 120 w długościach 5,4 / 6 (runda 15)')
+Testy.grupa('Ustawienia z kompilacji 14 i 15 – deski 14 × 115, 45 × 120 w długościach 5,4 / 6, pół zamka i jedno pole desek (runda 16)')
 p15 = Parametry.normalizuj({})[0]
-Testy.rowne([p15['podbitka_grubosc'], p15['podbitka_krycie'], p15['podbitka_dlugosc'], p15['nadbitka_grubosc'], p15['nadbitka_krycie'],
-             p15['nadbitka_dlugosc']], [14.0, 115.0, 4000.0, 14.0, 115.0, 4000.0], 'wartości fabryczne desek: 14 × 115 (krycie) × 4000')
-Testy.rowne(Ustawienia::WERSJA, 4, 'plik ustawień w wersji 4')
+Testy.rowne([p15['podbitka_grubosc'], p15['podbitka_krycie'], p15['podbitka_dlugosc']], [14.0, 115.0, 4000.0],
+            'wartości fabryczne deski nadbitki / podbitki: 14 × 115 (krycie) × 4000')
+Testy.rowne(Ustawienia::WERSJA, 5, 'plik ustawień w wersji 5')
 stara_lista = '45x95:6, 45x120:5/5.4, 45x145:4.2/5.4/6'
 File.open(Ustawienia.sciezka, 'w') do |f|
   f.write(JSON.generate('wersja' => 3,
                         'ostatnie' => { 'podbitka_grubosc' => '19', 'podbitka_krycie' => '121', 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121',
                                         'przekroje_katalog' => stara_lista, 'poszycie_nadbitka' => 'nie', 'poszycie_deski' => 'tak',
-                                        'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14' },
+                                        'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14', 'polzamek' => 'nie' },
                         'szablony' => { 'Mój dom' => { 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121', 'przekroje_katalog' => stara_lista,
-                                                       'poszycie_nadbitka' => 'nie', 'dach_kat' => '35' } }))
+                                                       'poszycie_nadbitka' => 'nie', 'dach_kat' => '35', 'polzamek' => 'nie' } }))
 end
 Testy.rowne(Ustawienia.ostatnie, { 'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14' },
-            'plik wersji 3: deski 19 × 121, lista legarów i wybór warstw poszycia pominięte, reszta zostaje')
+            'plik wersji 3: deski 19 × 121, lista legarów, wybór warstw poszycia i wyłączone pół zamka pominięte, reszta zostaje')
 Testy.rowne(Ustawienia.szablon('Mój dom'), { 'poszycie_nadbitka' => 'nie', 'dach_kat' => '35' },
-            'własny szablon: deski i lista legarów pominięte, wybór warstw poszycia zostaje')
+            'własny szablon: deski, lista legarów i pół zamka pominięte, wybór warstw poszycia zostaje')
+Testy.rowne(Parametry.normalizuj(Ustawienia.szablon('Mój dom'))[0].values_at('podbitka', 'polzamek', 'dach_kat'), ['nie', 'tak', 35.0],
+            'szablon po wczytaniu: nadbitka wyłączona = bez desek, pół zamka fabrycznie')
 pn = Parametry.normalizuj(Ustawienia.ostatnie)[0]
-Testy.rowne([pn['nadbitka_grubosc'], pn['nadbitka_krycie'], pn['podbitka_grubosc'], pn['podbitka_krycie']], [14.0, 115.0, 14.0, 115.0],
-            'po wczytaniu – deski 14 × 115')
+Testy.rowne([pn['podbitka'], pn['podbitka_grubosc'], pn['podbitka_krycie'], pn['polzamek']], ['na_platwiach', 14.0, 115.0, 'tak'],
+            'po wczytaniu – nadbitka (przy samych płatwiach na płatwiach), deski 14 × 115, pół zamka włączone')
 Testy.sprawdz(pn['przekroje_katalog'].include?('45x120:5.4/6'), 'po wczytaniu – 45 × 120 w długościach 5,4 / 6')
-Ustawienia.zapamietaj(pn.merge('nadbitka_grubosc' => '19', 'przekroje_katalog' => '45x145:6'))
-Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['nadbitka_grubosc'].to_f, Ustawienia.ostatnie['przekroje_katalog']],
-            [4, 19.0, '45x145:6'], 'plik bieżącej wersji: własna deska i lista użytkownika zapamiętane')
+File.open(Ustawienia.sciezka, 'w') { |f| f.write(JSON.generate('wersja' => 4, 'ostatnie' => { 'polzamek' => 'nie', 'podbitka' => 'nie', 'poszycie_nadbitka' => 'tak', 'nadbitka_grubosc' => '19', 'dach_uklad' => 'krokwie' })) }
+p4 = Parametry.normalizuj(Ustawienia.ostatnie)[0]
+Testy.rowne([p4['polzamek'], p4['podbitka'], p4['podbitka_grubosc']], ['tak', 'na_krokwiach', 19.0],
+            'plik wersji 4 (kompilacja 15): pół zamka włączone, nadbitka → deski na krokwiach z własną grubością')
+Ustawienia.zapamietaj(pn.merge('podbitka_grubosc' => '19', 'przekroje_katalog' => '45x145:6', 'polzamek' => 'nie'))
+Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podbitka_grubosc'].to_f, Ustawienia.ostatnie['przekroje_katalog'],
+             Ustawienia.ostatnie['polzamek']],
+            [5, 19.0, '45x145:6', 'nie'], 'plik bieżącej wersji: własna deska, lista użytkownika i wyłączone pół zamka zapamiętane')
 Ustawienia.zapamietaj('liczba_wiencow' => '10')
 
 Testy.grupa('Pasek narzędzi i menu pod prawym przyciskiem (runda 14)')

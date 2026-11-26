@@ -388,10 +388,19 @@ module LosoweDomy
         w[:bale].select do |b|
           b[:s0] < k[:s] + t / 2.0 - 0.01 && b[:s1] > k[:s] - t / 2.0 + 0.01 && b[:cechy].any? { |c| c[:typ] == 'skos_gora' } &&
             b[:cechy].none? { |c| c[:typ].start_with?('gniazdo') && c[:os] && (c[:os] - k[:s]).abs < 0.01 } &&
-            !G::PolZamka.w_osi?(b, k[:s])
+            !G::PolZamka.w_osi?(b, k[:s]) && !na_balu_polzamka?(b, k, t, pl[:parametry])
         end.map { |b| "#{w[:id]} wieniec #{b[:wieniec][:nr]}" }
       end
     end
+  end
+
+  # Czy bal b leży w narożniku k tylko na balu półzamka ściany poprzecznej, który go nie sięga (górny bal ściany ścięty
+  # płaszczyzną dachu kończy się pod spodem bala b – gniazda między nimi nie ma z założenia, rdzen/zamek.rb).
+  def na_balu_polzamka?(b, k, t, p)
+    k2 = k[:inna][:skrzyzowania].find { |x| x[:inna].equal?(b[:sciana]) && G::Zamek.odl2(x[:punkt], k[:punkt]) < 0.01 }
+    return false if k2.nil?
+    sasiedzi = G::Zamek.bale_w_zamku(k[:inna], k2[:s], t).select { |x| (x[:lvl] - b[:lvl]).abs == 1 }
+    !sasiedzi.empty? && sasiedzi.all? { |x| x[:lvl] < b[:lvl] && G::PolZamka.w_osi?(x, k2[:s]) && !G::PolZamka.siega?(x, k2[:s], b, p) }
   end
 
   # Połacie dla aplikacji do dachów: bale i płatwie pod połacią, każda płatew ją podpiera, bez krokwi generatora;

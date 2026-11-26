@@ -92,11 +92,11 @@ PRZYPADKI = [
    obroc_odcinki(prostokat(0, 0, 5000, 4000), 120), { 'dach_rodzaj' => 'jednospadowy', 'dach_spadek' => 'max', 'dach_uklad' => 'krokwie' },
    300.0, 1, false],
   ['Dom 6 × 4,5 m, same płatwie (jak 900) – deski 2 m na płatwiach', prostokat(0, 0, 6000, 4500),
-   { 'poszycie_deski' => 'tak', 'poszycie_nadbitka' => 'nie', 'deski_dlugosc' => 2000 }, 0.0, 2, false],
+   { 'poszycie_deski' => 'tak', 'podbitka' => 'nie', 'deski_dlugosc' => 2000 }, 0.0, 2, false],
   ['Dom 6 × 4,5 m, same płatwie – nadbitka 14 × 115 długości 2 m na płatwiach (fabrycznie nadbitka, runda 15)', prostokat(0, 0, 6000, 4500),
-   { 'nadbitka_dlugosc' => 2000 }, 0.0, 2, false],
+   { 'podbitka_dlugosc' => 2000 }, 0.0, 2, false],
   ['Dom 7 × 5 m, same płatwie, nadbitka i OSB 22', prostokat(0, 0, 7000, 5000),
-   { 'poszycie_nadbitka' => 'tak', 'nadbitka_dlugosc' => 2500, 'poszycie_deski' => 'nie', 'poszycie_osb' => 'tak', 'osb_grubosc' => 22 },
+   { 'podbitka_dlugosc' => 2500, 'poszycie_deski' => 'nie', 'poszycie_osb' => 'tak', 'osb_grubosc' => 22 },
    0.0, 2, false],
   ['Dom 5 × 4 m odbity (lustro), płatwie i krokwie', prostokat(0, 0, 5000, 4000), { 'dach_uklad' => 'platwie_krokwie' }, 0.0, 2, true]
 ].freeze
@@ -145,7 +145,7 @@ PRZYPADKI.each do |nazwa, seg, par, z0, ile, odbity|
   Testy.rowne(pod, ile_p + (Dach.jednospadowy?(p) ? 0 : 1), 'każda podpora leży pod połacią (kalenicowa – pod obiema)')
   if Krok2.bez_krokwi?(p)
     Testy.rowne(czesci(wiezba, 'rafter').length, 0, 'bez krokwi')
-    rodzaj = Parametry.tak?(p, 'poszycie_nadbitka') ? 'sheath_ceiling' : 'sheath_plank'
+    rodzaj = Krok2.nadbitka?(p) ? 'sheath_ceiling' : 'sheath_plank'
     deski = czesci(wiezba, rodzaj)
     Testy.sprawdz(deski.length > 4, "#{rodzaj}: #{deski.length} szt.")
     next if deski.empty?
@@ -164,7 +164,7 @@ PRZYPADKI.each do |nazwa, seg, par, z0, ile, odbity|
     Testy.sprawdz(tekst.include?('Bez krokwi: poszycie leży na płatwiach'), 'raport: poszycie na płatwiach')
     if Parametry.tak?(p, 'poszycie_osb')
       osb = czesci(wiezba, 'sheath_osb')
-      Testy.sprawdz(!osb.empty? && osb.all? { |k| (odchylki(punkty_lokalnie(k, dom), pol)[0] - p['nadbitka_grubosc'].to_f / Math.cos(pol[:kat] * Math::PI / 180.0)).abs < 1.0 },
+      Testy.sprawdz(!osb.empty? && osb.all? { |k| (odchylki(punkty_lokalnie(k, dom), pol)[0] - p['podbitka_grubosc'].to_f / Math.cos(pol[:kat] * Math::PI / 180.0)).abs < 1.0 },
                     "OSB na nadbitce (#{osb.length} szt.)")
     end
   else
@@ -230,7 +230,7 @@ L_OBRYS = [[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000
   pod = polacie_ap.inject(0) { |s, f| s + f.supports.length }
   Testy.sprawdz(pod >= ile_p, "każda płatew podpiera połać (#{pod} podparć, #{ile_p} płatwi)")
   if Krok2.bez_krokwi?(p)
-    deski = czesci(wiezba, Parametry.tak?(p, 'poszycie_nadbitka') ? 'sheath_ceiling' : 'sheath_plank')
+    deski = czesci(wiezba, Krok2.nadbitka?(p) ? 'sheath_ceiling' : 'sheath_plank')
     Testy.sprawdz(deski.length > 8, "deski na płatwiach: #{deski.length} szt.")
     spod = deski.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
     Testy.sprawdz(!spod.empty? && spod.min > -0.5 && spod.max < 0.5, format('deski leżą na połaci (%.3f…%.3f mm)', spod.min || 0, spod.max || 0))
@@ -297,7 +297,7 @@ end
   Testy.sprawdz(!spod.empty? && spod.min > -0.5, format('łaty nad połaciami (najniżej %.3f mm)', spod.min || 0))
   if Krok2.bez_krokwi?(p)
     # Pierwsza warstwa poszycia: fabrycznie nadbitka (runda 15), z wyboru deskowanie pełne.
-    deski = czesci(wiezba, Parametry.tak?(p, 'poszycie_nadbitka') ? 'sheath_ceiling' : 'sheath_plank')
+    deski = czesci(wiezba, Krok2.nadbitka?(p) ? 'sheath_ceiling' : 'sheath_plank')
     ds = deski.map { |k| odchylki(punkty_lokalnie(k, dom), pol)[0] }
     Testy.sprawdz(deski.length > 8 && ds.min > -0.5 && ds.max < 0.5, format('deski na płatwiach obu połaci (%d szt., %.3f…%.3f mm)',
                                                                          deski.length, ds.min || 0, ds.max || 0))

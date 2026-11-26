@@ -103,7 +103,7 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 | `platwie_sciecie` | Wierzch płatwi ścięty do płaszczyzny dachu | tak | `tak` – tak; `nie` – nie | Tak – płatew podniesiona, wierzch ścięty po skosie (kalenicowa z dwóch stron), krokwie i deski leżą na całej szerokości. Nie – wierzch poziomy pod dachem. |
 | `szczyt_min_wysokosc` | Najniższy kawałek bala przy skosie | 0 mm | 0 … 140 | 0 – bal szczytu idzie pełnym klinem do końca, szczyt wypełniony do linii dachu (wymóg). Więcej – niższy klin pomijany (bal kończy się pionowo). |
 | `zamek_min_drewno` | Drewno w zamku przy skosie dachu – najmniej | 20 mm | 0 … 100 | Bal ścięty dachem przechodzi przez narożnik tylko w zamku, w którym zostaje co najmniej tyle drewna nad gniazdem; inaczej kończy się przy licu ściany poprzecznej (np. przy ścianie wysokiej dachu jednospadowego). |
-| `polzamek` | Pół zamka w ostatnim połączeniu pod dachem | nie | `tak` – tak; `nie` – nie | Ostatni bal pod skosem dachu, któremu zwykłe gniazdo od spodu zostawia za mało drewna, przechodzi przez zamek bez gniazda, a bal pod nim dostaje gniazdo do połowy wysokości – koniec ostatniego bala nie odpada. Nie – taki bal kończy się przy licu ściany poprzecznej (jak do kompilacji 14). |
+| `polzamek` | Pół zamka w ostatnim połączeniu pod dachem | tak | `tak` – tak; `nie` – nie | Ostatni bal pod skosem dachu, któremu zwykłe gniazdo od spodu zostawia za mało drewna, przechodzi przez zamek bez gniazda, a bal pod nim dostaje gniazdo do połowy wysokości – koniec ostatniego bala nie odpada. Nie – taki bal kończy się przy licu ściany poprzecznej (jak do kompilacji 14). |
 | `polzamek_gleb` | Pół zamka – gniazdo w balu dolnym (0 = do połowy bala) | 0 mm | 0 … 150 | 0 – całe wycięcie w balu dolnym (dwie głębokości gniazda, np. 72), bal górny bez gniazda. Mniej – reszta od spodu bala górnego (nie mniej niż zwykłe gniazdo). |
 | `szczyt_min_kawalek` | Najkrótszy kawałek bala przy skosie i gnieździe | 10 mm | 0 … 500 | Krótsze drzazgi między skosem a gniazdem płatwi są pomijane (szczyt poza nimi wypełniony; typ 100: najkrótszy kawałek 104). |
 | `dach_elementy` | Belki dachu w modelu (płatwie, krokwie) | tak | `tak` – tak; `nie` – nie | Dla obrysu prostokątnego i w kształcie L (dwa dachy z koszem). |
@@ -117,14 +117,10 @@ Ostatnio użyte wartości i własne szablony zapisują się na komputerze (`sket
 
 | Klucz | Parametr | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|
-| `podbitka` | Podbitka – boazeria widoczna od spodu | nie | `nie` – bez podbitki; `pod_platwiami` – pod płatwiami (wzdłuż spadku); `na_platwiach` – na płatwiach (wzdłuż spadku); `pod_krokwiami` – pod krokwiami (równolegle do okapu, między płatwiami); `na_krokwiach` – na krokwiach (równolegle do okapu) |  |
-| `podbitka_grubosc` | Podbitka – grubość | 14 mm | 10 … 60 |  |
-| `podbitka_krycie` | Podbitka – szerokość deski (krycie) | 115 mm | 50 … 300 |  |
-| `podbitka_dlugosc` | Podbitka – długość handlowa | 4000 mm | 1000 … 8000 | Dłuższe deski dzielone na płatwiach (pod i na płatwiach) albo równo (pod i na krokwiach). |
-| `poszycie_nadbitka` | Nadbitka – pierwsza warstwa poszycia (aplikacja do dachów) | tak | `tak` – tak; `nie` – nie | Pełne deskowanie widoczne od spodu (dach bez ocieplenia) – pierwsza warstwa na krokwiach, przy samych płatwiach na płatwiach. Wartości na start KROKU 2 aplikacji do dachów (Krokwie i poszycie = aplikacja). |
-| `nadbitka_grubosc` | Nadbitka – grubość | 14 mm | 10 … 60 |  |
-| `nadbitka_krycie` | Nadbitka – szerokość krycia | 115 mm | 50 … 300 |  |
-| `nadbitka_dlugosc` | Nadbitka – długość handlowa | 4000 mm | 1000 … 8000 |  |
+| `podbitka` | Nadbitka / podbitka – gdzie leżą deski | na_krokwiach | `na_platwiach` – na płatwiach (nadbitka, deski wzdłuż spadku); `na_krokwiach` – na krokwiach (nadbitka, deski równolegle do okapu); `pod_krokwiami` – pod krokwiami (podbitka, równolegle do okapu, między płatwiami); `pod_platwiami` – pod płatwiami (podbitka, deski wzdłuż spadku); `nie` – bez nadbitki i podbitki |  |
+| `podbitka_grubosc` | Deska nadbitki / podbitki – grubość | 14 mm | 10 … 60 |  |
+| `podbitka_krycie` | Deska nadbitki / podbitki – szerokość krycia | 115 mm | 50 … 300 |  |
+| `podbitka_dlugosc` | Deska nadbitki / podbitki – długość handlowa | 4000 mm | 1000 … 8000 | Dłuższe deski dzielone na płatwiach (pod i na płatwiach) albo równo (pod i na krokwiach). |
 | `poszycie_deski` | Deskowanie pełne | nie | `tak` – tak; `nie` – nie | Na krokwiach (albo na nadbitce) równolegle do okapu, styki na krokwiach; przy samych płatwiach (typ 100) – deski na płatwiach wzdłuż spadku, styki na płatwiach. |
 | `deski_grubosc` | Deskowanie – grubość deski | 25 mm | 10 … 80 |  |
 | `deski_szerokosc` | Deskowanie – szerokość deski | 100 mm | 50 … 300 |  |

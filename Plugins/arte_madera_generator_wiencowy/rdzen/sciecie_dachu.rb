@@ -136,7 +136,7 @@ module ArteMadera
         v0 = pol[:poczatek][iv]
         v1 = v0 + pol[:y][iv] * t
         # Węgieł pod połacią kończy się pod podbitką „pod” (jak działowe w poprzek i węgły na ścianach okapowych).
-        dz = b[:sciana][:rodzaj] == :kontrfor ? Podbitka.obnizenie(p) : 0.0
+        dz = b[:sciana][:rodzaj] == :kontrfor ? Podbitka.obnizenie_wegla(b[:sciana], p) : 0.0
         z0 = Dach.linia_podparcia(geo, v0, p) - dz - b[:z0]
         z1 = Dach.linia_podparcia(geo, v1, p) - dz - b[:z0]
         return nil if [z0, z1].min >= b[:h] - MIN

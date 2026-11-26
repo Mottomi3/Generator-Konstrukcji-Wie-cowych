@@ -26,7 +26,7 @@ module ArteMadera
 
       # Pełny zestaw parametrów z wartości użytkownika: [parametry, ostrzeżenia]. Zamek – z presetu lub własny.
       def normalizuj(wejscie)
-        wej = wejscie.is_a?(Hash) ? wejscie : {}
+        wej = ParametryDach.przenies_nadbitke(wejscie.is_a?(Hash) ? wejscie : {})
         p = {}
         uwagi = []
         L::LISTA.each do |w|
@@ -34,6 +34,7 @@ module ArteMadera
           v = wej.key?(k) && !wej[k].nil? && wej[k].to_s.strip != '' ? wej[k] : w[:domyslna]
           p[k] = sprawdz(w, v, uwagi)
         end
+        p['podbitka'] = ParametryDach.polozenie_desek(p['podbitka'], p['dach_uklad'])
         p['zamek'] = zamek_z(wej['zamek'], p['preset'], uwagi)
         [p, uwagi]
       end

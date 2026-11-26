@@ -59,7 +59,7 @@ Testy.sprawdz(mat(pl2, 'Impregnat')[:ilosc] > litry && mat(pl2, 'Impregnat')[:uw
 Testy.sprawdz(mat(plan_pelny(DOM, 'tasma_pasy' => '0'), 'Taśma').nil?, 'bez taśmy – bez wiersza')
 
 Testy.grupa('Warstwy poszycia z wyboru, podbitka z generatora, dom bez szczytów')
-pl3 = plan_pelny(DOM, 'poszycie_nadbitka' => 'nie', 'poszycie_deski' => 'tak', 'poszycie_osb' => 'tak')
+pl3 = plan_pelny(DOM, 'podbitka' => 'nie', 'poszycie_deski' => 'tak', 'poszycie_osb' => 'tak')
 d3 = mat(pl3, 'Deskowanie', 'szt.')
 Testy.rowne([mat(pl3, 'Deskowanie', 'm²')[:wymiar], d3[:ilosc]], ['25 × 100 × 4000', (m2 * 1.1 / (0.103 * 4.0) - 1e-9).ceil],
             'deskowanie 25 × 100: sztuki z odstępem 3 mm')
@@ -68,7 +68,7 @@ Testy.sprawdz(mat(pl3, 'Nadbitka').nil?, 'bez nadbitki')
 pl4 = plan_pelny(DOM, 'podbitka' => 'pod_platwiami')
 pb = pl4[:elementy].select { |e| e[:prefiks] == 'Pb' }
 Testy.rowne(mat(pl4, 'Podbitka', 'm²')[:ilosc], (pb.inject(0.0) { |s, e| s + e[:dl] * 115.0 } / 1.0e6).round(1), 'podbitka z generatora: m² desek z modelu')
-Testy.sprawdz(mat(pl4, 'Podbitka', 'szt.')[:ilosc] > 0 && mat(pl4, 'Nadbitka', 'm²'), 'podbitka w sztukach handlowych, nadbitka nadal jako poszycie')
+Testy.sprawdz(mat(pl4, 'Podbitka', 'szt.')[:ilosc] > 0 && mat(pl4, 'Nadbitka', 'm²').nil?, 'podbitka w sztukach handlowych; nadbitki nie ma – deski leżą w jednym miejscu')
 pl5 = plan_pelny(DOM, 'szczyty' => 'nie')
 Testy.sprawdz(pl5[:materialy].none? { |m| m[:grupa] == 'Poszycie dachu' } && mat(pl5, 'Taśma') && mat(pl5, 'Impregnat'),
               'bez szczytów: bez poszycia, taśma i impregnacja są')

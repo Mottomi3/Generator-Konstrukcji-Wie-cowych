@@ -4,7 +4,7 @@
 # Plik: rdzen/bale.rb
 # Zadanie: bale każdej ściany w każdym wieńcu – kawałki między otworami i stykami, wycięcia przy otworach, skos szczytu, położenie w układzie domu.
 # Tematy: bal, kawałek bala, podział wieńca, cięcie przy otworze, styk w wieńcu, kontrfor przerwany przy otworze, położenie bala, długość bala, bal szczytu, odcinki nadstawki
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem), rdzen/styki_szczytu.rb (styki wieńców szczytu na styk)
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/wience.rb, rdzen/otwory.rb, rdzen/styki.rb, rdzen/szczyty.rb (zasięg i skos), rdzen/pod_dachem.rb, rdzen/dopelnienie.rb (przedziały nadstawki), rdzen/taras_szczyt.rb (szczyt nad tarasem – przekładki), rdzen/wypusty_okapu.rb (wieńce i węgły wypuszczone pod dachem), rdzen/styki_szczytu.rb (styki wieńców szczytu na styk), rdzen/pol_zamka.rb (ostatni bal węgła pod dachem)
 # Używają: rdzen/projekt.rb, rdzen/zamek.rb (obróbki), rdzen/pozycje.rb
 #
 # Bal (Hash): nr, sciana, wieniec ({ nr:, z0:, h:, lvl:, polbal: }), i (indeks wieńca od 0), s0, s1 (na osi ściany),
@@ -23,6 +23,7 @@ require File.join(File.dirname(__FILE__), 'dopelnienie') unless defined?(ArteMad
 require File.join(File.dirname(__FILE__), 'taras_szczyt') unless defined?(ArteMadera::GeneratorWiencowy::TarasSzczyt)
 require File.join(File.dirname(__FILE__), 'wypusty_okapu') unless defined?(ArteMadera::GeneratorWiencowy::WypustyOkapu)
 require File.join(File.dirname(__FILE__), 'styki_szczytu') unless defined?(ArteMadera::GeneratorWiencowy::StykiSzczytu)
+require File.join(File.dirname(__FILE__), 'pol_zamka') unless defined?(ArteMadera::GeneratorWiencowy::PolZamka)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -144,24 +145,42 @@ module ArteMadera
       # Czy bal kontrforu w wieńcu wn ma oparcie: bale gospodarza na poziomach lvl ± 1 obecne (bez otworu, pod linią szczytu,
       # w zasięgu wieńca – np. nad tarasem z podciągiem dolnych bali nie ma) w osi kontrforu. Przy szczycie górny bal może
       # wystawać nad płaszczyznę dachu (ścina go rdzen/sciecie_dachu.rb), gdy pod nią zostaje drewna na zamek (gniazdo od
-      # spodu + najmniej drewna w zamku) – słupek węgła dochodzi do dachu (wymóg użytkownika, runda 8).
+      # spodu + najmniej drewna w zamku) – słupek węgła dochodzi do dachu (wymóg użytkownika, runda 8). Ostatni bal węgła
+      # (nad nim nie ma bala ściany: góra ściany albo wieniec szczytu ucięty skosem przed węgłem) wchodzi z pół zamkiem już
+      # od zamek_min_drewno pod dachem (rdzen/pol_zamka.rb – runda 16).
       def kontrfor_obecny?(kf, wn, p)
         gosp = kf[:gospodarz]
         s = G.dot(G.sub(kf[:a], gosp[:a]), gosp[:kier])
         t = Parametry.grubosc(p)
         zmin = wn[:z0] + [wn[:h], p['zamek']['gniazdo_gleb'].to_f + p['zamek_min_drewno'].to_f].min
-        return false unless [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, zmin, p) }
-        return nad_gospodarzem?(kf, wn, gosp, s, zmin, p) if wn[:nad_gospodarzem]
+        zost = wn[:z0] + [wn[:h], PolZamka.min_wysokosc(p)].min
+        dz = Podbitka.obnizenie_wegla(kf, p)
+        pod = lambda { |z| [s - t / 2.0, s + t / 2.0].all? { |x| Szczyty.pod_podparciem?(gosp, x, z, p, dz) } }
+        return false unless pod.call(zost)
+        return nad_gospodarzem?(kf, wn, gosp, s, zost, p) if wn[:nad_gospodarzem]
         sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
-        return pod_platwia?(kf, wn, gosp, s, sasiedzi, p) if kf[:pod_platwia]
+        return pod.call(zmin) && pod_platwia?(kf, wn, gosp, s, sasiedzi, p) if kf[:pod_platwia]
         return false if sasiedzi.any? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
-        sasiedzi.all? do |g|
+        ostatni = ostatni_bal_wegla?(gosp, wn, sasiedzi, s, t, p)
+        return false unless ostatni || pod.call(zmin)
+        (ostatni ? sasiedzi.select { |g| g[:lvl] < wn[:lvl] } : sasiedzi).all? do |g|
           z = zasieg(gosp, g[:z0], p)
           next false unless z && z[0] < s - t / 2.0 + 0.01 && z[1] > s + t / 2.0 - 0.01
           # Szczyt ażurowy / pusty nad tarasem – wieniec przekładek albo bez bali: węgieł nie ma oparcia.
           TarasSzczyt.przedzialy(gosp, g, z, p).any? { |a, c| a < s - t / 2.0 + 0.01 && c > s + t / 2.0 - 0.01 }
         end
+      end
+
+      # Czy bal węgła w wieńcu wn byłby ostatnim połączeniem pod dachem: ściana ma bal pod nim, a nad nim żadnego –
+      # nie ma już wieńca (góra ściany) albo, przy włączonym pół zamku, wieniec szczytu skośnego kończy się przed węgłem.
+      def ostatni_bal_wegla?(gosp, wn, sasiedzi, s, t, p)
+        return false unless sasiedzi.any? { |g| g[:lvl] < wn[:lvl] }
+        gorny = sasiedzi.find { |g| g[:lvl] > wn[:lvl] }
+        return true if gorny.nil?
+        return false unless PolZamka.wlaczony?(p) && gosp[:szczyt] && !gosp[:szczyt][:plaski] && !gosp[:taras]
+        z = zasieg(gosp, gorny[:z0], p)
+        z.nil? || z[1] <= s - t / 2.0 + 0.01 || z[0] >= s + t / 2.0 - 0.01
       end
 
       # Bal węgła pod płatwią (rdzen/wegly_konstrukcyjne.rb): wieńce do spodu płatwi – górny bal ścina gniazdo płatwi w węgle,

@@ -4,7 +4,7 @@
 # Plik: rdzen/zamek.rb
 # Zadanie: obróbki zamka na każdym skrzyżowaniu – gniazda górne/dolne i podcięcia boczne bali (zamek 44 × 146 z rysunku IMG-20250930-WA0005).
 # Tematy: zamek, gniazdo górne, gniazdo dolne, podcięcie boczne, labirynt, ustawienie bala licem, luz w zamku, półzamek przy styku
-# Zależy od: rdzen/parametry.rb, rdzen/pol_zamka.rb (ostatnie połączenie pod dachem – gniazdo do połowy bala niższego)
+# Zależy od: rdzen/parametry.rb, rdzen/pol_zamka.rb (ostatnie połączenie pod dachem – gniazdo do połowy bala niższego, bal wyższy bez gniazda)
 # Używają: rdzen/projekt.rb, testy/t_zamek.rb (sprawdzenie kolizji)
 #
 # Na skrzyżowaniu w osi c (współrzędna s ściany): gniazdo szerokości gniazdo_szer wycentrowane w c, głębokości gniazdo_gleb
@@ -29,12 +29,48 @@ module ArteMadera
       module_function
 
       # Obróbki zamków dla wszystkich skrzyżowań (dopisuje cechy do bali); zwraca liczbę par bali w zamkach.
-      # Orientacja – z parametru zamek_odbicie, gdy nie podano.
+      # Orientacja – z parametru zamek_odbicie, gdy nie podano. Najpierw ostatnie połączenia pod dachem (od najniższej pary),
+      # potem obróbki w kolejności skrzyżowań.
       def nanies(sciany, p, orientacja = nil)
         orientacja ||= p['zamek_odbicie'] == 'lustro' ? ORIENTACJA_LUSTRO : ORIENTACJA
         z = p['zamek']
-        t = z['grubosc'].to_f
-        pary = 0
+        pary = pary_bali(sciany, z['grubosc'].to_f)
+        ostatnie_polaczenia!(pary, p)
+        pary.each do |x|
+          nizszy, wyzszy, cn, cw = x[:nizszy], x[:wyzszy], x[:cn], x[:cw]
+          if PolZamka.w_osi?(wyzszy, cw)
+            # Pół zamka (rdzen/pol_zamka.rb): gniazdo do połowy bala niższego, bal wyższy bez gniazda (albo z resztą).
+            gniazdo(nizszy, cn, 'gniazdo_gora', PolZamka.zamek_z_gniazdem(z, PolZamka.gniazdo_nizszego(p)))
+            reszta = PolZamka.gniazdo_wyzszego(p)
+            gniazdo(wyzszy, cw, 'gniazdo_dol', PolZamka.zamek_z_gniazdem(z, reszta)) if reszta > 0.01
+          else
+            gniazdo(nizszy, cn, 'gniazdo_gora', z)
+            gniazdo(wyzszy, cw, 'gniazdo_dol', z)
+          end
+          podciecia(nizszy, cn, z, orientacja)
+          podciecia(wyzszy, cw, z, orientacja)
+        end
+        pary.length
+      end
+
+      # Ostatnie połączenia pod dachem (rdzen/pol_zamka.rb) wśród par bali – od najniższej: bal wyższy oznaczony jako bal
+      # półzamka; para, w której bal półzamka nie sięga bala nad nim, usunięta z listy (żadnych gniazd między nimi).
+      def ostatnie_polaczenia!(pary, p)
+        zbedne = []
+        pary.sort_by { |x| x[:wyzszy][:z0] }.each do |x|
+          if PolZamka.w_osi?(x[:nizszy], x[:cn]) && !PolZamka.siega?(x[:nizszy], x[:cn], x[:wyzszy], p)
+            zbedne << x
+          elsif PolZamka.ostatnie?(x[:nizszy], x[:wyzszy], x[:cw], x[:nad], x[:pod], p)
+            PolZamka.oznacz!(x[:wyzszy], x[:cw])
+          end
+        end
+        pary.reject! { |x| zbedne.any? { |y| y.equal?(x) } }
+      end
+
+      # Pary bali w zamkach wszystkich skrzyżowań (poziomy różne o 1): { nizszy:, wyzszy:, cn:, cw: (osie zamka na ścianach
+      # obu bali), nad: (bale ściany bala niższego w słupie zamka), pod: (bale ściany bala wyższego w słupie) }.
+      def pary_bali(sciany, t)
+        pary = []
         sciany.each do |w1|
           w1[:skrzyzowania].each do |k|
             w2 = k[:inna]
@@ -46,19 +82,11 @@ module ArteMadera
             bale1.each do |b1|
               bale2.each do |b2|
                 next unless (b1[:lvl] - b2[:lvl]).abs == 1
-                nizszy, wyzszy, cn, cw = b1[:lvl] < b2[:lvl] ? [b1, b2, k[:s], k2[:s]] : [b2, b1, k2[:s], k[:s]]
-                if PolZamka.w_osi?(wyzszy, cw)
-                  # Pół zamka (rdzen/pol_zamka.rb): gniazdo do połowy bala niższego, bal wyższy bez gniazda (albo z resztą).
-                  gniazdo(nizszy, cn, 'gniazdo_gora', PolZamka.zamek_z_gniazdem(z, PolZamka.gniazdo_nizszego(p)))
-                  reszta = PolZamka.gniazdo_wyzszego(p)
-                  gniazdo(wyzszy, cw, 'gniazdo_dol', PolZamka.zamek_z_gniazdem(z, reszta)) if reszta > 0.01
-                else
-                  gniazdo(nizszy, cn, 'gniazdo_gora', z)
-                  gniazdo(wyzszy, cw, 'gniazdo_dol', z)
-                end
-                podciecia(nizszy, cn, z, orientacja)
-                podciecia(wyzszy, cw, z, orientacja)
-                pary += 1
+                pary << if b1[:lvl] < b2[:lvl]
+                          { nizszy: b1, wyzszy: b2, cn: k[:s], cw: k2[:s], nad: bale1, pod: bale2 }
+                        else
+                          { nizszy: b2, wyzszy: b1, cn: k2[:s], cw: k[:s], nad: bale2, pod: bale1 }
+                        end
               end
             end
           end

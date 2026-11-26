@@ -34,7 +34,7 @@ module ArteMadera
       KLASY_DREWNA = %w[C24 C30 GL24h GL28h].freeze unless const_defined?(:KLASY_DREWNA)
       # Warstwy poszycia od spodu: [parametr włączenia, nazwa w podpowiedziach].
       unless const_defined?(:WARSTWY)
-        WARSTWY = [['poszycie_nadbitka', 'nadbitka'], ['poszycie_deski', 'deskowanie'], ['poszycie_osb', 'OSB']].freeze
+        WARSTWY = [['podbitka', 'nadbitka'], ['poszycie_deski', 'deskowanie'], ['poszycie_osb', 'OSB']].freeze
       end
       # O tyle pod grzbietem płatwi kalenicowej podawany jest jej wierzch (podpora wewnątrz obu połaci) [mm].
       GRZBIET_NIZEJ = 1.0 unless const_defined?(:GRZBIET_NIZEJ)
@@ -57,12 +57,11 @@ module ArteMadera
         u.merge(poszycie(p))
       end
 
-      # Warstwy poszycia KROKU 2 (sheath_*) z sekcji „Poszycie dachu”; podbitka na krokwiach (na samych płatwiach) –
-      # nadbitka z wymiarami podbitki.
+      # Warstwy poszycia KROKU 2 (sheath_*) z sekcji „Poszycie dachu”; nadbitka – deski na krokwiach (na samych płatwiach
+      # na płatwiach) z pola położenia desek (rdzen/podbitka.rb).
       def poszycie(p)
-        nb = Podbitka.przez_aplikacje?(p) ? 'podbitka' : 'nadbitka'
-        { sheath_ceiling_on: nadbitka?(p), sheath_ceiling_t_mm: p["#{nb}_grubosc"].to_f,
-          sheath_ceiling_w_mm: p["#{nb}_krycie"].to_f, sheath_ceiling_len_mm: p["#{nb}_dlugosc"].to_f,
+        { sheath_ceiling_on: nadbitka?(p), sheath_ceiling_t_mm: p['podbitka_grubosc'].to_f,
+          sheath_ceiling_w_mm: p['podbitka_krycie'].to_f, sheath_ceiling_len_mm: p['podbitka_dlugosc'].to_f,
           sheath_plank_on: Parametry.tak?(p, 'poszycie_deski'), sheath_plank_t_mm: p['deski_grubosc'].to_f,
           sheath_plank_w_mm: p['deski_szerokosc'].to_f, sheath_plank_gap_mm: p['deski_szczelina'].to_f,
           sheath_plank_len_mm: p['deski_dlugosc'].to_f,
@@ -71,14 +70,14 @@ module ArteMadera
           sheath_osb_gap_mm: p['osb_szczelina'].to_f }
       end
 
-      # Czy KROK 2 kładzie nadbitkę: parametr nadbitki albo podbitka na krokwiach (na samych płatwiach).
+      # Czy KROK 2 kładzie nadbitkę: deski na krokwiach albo na samych płatwiach (Podbitka.przez_aplikacje?).
       def nadbitka?(p)
-        Parametry.tak?(p, 'poszycie_nadbitka') || Podbitka.przez_aplikacje?(p)
+        Podbitka.przez_aplikacje?(p)
       end
 
       # Nazwy włączonych warstw poszycia (od spodu).
       def warstwy(p)
-        WARSTWY.select { |k, _n| k == 'poszycie_nadbitka' ? nadbitka?(p) : Parametry.tak?(p, k) }.map { |_k, n| n }
+        WARSTWY.select { |k, _n| k == 'podbitka' ? nadbitka?(p) : Parametry.tak?(p, k) }.map { |_k, n| n }
       end
 
       # Podpory krokwi i poszycia z planu: płatwie i ściana wysoka dachu jednospadowego – [{ od:, do: (wierzch w osi na

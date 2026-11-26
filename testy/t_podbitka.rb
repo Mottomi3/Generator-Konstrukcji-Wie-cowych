@@ -45,7 +45,7 @@ hp = Parametry.przekroj(p, 'platwa_przekroj')[1]
 Testy.sprawdz(deski(pl).length > 20, "deski podbitki (#{deski(pl).length})")
 Testy.rowne(odchylka(pl, :wierzch, -hp), 0.0, 'wierzch desek na płaszczyźnie spodu płatwi pośrednich', 0.05)
 Testy.rowne(kolizje_belek(pl, 'Pb', 5), 0, 'deski bez kolizji z balami')
-Testy.sprawdz(!Krok2.ustawienia(p.merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on], 'podbitka pod płatwiami sama nie włącza nadbitki w KROKU 2')
+Testy.sprawdz(!Krok2.ustawienia(p)[:sheath_ceiling_on], 'deski pod płatwiami – nadbitki w KROKU 2 nie ma (jedno położenie desek)')
 
 Testy.grupa('Na płatwiach – same płatwie z aplikacją: nadbitka KROKU 2 z wymiarami podbitki')
 pl = plan_pelny(DOM, 'podbitka' => 'na_platwiach', 'podbitka_grubosc' => 22, 'podbitka_krycie' => 140)
@@ -80,8 +80,8 @@ Testy.sprawdz(deski(pl).length > 20, 'deski rysuje generator (aplikacja kładzie
 Testy.rowne(pl[:polacie][:z] - pl0[:polacie][:z], g, 'połać wyżej o grubość deski w pionie')
 Testy.rowne(Krok2.podpory(pl).map { |q| q[:od][2] }.zip(Krok2.podpory(pl0).map { |q| q[:od][2] }).map { |a, b| (a - b).round(3) }.uniq,
             [g.round(3)], 'podpory (płatwie) wyżej o grubość deski')
-Testy.sprawdz(!Krok2.ustawienia(pl[:parametry].merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on],
-              'podbitka na płatwiach z generatora sama nie włącza nadbitki w KROKU 2')
+Testy.sprawdz(!Krok2.ustawienia(pl[:parametry])[:sheath_ceiling_on],
+              'deski na płatwiach z generatora – nadbitki w KROKU 2 nie ma')
 
 Testy.grupa('Pod krokwiami – krokwie z generatora: wierzch desek na spodzie krokwi, między płatwiami')
 pl = plan_pelny(DOM, 'podbitka' => 'pod_krokwiami', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator')
@@ -106,11 +106,25 @@ ys = deski(pl).map { |e| sciany_deski(e)[0].map { |q| q[1] } }.flatten
 Testy.rowne([ys.min, ys.max], [0.0, 4500.0], 'deski od lica zewnętrznego ściany niskiej do lica zewnętrznego wysokiej', 0.05)
 Testy.rowne([kolizje_belek(pl, 'Pb', 5), kolizje_belek(pl, 'K', 5)], [0, 0], 'deski i krokwie bez kolizji z balami')
 
-Testy.grupa('Wybór niepasujący do układu dachu – pominięty z uwagą')
+Testy.grupa('Położenie niepasujące do układu dachu – zamiennik (runda 16: jedno pole położenia desek)')
 pl = plan_pelny(DOM, 'podbitka' => 'na_krokwiach', 'dach_uklad' => 'platwie')
-Testy.rowne(deski(pl).length, 0, 'bez desek')
-Testy.sprawdz(pl[:ostrzezenia].any? { |x| x.include?('Podbitka') }, 'uwaga o podbitce')
-Testy.sprawdz(!Krok2.ustawienia(pl[:parametry].merge('poszycie_nadbitka' => 'nie'))[:sheath_ceiling_on],
-              'pominięta podbitka nie włącza nadbitki w KROKU 2')
+Testy.rowne(pl[:parametry]['podbitka'], 'na_platwiach', 'same płatwie: „na krokwiach” znaczy „na płatwiach”')
+Testy.rowne(deski(pl).length, 0, 'nadbitkę na samych płatwiach robi aplikacja do dachów – generator jej nie rysuje')
+Testy.sprawdz(pl[:ostrzezenia].none? { |x| x.include?('Podbitka') }, 'bez ostrzeżenia')
+Testy.sprawdz(Krok2.ustawienia(pl[:parametry])[:sheath_ceiling_on], 'nadbitka w KROKU 2 włączona')
+Testy.rowne(Parametry.normalizuj('podbitka' => 'pod_platwiami', 'dach_uklad' => 'krokwie')[0]['podbitka'], 'pod_krokwiami', 'same krokwie: „pod płatwiami” → „pod krokwiami”')
+Testy.rowne(Parametry.normalizuj('podbitka' => 'na_platwiach', 'dach_uklad' => 'platwie_krokwie')[0]['podbitka'], 'na_platwiach', 'płatwie i krokwie: każde położenie zostaje')
+Testy.rowne(Parametry.normalizuj({})[0]['podbitka'], 'na_platwiach', 'fabrycznie: nadbitka (przy samych płatwiach na płatwiach)')
+Testy.rowne(Parametry.normalizuj('dach_uklad' => 'platwie_krokwie')[0]['podbitka'], 'na_krokwiach', 'fabrycznie z krokwiami: nadbitka na krokwiach')
+
+Testy.grupa('Dawne pola: „Podbitka” i „Nadbitka – pierwsza warstwa poszycia” (do kompilacji 15)')
+Testy.rowne(Parametry.normalizuj('poszycie_nadbitka' => 'nie', 'podbitka' => 'nie')[0]['podbitka'], 'nie', 'nadbitka wyłączona, bez podbitki → bez desek')
+st = Parametry.normalizuj('poszycie_nadbitka' => 'tak', 'podbitka' => 'nie', 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121',
+                          'nadbitka_dlugosc' => '2500', 'podbitka_grubosc' => '14', 'dach_uklad' => 'krokwie')[0]
+Testy.rowne([st['podbitka'], st['podbitka_grubosc'], st['podbitka_krycie'], st['podbitka_dlugosc']], ['na_krokwiach', 19.0, 121.0, 2500.0],
+            'nadbitka włączona → deski na krokwiach z wymiarami nadbitki')
+Testy.rowne(Parametry.normalizuj('poszycie_nadbitka' => 'tak', 'podbitka' => 'pod_platwiami', 'nadbitka_grubosc' => '19')[0].values_at('podbitka', 'podbitka_grubosc'),
+            ['pod_platwiami', 14.0], 'wybrana podbitka zostaje ze swoją deską')
+Testy.sprawdz(Parametry.normalizuj('poszycie_nadbitka' => 'tak')[1].empty? && !Parametry.normalizuj({})[0].key?('poszycie_nadbitka'), 'dawne klucze bez ostrzeżeń, w parametrach ich nie ma')
 
 Testy.koniec
