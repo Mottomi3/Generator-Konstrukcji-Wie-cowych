@@ -63,7 +63,8 @@ module ArteMadera
           'sketchup' => Sketchup.version.to_s, 'pro' => Sketchup.respond_to?(:is_pro?) ? Sketchup.is_pro? : nil,
           'jezyk' => Sketchup.respond_to?(:os_language) ? Sketchup.os_language : nil,
           'ruby' => RUBY_VERSION, 'platforma' => RUBY_PLATFORM, 'jednostki_modelu' => jednostki,
-          'plik_ustawien' => Ustawienia.sciezka, 'ostatnie_parametry' => Ustawienia.ostatnie }
+          'plik_ustawien' => Ustawienia.sciezka, 'standard_warsztatu' => Ustawienia.standard, 'typ_domu' => TypyDomow.wybrany,
+          'typy_wlasne' => TypyDomow.wlasne.keys }
       end
 
       # Przykładowe domy zbudowane w jednej operacji, cofniętej na końcu (model zostaje bez zmian).

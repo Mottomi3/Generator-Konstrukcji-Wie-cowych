@@ -31,22 +31,33 @@ module ArteMadera
             wej = Atrybuty.czytaj_wejscie(z[:dom])
             return UI.messagebox('Zaznaczony dom nie ma zapisanych parametrów – wygeneruj go ponownie z linii.') if wej.nil?
             @dom = z[:dom]
+            # Dom z wcześniejszej kompilacji: dawne pola nadbitki → jedno pole położenia desek (okno pokazuje już nowe pole).
+            wej['parametry'] = ParametryDach.przenies_nadbitke(wej['parametry']) if wej['parametry'].is_a?(Hash)
             @wejscie = wej
             info = 'Edycja zaznaczonego domu – „Generuj w modelu” zastąpi go nową wersją.'
             tryb = 'edycja'
           else
+            # Nowy dom zaczyna od standardu warsztatu i ostatnio wybranego typu – nie od ostatniego podglądu
+            # (decyzja użytkownika z 2026-11-25); nic nie zaznaczone – prostokąt z wymiarów (rdzen/dom_z_wymiarow.rb).
             @dom = nil
-            ostatnie = Ustawienia.ostatnie
-            @wejscie = { 'segmenty' => z[:segmenty], 'z0' => z[:z0], 'parametry' => ostatnie, 'otwory' => [], 'wegly' => [], 'sciany' => {} }
-            info = format('Zaznaczono %d linii na wysokości %.0f mm.', z[:segmenty].length, z[:z0])
-            info += ' Parametry z ostatniego użycia.' unless ostatnie.empty?
+            typ = TypyDomow.wybrany
+            par = TypyDomow.nowy_dom(typ)
+            @wejscie = { 'segmenty' => z[:pusto] ? DomZWymiarow.segmenty(par) : z[:segmenty], 'z0' => z[:pusto] ? 0.0 : z[:z0],
+                         'parametry' => par, 'otwory' => [], 'wegly' => [], 'sciany' => {}, 'typ' => typ }
+            @wejscie['z_wymiarow'] = true if z[:pusto]
+            info = if z[:pusto]
+                     'Nic nie zaznaczono – dom prostokątny z wymiarów (długość i szerokość w kroku „Ściany”).'
+                   else
+                     format('Zaznaczono %d linii na wysokości %.0f mm.', z[:segmenty].length, z[:z0])
+                   end
             tryb = 'nowy'
           end
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
           @plan = plan
           okienko_awarii(plan, @wejscie)
           Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'wegly' => @wejscie['wegly'] || [],
-                     'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan))
+                     'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan),
+                     'typ' => @wejscie['typ'], 'z_wymiarow' => @wejscie['z_wymiarow'])
         rescue => e
           Log.error('Sterowanie.start', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
@@ -73,10 +84,10 @@ module ArteMadera
           klucz.call(a) == klucz.call(b)
         end
 
-        # Podgląd z okna: obliczenia bez zmian w modelu; parametry zapamiętane na komputerze.
+        # Podgląd z okna: obliczenia bez zmian w modelu (na komputerze nic się nie zapisuje – standard i typy mają
+        # własne przyciski zapisu).
         def podglad(dane)
           wej = scal(dane)
-          Ustawienia.zapamietaj(wej['parametry'])
           @plan = Log.time('podgląd') { Projekt.oblicz(wej) }
           dla_okna(@plan)
         end
@@ -88,11 +99,10 @@ module ArteMadera
         end
 
         # Generowanie z okna: obliczenia i budowa (zastępuje edytowany dom), potem dach z aplikacji do dachów (połacie
-        # i KROK 2 – 'dach' w wyniku: tekst do okna); parametry zapamiętane na komputerze.
+        # i KROK 2 – 'dach' w wyniku: tekst do okna); parametry, typ i zmiany tylko w tym domu zostają w modelu (atrybuty domu).
         def generuj(dane)
           model = Sketchup.active_model
           wej = scal(dane)
-          Ustawienia.zapamietaj(wej['parametry'])
           plan = Log.time('obliczenia') { Projekt.oblicz(wej) }
           ms_obliczen = ostatni_czas
           @plan = plan
@@ -157,19 +167,26 @@ module ArteMadera
           c ? c['ms'] : nil
         end
 
-        # Wejście domu: zapamiętane linie i poziom + parametry, otwory i ustawienia ścian (widok ściany) z okna.
+        # Wejście domu: zapamiętane linie i poziom (dom z wymiarów – prostokąt z pól długości i szerokości) + parametry,
+        # otwory, ustawienia ścian (widok ściany) i typ domu z okna.
         def scal(dane)
           baza = @wejscie || {}
-          { 'segmenty' => baza['segmenty'] || [], 'z0' => baza['z0'].to_f,
-            'parametry' => dane['parametry'] || {}, 'otwory' => dane['otwory'] || [], 'wegly' => dane['wegly'] || [],
-            'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}) }
+          par = dane['parametry'] || {}
+          wej = { 'segmenty' => baza['z_wymiarow'] ? DomZWymiarow.segmenty(par) : (baza['segmenty'] || []), 'z0' => baza['z0'].to_f,
+                  'parametry' => par, 'otwory' => dane['otwory'] || [], 'wegly' => dane['wegly'] || [],
+                  'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}),
+                  'typ' => (dane['typ'] || baza['typ']).to_s }
+          wej['z_wymiarow'] = true if baza['z_wymiarow']
+          wej
         end
 
         # Wynik dla okna (tylko typy JSON): błędy, ostrzeżenia, podpowiedzi, ściany, lista bali i belek, rzut.
         def dla_okna(plan)
           wynik = { 'bledy' => plan[:bledy], 'ostrzezenia' => plan[:ostrzezenia], 'rzut' => rzut(plan),
                     'wegly_lista' => plan[:sciany].empty? ? [] : WeglyTabela.lista(plan[:sciany], plan[:parametry]),
-                    'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) }, 'widoki' => Widok.lista(plan) }
+                    'podpowiedzi' => (plan[:podpowiedzi] || []).map { |h| klucze_tekstowe(h) }, 'widoki' => Widok.lista(plan),
+                    'uwagi' => UwagiPola.lista(plan), 'obrys_rodzaj' => plan[:powierzchnie] ? plan[:powierzchnie][:rodzaj_obrysu] : '',
+                    'powierzchnie' => Powierzchnie.wiersze(plan[:powierzchnie]) }
           s = plan[:podsumowanie]
           return wynik if s.nil?
           wynik.merge(

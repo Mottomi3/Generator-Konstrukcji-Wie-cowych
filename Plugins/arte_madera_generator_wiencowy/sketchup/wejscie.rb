@@ -19,7 +19,8 @@ module ArteMadera
 
       module_function
 
-      # Wynik: { dom: grupa } | { segmenty: [...], z0: mm } | { dom:, segmenty:, z0: } (zaznaczony dom i linie) | { blad: tekst }.
+      # Wynik: { dom: grupa } | { segmenty: [...], z0: mm } | { dom:, segmenty:, z0: } (zaznaczony dom i linie) |
+      # { pusto: true } (nic nie zaznaczone – dom z wymiarów) | { blad: tekst }.
       def z_zaznaczenia(model)
         zazn = model.selection.to_a
         dom = zazn.find { |e| Atrybuty.dom?(e) }
@@ -27,6 +28,8 @@ module ArteMadera
         zbierz(zazn, Geom::Transformation.new, krawedzie, 0)
         krawedzie = krawedzie.uniq { |e, tr| [e.respond_to?(:entityID) ? e.entityID : e.object_id, tr.to_a] }
         return { dom: dom } if dom && krawedzie.empty?
+        # Nic nie zaznaczone – dom prostokątny z wymiarów (rdzen/dom_z_wymiarow.rb).
+        return { pusto: true } if zazn.empty?
         return { blad: 'Zaznacz narysowane linie obrysu domu (lico zewnętrzne), osie ścian działowych i linie kontrforów – ' \
                        'albo dom wygenerowany wcześniej, żeby go edytować.' } if krawedzie.empty?
         segmenty = []

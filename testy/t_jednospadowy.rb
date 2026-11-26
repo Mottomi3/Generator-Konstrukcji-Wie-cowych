@@ -122,8 +122,21 @@ Testy.sprawdz(grubosci.all? { |_d, g| g >= 30.0 - 0.01 && g < 139.0 + 30.0 },
               "górny bal ściany wysokiej nie cieńszy niż 30 (#{grubosci.map { |_d, g| g.round }.uniq.sort.first(3).inspect})")
 Testy.sprawdz(grubosci.any? { |_d, g| g > 139.0 }, 'cienki pasek pominięty – górny bal pełny, pod połacią szczelina do 30')
 
-Testy.grupa('Narożnik przy ścianie wysokiej – bal szczytu przez narożnik tylko w zamku')
+Testy.grupa('Narożnik przy ścianie wysokiej z pół zamkiem (fabrycznie od rundy 16) – bal szczytu przechodzi przez narożnik')
 pl = plan_pelny(prostokat(0, 0, 5000, 4000), JEDNO)
+w2 = sciana(pl, 'W-2')
+sciete = w2[:bale].select { |b| b[:s1] > 3934.01 && b[:cechy].any? { |c| c[:typ] == 'skos_gora' } }
+Testy.sprawdz(sciete.any? { |b| PolZamka.w_osi?(b, 3956.0) }, 'ostatni bal szczytu w narożniku z pół zamkiem')
+Testy.sprawdz(sciete.all? { |b| PolZamka.w_osi?(b, 3956.0) || b[:cechy].any? { |c| c[:typ] == 'gniazdo_dol' && (c[:os] - 3956.0).abs < 0.01 } },
+              'każdy bal ścięty dachem w narożniku ma zamek albo pół zamka')
+cienkie = pl[:bale].count do |b|
+  b[:cechy].any? { |c| c[:typ] == 'gniazdo_dol' && c[:os] && [PolZamka.wierzch(b, c[:x0]), PolZamka.wierzch(b, c[:x1])].min - c[:gleb] < pl[:parametry]['zamek_min_drewno'] - 0.01 }
+end
+Testy.rowne(cienkie, 0, 'żadnego gniazda od spodu z mniej niż 20 mm drewna pod dachem')
+czysto(pl, 'narożnik z pół zamkiem')
+
+Testy.grupa('Narożnik przy ścianie wysokiej – bal szczytu przez narożnik tylko w zamku (pół zamka wyłączone)')
+pl = plan_pelny(prostokat(0, 0, 5000, 4000), JEDNO.merge('polzamek' => 'nie'))
 p = pl[:parametry]
 w3 = sciana(pl, 'W-3')
 gora = w3[:bale].map { |b| b[:lvl] }.max
@@ -141,7 +154,7 @@ mostki = w2[:bale].select { |b| b[:s1] > 3934.01 && b[:cechy].any? { |c| c[:typ]
   SkosPrzyNarozniku.wierzch_w_gniezdzie(b, 3956.0, 40.0) - 36.0
 end
 Testy.sprawdz(mostki.all? { |m| m >= p['zamek_min_drewno'] - 0.01 }, "drewno nad gniazdem ≥ 20 (#{mostki.map { |m| m.round(1) }.inspect})")
-pl0 = plan_pelny(prostokat(0, 0, 5000, 4000), JEDNO.merge('zamek_min_drewno' => 0))
+pl0 = plan_pelny(prostokat(0, 0, 5000, 4000), JEDNO.merge('zamek_min_drewno' => 0, 'polzamek' => 'nie'))
 Testy.sprawdz(pl0[:bale].length >= pl[:bale].length, 'zamek_min_drewno 0 – tyle samo albo więcej bali')
 czysto(pl, 'narożnik')
 

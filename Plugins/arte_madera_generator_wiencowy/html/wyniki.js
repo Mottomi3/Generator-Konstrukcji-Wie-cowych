@@ -51,6 +51,30 @@ var AMGW_WYNIKI = (function () {
     box.appendChild(ul);
   }
 
+  // Tabela powierzchni i wysokości w karcie zestawienia: [[nazwa, wartość, jednostka, uwagi]].
+  function powierzchnie(wiersze) {
+    var box = $('powierzchnie');
+    var i;
+    if (!box) { return; }
+    wyczysc(box);
+    if (!wiersze || !wiersze.length) { return; }
+    box.appendChild(el('h3', null, 'Powierzchnie i wysokość'));
+    var tab = el('table', { 'class': 'tabela powierzchnie', id: 'tab-powierzchnie' });
+    var tb = el('tbody');
+    for (i = 0; i < wiersze.length; i++) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, wiersze[i][0]));
+      var td = el('td', { 'class': 'liczba' });
+      td.appendChild(el('b', null, wiersze[i][1]));
+      td.appendChild(document.createTextNode(' ' + wiersze[i][2]));
+      tr.appendChild(td);
+      tr.appendChild(el('td', null, wiersze[i][3]));
+      tb.appendChild(tr);
+    }
+    tab.appendChild(tb);
+    box.appendChild(tab);
+  }
+
   // Wyniki: liczby, wysokości, tabela ścian, lista bali, rzut, błędy, ostrzeżenia i podpowiedzi; naKlik(id) – kliknięta
   // ściana na rzucie.
   function pokaz(d, naKlik) {
@@ -68,6 +92,7 @@ var AMGW_WYNIKI = (function () {
     wyczysc(tbL);
     wyczysc(tbM);
     if ($('wysokosci')) { $('wysokosci').textContent = ''; }
+    if ($('powierzchnie')) { wyczysc($('powierzchnie')); }
     if (!d.sciany) { return; }
     var n = d.liczby;
     var wpisy = [['Bale', n.bale], ['Pozycje', n.pozycje], ['Objętość bali', Number(n.objetosc_m3).toFixed(2) + ' m³'],
@@ -75,11 +100,19 @@ var AMGW_WYNIKI = (function () {
                  ['Węgły usztywniające', n.wegly_usztywniajace], ['Limit światła', n.limit_swiatla + ' mm'],
                  ['Szczyty', n.szczyty], ['Belki podłogi i dachu', n.belki],
                  ['Objętość belek', Number(n.objetosc_belek_m3 || 0).toFixed(2) + ' m³']];
+    // Powierzchnie i wysokość (rdzen/powierzchnie.rb) – na początku liczb, pomieszczenia osobno w tabeli zestawienia.
+    var pw = d.powierzchnie || [];
+    var glowne = [];
+    for (i = 0; i < pw.length; i++) {
+      if (!/^Pomieszczenie \d/.test(pw[i][0])) { glowne.push([pw[i][0], pw[i][1] + ' ' + pw[i][2]]); }
+    }
+    wpisy = glowne.concat(wpisy);
     for (i = 0; i < wpisy.length; i++) {
       var sp = el('span', null, wpisy[i][0] + ': ');
       sp.appendChild(el('b', null, wpisy[i][1]));
       liczby.appendChild(sp);
     }
+    powierzchnie(pw);
     if (d.wysokosci && $('wysokosci')) {
       $('wysokosci').textContent = 'Wysokość: ściany okapowe ' + fmt(d.wysokosci.okapowa) + ' mm' +
         (d.wysokosci.wysoka ? ' (ściana wysoka ' + fmt(d.wysokosci.wysoka) + ' mm – do połaci)' : '') + ', szczytowe ' +

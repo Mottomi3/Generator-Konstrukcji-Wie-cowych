@@ -21,7 +21,7 @@ module ArteMadera
 
       # Parametry sekcji (kolejność = kolejność w oknie).
       LISTA = [
-        { klucz: 'zadaszenie', podstawowy: true, domyslna: 'nie', etykieta: 'Zadaszenie przy ścianie okapowej (boczne / tylne)',
+        { klucz: 'zadaszenie', poziom: :typ, obrys: { tylko: %w[prostokat], zostaje: %w[nie], powod: 'Zadaszenie boczne tylko przy obrysie prostokątnym.' }, podstawowy: true, domyslna: 'nie', etykieta: 'Zadaszenie przy ścianie okapowej (boczne / tylne)',
           rodzaj: :wybor, sekcja: 'zadaszenie',
           wybory: [['nie', 'bez zadaszenia'], ['slupy', 'na słupach z oczepem (wiata, drewutnia)'],
                    ['bale', 'ściany z bali (przybudówka)']],
@@ -37,33 +37,33 @@ module ArteMadera
                  'Na słupach: belka poprzeczna na każdym słupie aż do ściany domu, płatwie na słupkach. Przybudówka: ściany ' \
                  'szczytowe przedłużone, dawna ściana okapowa zostaje jako działowa, ściana zewnętrzna przybudówki niska – ' \
                  'górny bal ścięty do połaci zadaszenia.' },
-        { klucz: 'zadaszenie_strona', podstawowy: true, domyslna: 'min', etykieta: 'Zadaszenie – przy ścianie okapowej',
+        { klucz: 'zadaszenie_strona', poziom: :dom, podstawowy: true, domyslna: 'min', etykieta: 'Zadaszenie – przy ścianie okapowej',
           rodzaj: :wybor, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => Z },
           wybory: [['min', 'dolnej albo lewej (rysunek z góry)'], ['max', 'górnej albo prawej (rysunek z góry)'],
                    ['obie', 'po obu stronach']],
           podpowiedz: 'Kalenica wzdłuż X – ściana dolna / górna rysunku, wzdłuż Y – lewa / prawa.' },
-        { klucz: 'zadaszenie_szerokosc', podstawowy: true, domyslna: 2000.0, etykieta: 'Zadaszenie – szerokość', jednostka: 'mm',
+        { klucz: 'zadaszenie_szerokosc', poziom: :dom, podstawowy: true, domyslna: 2000.0, etykieta: 'Zadaszenie – szerokość', jednostka: 'mm',
           min: 600.0, max: 6000.0, rodzaj: :liczba, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => Z },
           podpowiedz: 'Od lica zewnętrznego ściany domu do lica zewnętrznego podpory (słupów albo ściany przybudówki), w poziomie.' },
-        { klucz: 'zadaszenie_kat', podstawowy: true, domyslna: 12.0, etykieta: 'Zadaszenie – kąt (mniejszy niż kąt dachu)',
+        { klucz: 'zadaszenie_kat', poziom: :dom, podstawowy: true, domyslna: 12.0, etykieta: 'Zadaszenie – kąt (mniejszy niż kąt dachu)',
           jednostka: '°', min: 3.0, max: 50.0, rodzaj: :liczba, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => Z },
           podpowiedz: 'Musi być mniejszy niż kąt dachu (załamanie). Blachodachówka zwykle od 9–12°, blacha na rąbek od 3–5° – ' \
                       'sprawdź kartę pokrycia.' },
-        { klucz: 'zadaszenie_okap', domyslna: 300.0, etykieta: 'Zadaszenie – okap za podporą (najmniej)', jednostka: 'mm',
+        { klucz: 'zadaszenie_okap', poziom: :standard, domyslna: 300.0, etykieta: 'Zadaszenie – okap za podporą (najmniej)', jednostka: 'mm',
           min: 0.0, max: 1500.0, rodzaj: :liczba, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => Z },
           podpowiedz: 'W poziomie, od lica podpory. Aplikacja do dachów wydłuża go do pełnych modułów łat (0 … 1 moduł).' },
-        { klucz: 'zadaszenie_slupy_rozstaw', domyslna: 2500.0, etykieta: 'Słupy zadaszenia – największy rozstaw (osiowo)',
+        { klucz: 'zadaszenie_slupy_rozstaw', poziom: :standard, domyslna: 2500.0, etykieta: 'Słupy zadaszenia – największy rozstaw (osiowo)',
           jednostka: 'mm', min: 800.0, max: 6000.0, rodzaj: :liczba, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => ['slupy'] },
           podpowiedz: 'Skrajne słupy w osiach ścian szczytowych, pośrednie równo; słup w miejscu węgła albo działowej ' \
                       'przesunięty obok. Rozstaw słupów to przęsło płatwi i oczepu.' },
-        { klucz: 'zadaszenie_podloga', podstawowy: true, domyslna: 'tak', etykieta: 'Przybudówka – podłoga',
+        { klucz: 'zadaszenie_podloga', poziom: :typ, podstawowy: true, domyslna: 'tak', etykieta: 'Przybudówka – podłoga',
           rodzaj: :wybor, sekcja: 'zadaszenie', gdy: { 'zadaszenie' => ['bale'] },
           wybory: [['tak', 'tak – podłoga domu sięga do ściany przybudówki'],
                    ['nie', 'nie – same podwaliny i fundamenty pod ścianami przybudówki']],
           podpowiedz: 'Podłogę domu (legary, podciągi, fundamenty) ustawiasz w zakładce Dom → „Podłoga i fundamenty”; tu tylko, ' \
                       'czy wchodzi do przybudówki. Bez podłogi w przybudówce zostają podwaliny pod jej ścianami na fundamentach.' },
 
-        { klucz: 'zadaszenie_dobor', podstawowy: true, domyslna: 'auto', etykieta: 'Przekroje zadaszenia – dobór', rodzaj: :wybor,
+        { klucz: 'zadaszenie_dobor', poziom: :standard, podstawowy: true, domyslna: 'auto', etykieta: 'Przekroje zadaszenia – dobór', rodzaj: :wybor,
           sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z },
           wybory: [['auto', 'automatycznie – najmniejsze wystarczające z list'],
                    ['reczny', 'z wyboru – przekroje podane niżej (ze sprawdzeniem nośności)']],
@@ -76,24 +76,24 @@ module ArteMadera
                  'z wyboczeniem na całej wysokości (od fundamentu do belki), obciążenie z połowy szerokości zadaszenia i okapu ' \
                  'między sąsiednimi słupami. Bez wiatru – słupy wolnostojące wymagają stężeń (zastrzały, belka poprzeczna ' \
                  'przykręcona do ściany).' },
-        { klucz: 'zadaszenie_katalog', domyslna: WykazDrewna.lista(:platwie),
+        { klucz: 'zadaszenie_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:platwie),
           etykieta: 'Dostępne przekroje belek zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['auto'] },
           podpowiedz: 'Płatwie, oczep i belki poprzeczne – lista z hurtowni „szer.×wys.:długości w metrach” po przecinku; ' \
                       'dobór bierze najlżejszy wystarczający.' },
-        { klucz: 'zadaszenie_slupy_katalog', domyslna: WykazDrewna.lista(:slupy),
+        { klucz: 'zadaszenie_slupy_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:slupy),
           etykieta: 'Dostępne przekroje słupów zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['auto'] },
           podpowiedz: 'Lista z hurtowni „wzdłuż ściany×w poprzek:długości w metrach” po przecinku; dobór bierze najlżejszy wystarczający.' },
-        { klucz: 'zadaszenie_platwa_przekroj', domyslna: '80x160', etykieta: 'Płatew zadaszenia (szer. × wys.)', jednostka: 'mm',
+        { klucz: 'zadaszenie_platwa_przekroj', poziom: :typ, domyslna: '80x160', etykieta: 'Płatew zadaszenia (szer. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak ' \
                       'płatwie dachu. Wynik sprawdzenia – pod sekcją.' },
-        { klucz: 'zadaszenie_slup_przekroj', domyslna: '120x120', etykieta: 'Słup zadaszenia (wzdłuż ściany × w poprzek)',
+        { klucz: 'zadaszenie_slup_przekroj', poziom: :typ, domyslna: '120x120', etykieta: 'Słup zadaszenia (wzdłuż ściany × w poprzek)',
           jednostka: 'mm', rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory.' },
-        { klucz: 'zadaszenie_belka_przekroj', domyslna: '80x160', etykieta: 'Belka poprzeczna na słupie (szer. × wys.)',
+        { klucz: 'zadaszenie_belka_przekroj', poziom: :typ, domyslna: '80x160', etykieta: 'Belka poprzeczna na słupie (szer. × wys.)',
           jednostka: 'mm', rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, ' \

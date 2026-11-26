@@ -1,0 +1,83 @@
+/*
+  ArteMadera – Generator Wieńcowy
+  Plik: html/kroki.css
+  Zadanie: wygląd nowego układu okna – kroki w kolejności budowy, prawa kolumna z rzutem i uwagami zawsze na widoku, pasek typu domu, pola zmienione tylko w tym domu, panel standardu warsztatu, lista „Do poprawy / Sprawdzone”.
+  Tematy: wygląd kroków, układ okna – wygląd, prawa kolumna przyklejona, pasek typu – wygląd, pole zmienione w domu – wygląd, panel standardu – wygląd, lista uwag – wygląd, podpowiedź po wejściu w pole, opcja niedostępna dla obrysu – wygląd
+  Zależy od: html/okno.css (kolory)
+  Używają: html/okno.html
+*/
+/* Przełącznik układu w nagłówku. */
+.uklad-wybor { display: flex; align-items: center; gap: 0; color: var(--szary); }
+.uklad-wybor button { border-radius: 0; padding: 4px 10px; margin-left: 0; }
+.uklad-wybor button:first-of-type { border-radius: 4px 0 0 4px; margin-left: 6px; }
+.uklad-wybor button:last-of-type { border-radius: 0 4px 4px 0; border-left: none; }
+.uklad-wybor button.wybrany { background: var(--akcent-jasny); border-color: var(--akcent); color: var(--akcent); font-weight: 600; }
+
+/* Układ „kroki”: pola i karty kroku po lewej, rzut i wynik stale po prawej. */
+body.uklad-kroki .uklad { grid-template-columns: 1fr minmax(300px, 380px); align-items: start; }
+body.uklad-kroki #prawa { position: sticky; top: 62px; max-height: calc(100vh - 74px); overflow-y: auto; }
+body.uklad-kroki #zakladki, body.uklad-kroki .przelacznik { display: none !important; }
+body.uklad-kroki #sekcje > .zakladka { display: flex !important; }
+body.uklad-kroki #sekcje summary { pointer-events: none; list-style: none; }
+body.uklad-kroki #sekcje summary::-webkit-details-marker { display: none; }
+body.uklad-kroki #lista-bledow, body.uklad-kroki #lista-ostrzezen, body.uklad-kroki #lista-podpowiedzi { display: none; }
+body.uklad-kroki .pola .podp { display: none; }
+body.uklad-kroki .pola .podp.aktywna { display: block; padding: 3px 6px; border-left: 3px solid var(--akcent); background: var(--akcent-jasny); color: var(--tekst); }
+body.uklad-kroki .rzut { min-height: 150px; }
+body.uklad-zakladki #kroki, body.uklad-zakladki #krok-poziomy, body.uklad-zakladki #krok-karty, body.uklad-zakladki #uwagi { display: none; }
+@media (max-width: 760px) { body.uklad-kroki .uklad { grid-template-columns: 1fr; } body.uklad-kroki #prawa { position: static; max-height: none; } }
+
+/* Pasek kroków ze znacznikiem stanu. */
+.kroki { display: flex; gap: 3px; flex-wrap: wrap; }
+.kroki button { flex: 1 1 auto; padding: 5px 4px; background: var(--tlo); color: var(--szary); white-space: nowrap; font-size: 12px; }
+.kroki button.wybrany { background: var(--akcent); border-color: var(--akcent); color: #fff; font-weight: 600; }
+.kroki .stan { display: inline-block; min-width: 15px; margin-left: 3px; padding: 0 3px; border-radius: 8px; font-size: 11px; line-height: 16px; text-align: center; }
+.kroki .stan.ok { background: #e7f3e7; color: var(--ok); }
+.kroki .stan.uwaga { background: var(--uwaga-tlo); color: var(--uwaga); }
+.kroki .stan.blad { background: var(--blad-tlo); color: var(--blad); font-weight: 700; }
+.krok-poziomy { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.krok-poziomy button { padding: 3px 8px; }
+.krok-poziomy select { font: inherit; padding: 3px 5px; border: 1px solid var(--linia); border-radius: 3px; max-width: 100%; }
+
+/* Poziom pola i pola zmienione tylko w tym domu. */
+.pola .poziom { margin-left: 5px; padding: 0 4px; border-radius: 3px; background: var(--tlo); color: var(--szary); font-size: 10px; font-weight: 400; }
+.pola label.wdomu { color: #1f5f8b; font-weight: 600; }
+.pola label.wdomu .poziom { background: #e3eff8; color: #1f5f8b; }
+.pola .cofnij { margin-left: 5px; padding: 0 5px; border: 1px solid #1f5f8b; border-radius: 3px; background: #fff; color: #1f5f8b; font-size: 11px; line-height: 15px; cursor: pointer; }
+.pola .powod { grid-column: 1 / span 2; color: var(--uwaga); font-size: 11px; margin: -2px 0 4px; }
+.pola .blysk, .blysk { outline: 3px solid var(--akcent); outline-offset: 1px; }
+
+/* Pasek typu domu. */
+#typ-nowy.ukryty { display: none; }
+.typy select, .typy input { flex: 1; min-width: 0; font: inherit; padding: 3px 5px; border: 1px solid var(--linia); border-radius: 3px; }
+.typy .wiersz button { padding: 4px 8px; }
+#typ-komunikat.blad { color: var(--blad); }
+#typ-komunikat.ok { color: var(--ok); }
+
+/* Lista „Do poprawy / Sprawdzone” w prawej kolumnie. */
+.uwagi-naglowek { margin: 8px 0 2px; font-size: 13px; font-weight: 600; }
+.uwagi-lista { margin: 2px 0; padding: 0; list-style: none; }
+.uwagi-lista li { margin: 3px 0; padding: 5px 8px; border-radius: 4px; border-left: 3px solid var(--linia); font-size: 12px; }
+.uwagi-lista li.blad { background: var(--blad-tlo); color: var(--blad); border-left-color: var(--blad); font-weight: 600; }
+.uwagi-lista li.ostrzezenie, .uwagi-lista li.uwaga { background: var(--uwaga-tlo); color: var(--uwaga); border-left-color: var(--uwaga); }
+.uwagi-lista li.ok { background: #eef6ee; color: var(--ok); border-left-color: var(--ok); }
+.uwagi-lista li.klik { cursor: pointer; }
+.uwagi-lista li.klik:hover { filter: brightness(0.96); text-decoration: underline; }
+.uwagi-lista .gdzie { float: right; margin-left: 6px; padding: 0 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.7); color: var(--szary); font-size: 10px; font-weight: 400; }
+#uwagi details { background: none; border: none; padding: 0; margin-top: 6px; }
+.uwagi-czysto { margin: 6px 0; padding: 6px 8px; border-radius: 4px; background: #eef6ee; color: var(--ok); font-size: 12px; }
+
+/* Panel „Standard warsztatu”. */
+.panel-standard { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; background: rgba(43, 38, 32, 0.45); overflow-y: auto; }
+.panel-standard.ukryty { display: none; }
+.panel-standard-okno { width: 100%; max-width: 860px; padding: 14px 18px 18px; border: 1px solid var(--linia); border-radius: 8px; background: var(--karta); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3); }
+.panel-standard-okno h2 { margin: 0; flex: 1; font-size: 16px; }
+#standard-szukaj { font: inherit; padding: 4px 6px; border: 1px solid var(--linia); border-radius: 3px; width: 170px; }
+.standard-pola h3 { margin: 14px 0 4px; padding-bottom: 2px; border-bottom: 1px solid var(--linia); }
+.standard-pola .pola { grid-template-columns: 1fr 150px 1fr 150px; }
+.standard-pola .pola select, .standard-pola .pola .pelny { grid-column: auto; }
+@media (max-width: 760px) { .standard-pola .pola { grid-template-columns: 1fr 150px; } }
+
+/* Powierzchnie w kroku „Zestawienie”. */
+.powierzchnie { margin: 4px 0 8px; }
+.powierzchnie td.liczba b { color: var(--akcent); }

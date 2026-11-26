@@ -1,10 +1,10 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/okno.js
-  Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, szablony, wywołania Ruby.
-  Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, szablony w oknie, przywróć fabryczne, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY – tabela węgłów), html/wegly_przesun.js (AMGW_PRZESUN – przesuwanie węgłów przy otworach), html/zalezne.js (AMGW_ZALEZNE – pola i wybory zależne), html/pomoc.js (AMGW_POMOC – pytajniki z objaśnieniem), html/przeliczenia.js (AMGW_PRZELICZENIA – przeliczenia w sekcjach, co się zmieniło), html/zakladki.js (AMGW_ZAKLADKI – zakładki Dom / Zadaszenie)
-  Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.ustaw, AMGW.szablony, AMGW.widok, AMGW.komunikat)
+  Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, wymiary zamka, wynik podglądu, wywołania Ruby; typy, standard, kroki i układ w osobnych plikach.
+  Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie, odświeżenie pól po zmianie, start okna
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js
+  Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.typy, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
   Pole nowego parametru pojawia się samo w swojej sekcji (ParametryLista w Ruby: sekcja, wybory, podpowiedź).
@@ -56,10 +56,18 @@ var AMGW = (function () {
       dodajPole(stan.opisy[i], parametry);
     }
     zbudujZamek(parametry);
-    AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
+    odswiezPola();
+  }
+
+  // Po zmianie wartości pól: wybory zależne, wyróżnienie zmienionych (względem fabrycznych i względem typu ze standardem),
+  // nazwy zakładek i widoczność pól w bieżącym układzie.
+  function odswiezPola() {
+    var zmiana = AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
     AMGW_ZMIANY.oznacz(stan.opisy);
+    AMGW_TYPY.oznacz(stan.opisy);
     AMGW_ZAKLADKI.oznacz();
-    AMGW_TRYB.zastosuj(stan.opisy);
+    AMGW_UKLAD.odswiez(stan.opisy);
+    return zmiana;
   }
 
   // Jedno pole parametru w swojej sekcji (lista wyboru, liczba, przekrój albo tekst), podpowiedź pod nim i pytajnik
@@ -97,17 +105,18 @@ var AMGW = (function () {
         pole.title = 'szerokość × wysokość, np. 50x150';
       } else {
         pole.setAttribute('inputmode', 'decimal');
-        pole.value = fmt(wartosc);
+        pole.value = AMGW_DOM.fmtPola(wartosc);
         if (opis.min !== null && opis.max !== null) { pole.title = 'od ' + fmt(opis.min) + ' do ' + fmt(opis.max); }
       }
     }
     pole.addEventListener('change', function () {
-      AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
-      AMGW_ZMIANY.oznacz(stan.opisy);
-      AMGW_ZAKLADKI.oznacz();
-      AMGW_TRYB.zastosuj(stan.opisy);
-      zaplanujPodglad();
+      // Przebudowa po puszczeniu przycisku myszy – kliknięcie w przycisk tuż po wpisaniu wartości trafia w przycisk.
+      AMGW_DOM.poKliknieciu(function () {
+        odswiezPola();
+        zaplanujPodglad();
+      });
     });
+    AMGW_POMOC.poWejsciu(pole, opis.klucz);
     sekcja.appendChild(pole);
     if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp', id: 'h-' + opis.klucz }, opis.podpowiedz)); }
     AMGW_POMOC.dodaj(sekcja, etykieta, opis);
@@ -119,18 +128,7 @@ var AMGW = (function () {
     return e ? e.value : domyslna;
   }
 
-  // ---- szablony ----
-
-  // Lista szablonów w polu wyboru.
-  function wypelnijSzablony(lista) {
-    var sel = $('szablon');
-    var i;
-    wyczysc(sel);
-    for (i = 0; i < (lista || []).length; i++) { sel.appendChild(el('option', { value: lista[i] }, lista[i])); }
-  }
-
-  // Komunikat przy szablonach.
-  function komunikatSzablonu(tekst) { $('szablon-komunikat').textContent = tekst || ''; }
+  // ---- zamek ----
 
   // Pola wymiarów zamka: wartości własne albo z presetu.
   function zbudujZamek(parametry) {
@@ -144,8 +142,11 @@ var AMGW = (function () {
       var lab = el('label', { 'for': 'z-' + o[0] }, o[1]);
       lab.appendChild(el('span', { 'class': 'jedn' }, '[' + o[2] + ']'));
       var inp = el('input', { id: 'z-' + o[0], 'data-zamek': o[0], type: 'text', inputmode: 'decimal' });
-      inp.value = fmt(wlasny[o[0]] !== undefined ? wlasny[o[0]] : preset[o[0]]);
-      inp.addEventListener('change', zaplanujPodglad);
+      inp.value = AMGW_DOM.fmtPola(wlasny[o[0]] !== undefined ? wlasny[o[0]] : preset[o[0]]);
+      inp.addEventListener('change', function () {
+        AMGW_UKLAD.odswiez(stan.opisy);
+        zaplanujPodglad();
+      });
       box.appendChild(lab);
       box.appendChild(inp);
     }
@@ -179,6 +180,10 @@ var AMGW = (function () {
   // Wyniki do okna (html/wyniki.js), lista ścian dla tabeli otworów (html/otwory.js) i odświeżenie widoku ściany.
   function pokazWynik(d) {
     AMGW_WYNIKI.pokaz(d, wybierzSciane);
+    AMGW_UWAGI.pokaz(d.uwagi);
+    // Opcje niedostępne dla obrysu (wyszarzone z powodem); gdy wybór trzeba było przestawić – nowy podgląd.
+    AMGW_ZALEZNE.obrys(d.obrys_rodzaj);
+    if (odswiezPola()) { zaplanujPodglad(); }
     AMGW_PRZELICZENIA.pokaz(d);
     AMGW_PRZESUN.pokaz(d.wegly_lista || []);
     if (!d.sciany) {
@@ -225,7 +230,7 @@ var AMGW = (function () {
   // Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku).
   function dane() {
     return JSON.stringify({ parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), wegly: AMGW_WEGLY.zbierz(),
-                            sciany: AMGW_EDYCJA.dane() });
+                            sciany: AMGW_EDYCJA.dane(), typ: AMGW_TYPY.typ() });
   }
 
   // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli.
@@ -235,40 +240,47 @@ var AMGW = (function () {
     stan.timer = setTimeout(function () { stan.timer = null; wywolaj('podglad', dane()); }, 350);
   }
 
-  // Start okna danymi z Ruby (AMGW.init).
+  // Start okna danymi z Ruby (AMGW.init): pola (pola domu z wymiarów tylko dla domu bez narysowanego obrysu), typy
+  // i standard, kroki, układ okna, wynik pierwszego przeliczenia.
   function init(d) {
-    stan.opisy = d.opisy || [];
+    var i;
+    stan.opisy = [];
+    for (i = 0; i < (d.opisy || []).length; i++) {
+      if (!d.opisy[i].z_wymiarow || d.z_wymiarow) { stan.opisy.push(d.opisy[i]); }
+    }
     stan.sekcje = d.sekcje || [];
     stan.zakladki = d.zakladki || [];
     stan.presety = d.presety || {};
     stan.opisyZamka = d.opisy_zamka || [];
     $('info').textContent = d.info || '';
-    wypelnijSzablony(d.szablony);
-    $('plik-ustawien').textContent = d.plik_ustawien ? 'Ostatnie ustawienia zapisują się w: ' + d.plik_ustawien : '';
+    $('plik-ustawien').textContent = d.plik_ustawien ? 'Standard i typy zapisują się w: ' + d.plik_ustawien : '';
     AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
     AMGW_OTWORY.init(wartoscPola, zaplanujPodglad);
     AMGW_WEGLY.init(zaplanujPodglad);
+    AMGW_KROKI.zbuduj(d.kroki || []);
+    AMGW_TYPY.init(d.typy, stan.opisy, wywolaj, zbierzParametry, function () {
+      if (AMGW_STANDARD.otwarty()) { AMGW_STANDARD.zamknij(); }
+      odswiezPola();
+      zaplanujPodglad();
+    }, zbudujZamek);
+    AMGW_STANDARD.init(stan.opisy, stan.sekcje, stan.opisyZamka, wywolaj);
+    AMGW_TRYB.ustaw(d.tryb_pol, []);
     zbudujFormularz(d.parametry || {});
-    AMGW_TRYB.ustaw(d.tryb_pol, stan.opisy);
-    var i;
+    AMGW_UKLAD.ustaw(d.uklad, stan.opisy);
     if (d.podsumowanie) { pokazWynik(d.podsumowanie); }
     for (i = 0; i < (d.otwory || []).length; i++) { AMGW_OTWORY.dodaj(d.otwory[i]); }
     for (i = 0; i < (d.wegly || []).length; i++) { AMGW_WEGLY.dodaj(d.wegly[i]); }
     $('btn-generuj').textContent = d.tryb === 'edycja' ? 'Zastąp dom w modelu' : 'Generuj w modelu';
   }
 
-  // Parametry z szablonu albo fabryczne (AMGW.ustaw): nowy formularz i podgląd.
+  // Nowy formularz z podanych parametrów (pola bez wartości – fabryczne) i podgląd; do testów okna (AMGW._ustaw).
   function ustaw(d) {
     zbudujFormularz(d.parametry || {});
-    komunikatSzablonu(d.komunikat);
     zaplanujPodglad();
   }
 
-  // Lista szablonów po zapisie / usunięciu (AMGW.szablony).
-  function szablony(d) {
-    wypelnijSzablony(d.lista);
-    komunikatSzablonu(d.komunikat);
-  }
+  // Typy domów i baza porównania z Ruby (AMGW.typy) – po wyborze, zapisie albo usunięciu typu i po zapisie standardu.
+  function typy(d) { AMGW_TYPY.odpowiedz(d); }
 
   // Wynik z Ruby (AMGW.wynik) – po podglądzie albo generowaniu.
   function wynik(d) {
@@ -317,20 +329,12 @@ var AMGW = (function () {
       AMGW_WEGLY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), polozenie: 'srodek', od: '' });
       zaplanujPodglad();
     });
-    $('btn-szablon-wczytaj').addEventListener('click', function () {
-      if ($('szablon').value) { wywolaj('szablon_wczytaj', $('szablon').value); }
-    });
-    $('btn-szablon-usun').addEventListener('click', function () {
-      if ($('szablon').value) { wywolaj('szablon_usun', $('szablon').value); }
-    });
-    $('btn-szablon-zapisz').addEventListener('click', function () {
-      wywolaj('szablon_zapisz', JSON.stringify({ nazwa: $('szablon-nazwa').value, parametry: zbierzParametry() }));
-    });
-    $('btn-domyslne').addEventListener('click', function () { wywolaj('domyslne'); });
     $('widok-sciana').addEventListener('change', function () { wybierzSciane(this.value); });
     $('btn-zestawienie').addEventListener('click', function () { wywolaj('zapisz_liste'); });
     $('btn-tryb-podstawowe').addEventListener('click', function () { wywolaj('tryb_pol', AMGW_TRYB.ustaw('podstawowe', stan.opisy)); });
     $('btn-tryb-wszystkie').addEventListener('click', function () { wywolaj('tryb_pol', AMGW_TRYB.ustaw('wszystkie', stan.opisy)); });
+    $('btn-uklad-kroki').addEventListener('click', function () { wywolaj('uklad', AMGW_UKLAD.ustaw('kroki', stan.opisy)); });
+    $('btn-uklad-zakladki').addEventListener('click', function () { wywolaj('uklad', AMGW_UKLAD.ustaw('zakladki', stan.opisy)); });
     wywolaj('gotowe');
   }
 
@@ -348,5 +352,5 @@ var AMGW = (function () {
   // Komunikat z Ruby (AMGW.komunikat) – np. po zapisie zestawienia.
   function komunikat(d) { pokazKomunikat(d.tekst || '', d.rodzaj === 'ok' ? 'ok' : 'blad'); }
 
-  return { init: init, wynik: wynik, ustaw: ustaw, szablony: szablony, widok: widok, komunikat: komunikat, _zbierz: dane };
+  return { init: init, wynik: wynik, typy: typy, widok: widok, komunikat: komunikat, _zbierz: dane, _ustaw: ustaw };
 }());

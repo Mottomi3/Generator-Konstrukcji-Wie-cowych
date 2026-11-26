@@ -13,6 +13,7 @@
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'materialy') unless defined?(ArteMadera::GeneratorWiencowy::Materialy)
+require File.join(File.dirname(__FILE__), 'powierzchnie') unless defined?(ArteMadera::GeneratorWiencowy::Powierzchnie)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -41,6 +42,13 @@ module ArteMadera
         mat = Materialy.wiersze_csv(plan[:materialy])
         wiersze << [] unless mat.empty?
         wiersze.concat(mat)
+        # Trzeci blok – powierzchnie i wysokość (rdzen/powierzchnie.rb).
+        pw = Powierzchnie.wiersze(plan[:powierzchnie])
+        unless pw.empty?
+          wiersze << []
+          wiersze << ['Powierzchnie', 'Pozycja', 'Wartość', 'Jednostka', 'Uwagi']
+          pw.each { |nazwa, wartosc, jedn, uwagi| wiersze << ['Powierzchnie', nazwa, wartosc, jedn, uwagi] }
+        end
         wiersze.map { |w| w.map { |k| pole(k) }.join(';') }.join("\r\n") + "\r\n"
       end
 

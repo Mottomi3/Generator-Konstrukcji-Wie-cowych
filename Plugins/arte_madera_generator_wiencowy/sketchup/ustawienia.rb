@@ -2,15 +2,20 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/ustawienia.rb
-# Zadanie: zapamiętane ustawienia na komputerze – ostatnio użyte parametry (te same po ponownym uruchomieniu SketchUpa) i szablony.
-# Tematy: zapis ustawień, wersja pliku ustawień, listy przekrojów ze starszej kompilacji, deski ze starszej kompilacji, ostatnie parametry, szablony parametrów, szablony wbudowane, plik ustawień, przywrócenie domyślnych, katalog AppData, ustawienia okna, tryb pól okna
-# Zależy od: rdzen/parametry_lista.rb (szablony wbudowane), log.rb
-# Używają: sketchup/sterowanie.rb (start, podgląd, generowanie), sketchup/okno.rb (szablony w oknie)
+# Zadanie: plik ustawień na komputerze – standard warsztatu (pola poziomu „Standard warsztatu” i wymiary zamka), ustawienia okna (układ, tryb pól), odczyt i zapis pliku, przeniesienie plików starszych kompilacji (ostatnie parametry → standard, szablony → typy domów).
+# Tematy: zapis ustawień, plik ustawień, wersja pliku ustawień, standard warsztatu, zapis standardu, przywrócenie fabrycznych, katalog AppData, ustawienia okna, układ okna, tryb pól okna, plik ustawień ze starszej kompilacji, kopia pliku ustawień
+# Zależy od: rdzen/poziomy.rb (pola poziomu standard), rdzen/parametry_lista.rb, log.rb
+# Używają: sketchup/typy_domow.rb (typy w tym samym pliku), sketchup/sterowanie.rb (start nowego domu), sketchup/okno.rb, sketchup/okno_typy.rb, sketchup/dziennik_pracy.rb (katalog), sketchup/raport.rb
 #
 # Plik JSON: Windows %APPDATA%\ArteMadera\GeneratorWiencowy\ustawienia.json, macOS ~/Library/Application Support/…,
-# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość: { 'wersja' => 5, 'ostatnie' => {…},
-# 'szablony' => { nazwa => {…} }, 'okno' => { 'tryb_pol' => 'podstawowe' | 'wszystkie' } } – wartości tak, jak w oknie
-# (teksty); sprawdza je Parametry.normalizuj.
+# inne ~/.artemadera_gw/ (testy: zmienna AM_GW_USTAWIENIA = katalog). Zawartość (wersja 5, runda 16):
+#   { 'wersja' => 5, 'standard' => { klucz => wartość, 'zamek' => {…} } – tylko pola inne niż fabryczne,
+#     'typy' => { nazwa => { 'opis' => tekst, 'parametry' => {…} } } – własne typy domów (sketchup/typy_domow.rb),
+#     'typ' => nazwa ostatnio wybranego typu, 'okno' => { 'uklad' => 'kroki' | 'zakladki', 'tryb_pol' => … } }
+# – wartości tak, jak w oknie (teksty); sprawdza je Parametry.normalizuj. Nowy dom zaczyna od standardu i wybranego typu,
+# nie od ostatniego podglądu (decyzja użytkownika z 2026-11-25) – podgląd niczego już nie zapisuje.
+# Plik starszej wersji: „ostatnie” parametry stają się standardem (pola standardu) i typem „Ostatnie ustawienia”
+# (pola typu i domu), własne szablony – typami; stary plik zostaje obok jako ustawienia_przed_r16.json.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require 'json'
@@ -20,9 +25,10 @@ module ArteMadera
   module GeneratorWiencowy
     module Ustawienia
       PLIK = 'ustawienia.json'.freeze unless const_defined?(:PLIK)
+      KOPIA = 'ustawienia_przed_r16.json'.freeze unless const_defined?(:KOPIA)
       # Wersja pliku: 2 (runda 10) – podciąg domyślnie na równo z podwaliną; 3 (runda 14) – listy przekrojów z hurtowni
       # z długościami handlowymi; 4 (runda 15) – deski nadbitki i podbitki 14 × 115, przekrój 45 × 120 w długościach 5,4 / 6 m;
-      # 5 (runda 16) – pół zamka fabrycznie włączone (dawne pola nadbitki przenosi Parametry.normalizuj).
+      # 5 (runda 16) – standard warsztatu i typy domów zamiast ostatnich parametrów i szablonów, pół zamka fabrycznie włączone.
       WERSJA = 5 unless const_defined?(:WERSJA)
       # Listy przekrojów (rdzen/wykaz_drewna.rb) – w pliku starszym niż wersja 3 zastępowane fabrycznymi także w szablonach.
       LISTY_PRZEKROJOW = %w[przekroje_katalog platwie_katalog krokwie_katalog zadaszenie_katalog zadaszenie_slupy_katalog].freeze unless
@@ -31,13 +37,16 @@ module ArteMadera
       # 14 × 115 (decyzja użytkownika z 2026-11-25), także w szablonach.
       DESKI = %w[podbitka_grubosc podbitka_krycie nadbitka_grubosc nadbitka_krycie].freeze unless const_defined?(:DESKI)
       # Ostatnie parametry z pliku starszej wersji, które wracają do wartości fabrycznych: wersja pliku => klucze
-      # (wersja 4: deski, lista legarów z przekrojem 45 × 120 i wybór warstw poszycia – nadbitka fabrycznie włączona).
+      # (wersja 4: deski, lista legarów z przekrojem 45 × 120 i wybór warstw poszycia; wersja 5: pół zamka).
       DO_FABRYCZNYCH = { 2 => %w[podciag_poziom], 3 => LISTY_PRZEKROJOW,
                          4 => DESKI + %w[przekroje_katalog poszycie_nadbitka poszycie_deski], 5 => %w[polzamek] }.freeze unless
         const_defined?(:DO_FABRYCZNYCH)
       # To samo we własnych szablonach: wersja pliku => klucze.
       DO_FABRYCZNYCH_W_SZABLONACH = { 3 => LISTY_PRZEKROJOW, 4 => DESKI + %w[przekroje_katalog], 5 => %w[polzamek] }.freeze unless
         const_defined?(:DO_FABRYCZNYCH_W_SZABLONACH)
+      # Nazwa typu, którym stają się ostatnie parametry z pliku starszej wersji, i jego opis.
+      TYP_OSTATNIE = 'Ostatnie ustawienia (do kompilacji 15)'.freeze unless const_defined?(:TYP_OSTATNIE)
+      UKLADY = %w[kroki zakladki].freeze unless const_defined?(:UKLADY)
 
       module_function
 
@@ -58,28 +67,70 @@ module ArteMadera
         File.join(katalog, PLIK)
       end
 
-      # Zawartość pliku (pusty zestaw, gdy brak pliku albo plik uszkodzony – wtedy ostrzeżenie w Log).
+      # Pusty zestaw ustawień bieżącej wersji.
+      def pusty
+        { 'wersja' => WERSJA, 'standard' => {}, 'typy' => {}, 'typ' => '', 'okno' => {} }
+      end
+
+      # Zawartość pliku (pusty zestaw, gdy brak pliku albo plik uszkodzony – wtedy ostrzeżenie w Log); plik starszej
+      # wersji przeniesiony do bieżącej (ze_starszej) i zapisany, stary zostaje obok jako kopia.
       def wczytaj
-        pusty = { 'wersja' => WERSJA, 'ostatnie' => {}, 'szablony' => {}, 'okno' => {} }
         return pusty unless File.exist?(sciezka)
         d = JSON.parse(File.read(sciezka, encoding: 'UTF-8'))
         return pusty unless d.is_a?(Hash)
-        if d['ostatnie'].is_a?(Hash)
-          # Plik starszej wersji: zmienione wartości fabryczne zastępują zapamiętane (np. poziom podciągu – wymóg użytkownika).
-          DO_FABRYCZNYCH.each { |wersja, klucze| klucze.each { |k| d['ostatnie'].delete(k) } if d['wersja'].to_i < wersja }
+        if d['wersja'].to_i < WERSJA
+          nowe = ze_starszej(d)
+          kopia = File.join(katalog, KOPIA)
+          FileUtils.cp(sciezka, kopia) unless File.exist?(kopia)
+          zapisz(nowe)
+          return nowe
         end
-        if d['szablony'].is_a?(Hash)
-          DO_FABRYCZNYCH_W_SZABLONACH.each do |wersja, klucze|
-            next unless d['wersja'].to_i < wersja
-            d['szablony'].each_value { |sz| klucze.each { |k| sz.delete(k) } if sz.is_a?(Hash) }
-          end
-        end
-        pusty.merge('ostatnie' => d['ostatnie'].is_a?(Hash) ? d['ostatnie'] : {},
-                    'szablony' => d['szablony'].is_a?(Hash) ? d['szablony'] : {},
-                    'okno' => d['okno'].is_a?(Hash) ? d['okno'] : {})
+        pusty.merge('standard' => hash(d['standard']), 'typy' => hash(d['typy']), 'typ' => d['typ'].to_s, 'okno' => hash(d['okno']))
       rescue => e
         Log.warn("Ustawienia: nie można odczytać #{sciezka} (#{e.class}: #{e.message}) – przyjęto domyślne.")
         pusty
+      end
+
+      # Hash albo pusty hash, gdy to coś innego.
+      def hash(v)
+        v.is_a?(Hash) ? v : {}
+      end
+
+      # Ustawienia z pliku starszej wersji: zmienione wartości fabryczne zastępują zapamiętane (DO_FABRYCZNYCH), ostatnie
+      # parametry – pola standardu inne niż fabryczne stają się standardem warsztatu, pola typu i domu – typem
+      # TYP_OSTATNIE; własne szablony – typami (pola typu i domu).
+      def ze_starszej(d)
+        wersja = d['wersja'].to_i
+        ostatnie = hash(d['ostatnie']).dup
+        DO_FABRYCZNYCH.each { |w, klucze| klucze.each { |k| ostatnie.delete(k) } if wersja < w }
+        ostatnie = ParametryDach.przenies_nadbitke(ostatnie)
+        typy = {}
+        wlasne = Poziomy.wybierz(tylko_inne(ostatnie), :typ, :dom)
+        typy[TYP_OSTATNIE] = { 'opis' => 'Pola domu i typu z ostatniego podglądu przed kompilacją 16.', 'parametry' => wlasne } unless wlasne.empty?
+        hash(d['szablony']).each do |nazwa, sz|
+          next unless sz.is_a?(Hash)
+          par = sz.dup
+          DO_FABRYCZNYCH_W_SZABLONACH.each { |w, klucze| klucze.each { |k| par.delete(k) } if wersja < w }
+          typy[nazwa.to_s] = { 'opis' => 'Własny szablon sprzed kompilacji 16.',
+                               'parametry' => Poziomy.wybierz(ParametryDach.przenies_nadbitke(par), :typ, :dom) }
+        end
+        standard = Poziomy.wybierz(tylko_inne(ostatnie), :standard)
+        standard['zamek'] = ostatnie['zamek'] if inny_zamek?(ostatnie)
+        pusty.merge('standard' => standard, 'typy' => typy, 'typ' => typy.key?(TYP_OSTATNIE) ? TYP_OSTATNIE : '',
+                    'okno' => hash(d['okno']))
+      end
+
+      # Tylko te pola zestawu, których wartość jest inna niż fabryczna.
+      def tylko_inne(parametry)
+        inne = Poziomy.rozne(parametry, {})
+        wynik = {}
+        parametry.each { |k, v| wynik[k] = v if inne.include?(k) }
+        wynik
+      end
+
+      # Czy wymiary zamka w zestawie są inne niż wymiary presetu.
+      def inny_zamek?(parametry)
+        parametry['zamek'].is_a?(Hash) && Poziomy.rozne(parametry, 'preset' => parametry['preset']).include?('zamek')
       end
 
       # Zapis całego pliku (najpierw plik tymczasowy, potem zamiana); true gdy się udało.
@@ -94,20 +145,36 @@ module ArteMadera
         false
       end
 
-      # Ostatnio użyte parametry (do nowego domu).
-      def ostatnie
-        wczytaj['ostatnie']
+      # Standard warsztatu: zapisane pola poziomu „Standard warsztatu” (inne niż fabryczne) i wymiary zamka.
+      def standard
+        wczytaj['standard']
       end
 
-      # Zapamiętanie parametrów jako ostatnio użytych.
-      def zapamietaj(parametry)
-        return false unless parametry.is_a?(Hash)
+      # Zapis standardu warsztatu z zestawu parametrów (pola innych poziomów pominięte, zostają tylko wartości inne niż
+      # fabryczne; pusty zestaw – powrót do fabrycznych); zwraca tekst błędu albo nil.
+      def zapisz_standard(parametry)
+        return 'Brak parametrów do zapisania.' unless parametry.is_a?(Hash)
         d = wczytaj
-        d['ostatnie'] = parametry
+        st = Poziomy.wybierz(tylko_inne(parametry), :standard)
+        st['zamek'] = parametry['zamek'] if inny_zamek?(parametry)
+        d['standard'] = st
+        zapisz(d) ? nil : "Nie można zapisać pliku #{sciezka}."
+      end
+
+      # Układ okna: 'kroki' (nowy – kroki w kolejności budowy, wynik zawsze na widoku; domyślnie) albo 'zakladki' (dotychczasowy).
+      def uklad
+        u = wczytaj['okno']['uklad']
+        UKLADY.include?(u) ? u : UKLADY[0]
+      end
+
+      # Zapamiętanie układu okna.
+      def zapamietaj_uklad(nazwa)
+        d = wczytaj
+        d['okno']['uklad'] = UKLADY.include?(nazwa.to_s) ? nazwa.to_s : UKLADY[0]
         zapisz(d)
       end
 
-      # Tryb pól okna: 'podstawowe' (domyślnie) albo 'wszystkie'.
+      # Tryb pól okna w układzie dotychczasowym: 'podstawowe' (domyślnie) albo 'wszystkie'.
       def tryb_pol
         wczytaj['okno']['tryb_pol'] == 'wszystkie' ? 'wszystkie' : 'podstawowe'
       end
@@ -117,38 +184,6 @@ module ArteMadera
         d = wczytaj
         d['okno']['tryb_pol'] = tryb.to_s == 'wszystkie' ? 'wszystkie' : 'podstawowe'
         zapisz(d)
-      end
-
-      # Nazwy szablonów: wbudowane (z dopiskiem) i własne, alfabetycznie.
-      def nazwy_szablonow
-        ParametryLista::SZABLONY.keys.map { |n| "#{n} (wbudowany)" } + wczytaj['szablony'].keys.sort
-      end
-
-      # Parametry szablonu (wbudowany – wartości szablonu na tle domyślnych); nil gdy brak.
-      def szablon(nazwa)
-        n = nazwa.to_s.sub(/ \(wbudowany\)\z/, '')
-        return ParametryLista.domyslne.merge(ParametryLista::SZABLONY[n]) if nazwa.to_s.end_with?(' (wbudowany)') && ParametryLista::SZABLONY[n]
-        wczytaj['szablony'][nazwa.to_s]
-      end
-
-      # Zapis własnego szablonu; zwraca tekst błędu albo nil.
-      def zapisz_szablon(nazwa, parametry)
-        n = nazwa.to_s.strip
-        return 'Podaj nazwę szablonu.' if n.empty?
-        return 'Nazwa zajęta przez szablon wbudowany.' if n.end_with?('(wbudowany)') || ParametryLista::SZABLONY.key?(n)
-        return 'Brak parametrów do zapisania.' unless parametry.is_a?(Hash)
-        d = wczytaj
-        d['szablony'][n] = parametry
-        zapisz(d) ? nil : "Nie można zapisać pliku #{sciezka}."
-      end
-
-      # Usunięcie własnego szablonu; zwraca tekst błędu albo nil.
-      def usun_szablon(nazwa)
-        d = wczytaj
-        return 'Szablonów wbudowanych nie można usunąć.' if nazwa.to_s.end_with?(' (wbudowany)')
-        return "Nie ma szablonu „#{nazwa}”." unless d['szablony'].key?(nazwa.to_s)
-        d['szablony'].delete(nazwa.to_s)
-        zapisz(d) ? nil : "Nie można zapisać pliku #{sciezka}."
       end
     end
   end

@@ -14,14 +14,19 @@ var AMGW_ZMIANY = (function () {
   var $ = AMGW_DOM.$;
   var fmt = AMGW_DOM.fmt;
 
-  // Czy wartość pola różni się od fabrycznej (liczby – po wartości, reszta – tekst bez spacji i wielkości liter).
-  function inneNizFabryczne(opis, wartosc) {
+  // Czy wartość pola różni się od wzorca (liczby – po wartości, reszta – tekst bez spacji i wielkości liter).
+  function rozne(opis, wartosc, wzorzec) {
     if (opis.rodzaj === 'wybor' || opis.rodzaj === 'przekroj' || opis.rodzaj === 'tekst') {
       var norm = function (v) { return String(v).replace(/\s+/g, '').replace(/[×*]/g, 'x').replace(',', '.').toLowerCase(); };
-      return norm(wartosc) !== norm(opis.domyslna);
+      return norm(wartosc) !== norm(wzorzec);
     }
     var a = AMGW_DOM.liczba(wartosc);
-    return a === null || Math.abs(a - Number(opis.domyslna)) > 1e-9;
+    return a === null || Math.abs(a - Number(wzorzec)) > 1e-9;
+  }
+
+  // Czy wartość pola różni się od fabrycznej.
+  function inneNizFabryczne(opis, wartosc) {
+    return rozne(opis, wartosc, opis.domyslna);
   }
 
   // Pola zmienione względem ustawień fabrycznych: wyróżniona etykieta (z wartością fabryczną w dymku) i liczba
@@ -36,7 +41,7 @@ var AMGW_ZMIANY = (function () {
       if (!pole || !lab) { continue; }
       var inne = inneNizFabryczne(o, pole.value);
       lab.className = (lab.className.replace(/\s*zmieniony/g, '') + (inne ? ' zmieniony' : '')).replace(/^\s+/, '');
-      lab.title = inne ? 'Zmienione – fabrycznie: ' + (o.rodzaj === 'wybor' ? opisWyboru(o, o.domyslna) : fmt(o.domyslna)) : '';
+      lab.title = inne ? 'Zmienione – fabrycznie: ' + (o.rodzaj === 'wybor' ? opisWyboru(o, o.domyslna) : AMGW_DOM.fmtPola(o.domyslna)) : '';
       if (inne) { ile[o.sekcja] = (ile[o.sekcja] || 0) + 1; }
     }
     var sum = document.querySelectorAll('#sekcje summary');
@@ -56,5 +61,5 @@ var AMGW_ZMIANY = (function () {
     return String(wartosc);
   }
 
-  return { oznacz: oznacz, inneNizFabryczne: inneNizFabryczne };
+  return { oznacz: oznacz, inneNizFabryczne: inneNizFabryczne, rozne: rozne, opisWyboru: opisWyboru };
 }());

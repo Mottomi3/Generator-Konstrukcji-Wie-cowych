@@ -1,7 +1,7 @@
 /*
   ArteMadera – Generator Wieńcowy – testy
   Plik: testy/t_okno.js
-  Zadanie: okno parametrów w Chromium (Playwright) – sekcje i pola z listy, podpowiedzi, szablony, rzut, tabela otworów, wywołania sketchup.*, wyniki.
+  Zadanie: okno parametrów w Chromium (Playwright), układ dotychczasowy (zakładki) – sekcje i pola z listy, podpowiedzi, typy domów, rzut, tabela otworów, wywołania sketchup.*, wyniki.
   Tematy: test okna, zakładki w teście okna, przesuwanie węgłów w teście okna, Playwright, formularz, sekcje, podpowiedzi, szablony, wywołania Ruby, zrzut okna
   Zależy od: testy/okno_dane.rb, Plugins/.../html/okno.html
   Używają: testy/uruchom.sh
@@ -23,6 +23,8 @@ var ok = 0;
 function sprawdz(w, opis) { if (w) { ok++; } else { bledy++; console.log('BŁĄD ' + opis); } }
 
 var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa') + ' ' + path.join(KAT, 'testy', 'okno_dane.rb')).toString());
+// Ten zestaw sprawdza układ dotychczasowy (zakładki i sekcje); układ nowy (kroki) – testy/t_okno_kroki.js.
+dane.init.uklad = 'zakladki';
 
 (async function () {
   var browser = await pw.chromium.launch();
@@ -33,8 +35,8 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.addInitScript(function () {
     window.__wywolania = [];
     window.sketchup = {};
-    ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'szablon_wczytaj', 'szablon_zapisz', 'szablon_usun', 'domyslne',
-     'widok', 'zapisz_liste', 'tryb_pol', 'sciany'].forEach(function (n) {
+    ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'typ_wybierz', 'typ_zapisz', 'typ_powiel', 'typ_usun', 'standard_zapisz',
+     'standard_fabryczne', 'uklad', 'widok', 'zapisz_liste', 'tryb_pol', 'sciany'].forEach(function (n) {
       window.sketchup[n] = function (arg) { window.__wywolania.push([n, arg]); };
     });
   });
@@ -43,18 +45,20 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(w.length === 1 && w[0][0] === 'gotowe', 'okno woła gotowe po wczytaniu');
 
   await page.evaluate(function (d) { AMGW.init(d); }, dane.init);
+  // Pola domu z wymiarów (bez narysowanego obrysu) są tylko w oknie domu z wymiarów – tu dom jest z linii.
+  var opisyOkna = dane.init.opisy.filter(function (o) { return !o.z_wymiarow; });
   var liczbaPol = await page.evaluate(function () { return document.querySelectorAll('[data-klucz]').length; });
-  sprawdz(liczbaPol === dane.init.opisy.length, 'pole na każdy parametr (' + liczbaPol + ')');
+  sprawdz(liczbaPol === opisyOkna.length && opisyOkna.length === dane.init.opisy.length - 2, 'pole na każdy parametr (' + liczbaPol + '), bez dwóch pól domu z wymiarów');
   var sekcje = await page.evaluate(function () { return document.querySelectorAll('#sekcje details').length; });
   sprawdz(sekcje === dane.init.sekcje.length, 'sekcja okna na każdą sekcję parametrów (' + sekcje + ')');
   var wSekcjach = await page.evaluate(function (opisy) {
     return opisy.every(function (o) { var p = document.getElementById('p-' + o.klucz); return p && p.parentNode.id === 'pola-' + o.sekcja; });
-  }, dane.init.opisy);
+  }, opisyOkna);
   sprawdz(wSekcjach, 'każde pole w swojej sekcji');
   var podp = await page.evaluate(function () { return document.querySelectorAll('#sekcje .podp').length; });
-  sprawdz(podp === dane.init.opisy.filter(function (o) { return o.podpowiedz; }).length, 'podpowiedzi pod polami (' + podp + ')');
-  var szab = await page.evaluate(function () { return document.querySelectorAll('#szablon option').length; });
-  sprawdz(szab === dane.init.szablony.length, 'lista szablonów');
+  sprawdz(podp === opisyOkna.filter(function (o) { return o.podpowiedz; }).length, 'podpowiedzi pod polami (' + podp + ')');
+  var szab = await page.evaluate(function () { return document.querySelectorAll('#typ option').length; });
+  sprawdz(szab === dane.init.typy.lista.length && szab >= 4, 'lista typów domów (' + szab + ')');
   var liczbaZamka = await page.evaluate(function () { return document.querySelectorAll('[data-zamek]').length; });
   sprawdz(liczbaZamka === dane.init.opisy_zamka.length, 'pola wymiarów zamka (' + liczbaZamka + ')');
   var etykiety = await page.evaluate(function () {
@@ -100,7 +104,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(await page.evaluate(function () { return document.getElementById('p-zadaszenie_platwa_przekroj').offsetParent !== null; }),
           'dobór z wyboru – przekroje zadaszenia widoczne');
   await page.click('#btn-tryb-podstawowe');
-  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  await page.evaluate(function () { AMGW._ustaw({ parametry: {}, komunikat: '' }); });
   zk = await page.evaluate(function () {
     return [document.getElementById('sekcje-zadaszenie').style.display, document.getElementById('zakl-zadaszenie').textContent];
   });
@@ -125,10 +129,10 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   sprawdz(tr[0] && tr[1] && tr[2] && tr[3] && tr[4], 'tryb wszystkie: wszystkie pola (' + tr.join(',') + ')');
   sprawdz(w.length === 1 && w[0][0] === 'tryb_pol' && w[0][1] === 'wszystkie', 'przełącznik zapamiętuje tryb w Ruby');
   await page.click('#btn-tryb-podstawowe');
-  await page.evaluate(function () { AMGW.ustaw({ parametry: { mijanka: '500' }, komunikat: '' }); });
+  await page.evaluate(function () { AMGW._ustaw({ parametry: { mijanka: '500' }, komunikat: '' }); });
   tr = await widoczne();
   sprawdz(!tr[0] === false && tr[1] && tr[2], 'tryb podstawowy: pole zmienione względem fabrycznych widoczne (' + tr.join(',') + ')');
-  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  await page.evaluate(function () { AMGW._ustaw({ parametry: {}, komunikat: '' }); });
   await page.click('#btn-tryb-wszystkie');
 
   // Pola zależne (runda 7): kierunek spadku tylko przy dachu jednospadowym, przekrój legara tylko przy doborze ręcznym,
@@ -179,7 +183,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   });
   sprawdz(prz[0].indexOf('Podciąg za słaby') >= 0, 'przeliczenia w sekcji podłogi');
   sprawdz(prz[1].indexOf('bale') >= 0 && prz[1].indexOf('+12') >= 0, 'co się zmieniło po podglądzie (' + prz[1] + ')');
-  await page.evaluate(function () { AMGW.ustaw({ parametry: {}, komunikat: '' }); });
+  await page.evaluate(function () { AMGW._ustaw({ parametry: {}, komunikat: '' }); });
 
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-okno');
@@ -232,22 +236,25 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   d = JSON.parse(pg[pg.length - 1][1]);
   sprawdz(d.otwory[0].luz_gorny === '30' && d.otwory[1].luz_gorny === '', 'luz górny w danych otworów (wpisany / pusty)');
 
+  // Typy domów (runda 16): „Zapisz jako typ” z nazwą i opisem, wybór typu – wywołania Ruby; odpowiedź z nową bazą.
   await page.evaluate(function () { window.__wywolania = []; });
-  await page.fill('#szablon-nazwa', 'Mój');
-  await page.click('#btn-szablon-zapisz');
-  await page.click('#btn-szablon-wczytaj');
-  await page.click('#btn-domyslne');
+  await page.click('#btn-typ-zapisz-jako');
+  await page.fill('#typ-nazwa', 'Mój');
+  await page.fill('#typ-opis-nowy', 'Opis mojego typu');
+  await page.click('#btn-typ-ok');
+  await page.selectOption('#typ', dane.init.typy.lista[1].nazwa);
   w = await page.evaluate(function () { return window.__wywolania; });
   var nazwy = w.map(function (x) { return x[0]; });
-  sprawdz(nazwy.join(',') === 'szablon_zapisz,szablon_wczytaj,domyslne', 'przyciski szablonów wołają Ruby (' + nazwy.join(',') + ')');
-  sprawdz(JSON.parse(w[0][1]).nazwa === 'Mój' && JSON.parse(w[0][1]).parametry.liczba_wiencow, 'zapis szablonu z nazwą i parametrami');
+  sprawdz(nazwy.join(',') === 'typ_zapisz,typ_wybierz', 'przyciski typów wołają Ruby (' + nazwy.join(',') + ')');
+  sprawdz(JSON.parse(w[0][1]).nazwa === 'Mój' && JSON.parse(w[0][1]).opis === 'Opis mojego typu' && JSON.parse(w[0][1]).parametry.liczba_wiencow,
+          'zapis typu z nazwą, opisem i parametrami');
+  sprawdz(w[1][1] === dane.init.typy.lista[1].nazwa, 'wybór typu z listy – nazwa do Ruby');
   await page.evaluate(function () { window.__wywolania = []; });
-  await page.evaluate(function () { AMGW.ustaw({ parametry: { liczba_wiencow: 21, dach_kat: 30 }, komunikat: 'Wczytano' }); });
+  await page.evaluate(function () { AMGW._ustaw({ parametry: { liczba_wiencow: 21, dach_kat: 30 }, komunikat: 'Wczytano' }); });
   var po = await page.evaluate(function () {
-    return [document.getElementById('p-liczba_wiencow').value, document.getElementById('p-dach_kat').value,
-            document.getElementById('szablon-komunikat').textContent];
+    return [document.getElementById('p-liczba_wiencow').value, document.getElementById('p-dach_kat').value];
   });
-  sprawdz(po[0] === '21' && po[1] === '30' && po[2] === 'Wczytano', 'AMGW.ustaw – nowe wartości w formularzu');
+  sprawdz(po[0] === '21' && po[1] === '30', 'nowe wartości w formularzu');
   var zm = await page.evaluate(function () {
     return [document.getElementById('l-liczba_wiencow').className, document.getElementById('l-max_dlugosc').className,
             document.querySelector('#sekcja-sciany summary').textContent, document.getElementById('l-dach_kat').title];
@@ -260,9 +267,14 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [document.getElementById('l-liczba_wiencow').className, document.querySelector('#sekcja-sciany summary').textContent];
   });
   sprawdz(zm[0].indexOf('zmieniony') < 0 && zm[1].indexOf('zmienione') < 0, 'powrót do fabrycznej – bez wyróżnienia (' + zm.join(' | ') + ')');
-  await page.evaluate(function () { AMGW.szablony({ lista: ['A', 'B'], komunikat: 'Zapisano' }); });
-  szab = await page.evaluate(function () { return document.querySelectorAll('#szablon option').length; });
-  sprawdz(szab === 2, 'AMGW.szablony – nowa lista');
+  await page.evaluate(function (baza) {
+    AMGW.typy({ lista: [{ nazwa: 'A', opis: 'opis A', wbudowany: true }, { nazwa: 'B', opis: 'opis B', wbudowany: false }], typ: 'B', baza: baza, komunikat: 'Zapisano' });
+  }, dane.init.typy.baza);
+  szab = await page.evaluate(function () {
+    return [document.querySelectorAll('#typ option').length, document.getElementById('typ').value, document.getElementById('typ-opis').textContent,
+            document.getElementById('typ-komunikat').textContent, document.getElementById('btn-typ-usun').disabled];
+  });
+  sprawdz(szab[0] === 2 && szab[1] === 'B' && szab[2] === 'opis B' && szab[3] === 'Zapisano' && szab[4] === false, 'AMGW.typy – nowa lista, wybrany typ z opisem i komunikat (' + szab.join(' | ') + ')');
 
   await page.evaluate(function () { window.__wywolania = []; });
   await page.fill('#p-liczba_wiencow', '14');

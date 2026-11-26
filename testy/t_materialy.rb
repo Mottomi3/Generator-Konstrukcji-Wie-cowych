@@ -109,7 +109,12 @@ csv = Zestawienie.csv(plt)
 wiersze = csv.split("\r\n")
 i0 = wiersze.index('Materiały;Pozycja;Wymiar [mm];Ilość;Jednostka;Uwagi')
 Testy.sprawdz(!i0.nil? && wiersze[i0 - 1] == '' && wiersze[i0 - 2].start_with?(';Razem wszystko'), 'nagłówek materiałów po pustym wierszu pod „Razem wszystko”')
-Testy.rowne(wiersze.length - i0 - 1, plt[:materialy].length, 'każdy materiał w osobnym wierszu')
+koniec = (i0 + 1...wiersze.length).find { |i| wiersze[i] == '' } || wiersze.length
+Testy.rowne(koniec - i0 - 1, plt[:materialy].length, 'każdy materiał w osobnym wierszu')
+ip = wiersze.index('Powierzchnie;Pozycja;Wartość;Jednostka;Uwagi')
+Testy.sprawdz(!ip.nil? && ip == koniec + 1, 'blok powierzchni po pustym wierszu pod materiałami')
+Testy.sprawdz(wiersze[ip + 1] =~ /\APowierzchnie;Powierzchnia zabudowy;\d+(,\d+)?;m²;/ && wiersze.last =~ /\APowierzchnie;Wysokość nad terenem;\d+(,\d+)?;m;/,
+              'powierzchnie: zabudowa na początku, wysokość nad terenem na końcu')
 Testy.sprawdz(wiersze.any? { |w| w =~ /\APoszycie dachu;Nadbitka – deski pióro-wpust;14x115x4000;\d+,\d;m²;/ }, 'nadbitka: wymiar bez spacji, przecinek dziesiętny')
 Testy.sprawdz(wiersze.any? { |w| w.start_with?('Okucia;Śruba regulacyjna słupa;;') }, 'okucia w pliku')
 Testy.rowne(Materialy.wiersze_csv([]), [], 'bez materiałów – bez bloku')

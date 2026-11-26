@@ -53,6 +53,8 @@ uruchom t_styki_szczytu ruby -I testy/atrapa testy/t_styki_szczytu.rb
 uruchom t_osiadanie ruby -I testy/atrapa testy/t_osiadanie.rb
 uruchom t_materialy ruby -I testy/atrapa testy/t_materialy.rb
 uruchom t_pol_zamka ruby -I testy/atrapa testy/t_pol_zamka.rb
+uruchom t_poziomy ruby -I testy/atrapa testy/t_poziomy.rb
+uruchom t_typy ruby -I testy/atrapa testy/t_typy.rb
 
 echo "Aplikacja do dachów (prawdziwa wtyczka na jej atrapie):"
 KD="${AM_GW_APLIKACJA_DACHOW:-../aplikacja-do-konstrukcji-dach-w}"
@@ -74,6 +76,7 @@ export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
 export NODE_PATH="${NODE_PATH:-$(npm root -g 2>/dev/null)}"
 if node -e "require('playwright')" >/dev/null 2>&1; then
   uruchom t_okno node testy/t_okno.js
+  uruchom t_okno_kroki node testy/t_okno_kroki.js
 else
   echo "  t_okno: POMINIĘTY (brak playwright) – UWAGA"
 fi

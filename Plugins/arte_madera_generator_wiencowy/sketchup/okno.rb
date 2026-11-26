@@ -3,15 +3,15 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/okno.rb
 # Zadanie: okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
-# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, zakładki okna, podpowiedzi pól, szablony w oknie, przywróć domyślne, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
-# Zależy od: rdzen/parametry_lista.rb, sketchup/ustawienia.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
+# Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, zakładki okna, kroki okna – dane, podpowiedzi pól, typy domów w oknie – dane startowe, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
+# Zależy od: rdzen/parametry_lista.rb, rdzen/poziomy.rb, sketchup/ustawienia.rb, sketchup/okno_typy.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
 # Używają: sketchup/sterowanie.rb (pokaz)
 #
-# Okno buduje formularz z ParametryLista (SEKCJE, LISTA – jedno źródło pól). Wywołania JS → Ruby: gotowe, podglad,
-# generuj, zamknij, blad_js, szablon_wczytaj, szablon_zapisz, szablon_usun, domyslne, widok (id ściany), zapisz_liste,
-# tryb_pol ('podstawowe' | 'wszystkie').
-# Ruby → JS: AMGW.init(dane), AMGW.wynik(dane), AMGW.ustaw({ parametry:, komunikat: }), AMGW.szablony({ lista:,
-# komunikat: }), AMGW.widok(dane widoku ściany – rdzen/widok.rb), AMGW.komunikat({ tekst:, rodzaj: }).
+# Okno buduje formularz z ParametryLista (SEKCJE, LISTA – jedno źródło pól; poziom i krok każdego pola – rdzen/poziomy.rb).
+# Wywołania JS → Ruby: gotowe, podglad, generuj, zamknij, blad_js, widok (id ściany), zapisz_liste, tryb_pol
+# ('podstawowe' | 'wszystkie') oraz typy i standard (sketchup/okno_typy.rb).
+# Ruby → JS: AMGW.init(dane), AMGW.wynik(dane), AMGW.typy({ lista:, typ:, baza:, … }), AMGW.widok(dane widoku ściany –
+# rdzen/widok.rb), AMGW.komunikat({ tekst:, rodzaj: }).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require 'json'
@@ -47,7 +47,8 @@ module ArteMadera
           nil
         end
 
-        # Dane startowe okna: sekcje i pola formularza, wartości, presety, szablony, informacja o liniach / domu.
+        # Dane startowe okna: sekcje i pola formularza (z poziomem i krokiem), wartości, presety, typy domów z bazą porównania,
+        # układ okna, kroki, informacja o liniach / domu.
         def dane_startowe
           d = @dane || {}
           { 'tryb' => d['tryb'] || 'nowy', 'kompilacja' => PLUGIN_BUILD, 'opisy' => opisy_pol,
@@ -56,9 +57,11 @@ module ArteMadera
             end,
             'zakladki' => ParametryLista::ZAKLADKI.map { |k, tytul| { 'klucz' => k, 'tytul' => tytul } },
             'presety' => ParametryLista::PRESETY, 'opisy_zamka' => ParametryLista::OPISY_ZAMKA,
-            'parametry' => d['parametry'] || {}, 'szablony' => Ustawienia.nazwy_szablonow, 'plik_ustawien' => Ustawienia.sciezka,
+            'parametry' => d['parametry'] || {}, 'plik_ustawien' => Ustawienia.sciezka,
             'otwory' => d['otwory'] || [], 'wegly' => d['wegly'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,
-            'podsumowanie' => d['podsumowanie'], 'tryb_pol' => Ustawienia.tryb_pol }
+            'podsumowanie' => d['podsumowanie'], 'tryb_pol' => Ustawienia.tryb_pol, 'uklad' => Ustawienia.uklad,
+            'kroki' => Poziomy::KROKI.map { |k, tytul, sekcje| { 'klucz' => k, 'tytul' => tytul, 'sekcje' => sekcje } },
+            'typy' => OknoTypy.dane(d['typ']), 'z_wymiarow' => d['z_wymiarow'] ? true : false }
         end
 
         # Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź).
@@ -67,24 +70,18 @@ module ArteMadera
             { 'klucz' => w[:klucz], 'etykieta' => w[:etykieta], 'jednostka' => w[:jednostka].to_s, 'min' => w[:min],
               'max' => w[:max], 'rodzaj' => w[:rodzaj].to_s, 'domyslna' => w[:domyslna], 'sekcja' => w[:sekcja],
               'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false,
-              'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'zamienniki' => w[:zamienniki], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek] }
+              'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'zamienniki' => w[:zamienniki], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek],
+              'poziom' => (w[:poziom] || :standard).to_s, 'krok' => Poziomy.krok_sekcji(w[:sekcja]), 'obrys' => w[:obrys],
+              'z_wymiarow' => w[:z_wymiarow] ? true : false }
           end
         end
 
-        # Szablon do okna (wczytanie albo domyślne): AMGW.ustaw.
-        def wyslij_parametry(parametry, komunikat)
+        # Typy domów i baza porównania do okna (po wyborze, zapisie, usunięciu typu albo zapisie standardu): AMGW.typy.
+        def wyslij_typy(dane)
           return if @dialog.nil?
-          @dialog.execute_script("AMGW.ustaw(#{JSON.generate('parametry' => parametry, 'komunikat' => komunikat)})")
+          @dialog.execute_script("AMGW.typy(#{JSON.generate(dane)})")
         rescue => e
-          Log.error('Okno.wyslij_parametry', e)
-        end
-
-        # Lista szablonów do okna po zapisie / usunięciu: AMGW.szablony.
-        def wyslij_szablony(komunikat)
-          return if @dialog.nil?
-          @dialog.execute_script("AMGW.szablony(#{JSON.generate('lista' => Ustawienia.nazwy_szablonow, 'komunikat' => komunikat)})")
-        rescue => e
-          Log.error('Okno.wyslij_szablony', e)
+          Log.error('Okno.wyslij_typy', e)
         end
 
         # Komunikat w oknie (ok / blad): AMGW.komunikat.
@@ -171,43 +168,7 @@ module ArteMadera
           dlg.add_action_callback('blad_js') do |_ctx, arg|
             Log.error_text("Okno (JavaScript): #{arg}")
           end
-          podlacz_szablony(dlg)
-        end
-
-        # Wywołania szablonów: wczytaj (nazwa), zapisz ({ nazwa, parametry }), usuń (nazwa), domyślne.
-        def podlacz_szablony(dlg)
-          dlg.add_action_callback('szablon_wczytaj') do |_ctx, arg|
-            begin
-              par = Ustawienia.szablon(arg.to_s)
-              par.nil? ? wyslij_szablony("Nie ma szablonu „#{arg}”.") : wyslij_parametry(par, "Wczytano szablon „#{arg}”.")
-            rescue => e
-              Log.error('Okno.szablon_wczytaj', e)
-            end
-          end
-          dlg.add_action_callback('szablon_zapisz') do |_ctx, arg|
-            begin
-              d = JSON.parse(arg.to_s)
-              blad = Ustawienia.zapisz_szablon(d['nazwa'], d['parametry'])
-              wyslij_szablony(blad || "Zapisano szablon „#{d['nazwa'].to_s.strip}”.")
-            rescue => e
-              Log.error('Okno.szablon_zapisz', e)
-            end
-          end
-          dlg.add_action_callback('szablon_usun') do |_ctx, arg|
-            begin
-              blad = Ustawienia.usun_szablon(arg.to_s)
-              wyslij_szablony(blad || "Usunięto szablon „#{arg}”.")
-            rescue => e
-              Log.error('Okno.szablon_usun', e)
-            end
-          end
-          dlg.add_action_callback('domyslne') do |_ctx, _arg|
-            begin
-              wyslij_parametry(ParametryLista.domyslne, 'Przywrócono ustawienia fabryczne (zapiszą się przy podglądzie).')
-            rescue => e
-              Log.error('Okno.domyslne', e)
-            end
-          end
+          OknoTypy.podlacz(dlg) { |dane| wyslij_typy(dane) }
         end
 
         # Zamknięcie poprzedniego okna generatora (także ukrytego) – nowe okno nie dziedziczy po nim niczego.

@@ -48,10 +48,10 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '15', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '16', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
-Testy.rowne(Ustawienia.ostatnie, {}, 'bez zapisanych ustawień na starcie testu')
+Testy.rowne([Ustawienia.standard, TypyDomow.wlasne], [{}, {}], 'bez zapisanego standardu i własnych typów na starcie testu')
 
 Testy.grupa('Start z zaznaczonych linii i okno')
 seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]]
@@ -68,7 +68,7 @@ Testy.rowne(d['opisy'].length, ParametryLista::LISTA.length, 'opisy wszystkich p
 Testy.rowne(d['sekcje'].map { |x| x['klucz'] }, ParametryLista::SEKCJE.map { |x| x[0] }, 'sekcje okna')
 Testy.sprawdz(d['opisy'].all? { |x| d['sekcje'].any? { |sk| sk['klucz'] == x['sekcja'] } }, 'każde pole w istniejącej sekcji')
 Testy.sprawdz(d['opisy'].select { |x| x['rodzaj'] == 'wybor' }.all? { |x| !x['wybory'].empty? }, 'pola wyboru z listą wyborów')
-Testy.sprawdz(d['szablony'].any? { |x| x.include?('wbudowany') }, 'szablony wbudowane w oknie')
+Testy.sprawdz(d['typy']['lista'].count { |x| x['wbudowany'] } == 4 && d['typy']['typ'].start_with?('Typ 100'), 'typy wbudowane w oknie, wybrany Typ 100')
 Testy.sprawdz(d['podsumowanie']['sciany'].length >= 5, 'podsumowanie ścian w danych startowych')
 Testy.sprawdz(d['info'].include?('300 mm'), 'informacja o wysokości linii')
 
@@ -78,8 +78,9 @@ w = ostatni_wynik(dlg)
 Testy.rowne(w['bledy'], [], 'podgląd bez błędów')
 Testy.rowne(w['wysokosci']['okapowa'], 12 * 139 + 69.5, 'wysokość po zmianie liczby wieńców')
 Testy.rowne(m.entities.grep(Sketchup::Group).length, 0, 'podgląd nie zmienia modelu')
-Testy.rowne(Ustawienia.ostatnie['liczba_wiencow'], '12', 'parametry podglądu zapamiętane na komputerze')
-Testy.sprawdz(File.exist?(Ustawienia.sciezka), 'plik ustawień zapisany')
+Testy.sprawdz(!File.exist?(Ustawienia.sciezka), 'podgląd niczego nie zapisuje na komputerze (nowy dom zaczyna od typu i standardu – runda 16)')
+Testy.sprawdz(w['uwagi'].is_a?(Array) && w['uwagi'].all? { |u| %w[blad ostrzezenie uwaga ok].include?(u['poziom']) && !u['krok'].to_s.empty? } &&
+              w['obrys_rodzaj'] == 'prostokat' && w['powierzchnie'].first[0] == 'Powierzchnia zabudowy', 'wynik z listą uwag, rodzajem obrysu i powierzchniami')
 Testy.sprawdz(w['podpowiedzi'].is_a?(Array) && !w['podpowiedzi'].empty?, 'podpowiedzi podłogi w wyniku')
 
 Testy.grupa('Generowanie')
@@ -254,99 +255,50 @@ Sterowanie.kontrola
 Testy.sprawdz(UI.komunikaty.last.to_s.include?('bez kolizji'), 'kontrola: bez kolizji')
 Testy.sprawdz(UI.komunikaty.last.to_s.include?('Mijanka styków: w porządku'), 'kontrola: mijanka')
 
-Testy.grupa('Zapamiętane ustawienia i szablony')
+Testy.grupa('Typy domów i standard warsztatu w oknie (runda 16) – szczegóły w testy/t_typy.rb')
 model_z_liniami(prostokat(0, 0, 5000, 4000))
 Sterowanie.start
 dlg = Okno.dialog
 dlg.wywolaj('gotowe')
 d = ostatni_skrypt(dlg, 'AMGW.init(')
-Testy.rowne(d['parametry']['liczba_wiencow'], '10', 'nowy dom: parametry z ostatniego użycia')
-Testy.sprawdz(d['info'].include?('ostatniego użycia'), 'informacja o ostatnich parametrach')
-dlg.wywolaj('szablon_zapisz', JSON.generate('nazwa' => 'Mój domek', 'parametry' => { 'liczba_wiencow' => '18', 'dach_kat' => '30' }))
-sz = ostatni_skrypt(dlg, 'AMGW.szablony(')
-Testy.sprawdz(sz['lista'].include?('Mój domek') && sz['komunikat'].include?('Zapisano'), 'szablon zapisany')
-dlg.wywolaj('szablon_wczytaj', 'Mój domek')
-u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
-Testy.rowne([u['parametry']['liczba_wiencow'], u['parametry']['dach_kat']], %w[18 30], 'szablon wczytany')
-nazwa = Ustawienia.nazwy_szablonow.find { |x| x.start_with?('Typ 300') }
-dlg.wywolaj('szablon_wczytaj', nazwa)
-u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
-Testy.rowne(u['parametry']['liczba_wiencow'], 25, 'szablon wbudowany: 25 wieńców')
-Testy.rowne(u['parametry']['max_dlugosc'], 5100.0, 'szablon wbudowany: reszta domyślna')
-dlg.wywolaj('szablon_zapisz', JSON.generate('nazwa' => nazwa, 'parametry' => {}))
-Testy.sprawdz(ostatni_skrypt(dlg, 'AMGW.szablony(')['komunikat'].include?('wbudowany'), 'nie można nadpisać wbudowanego')
-dlg.wywolaj('szablon_usun', 'Mój domek')
-Testy.sprawdz(!Ustawienia.nazwy_szablonow.include?('Mój domek'), 'szablon usunięty')
-dlg.wywolaj('domyslne')
-u = ostatni_skrypt(dlg, 'AMGW.ustaw(')
-Testy.rowne(u['parametry'], ParametryLista.domyslne, 'przywrócenie fabrycznych')
+Testy.rowne([d['parametry']['liczba_wiencow'], d['parametry']['max_dlugosc']], ['16', nil], 'nowy dom: pola Typu 100 i standard fabryczny – bez wartości z poprzedniego podglądu (było 12 wieńców i bal 7000)')
+Testy.rowne([d['uklad'], d['kroki'].map { |k| k['klucz'] }, d['z_wymiarow']], ['kroki', %w[sciany otwory dach taras podloga zestawienie], false], 'układ nowy, sześć kroków')
+Testy.sprawdz(d['opisy'].all? { |o| %w[dom typ standard].include?(o['poziom']) && d['kroki'].any? { |k| k['klucz'] == o['krok'] } }, 'każde pole ma poziom i krok')
+dlg.wywolaj('typ_zapisz', JSON.generate('typ' => d['typy']['typ'], 'nazwa' => 'Mój domek', 'opis' => 'letni', 'parametry' => { 'liczba_wiencow' => '18', 'dach_kat' => '30', 'max_dlugosc' => '4800' }))
+t = ostatni_skrypt(dlg, 'AMGW.typy(')
+Testy.sprawdz(t['lista'].any? { |x| x['nazwa'] == 'Mój domek' && x['opis'] == 'letni' && !x['wbudowany'] } && t['typ'] == 'Mój domek' && t['komunikat'].include?('Zapisano'),
+              'typ zapisany z opisem i wybrany')
+Testy.rowne([t['baza']['liczba_wiencow'], t['baza']['dach_kat'], t['baza']['max_dlugosc']], [18, 30.0, 5100.0], 'baza typu: pola typu i domu z typu, pole standardu ze standardu')
+nazwa = TypyDomow.lista.find { |x| x['nazwa'].start_with?('Typ 300') }['nazwa']
+dlg.wywolaj('typ_wybierz', nazwa)
+t = ostatni_skrypt(dlg, 'AMGW.typy(')
+Testy.rowne([t['typ'], t['wczytaj'], t['baza']['liczba_wiencow'], t['baza']['strop'], TypyDomow.wybrany], [nazwa, true, 25, 'tak', nazwa], 'wybór typu wbudowanego: 25 wieńców ze stropem, zapamiętany')
+dlg.wywolaj('typ_zapisz', JSON.generate('typ' => nazwa, 'nazwa' => nazwa, 'opis' => nil, 'parametry' => {}))
+Testy.sprawdz(ostatni_skrypt(dlg, 'AMGW.typy(')['blad'].to_s.include?('wbudowany'), 'typu wbudowanego nie można nadpisać')
+dlg.wywolaj('typ_powiel', JSON.generate('nazwa' => nazwa, 'nowa' => 'Moje 300'))
+t = ostatni_skrypt(dlg, 'AMGW.typy(')
+Testy.sprawdz(t['typ'] == 'Moje 300' && TypyDomow.parametry('Moje 300') == TypyDomow.parametry(nazwa), 'powielenie typu wbudowanego')
+dlg.wywolaj('typ_usun', 'Moje 300')
+dlg.wywolaj('typ_usun', 'Mój domek')
+Testy.sprawdz(TypyDomow.wlasne.empty? && ostatni_skrypt(dlg, 'AMGW.typy(')['typ'].start_with?('Typ 100'), 'typy usunięte – wybrany wraca do pierwszego wbudowanego')
+dlg.wywolaj('standard_zapisz', JSON.generate('typ' => nazwa, 'parametry' => { 'mijanka' => '500', 'liczba_wiencow' => '9', 'max_dlugosc' => '5100' }))
+t = ostatni_skrypt(dlg, 'AMGW.typy(')
+Testy.rowne([t['standard'], t['baza']['mijanka'], t['baza']['liczba_wiencow'], Ustawienia.standard], [true, 500.0, 25, { 'mijanka' => '500' }],
+            'zapis standardu: tylko pola standardu inne niż fabryczne; baza z nowym standardem')
+dlg.wywolaj('standard_fabryczne', nazwa)
+Testy.rowne([Ustawienia.standard, ostatni_skrypt(dlg, 'AMGW.typy(')['baza']['mijanka']], [{}, Parametry::DOMYSLNE['mijanka']], 'powrót standardu do wartości fabrycznych')
+dlg.wywolaj('uklad', 'zakladki')
+Testy.rowne([Ustawienia.uklad, Okno.dane_startowe['uklad']], %w[zakladki zakladki], 'układ okna zapamiętany na komputerze')
+dlg.wywolaj('uklad', 'cokolwiek')
+Testy.rowne(Ustawienia.uklad, 'kroki', 'nieznany układ – nowy')
 Testy.rowne(Okno.dane_startowe['tryb_pol'], 'podstawowe', 'tryb pól okna: domyślnie podstawowe')
 dlg.wywolaj('tryb_pol', 'wszystkie')
 Testy.rowne([Ustawienia.tryb_pol, Okno.dane_startowe['tryb_pol']], %w[wszystkie wszystkie], 'tryb pól okna zapamiętany na komputerze')
 dlg.wywolaj('tryb_pol', 'cokolwiek')
 Testy.rowne(Ustawienia.tryb_pol, 'podstawowe', 'nieznany tryb pól – podstawowe')
 Testy.sprawdz(Okno.dane_startowe['opisy'].count { |o| o['podstawowy'] } >= 20, 'opisy pól z oznaczeniem podstawowych')
-File.open(Ustawienia.sciezka, 'w') { |f| f.write('{uszkodzony') }
-Testy.rowne(Ustawienia.ostatnie, {}, 'uszkodzony plik – puste ustawienia, bez błędu')
-Ustawienia.zapamietaj('liczba_wiencow' => '10')
-
-Testy.grupa('Ustawienia z wcześniejszej kompilacji – podciąg wraca do wartości fabrycznej (runda 10)')
-File.open(Ustawienia.sciezka, 'w') { |f| f.write(JSON.generate('wersja' => 1, 'ostatnie' => { 'podciag_poziom' => 'pod', 'liczba_wiencow' => '14' })) }
-Testy.rowne(Ustawienia.ostatnie, { 'liczba_wiencow' => '14' }, 'plik wersji 1: zapamiętany poziom podciągu pominięty, reszta zostaje')
-Testy.rowne(Parametry.normalizuj(Ustawienia.ostatnie)[0]['podciag_poziom'], 'rowno', 'podciąg na wysokości podwalin')
-Ustawienia.zapamietaj('podciag_poziom' => 'pod', 'liczba_wiencow' => '10')
-Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podciag_poziom']], [Ustawienia::WERSJA, 'pod'],
-            'plik bieżącej wersji: wybór użytkownika (obniżony) zapamiętany')
-
-Testy.grupa('Ustawienia z kompilacji 13 – listy przekrojów zastąpione wykazem z hurtowni (runda 14)')
-stara = '45x95, 45x120, 50x100, 63x175'
-File.open(Ustawienia.sciezka, 'w') do |f|
-  f.write(JSON.generate('wersja' => 2, 'ostatnie' => { 'przekroje_katalog' => stara, 'platwie_katalog' => '60x100, 60x120', 'liczba_wiencow' => '14' },
-                        'szablony' => { 'Mój dom' => { 'krokwie_katalog' => '50x150, 50x175', 'dach_kat' => '35' } }))
-end
-Testy.rowne(Ustawienia.ostatnie, { 'liczba_wiencow' => '14' }, 'plik wersji 2: stare listy przekrojów pominięte, reszta zostaje')
-Testy.rowne(Ustawienia.szablon('Mój dom'), { 'dach_kat' => '35' }, 'własny szablon: stara lista krokwi pominięta, reszta zostaje')
-pn = Parametry.normalizuj(Ustawienia.ostatnie)[0]
-Testy.sprawdz(pn['przekroje_katalog'].include?('45x145:4.2/5.4/6') && pn['platwie_katalog'].include?('80x200:5/7/8'),
-              'po wczytaniu – listy z długościami handlowymi')
-Ustawienia.zapamietaj(pn.merge('przekroje_katalog' => '45x145:6, 45x195:7'))
-Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['przekroje_katalog']], [Ustawienia::WERSJA, '45x145:6, 45x195:7'],
-            'plik bieżącej wersji: własna lista użytkownika zapamiętana')
-Ustawienia.zapamietaj('liczba_wiencow' => '10')
-
-Testy.grupa('Ustawienia z kompilacji 14 i 15 – deski 14 × 115, 45 × 120 w długościach 5,4 / 6, pół zamka i jedno pole desek (runda 16)')
-p15 = Parametry.normalizuj({})[0]
-Testy.rowne([p15['podbitka_grubosc'], p15['podbitka_krycie'], p15['podbitka_dlugosc']], [14.0, 115.0, 4000.0],
-            'wartości fabryczne deski nadbitki / podbitki: 14 × 115 (krycie) × 4000')
-Testy.rowne(Ustawienia::WERSJA, 5, 'plik ustawień w wersji 5')
-stara_lista = '45x95:6, 45x120:5/5.4, 45x145:4.2/5.4/6'
-File.open(Ustawienia.sciezka, 'w') do |f|
-  f.write(JSON.generate('wersja' => 3,
-                        'ostatnie' => { 'podbitka_grubosc' => '19', 'podbitka_krycie' => '121', 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121',
-                                        'przekroje_katalog' => stara_lista, 'poszycie_nadbitka' => 'nie', 'poszycie_deski' => 'tak',
-                                        'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14', 'polzamek' => 'nie' },
-                        'szablony' => { 'Mój dom' => { 'nadbitka_grubosc' => '19', 'nadbitka_krycie' => '121', 'przekroje_katalog' => stara_lista,
-                                                       'poszycie_nadbitka' => 'nie', 'dach_kat' => '35', 'polzamek' => 'nie' } }))
-end
-Testy.rowne(Ustawienia.ostatnie, { 'platwie_katalog' => '60x100:6', 'liczba_wiencow' => '14' },
-            'plik wersji 3: deski 19 × 121, lista legarów, wybór warstw poszycia i wyłączone pół zamka pominięte, reszta zostaje')
-Testy.rowne(Ustawienia.szablon('Mój dom'), { 'poszycie_nadbitka' => 'nie', 'dach_kat' => '35' },
-            'własny szablon: deski, lista legarów i pół zamka pominięte, wybór warstw poszycia zostaje')
-Testy.rowne(Parametry.normalizuj(Ustawienia.szablon('Mój dom'))[0].values_at('podbitka', 'polzamek', 'dach_kat'), ['nie', 'tak', 35.0],
-            'szablon po wczytaniu: nadbitka wyłączona = bez desek, pół zamka fabrycznie')
-pn = Parametry.normalizuj(Ustawienia.ostatnie)[0]
-Testy.rowne([pn['podbitka'], pn['podbitka_grubosc'], pn['podbitka_krycie'], pn['polzamek']], ['na_platwiach', 14.0, 115.0, 'tak'],
-            'po wczytaniu – nadbitka (przy samych płatwiach na płatwiach), deski 14 × 115, pół zamka włączone')
-Testy.sprawdz(pn['przekroje_katalog'].include?('45x120:5.4/6'), 'po wczytaniu – 45 × 120 w długościach 5,4 / 6')
-File.open(Ustawienia.sciezka, 'w') { |f| f.write(JSON.generate('wersja' => 4, 'ostatnie' => { 'polzamek' => 'nie', 'podbitka' => 'nie', 'poszycie_nadbitka' => 'tak', 'nadbitka_grubosc' => '19', 'dach_uklad' => 'krokwie' })) }
-p4 = Parametry.normalizuj(Ustawienia.ostatnie)[0]
-Testy.rowne([p4['polzamek'], p4['podbitka'], p4['podbitka_grubosc']], ['tak', 'na_krokwiach', 19.0],
-            'plik wersji 4 (kompilacja 15): pół zamka włączone, nadbitka → deski na krokwiach z własną grubością')
-Ustawienia.zapamietaj(pn.merge('podbitka_grubosc' => '19', 'przekroje_katalog' => '45x145:6', 'polzamek' => 'nie'))
-Testy.rowne([JSON.parse(File.read(Ustawienia.sciezka))['wersja'], Ustawienia.ostatnie['podbitka_grubosc'].to_f, Ustawienia.ostatnie['przekroje_katalog'],
-             Ustawienia.ostatnie['polzamek']],
-            [5, 19.0, '45x145:6', 'nie'], 'plik bieżącej wersji: własna deska, lista użytkownika i wyłączone pół zamka zapamiętane')
-Ustawienia.zapamietaj('liczba_wiencow' => '10')
+# Dalsze testy budują małe domy – własny typ z 10 wieńcami jako wybrany.
+TypyDomow.zapisz('Test – 10 wieńców', 'do testów', 'liczba_wiencow' => '10')
 
 Testy.grupa('Pasek narzędzi i menu pod prawym przyciskiem (runda 14)')
 pasek = Pasek.pasek
@@ -436,7 +388,7 @@ Testy.sprawdz(Okno.dialog.equal?(okno_przed), 'Anuluj – bez nowego okna')
 UI.odpowiedz = 6
 Okno.send(:po_zamknieciu, Okno.dialog)
 Testy.sprawdz(Okno.dialog.nil? && Okno.dane_startowe['parametry'] == {} && Okno.dane_startowe['info'] == '', 'po zamknięciu okna nie zostają po nim dane')
-Ustawienia.zapamietaj('liczba_wiencow' => '10')
+TypyDomow.zapisz('Test – 10 wieńców', 'do testów', 'liczba_wiencow' => '10')
 
 Testy.grupa('Zaznaczona sama ściana prostokąta (kliknięta raz)')
 Sketchup.model = Sketchup::Model.new
@@ -458,7 +410,35 @@ Testy.sprawdz(!w['bledy'].empty?, 'błąd – brak obrysu')
 Sketchup.model = Sketchup::Model.new
 UI.komunikaty.clear
 Sterowanie.start
-Testy.sprawdz(UI.komunikaty.last.to_s.include?('Zaznacz'), 'puste zaznaczenie – komunikat')
+# Nic nie zaznaczone – dom prostokątny z wymiarów (S1, runda 16); wcześniej komunikat „Zaznacz…”.
+dw = Okno.dialog
+dw.wywolaj('gotowe')
+iw = ostatni_skrypt(dw, 'AMGW.init(')
+Testy.sprawdz(UI.komunikaty.empty? && iw['z_wymiarow'] == true && iw['info'].include?('z wymiarów') && iw['tryb'] == 'nowy', 'puste zaznaczenie – okno domu z wymiarów')
+Testy.rowne(iw['podsumowanie']['powierzchnie'].first[1], '24', 'dom fabryczny 6000 × 4000: zabudowa 24 m²')
+dw.wywolaj('podglad', JSON.generate('parametry' => { 'dom_dlugosc' => '8000', 'dom_szerokosc' => '5000', 'liczba_wiencow' => '10' }, 'otwory' => []))
+ww = ostatni_wynik(dw)
+Testy.rowne([ww['bledy'], ww['powierzchnie'].first[1], ww['obrys_rodzaj']], [[], '40', 'prostokat'], 'zmiana wymiarów w oknie – nowy obrys 8000 × 5000')
+dw.wywolaj('generuj', JSON.generate('parametry' => { 'dom_dlugosc' => '5000', 'dom_szerokosc' => '3500', 'liczba_wiencow' => '6' }, 'otwory' => [], 'typ' => iw['typy']['typ']))
+gw = ostatni_wynik(dw)
+domw = Sketchup.active_model.entities.grep(Sketchup::Group).find { |g| Atrybuty.dom?(g) }
+wejw = domw ? Atrybuty.czytaj_wejscie(domw) : {}
+Testy.sprawdz(gw['zbudowano'] == true && wejw['z_wymiarow'] == true && wejw['typ'] == iw['typy']['typ'] && wejw['segmenty'].length == 4,
+              'dom z wymiarów wygenerowany; w modelu zapisane: z wymiarów, typ, cztery odcinki obrysu')
+Sketchup.active_model.selection.clear
+Sketchup.active_model.selection.add(domw)
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+ew = ostatni_skrypt(Okno.dialog, 'AMGW.init(')
+Testy.rowne([ew['tryb'], ew['z_wymiarow'], ew['parametry']['dom_dlugosc']], ['edycja', true, '5000'], 'edycja domu z wymiarów – pola wymiarów wracają')
+# Dom zapisany przed rundą 16 (osobne pola podbitki i nadbitki) – okno edycji dostaje jedno pole położenia desek.
+stare = Atrybuty.czytaj_wejscie(domw)
+stare['parametry'] = stare['parametry'].merge('podbitka' => 'nie', 'poszycie_nadbitka' => 'tak', 'nadbitka_grubosc' => '19', 'dach_uklad' => 'krokwie')
+domw.set_attribute(Atrybuty::DICT_GW, 'wejscie', JSON.generate(stare))
+Sterowanie.start
+Okno.dialog.wywolaj('gotowe')
+ps = ostatni_skrypt(Okno.dialog, 'AMGW.init(')['parametry']
+Testy.rowne([ps['podbitka'], ps['podbitka_grubosc'], ps.key?('poszycie_nadbitka')], ['na_krokwiach', '19', false], 'edycja starego domu: nadbitka → deski na krokwiach z jej grubością')
 m = Sketchup::Model.new
 Sketchup.model = m
 m.selection.add(m.entities.add_line(Geom::Point3d.new(0, 0, 0), Geom::Point3d.new(100, 0, 0)))

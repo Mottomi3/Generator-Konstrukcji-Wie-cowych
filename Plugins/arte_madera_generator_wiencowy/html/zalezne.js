@@ -1,8 +1,8 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/zalezne.js
-  Zadanie: pola zależne w oknie – pole pokazuje się tylko przy wybranych wartościach pól nadrzędnych (np. kierunek spadku tylko przy dachu jednospadowym), a wybory listy – tylko te, które pasują do innych pól (np. podbitka a układ dachu).
-  Tematy: pola zależne, opcje zależne, ukrywanie pól zależnych, wybory zależne od innego pola, pole nadrzędne
+  Zadanie: pola zależne w oknie – pole pokazuje się tylko przy wybranych wartościach pól nadrzędnych (np. kierunek spadku tylko przy dachu jednospadowym), wybory listy – tylko te, które pasują do innych pól (np. położenie desek a układ dachu), a opcje niedostępne dla obrysu domu są wyszarzone z powodem.
+  Tematy: pola zależne, opcje zależne, ukrywanie pól zależnych, wybory zależne od innego pola, pole nadrzędne, opcje niedostępne dla obrysu, opcja wyszarzona z powodem, zamiennik wyboru
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/tryb.js (widoczność pól), html/okno.js (po zmianie pola)
 
@@ -16,6 +16,7 @@ var AMGW_ZALEZNE = (function () {
   'use strict';
 
   var $ = AMGW_DOM.$;
+  var stan = { obrys: '' };
 
   // Bieżąca wartość pola parametru (brak pola – null).
   function wartosc(klucz) {
@@ -54,18 +55,48 @@ var AMGW_ZALEZNE = (function () {
     return null;
   }
 
-  // Wybory listy zgodne z innymi polami: ukrywa niepasujące opcje; zwraca true, gdy wybór trzeba było zmienić.
+  // Rodzaj obrysu domu z ostatniego wyniku ('prostokat' | 'l' | 'inny'; '' – jeszcze nieznany): opcje niedostępne dla
+  // obrysu są wyszarzone z powodem pod polem.
+  function obrys(rodzaj) {
+    stan.obrys = rodzaj || '';
+  }
+
+  // Powód niedostępnych opcji pod polem (pusty tekst – bez wiersza).
+  function powod(sel, o, tekst) {
+    var n = $('n-' + o.klucz);
+    if (!tekst) {
+      if (n) { n.parentNode.removeChild(n); }
+      return;
+    }
+    if (!n) {
+      n = document.createElement('div');
+      n.id = 'n-' + o.klucz;
+      n.className = 'powod';
+      sel.parentNode.insertBefore(n, sel.nextSibling);
+    }
+    n.textContent = tekst;
+  }
+
+  // Wybory listy zgodne z innymi polami i z obrysem domu: ukrywa opcje niepasujące do innych pól, wyszarza niedostępne
+  // dla obrysu (opis.obrys – { tylko: [rodzaje obrysu], zostaje: [wartości zawsze dostępne], powod: tekst });
+  // zwraca true, gdy wybór trzeba było zmienić.
   function wybory(o) {
     var sel = $('p-' + o.klucz);
-    if (!sel || !o.wybory_gdy || sel.tagName !== 'SELECT') { return false; }
+    if (!sel || (!o.wybory_gdy && !o.obrys) || sel.tagName !== 'SELECT') { return false; }
     var i;
     var zmiana = false;
+    var poza = !!o.obrys && !!stan.obrys && o.obrys.tylko.indexOf(stan.obrys) < 0;
     for (i = 0; i < sel.options.length; i++) {
-      var g = o.wybory_gdy[sel.options[i].value];
+      var op = sel.options[i];
+      var g = o.wybory_gdy ? o.wybory_gdy[op.value] : null;
       var ok = !g || warunek(g);
-      sel.options[i].hidden = !ok;
-      sel.options[i].disabled = !ok;
+      var niedostepna = poza && o.obrys.zostaje.indexOf(op.value) < 0;
+      if (!op.getAttribute('data-tekst')) { op.setAttribute('data-tekst', op.textContent); }
+      op.textContent = op.getAttribute('data-tekst') + (niedostepna ? ' – niedostępne dla tego obrysu' : '');
+      op.hidden = !ok;
+      op.disabled = !ok || niedostepna;
     }
+    powod(sel, o, poza ? o.obrys.powod : '');
     if (sel.selectedIndex >= 0 && sel.options[sel.selectedIndex].disabled) {
       var zam = o.zamienniki ? o.zamienniki[sel.options[sel.selectedIndex].value] : null;
       for (i = 0; i < sel.options.length; i++) {
@@ -86,5 +117,5 @@ var AMGW_ZALEZNE = (function () {
     return zmiana;
   }
 
-  return { spelnione: spelnione, wszystkieWybory: wszystkieWybory, warunek: warunek };
+  return { spelnione: spelnione, wszystkieWybory: wszystkieWybory, warunek: warunek, obrys: obrys };
 })();

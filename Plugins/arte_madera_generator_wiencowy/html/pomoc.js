@@ -1,8 +1,8 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/pomoc.js
-  Zadanie: objaśnienia pól w oknie – znak zapytania w kółku przy etykiecie, po kliknięciu ramka z dłuższym opisem i rysunkiem pokazującym różnicę (obciążenie, ugięcie, podbitka, położenie płatwi ściennej, układ dachu).
-  Tematy: pytajnik przy polu, objaśnienie pola, rysunek objaśniający, obciążenie użytkowe – rysunek, ugięcie – rysunek, podbitka – rysunek, płatew ścienna – rysunek, układ dachu – rysunek
+  Zadanie: objaśnienia pól w oknie – znak zapytania w kółku przy etykiecie, po kliknięciu ramka z dłuższym opisem i rysunkiem pokazującym różnicę (obciążenie, ugięcie, podbitka, położenie płatwi ściennej, układ dachu); krótka podpowiedź pola po wejściu w pole.
+  Tematy: pytajnik przy polu, objaśnienie pola, podpowiedź po wejściu w pole, rysunek objaśniający, obciążenie użytkowe – rysunek, ugięcie – rysunek, podbitka – rysunek, płatew ścienna – rysunek, układ dachu – rysunek
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/okno.js (dodajPole)
 
@@ -90,5 +90,18 @@ var AMGW_POMOC = (function () {
     sekcja.appendChild(box);
   }
 
-  return { dodaj: dodaj, RYSUNKI: RYSUNKI };
+  // Podpowiedź pola pokazywana po wejściu w pole (układ nowy – html/kroki.css chowa podpowiedzi bez klasy „aktywna”);
+  // po wyjściu z pola znika.
+  function poWejsciu(pole, klucz) {
+    pole.addEventListener('focus', function () {
+      var h = $('h-' + klucz);
+      if (h) { h.className = (h.className.replace(/\s*aktywna/g, '') + ' aktywna').replace(/^\s+/, ''); }
+    });
+    pole.addEventListener('blur', function () {
+      var h = $('h-' + klucz);
+      if (h) { h.className = h.className.replace(/\s*aktywna/g, ''); }
+    });
+  }
+
+  return { dodaj: dodaj, poWejsciu: poWejsciu, RYSUNKI: RYSUNKI };
 })();
