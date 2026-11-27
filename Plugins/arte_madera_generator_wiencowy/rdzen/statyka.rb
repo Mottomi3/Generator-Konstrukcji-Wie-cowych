@@ -17,13 +17,13 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 module ArteMadera
   module GeneratorWiencowy
     module Statyka
-      # Klasy drewna: wytrzymałość na zginanie, ścinanie i ściskanie wzdłuż włókien f_m,k, f_v,k, f_c,0,k [MPa], moduły
-      # E0,mean i E0,05 [MPa], gęstość [kg/m³], γM (PN-EN 338, PN-EN 14080).
+      # Klasy drewna: wytrzymałość na zginanie, ścinanie, ściskanie wzdłuż i w poprzek włókien f_m,k, f_v,k, f_c,0,k,
+      # f_c,90,k [MPa], moduły E0,mean i E0,05 [MPa], gęstość [kg/m³], γM (PN-EN 338, PN-EN 14080).
       KLASY = {
-        'C18' => { fm: 18.0, fv: 3.4, fc0: 18.0, e: 9000.0, e05: 6000.0, rho: 380.0, gm: 1.3, lite: true },
-        'C24' => { fm: 24.0, fv: 4.0, fc0: 21.0, e: 11_000.0, e05: 7400.0, rho: 420.0, gm: 1.3, lite: true },
-        'C30' => { fm: 30.0, fv: 4.0, fc0: 24.0, e: 12_000.0, e05: 8000.0, rho: 460.0, gm: 1.3, lite: true },
-        'GL24h' => { fm: 24.0, fv: 3.5, fc0: 24.0, e: 11_500.0, e05: 9600.0, rho: 420.0, gm: 1.25, lite: false }
+        'C18' => { fm: 18.0, fv: 3.4, fc0: 18.0, fc90: 2.2, e: 9000.0, e05: 6000.0, rho: 380.0, gm: 1.3, lite: true },
+        'C24' => { fm: 24.0, fv: 4.0, fc0: 21.0, fc90: 2.5, e: 11_000.0, e05: 7400.0, rho: 420.0, gm: 1.3, lite: true },
+        'C30' => { fm: 30.0, fv: 4.0, fc0: 24.0, fc90: 2.7, e: 12_000.0, e05: 8000.0, rho: 460.0, gm: 1.3, lite: true },
+        'GL24h' => { fm: 24.0, fv: 3.5, fc0: 24.0, fc90: 2.5, e: 11_500.0, e05: 9600.0, rho: 420.0, gm: 1.25, lite: false }
       }.freeze unless const_defined?(:KLASY)
       KMOD = 0.8 unless const_defined?(:KMOD)
       KDEF = 0.6 unless const_defined?(:KDEF)

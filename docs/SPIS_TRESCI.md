@@ -136,6 +136,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | dobór przekroju zadaszenia | `rdzen/statyka_zadaszenia.rb` |
 | dobór przekrojów zadaszenia – parametry | `rdzen/parametry_zadaszenie.rb` |
 | dobór trójkąta nad tarasem w testach | `testy/t_statyka_dachu.rb` |
+| docisk w poprzek włókien | `rdzen/statyka_kosza.rb` |
 | dodaj działową | `html/dzialowe.js` |
 | dodaj wiersz | `html/tabela.js` |
 | dodaj węgieł | `rdzen/ustawienia_scian.rb` |
@@ -826,6 +827,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | płaszczyzna spodu krokwi | `rdzen/polacie.rb`, `testy/t_polacie.rb` |
 | płatew | `rdzen/dach.rb`, `rdzen/elementy.rb` |
 | płatew dzielona nad ścianą | `rdzen/podzial_belek.rb` |
+| płatew główna – siła skupiona | `rdzen/statyka_kosza.rb` |
 | płatew kalenicowa | `rdzen/dach.rb` |
 | płatew na balu | `rdzen/platwie_wience.rb` |
 | płatew na balu węgła | `rdzen/platwie_wience.rb` |
@@ -852,6 +854,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | raport do testów | `sketchup/raport.rb` |
 | raport json | `sketchup/raport.rb`, `testy/t_raport.rb` |
 | raport zapisywany sam | `sketchup/dziennik_pracy.rb` |
+| reakcja płatwi skrzydła | `rdzen/statyka_kosza.rb` |
 | regresja | `testy/t_losowe.rb` |
 | regresja rundy 14 | `testy/t_zlozone.rb` |
 | regresja styków bez zamka w szczycie | `testy/t_styki_szczytu.rb` |
@@ -928,6 +931,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | start z menu | `sketchup/sterowanie.rb` |
 | statyka | `rdzen/statyka.rb` |
 | statyka dachu | `rdzen/statyka_dachu.rb` |
+| statyka kosza | `rdzen/statyka_kosza.rb` |
 | statyka krokwi | `rdzen/statyka_krokwi.rb` |
 | statyka legara | `testy/t_podloga.rb` |
 | statyka słupa | `rdzen/statyka_slupa.rb` |
@@ -993,6 +997,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | słup zadaszenia – nośność | `rdzen/statyka_zadaszenia.rb` |
 | słupek pod płatwią | `rdzen/podpory_platwi_l.rb`, `rdzen/taras_szczyt.rb` |
 | słupek pod płatwią zadaszenia | `rdzen/zadaszenie.rb` |
+| słupek w koszu – siła | `rdzen/statyka_kosza.rb` |
 | słupek wiązara | `rdzen/taras_wiazar.rb` |
 | słupek z kontrfor pod płatwią | `rdzen/wegly_konstrukcyjne.rb` |
 | słupki pod płatwiami do wyboru w testach | `testy/t_wegly.rb` |
@@ -1278,6 +1283,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | wysokość ściany poprzecznej przy styku | `rdzen/styki_dzialowe.rb` |
 | wysunięcie dachu | `rdzen/dach.rb` |
 | wysunięcie za szczyt w połaciach | `rdzen/polacie.rb` |
+| wytyczne kosza domu l | `rdzen/statyka_kosza.rb` |
 | wywołania ruby | `testy/t_okno.js` |
 | wywołania typów | `sketchup/okno_typy.rb` |
 | wzmocnienie ściany | `rdzen/usztywnienie.rb` |
@@ -1468,7 +1474,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/poziomy.rb` | 98 | trzy poziomy ustawień (Ten dom, Typ domu, Standard warsztatu) i kroki okna w kolejności budowy – które pole należy do którego poziomu i kroku, złożenie parametrów nowego domu ze standardu i typu, pola zmienione tylko w tym domu. |
 | `rdzen/pozycje.rb` | 75 | numeracja pozycji jak u producenta – identyczne bale (ta sama bryła, także po obrocie o 180°) dostają jedną pozycję „nr-długość”. |
 | `rdzen/profil_bala.rb` | 153 | pełny profil bala do wizualizacji – pióra na wierzchu i wpust od spodu (pierwszy wieniec bez wpustu); przekrój pasami wzdłuż grubości, objętość. |
-| `rdzen/projekt.rb` | 264 | przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa. |
+| `rdzen/projekt.rb` | 265 | przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa. |
 | `rdzen/pryzmat.rb` | 69 | belka o przekroju wielokątnym (graniastosłup) – siatka ścian, objętość, podpis i postać kanoniczna przekroju (np. płatew ścięta do płaszczyzny dachu). |
 | `rdzen/przyklady.rb` | 75 | przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory. |
 | `rdzen/sciana_w_linii.rb` | 84 | działowa narysowana w linii ściany obrysu (np. wzdłuż uskoku domu L) – wspólna oś ze ścianą obrysu i połączenie obu w zamku ściany poprzecznej, bez ostatków wchodzących w siebie. |
@@ -1478,7 +1484,8 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/skos_przy_narozniku.rb` | 136 | bale ścięte dachem przy narożnikach – przez narożnik (słup zamka) tylko w prawdziwym zamku; inaczej bal kończy się przy licu wewnętrznym ściany poprzecznej. |
 | `rdzen/skrzydla.rb` | 239 | dach domu w kształcie L – podział obrysu na skrzydło główne i boczne, opisy obu dachów (dwa dachy dwuspadowe z koszem), szczyty i ściany okapowe skrzydeł, zasięg płatwi skrzydła bocznego. |
 | `rdzen/statyka.rb` | 93 | sprawdzenie belki drewnianej swobodnie podpartej (zginanie, ścinanie, ugięcie końcowe), największa rozpiętość, dobór przekroju z katalogu. |
-| `rdzen/statyka_dachu.rb` | 198 | sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy. |
+| `rdzen/statyka_dachu.rb` | 210 | sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy. |
+| `rdzen/statyka_kosza.rb` | 115 | statyka podparcia końca płatwi skrzydła domu L w koszu – siła ze słupka (albo oparcia) na płatew dachu głównego, doliczona do jej statyki, i docisk w poprzek włókien pod słupkiem i nad nim (PN-EN 1995-1-1, p. 6.1.5). |
 | `rdzen/statyka_krokwi.rb` | 166 | sprawdzenie i dobór przekroju krokwi całego dachu – połacie domu i bocznego zadaszenia (przęsła między płatwiami, okap jako wspornik, rozstaw krokwi); automatycznie najmniejszy wystarczający z listy albo przekrój z wyboru ze sprawdzeniem. |
 | `rdzen/statyka_slupa.rb` | 51 | sprawdzenie słupa drewnianego ściskanego osiowo z wyboczeniem (przegubowo na obu końcach) – nośność, smukłość. |
 | `rdzen/statyka_wiazara.rb` | 163 | sprawdzenie trójkąta (wiązara) nad tarasem pod obciążeniem od płatwi i automatyczny dobór jego najmniejszego wystarczającego przekroju, który mieści się pod dachem. |
@@ -1592,7 +1599,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `testy/t_sciany_ust.rb` | 159 | testy ustawień pojedynczych ścian z widoku ściany – ostatek na końcu, węgły ręczne, niższa działowa pod stropem / antresolą / półką z dopełnieniem zamka. |
 | `testy/t_siatka.rb` | 133 | siatka brył wszystkich pozycji z kilku domów – zamknięta (każda krawędź raz w każdą stronę), objętość równa profilowi. |
 | `testy/t_sketchup.rb` | 469 | warstwa SketchUpa na atrapie API – ładowanie wtyczki, okno, generowanie, atrybuty, położenie bali, przebudowa, ręczne zmiany. |
-| `testy/t_skrzydla.rb` | 188 | dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz. |
+| `testy/t_skrzydla.rb` | 206 | dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz. |
 | `testy/t_statyka_dachu.rb` | 128 | testy sprawdzenia płatwi i trójkąta nad tarasem (śnieg, pas dachu, przęsła), automatycznego doboru ich przekroju i trójkąta w wąskim domu. |
 | `testy/t_statyka_zadaszenia.rb` | 168 | runda 13 – dobór przekrojów bocznego zadaszenia (płatwie z oczepem, belki poprzeczne, słupy – automatycznie albo z wyboru), słup z wyboczeniem, dobór krokwi całego dachu, podłoga w przybudówce do wyboru, parametry zadaszenia w osobnej zakładce okna. |
 | `testy/t_stolarka.rb` | 208 | lista typowej stolarki (pole-tabela standardu), dawne pola nowego okna i drzwi, modele okien i drzwi wstawiane w otwory (rdzeń i atrapa SketchUpa), działowe w domu z wymiarów (runda 17). |
@@ -2625,7 +2632,7 @@ Używają: rdzen/projekt.rb (siatka i objętość pozycji, oznaczenie bali bez w
 | 135 | `wyrownaj!(pasy, klucz)` | Wyrównanie wartości (wierzchów albo spodów na jednym końcu) różnych o mniej niż WYROWNAJ – do najniższej z grupy. |
 | 144 | `objetosc(prof)` | Objętość przedziałów (pełny profil albo prosty – Bryla.profil) [mm³]. |
 
-### rdzen/projekt.rb (264 wierszy)
+### rdzen/projekt.rb (265 wierszy)
 
 przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa.
 
@@ -2640,14 +2647,14 @@ Używają: sketchup/sterowanie.rb, testy
 | 61 | `przebieg(wejscie, nadpis, tryb)` | dopełnienie nad niższymi działowymi → gniazda płatwi → bale → balustrada tarasu → bale ścięte dachem przy narożnikach → bale ścięte do płaszczyzny dachu w poprzek → zamki → pozycje → belki dachu, słupy tarasu i podłoga. nadpis – przekroje płatwi dobrane w poprzednim przebiegu (zastępują pola), tryb – tryb doboru (StatykaDachu.sprawdz). |
 | 136 | `podpory_l(plan, dom, p)` | Podpory końców płatwi skrzydła bocznego domu L (rdzen/podpory_platwi_l.rb): słupki w elementach, wynik w planie (łączniki do zestawienia), podpory w skrzydle (przęsło w statyce płatwi), ostrzeżenie o końcach bez podpory. |
 | 148 | `belki(plan, dom, p, tryb = :pierwszy)` | (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]); sprawdzenie płatwi, krokwi, zadaszenia i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow], tryb – StatykaDachu.sprawdz). |
-| 188 | `uwagi_o_stykach(plan)` | Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią). |
-| 196 | `podsumowanie(plan)` | Podsumowanie do okna: ściany, liczby bali i pozycji, objętość i waga, wysokości. |
-| 222 | `wysokosci(plan)` | Wysokości ścian do okna (Wience.wysokosci) i ściana wysoka dachu jednospadowego (góra jej bali – do połaci). |
-| 230 | `wysokosc_ciecia(b)` | O ile górny bal jest niższy po przycięciu wzdłuż (skos płaski na całej długości) [mm]. |
-| 236 | `styki_opis(w)` | Styki ściany do okna: [styki wieńców parzystych, nieparzystych] w mm od początku osi (puste – bez styków). |
-| 244 | `siatka_pozycji(poz)` | Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem i wpustem, gdy pozycja ma opis profilu). |
-| 251 | `profil_pozycji(poz)` | Profil bryły pozycji: pełny (rdzen/profil_bala.rb) albo prosty (rdzen/bryla.rb). |
-| 257 | `objetosc_pozycji(poz)` | Objętość bryły pozycji [mm³] (pełny albo prosty profil). |
+| 189 | `uwagi_o_stykach(plan)` | Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią). |
+| 197 | `podsumowanie(plan)` | Podsumowanie do okna: ściany, liczby bali i pozycji, objętość i waga, wysokości. |
+| 223 | `wysokosci(plan)` | Wysokości ścian do okna (Wience.wysokosci) i ściana wysoka dachu jednospadowego (góra jej bali – do połaci). |
+| 231 | `wysokosc_ciecia(b)` | O ile górny bal jest niższy po przycięciu wzdłuż (skos płaski na całej długości) [mm]. |
+| 237 | `styki_opis(w)` | Styki ściany do okna: [styki wieńców parzystych, nieparzystych] w mm od początku osi (puste – bez styków). |
+| 245 | `siatka_pozycji(poz)` | Siatka bryły pozycji (do budowy komponentu): Siatka.z_profilu dla profilu pozycji (pełny profil bala – z piórem i wpustem, gdy pozycja ma opis profilu). |
+| 252 | `profil_pozycji(poz)` | Profil bryły pozycji: pełny (rdzen/profil_bala.rb) albo prosty (rdzen/bryla.rb). |
+| 258 | `objetosc_pozycji(poz)` | Objętość bryły pozycji [mm³] (pełny albo prosty profil). |
 
 ### rdzen/pryzmat.rb (69 wierszy)
 
@@ -2841,7 +2848,7 @@ Używają: rdzen/podloga.rb, rdzen/statyka_dachu.rb, rdzen/statyka_wiazara.rb, r
 | Wiersz | Element | Opis |
 |---:|---|---|
 | 19 | `module Statyka` |  |
-| 22 | `KLASY` | Klasy drewna: wytrzymałość na zginanie, ścinanie i ściskanie wzdłuż włókien f_m,k, f_v,k, f_c,0,k [MPa], moduły E0,mean i E0,05 [MPa], gęstość [kg/m³], γM (PN-EN 338, PN-EN 14080). |
+| 22 | `KLASY` | Klasy drewna: wytrzymałość na zginanie, ścinanie, ściskanie wzdłuż i w poprzek włókien f_m,k, f_v,k, f_c,0,k, f_c,90,k [MPa], moduły E0,mean i E0,05 [MPa], gęstość [kg/m³], γM (PN-EN 338, PN-EN 14080). |
 | 28 | `KMOD` |  |
 | 29 | `KDEF` |  |
 | 30 | `PSI2` |  |
@@ -2853,33 +2860,54 @@ Używają: rdzen/podloga.rb, rdzen/statyka_dachu.rb, rdzen/statyka_wiazara.rb, r
 | 82 | `dobierz(l, p, rozstaw, granica)` | Najlżejszy przekrój z katalogu (nie niższy niż izolacja), który przenosi rozpiętość l; nil gdy żaden. |
 | 88 | `granica(p, tryb = Parametry.dobor(p, 'legary_dobor'))` | Granica ugięcia L/n dla trybu doboru ('minimalny' – dopuszczalna, inne – zalecana). |
 
-### rdzen/statyka_dachu.rb (198 wierszy)
+### rdzen/statyka_dachu.rb (210 wierszy)
 
 sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy.
 
-Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi)
+Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi), rdzen/statyka_kosza.rb (siła od słupka w koszu domu L)
 Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń), rdzen/statyka_zadaszenia.rb (obciążenia, przęsło płatwi, opis ugięcia), rdzen/statyka_krokwi.rb (współczynnik μ, opis ugięcia)
 
 | Wiersz | Element | Opis |
 |---:|---|---|
-| 35 | `module StatykaDachu` |  |
-| 37 | `POLA` | Pola przekroju płatwi według rodzaju (osobne przekroje) i nazwy do komunikatów. |
-| 39 | `NAZWY` |  |
-| 43 | `PSI2_SNIEG` | Część śniegu działająca długotrwale (pełzanie) – 0 poniżej 1000 m n.p.m. |
-| 48 | `auto?(p)` | Czy przekrój płatwi dobiera generator. |
-| 53 | `mi(kat)` | Współczynnik kształtu dachu dla śniegu μ (kąt w stopniach): 0,8 do 30°, liniowo do 0 przy 60°. |
-| 61 | `obciazenia(pas, p, kat = nil)` | Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie] przy kącie połaci kat [°] (domyślnie kąt dachu; boczne zadaszenie – jego kąt): [stałe, śnieg]. |
-| 67 | `wysokosc(b, h, rodzaj, p)` | Wysokość przekroju do obliczeń [mm]: płatew ścięta do płaszczyzny dachu – średnia (kalenicowa ścięta z obu stron). |
-| 74 | `pas(geo, lista, pl, p)` | Pas dachu na płatew pl [mm w poziomie]: po połowie odległości do sąsiednich linii podparcia połaci (płatwie; ściana okapowa, gdy nie ma przy niej płatwi ściennej); skrajna płatew – także okap. |
-| 90 | `przeslo(d, pl, u0, u3, p)` | w poprzek – d[:przejscia]; końce ścian wzdłuż płatwi – d[:podparcia], odcinek na takiej ścianie nie jest przęsłem; koniec płatwi skrzydła bocznego w dachu głównym albo – w koszu – jej słupek na płatwi głównej, d[:podpory_kosz] z rdzen/podpory_platwi_l.rb) albo dwa wsporniki końca; bez podpór – cała długość. |
-| 106 | `platwie(dom, p)` | Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas:, dl: (cała długość) }]. |
-| 120 | `grupy(lista, p)` | Grupy płatwi o wspólnym przekroju: { pole przekroju => [płatwie] } (jeden przekrój – wszystkie w platwa_przekroj); dach bez płatwi – {}. |
-| 128 | `ocena(grupa, b, h, p)` | Ocena przekroju b × h dla płatwi grupy – wynik najbardziej wytężonej (nośność albo ugięcie względem granicy): { ok:, wyk: (nośność 0…), l_przez_u:, l:, pas: }. |
-| 138 | `kandydaci(p)` | Przekroje do doboru – od najlżejszego (przy równym polu wyższy pierwszy). |
-| 144 | `dobierz(grupa, p)` | Najlżejszy przekrój z listy wystarczający dla grupy – w pierwszej kolejności dostępny w hurtowni w całej długości najdłuższej płatwi grupy (rdzen/dlugosci_handlowe.rb); nil – żaden nie wystarcza. |
-| 153 | `sprawdz(dom, p, tryb = :pierwszy)` | platwie: [sprawdzone płatwie – przęsło i pas dachu] }. tryb: :pierwszy – dobór od zera; :potwierdz – przebieg z dobranym już przekrojem, zmiana tylko, gdy obecny nie wystarcza; :koniec – ostatni przebieg, bez zmian (sama ocena). |
-| 174 | `ugiecie_opis(l_przez_u)` | Ugięcie do komunikatu: „ugięcie L/250”, a przy znikomym – „ugięcie poniżej L/1000”. |
-| 179 | `podpowiedz(pole, bh, r, min, p)` | Podpowiedź do okna dla grupy płatwi o przekroju bh z oceną r (min – najlżejszy wystarczający z listy albo nil). |
+| 36 | `module StatykaDachu` |  |
+| 38 | `POLA` | Pola przekroju płatwi według rodzaju (osobne przekroje) i nazwy do komunikatów. |
+| 40 | `NAZWY` |  |
+| 44 | `PSI2_SNIEG` | Część śniegu działająca długotrwale (pełzanie) – 0 poniżej 1000 m n.p.m. |
+| 49 | `auto?(p)` | Czy przekrój płatwi dobiera generator. |
+| 54 | `mi(kat)` | Współczynnik kształtu dachu dla śniegu μ (kąt w stopniach): 0,8 do 30°, liniowo do 0 przy 60°. |
+| 62 | `obciazenia(pas, p, kat = nil)` | Obciążenia płatwi [kN/m] dla pasa dachu pas [mm w poziomie] przy kącie połaci kat [°] (domyślnie kąt dachu; boczne zadaszenie – jego kąt): [stałe, śnieg]. |
+| 68 | `wysokosc(b, h, rodzaj, p)` | Wysokość przekroju do obliczeń [mm]: płatew ścięta do płaszczyzny dachu – średnia (kalenicowa ścięta z obu stron). |
+| 75 | `pas(geo, lista, pl, p)` | Pas dachu na płatew pl [mm w poziomie]: po połowie odległości do sąsiednich linii podparcia połaci (płatwie; ściana okapowa, gdy nie ma przy niej płatwi ściennej); skrajna płatew – także okap. |
+| 90 | `podpory(d, pl, u0, u3, p)` | Podpory płatwi pl dachu d na zasięgu u0…u3 [mm]: [punkty podparcia u (posortowane, w zasięgu), odcinki na ścianach wzdłuż płatwi [[u0, u1]]] – ściany w poprzek (d[:przejscia]), końce ścian wzdłuż płatwi (d[:podparcia]), koniec płatwi skrzydła bocznego w dachu głównym albo – w koszu – jej słupek na płatwi głównej (d[:podpory_kosz]). |
+| 105 | `przeslo(d, pl, u0, u3, p)` | Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (podpory); odcinek na ścianie wzdłuż płatwi nie jest przęsłem; albo dwa wsporniki końca; bez podpór – cała długość. |
+| 114 | `platwie(dom, p)` | Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas:, dl: (cała długość), sila: }]. Płatwie dachu głównego domu L dostają siłę od słupków w koszu (sila: [stałe, śnieg] w N – rdzen/statyka_kosza.rb). |
+| 132 | `grupy(lista, p)` | Grupy płatwi o wspólnym przekroju: { pole przekroju => [płatwie] } (jeden przekrój – wszystkie w platwa_przekroj); dach bez płatwi – {}. |
+| 140 | `ocena(grupa, b, h, p)` | Ocena przekroju b × h dla płatwi grupy – wynik najbardziej wytężonej (nośność albo ugięcie względem granicy): { ok:, wyk: (nośność 0…), l_przez_u:, l:, pas: }. |
+| 150 | `kandydaci(p)` | Przekroje do doboru – od najlżejszego (przy równym polu wyższy pierwszy). |
+| 156 | `dobierz(grupa, p)` | Najlżejszy przekrój z listy wystarczający dla grupy – w pierwszej kolejności dostępny w hurtowni w całej długości najdłuższej płatwi grupy (rdzen/dlugosci_handlowe.rb); nil – żaden nie wystarcza. |
+| 165 | `sprawdz(dom, p, tryb = :pierwszy)` | platwie: [sprawdzone płatwie – przęsło i pas dachu] }. tryb: :pierwszy – dobór od zera; :potwierdz – przebieg z dobranym już przekrojem, zmiana tylko, gdy obecny nie wystarcza; :koniec – ostatni przebieg, bez zmian (sama ocena). |
+| 186 | `ugiecie_opis(l_przez_u)` | Ugięcie do komunikatu: „ugięcie L/250”, a przy znikomym – „ugięcie poniżej L/1000”. |
+| 191 | `podpowiedz(pole, bh, r, min, p)` | Podpowiedź do okna dla grupy płatwi o przekroju bh z oceną r (min – najlżejszy wystarczający z listy albo nil). |
+
+### rdzen/statyka_kosza.rb (115 wierszy)
+
+statyka podparcia końca płatwi skrzydła domu L w koszu – siła ze słupka (albo oparcia) na płatew dachu głównego, doliczona do jej statyki, i docisk w poprzek włókien pod słupkiem i nad nim (PN-EN 1995-1-1, p. 6.1.5).
+
+Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (klasy drewna), rdzen/dach.rb (płatwie), rdzen/skrzydla.rb (koniec płatwi skrzydła), rdzen/statyka_dachu.rb (pas dachu, obciążenia, podpory płatwi – wczytuje ten plik)
+Używają: rdzen/statyka_dachu.rb (siła na płatwi głównej), rdzen/projekt.rb (podpowiedź o docisku)
+
+| Wiersz | Element | Opis |
+|---:|---|---|
+| 31 | `module StatykaKosza` |  |
+| 33 | `DOCISK_WYDLUZENIE` | Wydłużenie długości docisku z każdej strony [mm] (PN-EN 1995-1-1, p. 6.1.5 (1)). |
+| 35 | `KC90` | Współczynnik kc,90 (bez podwyższenia 1,25 / 1,5 – po bezpiecznej stronie). |
+| 41 | `sily_glownych(dom, p)` | Siły od słupków (i oparć) w koszu na płatwie dachu głównego: [{ v: (oś płatwi głównej), g:, s: [N], b_skrz: }]; dom prostokątny albo bez podpór w koszu – []. |
+| 49 | `reakcja(d, podp, p)` | Reakcja płatwi skrzydła na słupku podp ({ v: oś płatwi skrzydła, u: oś płatwi głównej }) – { v:, g:, s:, b_skrz: } albo nil (płatwi nie ma). |
+| 69 | `dlugosc_obciazona(l, a, cala)` | Długość płatwi „zbierająca” obciążenie na słupek [mm]: (L + a)² / 2L dla przęsła L i wspornika a; bez drugiej podpory – cała długość. |
+| 75 | `sila(sily, pl)` | Suma sił od słupków na płatwi pl dachu głównego: [stałe, śnieg] w N albo nil. |
+| 82 | `z_sila(gq, x)` | Obciążenia płatwi gq [kN/m] powiększone o zastępcze obciążenie równomierne od siły x[:sila] (2 P / L). |
+| 88 | `docisk(f, b_gl, p)` | Wytężenie docisku w poprzek włókien pod słupkiem siły f (z płatwią główną szerokości b_gl): 0… (1 – granica). |
+| 98 | `podpowiedzi(dom, p)` | Podpowiedź do sekcji „Szczyty i dach”: siła od słupków w koszu i docisk (uwaga, gdy docisk > 100 %); [] bez słupków. |
 
 ### rdzen/statyka_krokwi.rb (166 wierszy)
 
@@ -5219,7 +5247,7 @@ Używają: testy/uruchom.sh
 | 40 | `instancje(grupa)` |  |
 | 45 | `ostatni_skrypt(dlg, poczatek)` | Ostatni skrypt okna o danym początku jako Hash (np. 'AMGW.ustaw('). |
 
-### testy/t_skrzydla.rb (188 wierszy)
+### testy/t_skrzydla.rb (206 wierszy)
 
 dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz.
 

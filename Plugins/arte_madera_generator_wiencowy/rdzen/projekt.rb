@@ -162,6 +162,7 @@ module ArteMadera
         plan[:dobor_przekrojow] = st[:nadpis].merge(sw[:nadpis]).merge(sz[:nadpis]).merge(sk[:nadpis])
         plan[:platwie_statyka] = st[:platwie]
         plan[:podpowiedzi].concat(st[:podpowiedzi].map { |h| h.merge(sekcja: 'szczyty') })
+        plan[:podpowiedzi].concat(StatykaKosza.podpowiedzi(dom, p).map { |h| h.merge(sekcja: 'szczyty') })
         plan[:podpowiedzi].concat(sk[:podpowiedzi])
         plan[:podpowiedzi].concat(sw[:podpowiedzi].map { |h| h.merge(sekcja: 'taras') })
         plan[:podpowiedzi].concat(sz[:podpowiedzi].map { |h| h.merge(sekcja: 'zadaszenie_przekroje') })

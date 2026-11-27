@@ -185,4 +185,22 @@ pl1 = plan_pelny(wielokat(L1))
 Testy.rowne([pl1[:podpory_l][:elementy].length, pl1[:podpory_l][:laczniki]], [0, 5], 'równe rozpiętości – wszystkie płatwie skrzydła przy płatwiach głównych (styki)')
 Testy.sprawdz(plan_pelny(prostokat(0, 0, 6000, 4000))[:podpory_l][:elementy].empty?, 'dom prostokątny – bez słupków')
 
+Testy.grupa('Dom L – kosz według PN-EN 1995-1-1: siła ze słupka na płatwi głównej, docisk w poprzek włókien (runda 19)')
+sily = StatykaKosza.sily_glownych(plk[:dach], plk[:parametry])
+Testy.rowne(sily.length, 3, 'trzy słupki – trzy siły na płatwiach dachu głównego')
+Testy.sprawdz(sily.all? { |f| f[:g] > 300.0 && f[:s] > 300.0 }, format('siła stała i śnieg na słupku (stała %.2f kN)', sily.map { |f| f[:g] }.max / 1000.0))
+pst = StatykaDachu.platwie(plk[:dach], plk[:parametry])
+Testy.sprawdz(pst.count { |x| x[:sila] } >= 1, 'płatwie dachu głównego pod słupkami mają siłę w statyce')
+x = pst.find { |y| y[:sila] }
+bez = StatykaDachu.ocena([x.merge(sila: nil)], x[:b], x[:h], plk[:parametry])[:wyk]
+z = StatykaDachu.ocena([x], x[:b], x[:h], plk[:parametry])[:wyk]
+Testy.sprawdz(z > bez + 0.01, format('siła ze słupka podnosi wytężenie płatwi głównej (%.0f → %.0f %%)', bez * 100, z * 100))
+Testy.rowne(StatykaKosza.dlugosc_obciazona(3000.0, 500.0, 9000.0).round, 2042, 'reakcja słupka ze wspornikiem: (L + a)² / 2L')
+Testy.rowne(StatykaKosza.dlugosc_obciazona(nil, 500.0, 9000.0), 9000.0, 'bez drugiej podpory – cała płatew na słupek')
+w = StatykaKosza.docisk({ g: 5000.0, s: 3000.0, b_skrz: 80.0 }, 80.0, plk[:parametry])
+Testy.sprawdz((w - 11_250.0 / 11_200.0 / (0.8 * 2.5 / 1.3)).abs < 1e-6, format('docisk 11,25 kN na 80 × 140 mm², C24: %.0f %%', w * 100))
+pk = plk[:podpowiedzi].find { |h| h[:tekst].include?('Dom L – kosz') }
+Testy.sprawdz(pk && pk[:sekcja] == 'szczyty' && pk[:tekst].include?('6.1.5'), 'podpowiedź o koszu w sekcji „Szczyty i dach”')
+Testy.sprawdz(plan_pelny(wielokat(L1))[:podpowiedzi].none? { |h| h[:tekst].include?('Dom L – kosz') }, 'bez słupków – bez podpowiedzi o koszu')
+
 Testy.koniec

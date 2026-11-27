@@ -626,6 +626,17 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   nad którą płatew skrzydła przechodzi najbliżej końca, do spodu płatwi skrzydła; przekrój = szerokość płatwi skrzydła ×
   szerokość płatwi głównej; odstęp < 20 mm – płatew leży na płatwi głównej. Słupki i oparcia – po 2 kątowniki ciesielskie.
   Statyka: przęsło płatwi skrzydła do słupka (wspornik do końca). `platwie_kosz` = nie – bez słupków, ostrzeżenie.
+  **Sprawdzenie z wytycznymi (runda 19, odpowiedź „sprawdź w wytycznych / normach”)**: oparcie płatwi dobudówki na
+  płatwi pośredniej dachu głównego krótkimi słupkami to zwykłe rozwiązanie ciesielskie (np. lukarny – Dietrich's,
+  „Lukarny” LDS extra: płatwie i belka kalenicowa lukarny oparte na płatwi pośredniej za pomocą krótkich słupków; krokwie
+  koszowe dużej lukarny – na płatwi). Słupek zostaje. PN-EN 1995-1-1 wymaga przy nim dwóch sprawdzeń, dodanych
+  w `rdzen/statyka_kosza.rb`: (1) płatew dachu głównego niesie siłę skupioną od słupka – reakcja płatwi skrzydła
+  R = q (L + a)² / 2L (przęsło L do sąsiedniej podpory, wspornik a do końca w koszu), doliczona jako 2R / L w środku
+  największego przęsła płatwi głównej (statyka i dobór automatyczny); (2) docisk w poprzek włókien pod słupkiem i nad nim
+  (p. 6.1.5): σc,90,d = Fd / Aef ≤ kc,90 · fc,90,d, długość docisku + 30 mm z obu stron, kc,90 = 1,0, fc,90,k z PN-EN 338
+  (C24 – 2,5 MPa). Podpowiedź w sekcji „Szczyty i dach” (siła i docisk), docisk > 100 % – uwaga (blacha rozkładająca albo
+  szersza płatew). Przedłużenie płatwi skrzydła do płatwi głównej ze ściętym końcem – nie (koniec wchodziłby w połać
+  dachu głównego i i tak potrzebowałby oparcia na płatwi głównej).
 - **Taras typu 300 – front ze szczytem** (`taras_sciany_front` = szczyt, fabrycznie; P2): front tarasu jak w typie 200 –
   górne `taras_wience_gorne` wieńce nad otworem (od półbala, w zamkach ścian bocznych) i szczyt pełny / ażurowy / pusty
   z trójkątem na balach; płatwie nad tarasem w zamku tylko od spodu; bale frontu na styk z mijanką w punktach równego

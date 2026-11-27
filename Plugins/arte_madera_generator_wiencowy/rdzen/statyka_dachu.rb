@@ -4,7 +4,7 @@
 # Plik: rdzen/statyka_dachu.rb
 # Zadanie: sprawdzenie płatwi dachu (śnieg i ciężar pokrycia, przęsła między ścianami, pas dachu na płatew) i automatyczny dobór najmniejszego wystarczającego przekroju płatwi z listy.
 # Tematy: statyka dachu, dobór przekroju płatwi, automatyczny dobór płatwi, nośność płatwi, obciążenie śniegiem, ciężar pokrycia, przęsło płatwi, pas dachu na płatew, ugięcie płatwi, lista przekrojów płatwi
-# Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi)
+# Zależy od: rdzen/parametry.rb, rdzen/statyka.rb (belka), rdzen/dach.rb (płatwie, kąt), rdzen/skrzydla.rb (dachy domu, zasięg płatwi), rdzen/statyka_kosza.rb (siła od słupka w koszu domu L)
 # Używają: rdzen/projekt.rb (podpowiedzi sekcji „Szczyty i dach”, przekroje dobrane do drugiego przebiegu obliczeń), rdzen/statyka_zadaszenia.rb (obciążenia, przęsło płatwi, opis ugięcia), rdzen/statyka_krokwi.rb (współczynnik μ, opis ugięcia)
 #
 # Wymóg użytkownika (2026-11-16): „do opcji dodać automatyczne dobieranie przekroju, do minimalnej nośności konstrukcji
@@ -29,6 +29,7 @@ require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera:
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
 require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
+require File.join(File.dirname(__FILE__), 'statyka_kosza') unless defined?(ArteMadera::GeneratorWiencowy::StatykaKosza)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -83,11 +84,10 @@ module ArteMadera
         (i > 0 ? (pl[:v] - linie[i - 1]) / 2.0 : okap) + (i < linie.length - 1 ? (linie[i + 1] - pl[:v]) / 2.0 : okap)
       end
 
-      # Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (ściany
-      # w poprzek – d[:przejscia]; końce ścian wzdłuż płatwi – d[:podparcia], odcinek na takiej ścianie nie jest przęsłem;
-      # koniec płatwi skrzydła bocznego w dachu głównym albo – w koszu – jej słupek na płatwi głównej, d[:podpory_kosz]
-      # z rdzen/podpory_platwi_l.rb) albo dwa wsporniki końca; bez podpór – cała długość.
-      def przeslo(d, pl, u0, u3, p)
+      # Podpory płatwi pl dachu d na zasięgu u0…u3 [mm]: [punkty podparcia u (posortowane, w zasięgu), odcinki na ścianach
+      # wzdłuż płatwi [[u0, u1]]] – ściany w poprzek (d[:przejscia]), końce ścian wzdłuż płatwi (d[:podparcia]), koniec płatwi
+      # skrzydła bocznego w dachu głównym albo – w koszu – jej słupek na płatwi głównej (d[:podpory_kosz]).
+      def podpory(d, pl, u0, u3, p)
         na_osi = lambda { |x| (x[:v] - pl[:v]).abs < 0.5 }
         ciagle = (d[:podparcia] || []).select(&na_osi).map { |x| x[:u] }
         pkt = (d[:przejscia] || []).select(&na_osi).map { |x| x[:u] } + ciagle.flatten
@@ -97,20 +97,32 @@ module ArteMadera
           pkt << (podp ? podp[:u] : ((u0 - wolny).abs < 1.0 ? u3 : u0))
         end
         pkt = pkt.map { |u| [[u, u0].max, u3].min }.sort.each_with_object([]) { |u, acc| acc << u if acc.empty? || u - acc.last > 0.5 }
+        [pkt, ciagle]
+      end
+
+      # Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (podpory);
+      # odcinek na ścianie wzdłuż płatwi nie jest przęsłem; albo dwa wsporniki końca; bez podpór – cała długość.
+      def przeslo(d, pl, u0, u3, p)
+        pkt, ciagle = podpory(d, pl, u0, u3, p)
         return u3 - u0 if pkt.empty?
         przesla = pkt.each_cons(2).reject { |a, b| ciagle.any? { |c0, c1| a >= c0 - 0.5 && b <= c1 + 0.5 } }.map { |a, b| b - a }
         (przesla + [2.0 * (pkt.first - u0), 2.0 * (u3 - pkt.last)]).max
       end
 
-      # Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas:, dl: (cała długość) }].
+      # Płatwie wszystkich dachów domu do sprawdzenia: [{ rodzaj:, b:, h:, l: (przęsło), pas:, dl: (cała długość), sila: }].
+      # Płatwie dachu głównego domu L dostają siłę od słupków w koszu (sila: [stałe, śnieg] w N – rdzen/statyka_kosza.rb).
       def platwie(dom, p)
+        sily = StatykaKosza.sily_glownych(dom, p)
         Skrzydla.domy(dom).flat_map do |d|
           geo = Dach.geo(d)
           lista = Dach.platwie(geo, p)
           lista.map do |pl|
             u0, u3 = Skrzydla.zasieg_platwi(d, pl, p)
             next nil if u3 - u0 < 1.0
-            { rodzaj: pl[:rodzaj], b: pl[:b], h: pl[:h], l: przeslo(d, pl, u0, u3, p), pas: pas(geo, lista, pl, p), dl: u3 - u0 }
+            x = { rodzaj: pl[:rodzaj], b: pl[:b], h: pl[:h], l: przeslo(d, pl, u0, u3, p), pas: pas(geo, lista, pl, p), dl: u3 - u0 }
+            s = d[:rola] == :glowne ? StatykaKosza.sila(sily, pl) : nil
+            x[:sila] = s if s
+            x
           end.compact
         end
       end
@@ -128,7 +140,7 @@ module ArteMadera
       def ocena(grupa, b, h, p)
         granica = p['dach_ugiecie'].to_f
         grupa.map do |x|
-          g, q = obciazenia(x[:pas], p)
+          g, q = StatykaKosza.z_sila(obciazenia(x[:pas], p), x)
           r = Statyka.belka(x[:l], b, wysokosc(b, h, x[:rodzaj], p), g, q, p['drewno_klasa'], granica, PSI2_SNIEG)
           { ok: r[:ok], wyk: [r[:wyk_m], r[:wyk_v]].max, l_przez_u: r[:l_przez_u], l: x[:l], pas: x[:pas] }
         end.max_by { |r| [r[:wyk], granica / [r[:l_przez_u], 1.0].max].max }
