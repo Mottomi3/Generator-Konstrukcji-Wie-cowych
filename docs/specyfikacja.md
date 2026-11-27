@@ -756,7 +756,7 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   z dopiskiem, w dymku wartość bazowa, przycisk ↺; licznik pod typem. Pola standardu trafiają do kroku z listy „Zmień
   pole standardu tylko w tym domu…”.
 - **Układ nowy – kroki** (`html/kroki.js`, `html/uklad.js`, `html/kroki.css`; fabrycznie): Ściany → Okna i drzwi →
-  Dach → Taras i zadaszenie → Podłoga → Zestawienie, przy kroku znacznik (błąd / ostrzeżenie / w porządku / liczba pól
+  Dach → Dodatki (taras, zadaszenie, drewutnia; do rundy 18 „Taras i zadaszenie”) → Podłoga → Zestawienie, przy kroku znacznik (błąd / ostrzeżenie / w porządku / liczba pól
   zmienionych). W kroku: pola poziomu „dom”, pod przyciskiem pola typu, pola standardu tylko zmienione albo dopięte;
   karty kroku (widok ściany, tabela otworów, węgły, lista bali i materiały z powierzchniami w „Zestawieniu”). Po prawej
   stale rzut i „Wynik” z listą „Do poprawy / Sprawdzone” (`html/uwagi.js`) – kliknięcie przechodzi do kroku i pola.
@@ -783,7 +783,8 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
 - buduje 9 przykładowych domów (`rdzen/przyklady.rb`: 4 × 4 bez łączeń, jak 900 z oknem i drzwiami, 7 × 4,5 z działową
   i węgłem, 10 × 8 z łączeniami i węgłami usztywniającymi, obrys L, krokwie z obu stron szczytu i podłoga 150, pełny
   profil z działową pod antresolą, ostatkiem 200 i węgłem ręcznym, dach jednospadowy ze szczytem na działowej, taras
-  jak 1100 z drzwiami w ścianie domu) w jednej operacji, którą na końcu cofa – model zostaje bez zmian;
+  jak 1100 z drzwiami w ścianie domu; od rundy 12–19 także wiata boczna, przybudówki z bali i drewutnia z tarasem typu
+  300 – razem 12) w jednej operacji, którą na końcu cofa – model zostaje bez zmian;
 - dla każdego domu: liczby z planu i z modelu (instancje według prefiksu), bryły niezamknięte (`manifold?`), bryły
   o objętości innej niż z profilu (> 0,2 %), ściany, których nie narysowano, kontrola zamków i styków, czasy;
 - zaznaczony dom: kompilacja, ręczne zmiany, zgodność modelu z parametrami;

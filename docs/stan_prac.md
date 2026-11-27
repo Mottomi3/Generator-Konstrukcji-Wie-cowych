@@ -72,7 +72,7 @@ wartości przyjęte bez pytania – `docs/pytania_otwarte.md`; zasady konstrukcj
   domów i standard warsztatu (też z menu), pola-tabele (lista stolarki, magazyn drewna), widok ściany z okienkiem
   wstawiania okien, drzwi, węgłów i kanałów, wybór pliku i folderu („…”), działowe domu z wymiarów, zestawienie CSV
   z materiałami i wyceną.
-- **Model**: Dom > W-n / Podłoga / Dach / Taras / Zadaszenie / Stolarka > komponenty z atrybutami Dokumentacji 2D, tagi; przebudowa
+- **Model**: Dom > W-n / Podłoga / Dach / Taras / Zadaszenie / Drewutnia / Stolarka > komponenty z atrybutami Dokumentacji 2D, tagi; przebudowa
   z zachowaniem położenia, jedno „Cofnij”, wykrywanie ręcznych zmian.
 - **Narzędzia**: pasek narzędzi i menu pod prawym przyciskiem, kontrola domu, test działania z raportem, dziennik pracy.
 
