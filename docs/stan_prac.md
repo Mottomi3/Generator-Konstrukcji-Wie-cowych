@@ -226,8 +226,8 @@ Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
 - Dom L: koniec płatwi skrzydła bocznego w koszu – słupek na niższej płatwi dachu głównego (wspornik od słupka do końca,
   zwykle do 1 m); bez płatwi pod spodem – ostrzeżenie; belki koszowej generator nie rysuje. Gdy
   wysunięcie za szczyt jest mniejsze niż okap, na ścianie wspólnej połać wystaje za szczyt o okap; ściana przez oba
-  skrzydła bierze dach tego skrzydła, w którym leży jej środek. Dom L z podbitką na płatwiach i krokwiami z aplikacji:
-  podpory pod połacią o grubość deski (14 mm – ziarna 7004, 7021).
+  skrzydła bierze dach tego skrzydła, w którym leży jej środek. Dom L z podbitką na płatwiach: połacie dla aplikacji wyżej
+  o grubość deski (od rundy 18, jak w domu prostokątnym).
 - Losowe domy – drobiazgi (poza zestawem stałym): ziarna 75, 318, 472 (sprzed rundy 10), 6305, 6557 (krawędź bryły
   bala szczytu 0,07 / 0,008 mm – wycięcie gniazda płatwi kończy się tuż nad gniazdem zamka; SketchUp może scalić
   wierzchołki bliższe niż 0,025 mm).
