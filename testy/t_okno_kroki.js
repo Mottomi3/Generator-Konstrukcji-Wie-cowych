@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy – testy
   Plik: testy/t_okno_kroki.js
   Zadanie: okno w Chromium (Playwright), układ nowy – kroki w kolejności budowy, prawa kolumna z rzutem i listą „Do poprawy / Sprawdzone”, pola według poziomów (ten dom, typ, standard), zmiana tylko w tym domu, panel standardu warsztatu, podpowiedź po wejściu w pole, opcje wyszarzone dla obrysu, przełącznik układu, dom z wymiarów.
-  Tematy: test układu kroków, test listy uwag, test poziomów pól w oknie, test panelu standardu, test przełącznika układu, test opcji niedostępnych dla obrysu, test domu z wymiarów w oknie, zrzut okna – kroki
+  Tematy: test układu kroków, test listy uwag, test poziomów pól w oknie, test panelu standardu, test przełącznika układu, test opcji niedostępnych dla obrysu, test domu z wymiarów w oknie, zrzut okna – kroki, test okna samego standardu
   Zależy od: testy/okno_dane.rb, Plugins/.../html/okno.html
   Używają: testy/uruchom.sh
 
@@ -278,6 +278,47 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [document.getElementById('krok-dach').className, pg.length ? JSON.parse(pg[pg.length - 1][1]).parametry.dom_dlugosc : ''];
   });
   sprawdz(/wybrany/.test(pok[0]) && pok[1] === '8000', 'kliknięcie kroku zaraz po wpisaniu wartości działa za pierwszym razem (' + pok.join(' | ') + ')');
+
+  // ---- okno samego standardu (menu „Standard warsztatu…”, runda 17) ----
+  var ps = await browser.newPage({ viewport: { width: 1060, height: 860 } });
+  ps.on('pageerror', function (e) { konsola.push(String(e)); });
+  await ps.addInitScript(function () {
+    window.__wywolania = [];
+    window.sketchup = new Proxy({}, { get: function (_t, n) { return function (arg) { window.__wywolania.push([n, arg]); }; } });
+  });
+  await ps.goto('file://' + HTML);
+  var initStd = JSON.parse(JSON.stringify(dane.init));
+  initStd.tryb = 'standard';
+  initStd.parametry = {};
+  initStd.otwory = [];
+  initStd.podsumowanie = null;
+  await ps.evaluate(function (d) { window.__wywolania = []; AMGW.init(d); }, initStd);
+  await ps.waitForTimeout(500);
+  var so = await ps.evaluate(function (widacTekst) {
+    var widac = eval('(' + widacTekst + ')');
+    return [/tylko-standard/.test(document.body.className), widac('standard-pola'), widac('btn-generuj'), widac('karta-rzut'),
+            document.querySelectorAll('#standard-pola [data-standard]').length,
+            window.__wywolania.filter(function (x) { return x[0] === 'podglad'; }).length];
+  }, widac.toString());
+  sprawdz(so[0] && so[1] && !so[2] && !so[3] && so[4] > 50 && so[5] === 0,
+          'okno z menu: sam panel standardu, bez domu, przycisków generowania i podglądu (' + so.join(' | ') + ')');
+  await ps.fill('#s-max_dlugosc', '5400');
+  await ps.click('#btn-standard-zapisz');
+  var zap = await ps.evaluate(function () { return window.__wywolania.filter(function (x) { return x[0] === 'standard_zapisz'; }).map(function (x) { return JSON.parse(x[1]).parametry.max_dlugosc; }); });
+  var bazaStd = JSON.parse(JSON.stringify(initStd.typy.baza));
+  bazaStd.max_dlugosc = 5400;
+  await ps.evaluate(function (x) { AMGW.typy({ lista: x.lista, typ: AMGW_TYPY.typ(), baza: x.baza, standard: true, komunikat: 'Zapisano standard warsztatu.' }); },
+                    { lista: initStd.typy.lista, baza: bazaStd });
+  var po = await ps.evaluate(function () {
+    return [document.getElementById('standard').className, document.getElementById('standard-komunikat').textContent, document.getElementById('s-max_dlugosc').value,
+            window.__wywolania.filter(function (x) { return x[0] === 'podglad'; }).length];
+  });
+  sprawdz(zap.join() === '5400' && !/ukryty/.test(po[0]) && /Zapisano/.test(po[1]) && po[2] === '5400' && po[3] === 0,
+          'zapis standardu w oknie z menu: panel zostaje otwarty z komunikatem i nową wartością (' + zap.join() + ' | ' + po.join(' | ') + ')');
+  await ps.click('#btn-standard-zamknij');
+  var zam = await ps.evaluate(function () { return window.__wywolania.filter(function (x) { return x[0] === 'zamknij'; }).length; });
+  sprawdz(zam === 1, '„Zamknij” w oknie z menu zamyka całe okno');
+  await ps.close();
 
   sprawdz(konsola.length === 0, 'brak błędów JavaScriptu: ' + konsola.join(' ; '));
   await browser.close();

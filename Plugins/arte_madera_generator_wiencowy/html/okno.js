@@ -233,15 +233,17 @@ var AMGW = (function () {
                             sciany: AMGW_EDYCJA.dane(), typ: AMGW_TYPY.typ() });
   }
 
-  // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli.
+  // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli; okno
+  // samego standardu (z menu) – bez podglądu.
   function zaplanujPodglad() {
+    if (AMGW_STANDARD.samodzielny()) { return; }
     AMGW_OTWORY.przelicz();
     if (stan.timer) { clearTimeout(stan.timer); }
     stan.timer = setTimeout(function () { stan.timer = null; wywolaj('podglad', dane()); }, 350);
   }
 
   // Start okna danymi z Ruby (AMGW.init): pola (pola domu z wymiarów tylko dla domu bez narysowanego obrysu), typy
-  // i standard, kroki, układ okna, wynik pierwszego przeliczenia.
+  // i standard, kroki, układ okna, wynik pierwszego przeliczenia; tryb 'standard' (z menu) – sam panel standardu.
   function init(d) {
     var i;
     stan.opisy = [];
@@ -259,6 +261,7 @@ var AMGW = (function () {
     AMGW_WEGLY.init(zaplanujPodglad);
     AMGW_KROKI.zbuduj(d.kroki || []);
     AMGW_TYPY.init(d.typy, stan.opisy, wywolaj, zbierzParametry, function () {
+      if (AMGW_STANDARD.samodzielny()) { AMGW_STANDARD.poZapisie(); return; }
       if (AMGW_STANDARD.otwarty()) { AMGW_STANDARD.zamknij(); }
       odswiezPola();
       zaplanujPodglad();
@@ -271,6 +274,7 @@ var AMGW = (function () {
     for (i = 0; i < (d.otwory || []).length; i++) { AMGW_OTWORY.dodaj(d.otwory[i]); }
     for (i = 0; i < (d.wegly || []).length; i++) { AMGW_WEGLY.dodaj(d.wegly[i]); }
     $('btn-generuj').textContent = d.tryb === 'edycja' ? 'Zastąp dom w modelu' : 'Generuj w modelu';
+    if (d.tryb === 'standard') { AMGW_STANDARD.samodzielnie(); }
   }
 
   // Nowy formularz z podanych parametrów (pola bez wartości – fabryczne) i podgląd; do testów okna (AMGW._ustaw).

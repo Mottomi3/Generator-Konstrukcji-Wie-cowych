@@ -2,9 +2,9 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/standard.js
   Zadanie: panel „Standard warsztatu” – pola poziomu standard pogrupowane sekcjami z wymiarami zamka, wyszukiwanie pola, zapis standardu i powrót do wartości fabrycznych.
-  Tematy: standard warsztatu w oknie, panel standardu, pola standardu, szukanie pola standardu, zapisz standard, przywróć fabryczne, wymiary zamka w standardzie
+  Tematy: standard warsztatu w oknie, panel standardu, pola standardu, szukanie pola standardu, zapisz standard, przywróć fabryczne, wymiary zamka w standardzie, standard warsztatu z menu – okno bez domu
   Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (porównanie z fabrycznymi), html/typy.js (baza – bieżący standard)
-  Używają: html/okno.js (przycisk „Standard warsztatu…”, odpowiedź Ruby)
+  Używają: html/okno.js (przycisk „Standard warsztatu…”, odpowiedź Ruby, okno otwarte z menu „Standard warsztatu…” – tryb 'standard')
 
   Panel ma własne pola (identyfikatory s-<klucz>, wymiary zamka sz-<klucz>) – pola okna głównego to wartości tego domu.
   Zapis: wywołanie Ruby standard_zapisz ({ typ, parametry }) – sketchup/okno_typy.rb; po zapisie pola standardu, których
@@ -18,7 +18,7 @@ var AMGW_STANDARD = (function () {
   var el = AMGW_DOM.el;
   var wyczysc = AMGW_DOM.wyczysc;
   var fmt = AMGW_DOM.fmtPola;
-  var stan = { opisy: [], sekcje: [], opisyZamka: [], wywolaj: null };
+  var stan = { opisy: [], sekcje: [], opisyZamka: [], wywolaj: null, samodzielny: false };
 
   // Pole panelu dla opisu o z wartością v (lista wyboru albo pole tekstowe) i etykieta wyróżniona, gdy inne niż fabryczne.
   function pole(box, o, v) {
@@ -129,11 +129,28 @@ var AMGW_STANDARD = (function () {
   function otworz() {
     zbuduj(AMGW_TYPY.baza());
     $('standard-szukaj').value = '';
+    $('standard-komunikat').textContent = '';
     $('standard').className = 'panel-standard';
   }
 
-  // Zamknięcie panelu.
-  function zamknij() { $('standard').className = 'panel-standard ukryty'; }
+  // Zamknięcie panelu; okno otwarte z menu „Standard warsztatu” (bez domu) – zamknięcie całego okna.
+  function zamknij() {
+    if (stan.samodzielny) { stan.wywolaj('zamknij'); return; }
+    $('standard').className = 'panel-standard ukryty';
+  }
+
+  // Okno otwarte z menu „Standard warsztatu…” – sam panel standardu na całe okno, bez domu i bez podglądu.
+  function samodzielnie() {
+    stan.samodzielny = true;
+    document.body.className += ' tylko-standard';
+    otworz();
+  }
+
+  // Czy okno pokazuje sam standard (otwarte z menu, bez domu).
+  function samodzielny() { return stan.samodzielny; }
+
+  // Po zapisie standardu albo powrocie do fabrycznych w oknie bez domu: pola panelu z nowego standardu.
+  function poZapisie() { zbuduj(AMGW_TYPY.baza()); szukaj($('standard-szukaj').value); }
 
   // Czy panel jest otwarty.
   function otwarty() { return $('standard').className.indexOf('ukryty') < 0; }
@@ -153,5 +170,6 @@ var AMGW_STANDARD = (function () {
     $('standard-szukaj').oninput = function () { szukaj(this.value); };
   }
 
-  return { init: init, otworz: otworz, zamknij: zamknij, otwarty: otwarty, zbierz: zbierz, szukaj: szukaj };
+  return { init: init, otworz: otworz, zamknij: zamknij, otwarty: otwarty, zbierz: zbierz, szukaj: szukaj,
+           samodzielnie: samodzielnie, samodzielny: samodzielny, poZapisie: poZapisie };
 }());

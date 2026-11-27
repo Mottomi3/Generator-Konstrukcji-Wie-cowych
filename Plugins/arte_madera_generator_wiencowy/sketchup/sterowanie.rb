@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/sterowanie.rb
 # Zadanie: przebieg pracy z menu – start (linie albo dom do edycji), podgląd, generowanie, kontrola; dane wyniku dla okna.
-# Tematy: sterowanie, okienko po awarii obliczeń, wpis do dziennika pracy po generowaniu, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan, dach z aplikacji po budowie
+# Tematy: sterowanie, standard warsztatu z menu, okienko po awarii obliczeń, wpis do dziennika pracy po generowaniu, start z menu, tryb nowy / edycja, przebudowa z parametrów, ostrzeżenie o ręcznych poprawkach, kontrola zamków z menu, dane dla okna, rzut w oknie, ostatnie parametry, podpowiedzi w oknie, widok ściany dla okna, ostatni plan, dach z aplikacji po budowie
 # Zależy od: rdzen/projekt.rb, rdzen/awaria.rb (plan[:wyjatek]), rdzen/kontrola.rb, rdzen/widok.rb, sketchup/wejscie.rb, sketchup/budowa.rb, sketchup/dach_aplikacja.rb, sketchup/atrybuty.rb, sketchup/okno.rb, sketchup/ustawienia.rb, sketchup/dziennik_pracy.rb, log.rb
 # Używają: sketchup/menu.rb, sketchup/pasek.rb, sketchup/okno.rb (wywołania z okna)
 #
@@ -60,6 +60,19 @@ module ArteMadera
                      'typ' => @wejscie['typ'], 'z_wymiarow' => @wejscie['z_wymiarow'])
         rescue => e
           Log.error('Sterowanie.start', e)
+          UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
+        end
+
+        # Menu „Standard warsztatu…”: okno z samym panelem standardu (bez domu, bez podglądu) – zmiana tego, jak budujesz
+        # zawsze, bez zaznaczania linii ani domu.
+        def standard
+          @plan = nil
+          @dom = nil
+          @wejscie = nil
+          Okno.pokaz('tryb' => 'standard', 'parametry' => {}, 'otwory' => [], 'wegly' => [], 'sciany' => {},
+                     'info' => 'Standard warsztatu – wspólny dla wszystkich typów domów i nowych domów.', 'typ' => TypyDomow.wybrany)
+        rescue => e
+          Log.error('Sterowanie.standard', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
         end
 

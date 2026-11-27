@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/menu.rb
-# Zadanie: menu Rozszerzenia → ArteMadera Generator Wieńcowy (generuj / edytuj, kontrola, test działania, o wtyczce).
-# Tematy: menu, pozycje menu, o wtyczce, numer kompilacji, test działania z menu
+# Zadanie: menu Rozszerzenia → ArteMadera Generator Wieńcowy (generuj / edytuj, kontrola, standard warsztatu, test działania, o wtyczce).
+# Tematy: menu, pozycje menu, o wtyczce, numer kompilacji, test działania z menu, standard warsztatu w menu
 # Zależy od: sketchup/sterowanie.rb, sketchup/raport.rb, log.rb
 # Używają: main.rb (ładowanie)
 #
@@ -19,6 +19,7 @@ module ArteMadera
         sub = UI.menu('Extensions').add_submenu('ArteMadera Generator Wieńcowy')
         sub.add_item('Generuj dom z zaznaczonych linii / edytuj zaznaczony dom…') { Sterowanie.start }
         sub.add_item('Kontrola zamków, styków i długości (zaznaczony dom)') { Sterowanie.kontrola }
+        sub.add_item('Standard warsztatu…') { Sterowanie.standard }
         sub.add_separator
         sub.add_item('Test działania i raport do wysłania…') { Raport.uruchom }
         sub.add_item('O wtyczce') { o_wtyczce }

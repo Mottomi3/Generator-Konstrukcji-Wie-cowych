@@ -50,6 +50,8 @@ var AMGW_TYPY = (function () {
     var k = $('typ-komunikat');
     k.textContent = tekst || '';
     k.className = 'drobny ' + (blad ? 'blad' : 'ok');
+    var s = $('standard-komunikat');
+    if (s) { s.textContent = tekst || ''; s.className = 'drobny ' + (blad ? 'blad' : 'ok'); }
   }
 
   // Wartość bazowa pola (standard i typ); brak w bazie – fabryczna.

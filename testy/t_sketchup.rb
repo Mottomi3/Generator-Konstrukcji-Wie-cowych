@@ -302,15 +302,33 @@ TypyDomow.zapisz('Test – 10 wieńców', 'do testów', 'liczba_wiencow' => '10'
 
 Testy.grupa('Pasek narzędzi i menu pod prawym przyciskiem (runda 14)')
 pasek = Pasek.pasek
-Testy.sprawdz(pasek && pasek.nazwa == 'ArteMadera Generator Wieńcowy' && pasek.polecenia.length == 3, 'pasek z trzema przyciskami założony przy ładowaniu')
+Testy.sprawdz(pasek && pasek.nazwa == 'ArteMadera Generator Wieńcowy' && pasek.polecenia.length == 4, 'pasek z czterema przyciskami założony przy ładowaniu')
 Testy.sprawdz(pasek.pokazany, 'pierwsze uruchomienie – pasek pokazany')
 pasek.polecenia.each do |c|
   Testy.sprawdz(File.exist?(c.small_icon) && File.exist?(c.large_icon) && File.size(c.small_icon) > 100, "ikony przycisku „#{c.nazwa}” są w paczce")
   Testy.sprawdz(!c.tooltip.to_s.empty? && !c.status_bar_text.to_s.empty?, "opisy przycisku „#{c.nazwa}”")
 end
-%w[dom kontrola test].each do |n|
+%w[dom kontrola standard test].each do |n|
   Testy.sprawdz(%W[#{n}.svg #{n}_24.png #{n}_32.png].all? { |f| File.exist?(File.join(KATALOG_WTYCZKI, 'ikony', f)) }, "ikona #{n}: SVG i PNG 24 / 32")
 end
+Testy.grupa('Standard warsztatu z menu i paska (runda 17)')
+m_std = Sketchup::Model.new
+Sketchup.model = m_std
+menu_std = Menu.dodaj
+poz_std = menu_std.pozycje.find { |n, _b| n == 'Standard warsztatu…' }
+Testy.sprawdz(!poz_std.nil?, 'pozycja „Standard warsztatu…” w menu Rozszerzenia')
+poz_std[1].call
+Testy.sprawdz(Okno.dialog && Okno.dialog.visible? && Okno.dane_startowe['tryb'] == 'standard', 'pozycja menu otwiera okno samego standardu')
+Okno.dialog.close
+przycisk_std = pasek.polecenia.find { |c| c.nazwa == 'Standard warsztatu' }
+Testy.sprawdz(!przycisk_std.nil?, 'przycisk „Standard warsztatu” na pasku')
+przycisk_std.wywolaj
+d_std = Okno.dane_startowe
+Testy.sprawdz(Okno.dialog && Okno.dialog.visible? && d_std['tryb'] == 'standard' && Sterowanie.plan.nil?,
+              'przycisk paska otwiera okno samego standardu – bez zaznaczenia, bez domu i bez planu')
+Testy.sprawdz(d_std['typy']['baza'].is_a?(Hash) && d_std['typy']['baza'].key?('max_dlugosc'), 'okno standardu dostaje bieżący standard (baza)')
+Okno.dialog.close
+
 UI::Toolbar.ostatni_stan = TB_HIDDEN
 p2 = Pasek.dodaj
 Testy.sprawdz(!p2.pokazany && !p2.przywrocony, 'pasek schowany przez użytkownika zostaje schowany')

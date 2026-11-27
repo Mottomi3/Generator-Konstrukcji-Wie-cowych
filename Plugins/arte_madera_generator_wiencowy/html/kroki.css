@@ -70,6 +70,9 @@ body.uklad-zakladki #kroki, body.uklad-zakladki #krok-poziomy, body.uklad-zaklad
 /* Panel „Standard warsztatu”. */
 .panel-standard { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; background: rgba(43, 38, 32, 0.45); overflow-y: auto; }
 .panel-standard.ukryty { display: none; }
+body.tylko-standard .naglowek .przyciski, body.tylko-standard main, body.tylko-standard #komunikat { display: none; }
+body.tylko-standard .panel-standard { position: static; padding: 0 12px 12px; background: none; }
+body.tylko-standard .panel-standard-okno { max-width: none; box-shadow: none; }
 .panel-standard-okno { width: 100%; max-width: 860px; padding: 14px 18px 18px; border: 1px solid var(--linia); border-radius: 8px; background: var(--karta); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3); }
 .panel-standard-okno h2 { margin: 0; flex: 1; font-size: 16px; }
 #standard-szukaj { font: inherit; padding: 4px 6px; border: 1px solid var(--linia); border-radius: 3px; width: 170px; }

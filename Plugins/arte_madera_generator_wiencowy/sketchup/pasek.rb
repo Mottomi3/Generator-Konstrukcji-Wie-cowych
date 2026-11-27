@@ -2,8 +2,8 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/pasek.rb
-# Zadanie: szybki dostęp do poleceń wtyczki – pasek narzędzi z trzema przyciskami i polecenia pod prawym przyciskiem myszy na zaznaczonym domu albo liniach.
-# Tematy: pasek narzędzi, przyciski paska, ikony paska, menu pod prawym przyciskiem, menu kontekstowe, edytuj dom wieńcowy z menu kontekstowego, dom z zaznaczonych linii z menu kontekstowego
+# Zadanie: szybki dostęp do poleceń wtyczki – pasek narzędzi z czterema przyciskami i polecenia pod prawym przyciskiem myszy na zaznaczonym domu albo liniach.
+# Tematy: pasek narzędzi, przyciski paska, standard warsztatu na pasku, ikony paska, menu pod prawym przyciskiem, menu kontekstowe, edytuj dom wieńcowy z menu kontekstowego, dom z zaznaczonych linii z menu kontekstowego
 # Zależy od: sketchup/sterowanie.rb, sketchup/raport.rb, sketchup/atrybuty.rb (dom?), log.rb
 # Używają: main.rb (ładowanie)
 #
@@ -22,6 +22,8 @@ module ArteMadera
          'Zaznaczone linie obrysu – nowy dom; zaznaczony dom z generatora – edycja jego ustawień.', :start],
         ['kontrola', 'Kontrola domu wieńcowego',
          'Zamki, styki, długości bali i ściany równoległe zaznaczonego domu.', :kontrola],
+        ['standard', 'Standard warsztatu',
+         'Jak budujesz zawsze: bal i zamek, łączenia, luzy, stolarka, magazyn drewna – bez zaznaczania domu.', :standard],
         ['test', 'Test działania i raport',
          'Buduje przykładowe domy (model zostaje bez zmian) i zapisuje raport do folderu raportów.', :test]
       ].freeze unless const_defined?(:PRZYCISKI)
@@ -67,6 +69,7 @@ module ArteMadera
           case co
           when :start then Sterowanie.start
           when :kontrola then Sterowanie.kontrola
+          when :standard then Sterowanie.standard
           when :test then Raport.uruchom
           end
         rescue => e
