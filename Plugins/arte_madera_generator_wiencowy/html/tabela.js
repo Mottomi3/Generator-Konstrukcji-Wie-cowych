@@ -3,11 +3,11 @@
   Plik: html/tabela.js
   Zadanie: pola-tabele w oknie (lista typowej stolarki, magazyn drewna) – edytor tabeli z dodawaniem i usuwaniem wierszy, wartość jako tekst JSON w ukrytym polu, porównanie tabel bez względu na zapis liczb.
   Tematy: edytor tabeli, pole tabela w oknie, wiersze tabeli w oknie, dodaj wiersz, usuń wiersz, porównanie tabel, tabela jako JSON
-  Zależy od: html/wspolne.js (AMGW_DOM)
+  Zależy od: html/wspolne.js (AMGW_DOM), html/sciezka.js (AMGW_SCIEZKA – kolumna 'plik')
   Używają: html/standard.js (tabele w panelu standardu), html/okno.js (ukryte pole tabeli w formularzu domu), html/zmiany.js i html/typy.js (porównanie, wpisanie), html/otwory.js (lista stolarki)
 
   Opis pola z Ruby (sketchup/okno.rb): rodzaj 'tabela', kolumny [{ klucz, etykieta, rodzaj: 'tekst' | 'liczba' | 'wybor' |
-  'znacznik', wybory }], domyslna – tablica wierszy. W polach formularza wartość tabeli to tekst JSON (Ruby sprawdza ją
+  'znacznik' | 'plik' (tekst z przyciskiem wyboru pliku), wybory }], domyslna – tablica wierszy. W polach formularza wartość tabeli to tekst JSON (Ruby sprawdza ją
   w rdzen/parametry_tabela.rb).
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
 */
@@ -47,7 +47,7 @@ var AMGW_TABELA = (function () {
       if (k.rodzaj === 'wybor') { continue; }
       if (k.rodzaj === 'liczba' && v !== null) { return false; }
       if (k.rodzaj === 'znacznik' && v) { return false; }
-      if ((k.rodzaj === 'tekst' || !k.rodzaj) && v !== '') { return false; }
+      if ((k.rodzaj === 'tekst' || k.rodzaj === 'plik' || !k.rodzaj) && v !== '') { return false; }
     }
     return true;
   }
@@ -77,7 +77,7 @@ var AMGW_TABELA = (function () {
   // Tekst JSON tabeli do ukrytego pola.
   function tekst(opis, v) { return JSON.stringify(kanon(opis, v)); }
 
-  // Komórka edytora: pole tekstowe, lista wyboru albo znacznik; zmiana – naZmiane.
+  // Komórka edytora: pole tekstowe (kolumna 'plik' – z przyciskiem wyboru pliku), lista wyboru albo znacznik; zmiana – naZmiane.
   function poleKomorki(k, v, naZmiane) {
     var p;
     var j;
@@ -97,7 +97,7 @@ var AMGW_TABELA = (function () {
       p.value = v === undefined || v === null ? '' : (k.rodzaj === 'liczba' ? AMGW_DOM.fmtPola(v) : String(v));
     }
     p.addEventListener('change', naZmiane);
-    return p;
+    return k.rodzaj === 'plik' ? AMGW_SCIEZKA.opakuj(p, 'plik') : p;
   }
 
   // Wiersze z edytora (tabela HTML) w postaci kanonicznej.

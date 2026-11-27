@@ -34,7 +34,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     window.__wywolania = [];
     window.sketchup = {};
     ['gotowe', 'podglad', 'generuj', 'zamknij', 'blad_js', 'typ_wybierz', 'typ_zapisz', 'typ_powiel', 'typ_usun', 'standard_zapisz',
-     'standard_fabryczne', 'uklad', 'widok', 'zapisz_liste', 'tryb_pol', 'sciany'].forEach(function (n) {
+     'standard_fabryczne', 'uklad', 'widok', 'zapisz_liste', 'tryb_pol', 'sciany', 'wybierz_sciezke'].forEach(function (n) {
       window.sketchup[n] = function (arg) { window.__wywolania.push([n, arg]); };
     });
   });
@@ -206,6 +206,20 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [JSON.parse(document.getElementById('s-stolarka').value).length, document.getElementById('sl-stolarka').className];
   });
   sprawdz(tl[0] === 3 && /zmieniony/.test(tl[1]), 'nowy wiersz listy w ukrytym polu, pole oznaczone jako zmienione (' + tl.join(' | ') + ')');
+  // Runda 18: ścieżka modelu – przycisk „…” w kolumnie „Model” i przy folderze modeli; odpowiedź Ruby wpisuje ścieżkę.
+  var sc = await page.evaluate(function () {
+    window.__wywolania = [];
+    var r = document.querySelectorAll('#t-stolarka tbody tr')[2];
+    r.querySelector('.sciezka-wybierz').click();
+    var w = window.__wywolania.filter(function (x) { return x[0] === 'wybierz_sciezke'; })[0];
+    var d = w ? JSON.parse(w[1]) : {};
+    AMGW_SCIEZKA.wybrana({ id: d.id, sciezka: 'C:\\Modele\\O2.skp' });
+    var f = document.getElementById('s-stolarka_folder');
+    return [d.rodzaj, JSON.parse(document.getElementById('s-stolarka').value)[2].model,
+            !!(f && f.parentNode.querySelector('.sciezka-wybierz'))];
+  });
+  sprawdz(sc[0] === 'plik' && sc[1] === 'C:\\Modele\\O2.skp' && sc[2],
+          'kolumna „Model”: „…” wybiera plik, ścieżka trafia do listy; przy folderze modeli przycisk wyboru (' + sc.join(' | ') + ')');
   var mg = await page.evaluate(function () {
     var t = document.getElementById('t-magazyn_drewna');
     var deska = Array.prototype.filter.call(t.querySelectorAll('tbody tr'), function (r) { return r.querySelector('[data-kol="przekroj"]').value === '14x115'; })[0];

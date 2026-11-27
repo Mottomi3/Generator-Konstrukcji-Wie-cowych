@@ -3,18 +3,19 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, lista stolarki – parametr, folder modeli stolarki, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
-# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb (listy sekcji)
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
+# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb, rdzen/parametry_stolarka.rb (listy sekcji)
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
 # Nowy parametr = jeden wpis w LISTA (okno samo doda pole w swojej sekcji, wartość trafi do zapisanych ustawień);
 # odczyt w kodzie tylko przez p['klucz'] (przekroje: Parametry.przekroj(p, 'klucz') → [b, h]).
 # Rodzaje pól: :liczba, :calkowita, :wybor (lista :wybory), :przekroj („50x150”), :tekst, :tabela (kolumny, wiersze –
-# rdzen/parametry_tabela.rb; tylko w standardzie warsztatu).
+# rdzen/parametry_tabela.rb; tylko w standardzie warsztatu). Cecha sciezka: 'folder' | 'plik' – pole tekstowe z przyciskiem
+# „Wybierz…” (sketchup/okno_sciezki.rb).
 # podstawowy: true – pole widoczne w trybie okna „Podstawowe” (pozostałe tylko w „Wszystkie” albo gdy zmienione).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-%w[parametry_dach parametry_taras parametry_zadaszenie parametry_podloga parametry_materialy].each do |plik|
+%w[parametry_dach parametry_taras parametry_zadaszenie parametry_podloga parametry_materialy parametry_stolarka].each do |plik|
   require File.join(File.dirname(__FILE__), plik)
 end
 
@@ -203,17 +204,6 @@ module ArteMadera
         { klucz: 'min_pasek_przy_otworze', poziom: :standard, domyslna: 20.0, etykieta: 'Najcieńszy pasek bala nad / pod otworem', jednostka: 'mm',
           min: 1.0, max: 100.0, rodzaj: :liczba, sekcja: 'otwory',
           podpowiedz: 'Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem.' },
-        { klucz: 'stolarka', poziom: :standard, rodzaj: :tabela, sekcja: 'otwory', etykieta: 'Typowa stolarka – okna i drzwi',
-          kolumny: [['symbol', 'Symbol', :tekst], ['rodzaj', 'Rodzaj', :wybor, [%w[okno okno], %w[drzwi drzwi]]],
-                    ['szerokosc', 'Szer. stolarki [mm]', :liczba], ['wysokosc', 'Wys. stolarki [mm]', :liczba],
-                    ['spod', 'Spód od podwaliny [mm]', :liczba], ['model', 'Model (plik .skp)', :tekst]],
-          domyslna: [{ 'symbol' => 'O1', 'rodzaj' => 'okno', 'szerokosc' => 1020.0, 'wysokosc' => 1010.0, 'spod' => 900.0, 'model' => '' },
-                     { 'symbol' => 'D1', 'rodzaj' => 'drzwi', 'szerokosc' => 930.0, 'wysokosc' => 2100.0, 'spod' => 0.0, 'model' => '' }],
-          podpowiedz: 'Okna i drzwi do wstawiania kliknięciem w widok ściany i z listy przy tabeli otworów. Model – plik .skp ' \
-                      'z folderu modeli stolarki (puste – plik o nazwie symbolu, np. O1.skp); bez pliku zostaje sam otwór.' },
-        { klucz: 'stolarka_folder', poziom: :standard, domyslna: '', etykieta: 'Folder modeli stolarki (.skp)', rodzaj: :tekst, sekcja: 'otwory',
-          podpowiedz: 'Pełna ścieżka folderu z modelami okien i drzwi, np. C:\\Users\\…\\Stolarka. Model: punkt 0 w dolnym lewym ' \
-                      'narożniku stolarki od zewnątrz, oś czerwona wzdłuż szerokości, zielona w głąb ściany, niebieska w górę.' },
         { klucz: 'nowy_otwor_od', poziom: :standard, domyslna: 1000.0, etykieta: 'Nowy otwór – odległość od narożnika', jednostka: 'mm',
           min: 0.0, max: 30_000.0, rodzaj: :liczba, sekcja: 'otwory' },
 
@@ -227,7 +217,7 @@ module ArteMadera
 
       # Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu, podłogi i materiałów.
       LISTA = (LISTA_SCIANY + ParametryDach::LISTA + ParametryTaras::LISTA + ParametryZadaszenie::LISTA + ParametryPodloga::LISTA +
-               LISTA_OTWORY + ParametryMaterialy::LISTA).freeze unless
+               LISTA_OTWORY + ParametryStolarka::LISTA + ParametryMaterialy::LISTA).freeze unless
         const_defined?(:LISTA)
 
       # Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych.
@@ -236,8 +226,9 @@ module ArteMadera
         'Typ 200 – dom parterowy wysoki, taras na słupach' => { 'liczba_wiencow' => 20, 'taras' => 'podciag', 'taras_glebokosc' => 2000.0 },
         'Typ 300 – dom 1,5 kondygnacji ze stropem, taras między ścianami' =>
           { 'liczba_wiencow' => 25, 'strop' => 'tak', 'dzialowa_nizsza_wysokosc' => 2780.0, 'taras' => 'sciany', 'taras_glebokosc' => 2000.0,
-            'dach_uklad' => 'platwie_krokwie' },
-        'Typ 400 – dach jednospadowy, płatwie i krokwie' => { 'dach_rodzaj' => 'jednospadowy', 'dach_kat' => 15.0, 'dach_uklad' => 'platwie_krokwie' },
+            'dach_uklad' => 'platwie_krokwie', 'przekroje_dobor' => 'auto' },
+        'Typ 400 – dach jednospadowy, płatwie i krokwie' => { 'dach_rodzaj' => 'jednospadowy', 'dach_kat' => 15.0, 'dach_uklad' => 'platwie_krokwie',
+                                                              'przekroje_dobor' => 'auto' },
         'Pełny profil bala – pióro i wpust (wizualizacja)' => { 'profil_bala' => 'pelny' },
         'Bez łączenia bali (bale do 7 m)' => { 'max_dlugosc' => 7000.0 },
         'Podłoga ocieplona 150 mm' => { 'izolacja_podlogi' => 150.0 }

@@ -116,19 +116,25 @@ module ArteMadera
           'prefiksy' => prefiksy }
       end
 
-      # Liczby z modelu (grupa domu): instancje według prefiksu definicji, grupy ścian.
+      # Liczby z modelu (grupa domu): instancje według prefiksu definicji, grupy ścian; modele okien i drzwi (grupa
+      # „Stolarka” – nie drewno z listy) liczone osobno.
       def liczby_modelu(grupa)
         prefiksy = Hash.new(0)
         grupy = 0
+        stolarka = 0
         grupa.entities.to_a.each do |g|
           next unless g.respond_to?(:entities) && !g.is_a?(Sketchup::ComponentInstance)
+          if g.name == 'Stolarka'
+            stolarka += g.entities.to_a.count { |i| i.is_a?(Sketchup::ComponentInstance) }
+            next
+          end
           grupy += 1
           g.entities.to_a.each do |i|
             next unless i.is_a?(Sketchup::ComponentInstance)
             prefiksy[i.definition.get_attribute(Atrybuty::DICT_AM, 'prefiks').to_s] += 1
           end
         end
-        { 'grupy' => grupy, 'instancje' => prefiksy.values.inject(0, :+), 'prefiksy' => prefiksy }
+        { 'grupy' => grupy, 'instancje' => prefiksy.values.inject(0, :+), 'prefiksy' => prefiksy, 'stolarka' => stolarka }
       end
 
       # Bryły definicji: zamknięte (manifold) i z objętością jak z profilu; listy nazw z problemami.

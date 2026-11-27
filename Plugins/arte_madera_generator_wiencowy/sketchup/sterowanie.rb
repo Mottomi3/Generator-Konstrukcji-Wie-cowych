@@ -139,9 +139,9 @@ module ArteMadera
                           plan[:pozycje].length))
           dach = DachAplikacja.po_budowie(model, @dom, plan, stary_id)
           DziennikPracy.generowanie(plan, wej, stary ? 'edycja' : 'nowy', ms_obliczen, ms_budowy, zb, dach, PLUGIN_BUILD)
-          st = zb[:stolarka] || { wstawione: 0, uwagi: [] }
+          st = zb[:stolarka] || { wstawione: 0, proste: 0, uwagi: [] }
           wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany], 'dach' => dach,
-                      'stolarka' => { 'wstawione' => st[:wstawione], 'uwagi' => st[:uwagi] })
+                      'stolarka' => { 'wstawione' => st[:wstawione], 'proste' => st[:proste].to_i, 'uwagi' => st[:uwagi] })
         end
 
         # Menu „Kontrola”: kolizje w zamkach, mijanka, długości dla zaznaczonego domu.

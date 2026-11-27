@@ -2,20 +2,23 @@
 #
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/stolarka_modele.rb
-# Zadanie: modele okien i drzwi użytkownika wstawiane w otwory – wiersz listy typowej stolarki dla otworu, plik modelu w folderze modeli, położenie modelu w otworze (punkt, osie) w układzie domu.
-# Tematy: modele stolarki, model okna, model drzwi, plik modelu stolarki, folder modeli stolarki, wstawienie modelu w otwór, lista typowej stolarki – wiersz
-# Zależy od: rdzen/parametry.rb (grubość ściany, lista stolarki p['stolarka'], folder p['stolarka_folder'])
+# Zadanie: modele okien i drzwi wstawiane w otwory – wiersz listy typowej stolarki dla otworu, plik modelu (pełna ścieżka z kolumny „Model” albo nazwa w folderze modeli), prosty model z generatora, gdy pliku nie ma, położenie modelu w otworze (punkt, osie) w układzie domu.
+# Tematy: modele stolarki, model okna, model drzwi, plik modelu stolarki, ścieżka modelu stolarki, folder modeli stolarki, wstawienie modelu w otwór, lista typowej stolarki – wiersz, rodzaj otworu okno / drzwi
+# Zależy od: rdzen/parametry.rb (grubość ściany, lista stolarki p['stolarka'], folder p['stolarka_folder'], p['stolarka_prosta']), rdzen/stolarka_prosta.rb (części prostego modelu)
 # Używają: sketchup/stolarka_modele.rb (wstawienie komponentów przy generowaniu), html/otwory.js i html/klik_sciana.js (ta sama lista w oknie)
 #
-# Decyzja użytkownika z 2026-11-25: „w wolnym czasie zrobię modele typowych okien i drzwi, wtedy damy funkcję, by je od razu
-# wstawiać do modeli”. Model = plik .skp w folderze stolarka_folder: nazwa z kolumny „Model” wiersza listy, a gdy pusta –
-# symbol wiersza (np. O1.skp). Punkt 0 modelu w dolnym lewym narożniku stolarki widzianej od zewnątrz, oś X wzdłuż
-# szerokości, Y w głąb ściany (do środka domu), Z w górę. Ściana zewnętrzna ma lico zewnętrzne po prawej stronie kier
-# (rdzen/sciany.rb), więc „od zewnątrz” = −nor, a lewy narożnik widziany z zewnątrz leży przy s0 stolarki. Działowa – ta
-# sama zasada (strona −nor jako „zewnętrzna”).
+# Decyzje użytkownika: 2026-11-25 – „w wolnym czasie zrobię modele typowych okien i drzwi, wtedy damy funkcję, by je od razu
+# wstawiać do modeli”; 2026-11-27 – modeli jeszcze nie ma, ścieżka do wpisania „da mi możliwość podmiany modeli”. Model =
+# plik .skp: pełna ścieżka z kolumny „Model” wiersza listy albo nazwa (z kolumny „Model”, a gdy pusta – symbol wiersza,
+# np. O1.skp) w folderze stolarka_folder. Otwór bez pliku (bez typu, bez folderu, plik nie istnieje) dostaje prosty model
+# z generatora (rdzen/stolarka_prosta.rb), gdy stolarka_prosta = tak. Punkt 0 modelu w dolnym lewym narożniku stolarki
+# widzianej od zewnątrz, oś X wzdłuż szerokości, Y w głąb ściany (do środka domu), Z w górę. Ściana zewnętrzna ma lico
+# zewnętrzne po prawej stronie kier (rdzen/sciany.rb), więc „od zewnątrz” = −nor, a lewy narożnik widziany z zewnątrz leży
+# przy s0 stolarki. Działowa – ta sama zasada (strona −nor jako „zewnętrzna”).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
+require File.join(File.dirname(__FILE__), 'stolarka_prosta') unless defined?(ArteMadera::GeneratorWiencowy::StolarkaProsta)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -32,32 +35,51 @@ module ArteMadera
         (p['stolarka'] || []).find { |r| r['symbol'].to_s.strip.downcase == s }
       end
 
-      # Ścieżka pliku modelu dla wiersza listy (folder z parametru + nazwa z kolumny „Model” albo symbol); nil – brak folderu.
+      # Ścieżka pliku modelu dla wiersza listy: pełna ścieżka z kolumny „Model” (bez folderu modeli) albo nazwa z kolumny
+      # „Model” lub symbol w folderze modeli; nil – brak wiersza, nazwy albo folderu dla samej nazwy.
       def plik(p, r)
-        folder = p['stolarka_folder'].to_s.strip
-        return nil if folder.empty? || r.nil?
+        return nil if r.nil?
         nazwa = r['model'].to_s.strip
         nazwa = r['symbol'].to_s.strip if nazwa.empty?
         return nil if nazwa.empty?
         nazwa += ROZSZERZENIE unless nazwa.downcase.end_with?(ROZSZERZENIE)
-        nazwa =~ %r{\A([A-Za-z]:)?[\\/]} ? nazwa : File.join(folder, nazwa)
+        return nazwa if pelna_sciezka?(nazwa)
+        folder = p['stolarka_folder'].to_s.strip
+        folder.empty? ? nil : File.join(folder, nazwa)
       end
 
-      # Modele do wstawienia w planie: [{ plik:, nazwa:, sciana:, typ:, polozenie: { poczatek:, x:, y:, z: },
-      # szerokosc:, wysokosc: }] – otwory z typem z listy, gdy jest folder modeli.
+      # Czy tekst jest pełną ścieżką (C:\…, C:/…, \\serwer\…, /…).
+      def pelna_sciezka?(t)
+        t =~ %r{\A([A-Za-z]:)?[\\/]} ? true : false
+      end
+
+      # Rodzaj otworu: z wiersza listy stolarki, a bez typu – drzwi, gdy stolarka zaczyna się na spodzie ściany (spód 0).
+      def rodzaj(r, st)
+        return r['rodzaj'].to_s if r && !r['rodzaj'].to_s.empty?
+        st[:z0].abs < 0.5 ? 'drzwi' : 'okno'
+      end
+
+      # Modele do wstawienia w planie: [{ plik: (nil – brak pliku), prosty: (części prostego modelu albo nil), nazwa:,
+      # sciana:, typ:, rodzaj:, polozenie: { poczatek:, x:, y:, z: }, szerokosc:, wysokosc: }] – każdy otwór ze stolarką,
+      # który ma plik modelu albo dostaje prosty model (stolarka_prosta = tak).
       def do_wstawienia(plan)
         p = plan[:parametry]
         t = Parametry.grubosc(p)
+        prosty = p['stolarka_prosta'].to_s != 'nie'
         wynik = []
         (plan[:sciany] || []).each do |w|
           (w[:otwory] || []).each do |o|
             next if o[:gniazdo] || o[:stolarka].nil?
             r = wiersz(p, o[:typ])
             f = plik(p, r)
-            next if f.nil?
+            next if f.nil? && !prosty
             st = o[:stolarka]
-            wynik << { plik: f, nazwa: "#{o[:nazwa]} #{r['symbol']}".strip, sciana: w[:id], typ: r['symbol'].to_s,
-                       polozenie: polozenie(w, st, t), szerokosc: st[:s1] - st[:s0], wysokosc: st[:z1] - st[:z0] }
+            sz = st[:s1] - st[:s0]
+            wy = st[:z1] - st[:z0]
+            rd = rodzaj(r, st)
+            wynik << { plik: f, prosty: prosty ? StolarkaProsta.czesci(rd, sz, wy, t, p) : nil, rodzaj: rd,
+                       nazwa: "#{o[:nazwa]} #{r ? r['symbol'] : ''}".strip, sciana: w[:id], typ: r ? r['symbol'].to_s : '',
+                       polozenie: polozenie(w, st, t), szerokosc: sz, wysokosc: wy }
           end
         end
         wynik

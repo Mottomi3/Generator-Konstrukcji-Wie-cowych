@@ -52,9 +52,13 @@ dane.init.uklad = 'zakladki';
   var sekcje = await page.evaluate(function () { return document.querySelectorAll('#sekcje details').length; });
   sprawdz(sekcje === dane.init.sekcje.length, 'sekcja okna na każdą sekcję parametrów (' + sekcje + ')');
   var wSekcjach = await page.evaluate(function (opisy) {
-    return opisy.every(function (o) { var p = document.getElementById('p-' + o.klucz); return p && p.parentNode.id === 'pola-' + o.sekcja; });
+    return opisy.every(function (o) {
+      var p = document.getElementById('p-' + o.klucz);
+      var r = p && /sciezka/.test(p.parentNode.className) ? p.parentNode.parentNode : (p ? p.parentNode : null);
+      return r && r.id === 'pola-' + o.sekcja;
+    });
   }, opisyOkna);
-  sprawdz(wSekcjach, 'każde pole w swojej sekcji');
+  sprawdz(wSekcjach, 'każde pole w swojej sekcji (pole ze ścieżką – w opakowaniu z przyciskiem „…”)');
   var podp = await page.evaluate(function () { return document.querySelectorAll('#sekcje .podp').length; });
   sprawdz(podp === opisyOkna.filter(function (o) { return o.podpowiedz && o.rodzaj !== 'tabela'; }).length, 'podpowiedzi pod polami (' + podp + ')');
   var szab = await page.evaluate(function () { return document.querySelectorAll('#typ option').length; });

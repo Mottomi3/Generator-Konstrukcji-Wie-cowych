@@ -4,12 +4,12 @@
 # Plik: sketchup/okno.rb
 # Zadanie: okno parametrów (UI::HtmlDialog) – dane startowe dla okna, wywołania z JavaScriptu, wyniki do okna.
 # Tematy: okno, HtmlDialog, formularz parametrów, sekcje okna, zakładki okna, kroki okna – dane, podpowiedzi pól, typy domów w oknie – dane startowe, callback, podgląd, przycisk generuj, tabela otworów, komunikaty w oknie, widok ściany w oknie, zapis zestawienia z okna, tryb pól okna
-# Zależy od: rdzen/parametry_lista.rb, rdzen/poziomy.rb, sketchup/ustawienia.rb, sketchup/okno_typy.rb, sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
+# Zależy od: rdzen/parametry_lista.rb, rdzen/poziomy.rb, sketchup/ustawienia.rb, sketchup/okno_typy.rb, sketchup/okno_sciezki.rb (wybór ścieżki), sketchup/sterowanie.rb, sketchup/eksport.rb, log.rb
 # Używają: sketchup/sterowanie.rb (pokaz)
 #
 # Okno buduje formularz z ParametryLista (SEKCJE, LISTA – jedno źródło pól; poziom i krok każdego pola – rdzen/poziomy.rb).
 # Wywołania JS → Ruby: gotowe, podglad, generuj, zamknij, blad_js, widok (id ściany), zapisz_liste, tryb_pol
-# ('podstawowe' | 'wszystkie') oraz typy i standard (sketchup/okno_typy.rb).
+# ('podstawowe' | 'wszystkie') oraz typy i standard (sketchup/okno_typy.rb) i wybierz_sciezke (sketchup/okno_sciezki.rb).
 # Ruby → JS: AMGW.init(dane), AMGW.wynik(dane), AMGW.typy({ lista:, typ:, baza:, … }), AMGW.widok(dane widoku ściany –
 # rdzen/widok.rb), AMGW.komunikat({ tekst:, rodzaj: }).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -73,7 +73,7 @@ module ArteMadera
               'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'zamienniki' => w[:zamienniki], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek],
               'poziom' => (w[:poziom] || :standard).to_s, 'krok' => Poziomy.krok_sekcji(w[:sekcja]), 'obrys' => w[:obrys],
               'z_wymiarow' => w[:z_wymiarow] ? true : false, 'kolumny' => kolumny(w), 'wspolny' => w[:wspolny], 'wspolny_mapa' => w[:wspolny_mapa],
-              'magazyn' => w[:magazyn] }
+              'magazyn' => w[:magazyn], 'sciezka' => w[:sciezka] }
           end
         end
 
@@ -176,6 +176,7 @@ module ArteMadera
             Log.error_text("Okno (JavaScript): #{arg}")
           end
           OknoTypy.podlacz(dlg) { |dane| wyslij_typy(dane) }
+          OknoSciezki.podlacz(dlg)
         end
 
         # Zamknięcie poprzedniego okna generatora (także ukrytego) – nowe okno nie dziedziczy po nim niczego.

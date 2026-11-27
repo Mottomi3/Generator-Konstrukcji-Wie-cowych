@@ -19,8 +19,8 @@ module ArteMadera
       OPISY = {
         'Typ 100' => '16 wieńców, dach dwuspadowy 20° na samych płatwiach, bez tarasu.',
         'Typ 200' => '20 wieńców, taras 2 m z przodu na słupach z podciągiem.',
-        'Typ 300' => '25 wieńców ze stropem, taras 2 m między ścianami, płatwie i krokwie.',
-        'Typ 400' => 'Dach jednospadowy 15°, płatwie i krokwie.'
+        'Typ 300' => '25 wieńców ze stropem, taras 2 m między ścianami, płatwie i krokwie dobierane automatycznie.',
+        'Typ 400' => 'Dach jednospadowy 15°, płatwie i krokwie dobierane automatycznie.'
       }.freeze unless const_defined?(:OPISY)
       NAJDLUZSZA_NAZWA = 80 unless const_defined?(:NAJDLUZSZA_NAZWA)
 

@@ -102,6 +102,9 @@ body.tylko-standard .panel-standard-okno { max-width: none; box-shadow: none; }
 .tabela-pola th { white-space: normal; vertical-align: bottom; }
 .standard-pola .pola .pelny, .standard-pola .pola .tabela-standardu { grid-column: 1 / -1; }
 .dodaj-wiersz { margin: 4px 0 8px; }
+.sciezka { display: flex; gap: 3px; align-items: center; }
+.sciezka input[type="text"] { flex: 1 1 auto; min-width: 60px; }
+.sciezka-wybierz { flex: 0 0 auto; padding: 1px 6px; }
 /* Wycena materiału (html/wycena.js). */
 #tab-wycena tr.bez-ceny td { color: var(--szary); }
 #tab-wycena tr.suma td { font-weight: 600; border-top: 2px solid var(--linia); }

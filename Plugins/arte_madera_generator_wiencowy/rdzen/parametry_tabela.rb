@@ -7,7 +7,8 @@
 # Zależy od: – (Parametry.liczba przez wywołującego)
 # Używają: rdzen/parametry.rb (sprawdz – rodzaj :tabela, normalizuj – przeniesienie dawnych pól), rdzen/parametry_lista.rb (stolarka), rdzen/magazyn_drewna.rb
 #
-# Pole tabeli w ParametryLista: rodzaj: :tabela, kolumny: [[klucz, etykieta, rodzaj (:tekst | :liczba | :wybor | :znacznik),
+# Pole tabeli w ParametryLista: rodzaj: :tabela, kolumny: [[klucz, etykieta, rodzaj (:tekst | :liczba | :wybor | :znacznik |
+# :plik – tekst ze ścieżką, w oknie z przyciskiem wyboru pliku),
 # wybory (dla :wybor)]], domyslna: [{ klucz kolumny => wartość }]. Wartość po sprawdzeniu: tablica wierszy (Hash z kluczami
 # kolumn; liczby Float albo nil, znaczniki true / false, reszta – tekst bez spacji na końcach); wiersz bez żadnej wartości
 # – pominięty. Okno przesyła tabelę jako tekst JSON (ukryte pole), plik ustawień i model – jako tablicę.

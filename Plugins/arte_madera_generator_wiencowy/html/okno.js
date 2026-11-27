@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, wymiary zamka, wynik podglądu, wywołania Ruby; typy, standard, kroki i układ w osobnych plikach.
   Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie, odświeżenie pól po zmianie, start okna
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/klik_sciana.js (AMGW_KLIK – okienko przy kliknięciu w widok ściany), html/dzialowe.js (AMGW_DZIALOWE – działowe domu z wymiarów), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js, html/tabela.js (pola-tabele)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/klik_sciana.js (AMGW_KLIK – okienko przy kliknięciu w widok ściany), html/dzialowe.js (AMGW_DZIALOWE – działowe domu z wymiarów), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js, html/tabela.js (pola-tabele), html/sciezka.js (pole ze ścieżką)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.typy, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -141,7 +141,7 @@ var AMGW = (function () {
       });
     });
     AMGW_POMOC.poWejsciu(pole, opis.klucz);
-    sekcja.appendChild(pole);
+    sekcja.appendChild(opis.sciezka ? AMGW_SCIEZKA.opakuj(pole, opis.sciezka) : pole);
     if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp', id: 'h-' + opis.klucz }, opis.podpowiedz)); }
     AMGW_POMOC.dodaj(sekcja, etykieta, opis);
   }
@@ -344,10 +344,12 @@ var AMGW = (function () {
     }
   }
 
-  // Zdanie o modelach okien i drzwi wstawionych w otwory (sketchup/stolarka_modele.rb); bez modeli – pusty tekst.
+  // Zdanie o modelach okien i drzwi wstawionych w otwory (sketchup/stolarka_modele.rb): z plików i proste z generatora;
+  // bez modeli – pusty tekst.
   function opisStolarki(st) {
-    if (!st || (!st.wstawione && !(st.uwagi || []).length)) { return ''; }
-    return ' Modele stolarki: ' + st.wstawione + '.' + ((st.uwagi || []).length ? ' ' + st.uwagi.join(' ') : '');
+    if (!st || (!st.wstawione && !st.proste && !(st.uwagi || []).length)) { return ''; }
+    return ' Modele stolarki: z plików ' + (st.wstawione || 0) + ', proste ' + (st.proste || 0) + '.' +
+      ((st.uwagi || []).length ? ' ' + st.uwagi.join(' ') : '');
   }
 
   // Podpięcie przycisków i zgłoszenie gotowości okna do Ruby.

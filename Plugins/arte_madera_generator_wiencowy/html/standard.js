@@ -3,7 +3,7 @@
   Plik: html/standard.js
   Zadanie: panel „Standard warsztatu” – pola poziomu standard pogrupowane sekcjami z wymiarami zamka, wyszukiwanie pola, zapis standardu i powrót do wartości fabrycznych.
   Tematy: standard warsztatu w oknie, panel standardu, pola standardu, szukanie pola standardu, zapisz standard, przywróć fabryczne, wymiary zamka w standardzie, standard warsztatu z menu – okno bez domu, tabela w standardzie warsztatu
-  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (porównanie z fabrycznymi), html/typy.js (baza – bieżący standard), html/tabela.js (pola-tabele)
+  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (porównanie z fabrycznymi), html/typy.js (baza – bieżący standard), html/tabela.js (pola-tabele), html/sciezka.js (pole ze ścieżką)
   Używają: html/okno.js (przycisk „Standard warsztatu…”, odpowiedź Ruby, okno otwarte z menu „Standard warsztatu…” – tryb 'standard')
 
   Panel ma własne pola (identyfikatory s-<klucz>, wymiary zamka sz-<klucz>) – pola okna głównego to wartości tego domu.
@@ -56,7 +56,7 @@ var AMGW_STANDARD = (function () {
     p.title = o.podpowiedz || '';
     p.addEventListener('change', function () { wyroznij(o); });
     box.appendChild(lab);
-    box.appendChild(p);
+    box.appendChild(o.sciezka ? AMGW_SCIEZKA.opakuj(p, o.sciezka) : p);
     wyroznij(o);
   }
 

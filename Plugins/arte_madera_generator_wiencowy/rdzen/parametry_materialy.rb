@@ -23,12 +23,13 @@ module ArteMadera
 
       LISTA = [
         # Magazyn drewna i jeden przełącznik doboru przekrojów (rdzen/magazyn_drewna.rb), ceny do wyceny (rdzen/wycena.rb).
-        { klucz: 'przekroje_dobor', poziom: :standard, podstawowy: true, domyslna: 'reczny', etykieta: 'Przekroje konstrukcji – dobór',
+        { klucz: 'przekroje_dobor', poziom: :typ, podstawowy: true, domyslna: 'reczny', etykieta: 'Przekroje konstrukcji – dobór',
           rodzaj: :wybor, sekcja: 'magazyn',
           wybory: [['reczny', 'podaję sam – generator sprawdza i podpowiada najmniejszy wystarczający'],
                    ['auto', 'dobieraj automatycznie – najlżejszy wystarczający z magazynu, dostępny w całej długości']],
-          podpowiedz: 'Jeden przełącznik dla płatwi, krokwi, legarów i belek zadaszenia. Wyjątek dla jednego elementu – w jego polu ' \
-                      '„dobór” (np. „Przekrój płatwi – dobór”) zamiast „jak przełącznik”.' },
+          podpowiedz: 'Jeden przełącznik dla płatwi, krokwi, legarów i belek zadaszenia; ustawienie typu domu (fabrycznie: Typ 100 ' \
+                      'i 200 – podaję sam, Typ 300 i 400 – automatycznie). Wyjątek dla jednego elementu – w jego polu „dobór” ' \
+                      '(np. „Przekrój płatwi – dobór”) zamiast „jak przełącznik”.' },
         { klucz: 'magazyn_drewna', poziom: :standard, rodzaj: :tabela, sekcja: 'magazyn', etykieta: 'Magazyn drewna',
           kolumny: MagazynDrewna::KOLUMNY, domyslna: MagazynDrewna.fabryczny,
           podpowiedz: 'Przekrój „szer.x wys.” (belka stoi wyższym bokiem), długości handlowe w metrach po ukośniku (puste – bez ' \

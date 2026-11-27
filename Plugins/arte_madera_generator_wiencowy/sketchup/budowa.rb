@@ -79,7 +79,7 @@ module ArteMadera
           end
         end
         dodaj_belki(grupa, plan, defs, tagi)
-        stolarka = StolarkaModeleSU.wstaw(grupa, plan, model, tagi[:stolarka])
+        stolarka = StolarkaModeleSU.wstaw(grupa, plan, model, tagi[:stolarka], dom_id)
         Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
         Atrybuty.zapisz_podpis(grupa)
         { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian, defs: defs, stolarka: stolarka }
