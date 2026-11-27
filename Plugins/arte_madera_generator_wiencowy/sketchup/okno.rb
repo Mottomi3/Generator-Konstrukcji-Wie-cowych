@@ -58,7 +58,7 @@ module ArteMadera
             'zakladki' => ParametryLista::ZAKLADKI.map { |k, tytul| { 'klucz' => k, 'tytul' => tytul } },
             'presety' => ParametryLista::PRESETY, 'opisy_zamka' => ParametryLista::OPISY_ZAMKA,
             'parametry' => d['parametry'] || {}, 'plik_ustawien' => Ustawienia.sciezka,
-            'otwory' => d['otwory'] || [], 'wegly' => d['wegly'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,
+            'otwory' => d['otwory'] || [], 'kanaly' => d['kanaly'] || [], 'wegly' => d['wegly'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,
             'podsumowanie' => d['podsumowanie'], 'tryb_pol' => Ustawienia.tryb_pol, 'uklad' => Ustawienia.uklad,
             'kroki' => Poziomy::KROKI.map { |k, tytul, sekcje| { 'klucz' => k, 'tytul' => tytul, 'sekcje' => sekcje } },
             'typy' => OknoTypy.dane(d['typ']), 'z_wymiarow' => d['z_wymiarow'] ? true : false, 'dzialowe' => d['dzialowe'] || [] }

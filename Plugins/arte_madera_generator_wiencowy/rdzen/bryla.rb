@@ -13,7 +13,8 @@
 # z0 → z1 na x0…x1, do szczytów), sciecie_dachu (wierzch ≤ płaszczyzna dachu w poprzek bala: z0 na licu y = 0, z1 na
 # licu y = t, na x0…x1 – górny bal ściany pod połacią, rdzen/sciecie_dachu.rb). W każdym przedziale profilu: stały
 # zakres y, wierzch i spód liniowe; przedział ze ścięciem dachu ma pasy (q[:pasy]) – wierzch pasa może opadać w poprzek
-# (kt – dz/dy), q[:zt_a], q[:zt_b] to wtedy najwyższy wierzch przedziału (obrys w widoku ściany).
+# (kt – dz/dy), q[:zt_a], q[:zt_b] to wtedy najwyższy wierzch przedziału (obrys w widoku ściany). kanal (x0…x1, y0…y1 –
+# pionowy otwór na przewody przez całą wysokość, rdzen/kanaly.rb) – pasy przed otworem i za nim.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 module ArteMadera
@@ -37,8 +38,10 @@ module ArteMadera
         dol = [[0.0, dl, 0.0, 0.0]]
         boki = []
         sciecia = []
+        kanaly = []
         cechy.each do |c|
           case c[:typ]
+          when 'kanal' then kanaly << c
           when 'sciecie_dachu' then sciecia << c
           when 'gniazdo_gora', 'wyciecie_gora' then gora << [c[:x0], c[:x1], h - c[:gleb], h - c[:gleb]]
           when 'gniazdo_dol', 'wyciecie_dol' then dol << [c[:x0], c[:x1], c[:gleb], c[:gleb]]
@@ -50,7 +53,7 @@ module ArteMadera
         dol = wyrownaj_poziomy(dol, 0.0, false)
         xs = [0.0, dl]
         (gora + dol).each { |g| xs << g[0] << g[1] }
-        (boki + sciecia).each { |c| xs << c[:x0] << c[:x1] }
+        (boki + sciecia + kanaly).each { |c| xs << c[:x0] << c[:x1] }
         xs = punkty_podzialu(xs, dl, przeciecia(gora + dol))
         wynik = []
         xs.each_cons(2) do |xa, xb|
@@ -69,6 +72,8 @@ module ArteMadera
           q = { xa: xa, xb: xb, y0: y0, y1: y1, zb_a: zb_a, zb_b: zb_b, zt_a: zt_a, zt_b: zt_b }
           sc = sciecia.find { |c| c[:x0] < xm && c[:x1] > xm }
           q = z_pasami(q, sciecie_pasow([q], sc, t)) if sc
+          kn = kanaly.find { |c| c[:x0] < xm && c[:x1] > xm }
+          q = z_pasami(q, kanal_pasow(q[:pasy] || [q], kn)) if q && kn
           wynik << q if q
         end
         wynik
@@ -125,6 +130,20 @@ module ArteMadera
             kt > 0 ? [lewy.merge(zt_a: ga, zt_b: ga, kt: kt), prawy] : [lewy, prawy.merge(zt_a: zt, zt_b: zt, kt: kt)]
           end
         end.flatten(1)
+      end
+
+      # Pasy z kanałem na przewody c (pionowy otwór na całą wysokość bala, y0…y1 w poprzek – rdzen/kanaly.rb): pas
+      # przecięty otworem dzieli się na część przed i za otworem; część węższa niż SCAL znika (otwór przy licu).
+      def kanal_pasow(pasy, c)
+        pasy.flat_map do |q|
+          czesci = [q.merge(y1: [q[:y1], c[:y0]].min), q.merge(y0: [q[:y0], c[:y1]].max)]
+          czesci.select { |r| r[:y1] - r[:y0] > SCAL }.map do |r|
+            next r unless q[:kt]
+            # Wierzch pasa po płaszczyźnie dachu (kt) – wysokość na nowym początku pasa.
+            dz = q[:kt] * (r[:y0] - q[:y0])
+            r.merge(zt_a: q[:zt_a] + dz, zt_b: q[:zt_b] + dz)
+          end
+        end
       end
 
       # Czy przedział ma materiał: wysokość dodatnia na co najmniej jednym końcu i nigdzie ujemna – także klin (skos
@@ -237,7 +256,7 @@ module ArteMadera
       def obrocone(dl, cechy)
         cechy.map do |c|
           n = c.merge(x0: dl - c[:x1], x1: dl - c[:x0])
-          n[:strona] = 1 - c[:strona] if c[:typ] == 'podciecie'
+          n[:strona] = 1 - c[:strona] if %w[podciecie puszka].include?(c[:typ])
           n = n.merge(z0: c[:z1], z1: c[:z0]) if %w[skos_gora sciecie_dachu].include?(c[:typ])
           n
         end

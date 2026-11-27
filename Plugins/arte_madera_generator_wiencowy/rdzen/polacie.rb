@@ -124,7 +124,9 @@ module ArteMadera
           szczyty << punkty.length if szczyt
         end
         geo = Dach.geo(dom)
-        { punkty: punkty, z: Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
+        # Podbitka na płatwiach – krokwie leżą na deskach: połać wyżej o grubość deski w pionie (jak w domu prostokątnym;
+        # runda 18, P5 – ziarna 6495, 6528, 7004, 7021).
+        { punkty: punkty, z: Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p) + Dach.uniesienie_krokwi(p), kat: p['dach_kat'].to_f, okap: p['dach_okap'].to_f,
           szczyty: szczyty }
       end
 

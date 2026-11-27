@@ -1,7 +1,7 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/sciana.js
-  Zadanie: widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany.
+  Zadanie: widok ściany w oknie (SVG) – bale z numerami pozycji, wieńce, otwory, kanały na przewody, styki, skrzyżowania z innymi ścianami i węgłami, linia dachu; wybór ściany.
   Tematy: widok ściany, słupy tarasu na widoku, ściany tarasu na liście, rozkład ściany, elewacja ściany, wybór ściany w oknie, styki na widoku, numery pozycji na widoku, kliknięcie w widok ściany, węgieł ręczny na widoku
   Zależy od: html/wspolne.js (AMGW_DOM)
   Używają: html/okno.js (AMGW.widok, lista ścian po podglądzie)
@@ -92,6 +92,7 @@ var AMGW_SCIANA = (function () {
     slupy(svg, d, X, Y);
     bale(svg, d, X, Y, px, k);
     otwory(svg, d, X, Y, px);
+    kanaly(svg, d, z, X, Y, px);
     styki(svg, d, X, Y);
     dach(svg, d, X, Y);
     wience(svg, d, z, m, X, Y, px, k);
@@ -190,6 +191,24 @@ var AMGW_SCIANA = (function () {
         t.appendChild(document.createTextNode(o[4]));
         svg.appendChild(t);
       }
+    }
+  }
+
+  // Kanały na przewody (rdzen/kanaly.rb): pionowy pas na całą wysokość ściany, kółko puszki i nazwa.
+  function kanaly(svg, d, z, X, Y, px) {
+    var i;
+    for (i = 0; i < (d.kanaly || []).length; i++) {
+      var k = d.kanaly[i];
+      svg.appendChild(svgEl('rect', { x: X(k[0] - k[1] / 2), y: Y(z[3]), width: k[1].toFixed(1), height: (z[3] - z[2]).toFixed(1),
+                                      fill: '#e0a020', 'fill-opacity': '0.55', stroke: '#b07000', 'stroke-width': '1',
+                                      'vector-effect': 'non-scaling-stroke', 'class': 'kanal' }));
+      if (k[2] !== null && k[2] !== undefined) {
+        svg.appendChild(svgEl('circle', { cx: X(k[0]), cy: Y(k[2]), r: '34', fill: '#ffffff', stroke: '#b07000', 'stroke-width': '1.5',
+                                          'vector-effect': 'non-scaling-stroke', 'class': 'puszka' }));
+      }
+      var t = svgEl('text', { x: X(k[0]), y: Y(z[3]), 'font-size': px(10), 'text-anchor': 'middle', fill: '#8a5600' });
+      t.appendChild(document.createTextNode(k[3]));
+      svg.appendChild(t);
     }
   }
 

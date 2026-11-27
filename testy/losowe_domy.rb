@@ -37,6 +37,8 @@ module LosoweDomy
   ZIARNA_R13 = 8500 unless const_defined?(:ZIARNA_R13)
   # Od tego ziarna – nowości rundy 15 (wieńce szczytu łączone na styk albo w zamkach węgłów, słupy krótsze o osiadanie).
   ZIARNA_R15 = 9000 unless const_defined?(:ZIARNA_R15)
+  # Od tego ziarna dom dostaje kanały na przewody (runda 18, N3).
+  ZIARNA_R18 = 6001 unless const_defined?(:ZIARNA_R18)
 
   module_function
 
@@ -99,7 +101,8 @@ module LosoweDomy
     dodatki_r12(Random.new(ziarno * 7_368_791 + 29), p, opis) if ziarno >= ZIARNA_R12
     dodatki_r13(Random.new(ziarno * 8_191_207 + 31), p, opis) if ziarno >= ZIARNA_R13
     dodatki_r15(Random.new(ziarno * 9_999_991 + 37), p, opis) if ziarno >= ZIARNA_R15
-    { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany }
+    kanaly = ziarno >= ZIARNA_R18 ? kanaly_r18(Random.new(ziarno * 11_111_117 + 41), prostokat_dom ? [w, d] : [w - cw, d - cd], opis) : []
+    { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany, kanaly: kanaly }
   end
 
   # Dodatki rundy 4 (osobne losowanie): pełny profil, strop, ostatek 200 na końcu ściany, działowa pod antresolą,
@@ -292,6 +295,21 @@ module LosoweDomy
     opis << "r15: szczyt #{p['szczyt_styk']}, słupy osiadanie #{p['slup_osiadanie']} / #{p['slup_regulacja']} / #{p['osiadanie_scian']} %, pół zamka #{p['polzamek']}"
   end
 
+  # Kanały na przewody rundy 18 (osobne losowanie): w co trzecim domu 1–3 kanały na ścianach zewnętrznych W-1…W-4 (część
+  # z puszką; te przy zamku albo poza ścianą generator pomija z ostrzeżeniem).
+  def kanaly_r18(r, dlugosci, opis)
+    return [] if r.rand >= 0.35
+    lista = (1 + r.rand(3)).times.map do
+      i = 1 + r.rand(4)
+      dl = dlugosci[(i - 1) % 2]
+      k = { 'sciana' => "W-#{i}", 'od' => (200 + r.rand([dl - 400, 1].max)).to_s, 'srednica' => wybierz(r, ['', '20', '32']),
+            'puszka' => wybierz(r, ['', '300', '1100']) }
+      k
+    end
+    opis << "r18: kanały #{lista.map { |k| "#{k['sciana']} od #{k['od']}" }.join(', ')}"
+    lista
+  end
+
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
@@ -329,7 +347,7 @@ module LosoweDomy
     problemy = []
     pl = begin
       G::Projekt.oblicz('segmenty' => dom[:segmenty], 'parametry' => dom[:parametry], 'otwory' => dom[:otwory],
-                        'sciany' => dom[:sciany] || {})
+                        'sciany' => dom[:sciany] || {}, 'kanaly' => dom[:kanaly] || [])
     rescue => e
       return [["wyjątek #{e.class}: #{e.message} @ #{e.backtrace.first(3).join(' | ')}"], nil]
     end
@@ -370,8 +388,8 @@ module LosoweDomy
         problemy << "#{pr}: kolizje z balami (#{n} punktów)" if n > 0
       end
       # Boczne zadaszenie (runda 12): belki poprzeczne, słupy i słupki zadaszenia, płatwie i oczep (słupy tarasu z płatwiami –
-      # osobno, §8 stanu prac).
-      [%w[Wt P], %w[Wt S], %w[Wt Wt], %w[Bp P], %w[Bp S], ['S', 'P', :zadaszenie], %w[P P]].each do |a, b, tag|
+      # osobno, §8 stanu prac); słupki pod płatwiami domu L (runda 18) z płatwiami i deskami podbitki.
+      [%w[Wt P], %w[Wt S], %w[Wt Wt], %w[Bp P], %w[Bp S], ['S', 'P', :zadaszenie], %w[P P], ['S', 'P', :dach], ['S', 'Pb', :dach]].each do |a, b, tag|
         n = kolizje_elementow(pl, a, b, 4, tag)
         problemy << "#{a} z #{b}: kolizje (#{n} punktów)" if n > 0
       end

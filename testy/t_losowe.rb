@@ -44,7 +44,14 @@ ZIARNA = {
   6093 => 'r17: dom L – styk ściany okapowej skrzydła w najwyższym wieńcu, płatew ścienna w gnieździe – węgieł do spodu płatwi',
   6324 => 'r17: dom L – węgieł pod stykiem w miejscu płatwi przechodzącej przez ścianę – węgieł do spodu płatwi',
   6134 => 'r17: podbitka pod płatwiami – działowe ze stykiem ściany okapowej sięgają przy niej do wierzchu bala pod górnym wieńcem',
-  6492 => 'r17: podbitka pod płatwiami, sama płatew – działowa ze stykiem ściany okapowej, deski przerwane na działowej'
+  6492 => 'r17: podbitka pod płatwiami, sama płatew – działowa ze stykiem ściany okapowej, deski przerwane na działowej',
+  6110 => 'r18 (P5): węgieł pod połacią wystawał 0,15 mm – ścięcie pogłębione do 0,2 mm',
+  6269 => 'r18 (P5): bal ściany okapowej 0,04 mm nad połacią – ścięcie pogłębione do 0,2 mm',
+  6311 => 'r18 (P5): dwie działowe 42 mm od siebie – połączone w jedną',
+  6430 => 'r18 (P5): dwie działowe 6 mm od siebie – połączone w jedną',
+  6444 => 'r18 (P5): koniec węgła pod bokiem płatwi (4 mm) – gniazdo na pełnej szerokości płatwi',
+  6495 => 'r18 (P5): dom L z podbitką na płatwiach – połacie wyżej o grubość deski',
+  7021 => 'r18 (P5): dom L z podbitką na płatwiach i tarasem – połacie wyżej o grubość deski'
 }.freeze
 
 ZIARNA.each do |z, opis|

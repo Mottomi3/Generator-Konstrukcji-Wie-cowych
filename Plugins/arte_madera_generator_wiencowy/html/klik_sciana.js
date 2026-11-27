@@ -1,10 +1,10 @@
 /*
   ArteMadera – Generator Wieńcowy
   Plik: html/klik_sciana.js
-  Zadanie: okna, drzwi i węgły kliknięciem w widok ściany – przełącznik „klik wstawia: węgieł / okno / drzwi”, okienko z parametrami przy miejscu kliknięcia (typ stolarki z listy, wymiary, spód, luz górny, nazwa, od), poprawa i usunięcie istniejącego otworu albo węgła.
+  Zadanie: okna, drzwi, węgły i kanały kliknięciem w widok ściany – przełącznik „klik wstawia: węgieł / okno / drzwi / kanał”, okienko z parametrami przy miejscu kliknięcia (typ stolarki z listy, wymiary, spód, luz górny, nazwa, od), poprawa i usunięcie istniejącego otworu albo węgła.
   Tematy: kliknięcie w widok ściany, okienko parametrów przy kliknięciu, okno kliknięciem, drzwi kliknięciem, węgieł kliknięciem, poprawa otworu kliknięciem, usuń otwór kliknięciem, przesuń węgieł w okienku, usuń węgieł w okienku, przełącznik klik wstawia
-  Zależy od: html/wspolne.js (AMGW_DOM), html/otwory.js (lista stolarki, wiersze tabeli otworów), html/edycja.js (węgły ręczne ściany), html/okno.html (#klik-tryb, #karta-widok)
-  Używają: html/okno.js (klik w widok ściany, start przełącznika)
+  Zależy od: html/wspolne.js (AMGW_DOM), html/otwory.js (lista stolarki, wiersze tabeli otworów), html/edycja.js (węgły ręczne ściany), html/kanaly.js (AMGW_KANALY – okienko kanału), html/okno.html (#klik-tryb, #karta-widok)
+  Używają: html/okno.js (klik w widok ściany, start przełącznika), html/kanaly.js (okienko, pola i przyciski okienka)
 
   Decyzja użytkownika z 2026-11-25: „dodajmy + ewentualnie przy kliknięciu by się wyświetlało okienko z parametrami”.
   Miejsce na osi ściany s → „od” otworu: s0 otworu w balach = s − połowa (stolarka + 2 × luz boczny), od = s0 − ref
@@ -19,7 +19,7 @@ var AMGW_KLIK = (function () {
   var fmt = AMGW_DOM.fmt;
   var liczba = AMGW_DOM.liczba;
   var stan = { tryb: 'wegiel', parametr: function (k, d) { return d; }, zmiana: function () {} };
-  var TRYBY = [['wegiel', 'węgieł'], ['okno', 'okno'], ['drzwi', 'drzwi']];
+  var TRYBY = [['wegiel', 'węgieł'], ['okno', 'okno'], ['drzwi', 'drzwi'], ['kanal', 'kanał']];
 
   // Start: odczyt parametru z formularza i podgląd po zmianie; przyciski przełącznika nad widokiem ściany.
   function init(parametr, zmiana) {
@@ -37,7 +37,7 @@ var AMGW_KLIK = (function () {
     ustawTryb(stan.tryb);
   }
 
-  // Wybór, co wstawia kliknięcie w widok ściany ('wegiel' | 'okno' | 'drzwi').
+  // Wybór, co wstawia kliknięcie w widok ściany ('wegiel' | 'okno' | 'drzwi' | 'kanal').
   function ustawTryb(t) {
     stan.tryb = t;
     var i;
@@ -63,15 +63,18 @@ var AMGW_KLIK = (function () {
   }
 
   // Kliknięcie w widok ściany d w miejscu s (wysokość h, zasięg trafienia w węgieł, zdarzenie ev): przy węgle – okienko
-  // węgła (węgieł to wąski cel, więc ma pierwszeństwo), w otworze – okienko poprawy otworu, wolne miejsce – okienko nowego
-  // elementu według przełącznika.
+  // węgła (węgieł to wąski cel, więc ma pierwszeństwo), przy kanale – okienko kanału, w otworze – okienko poprawy otworu,
+  // wolne miejsce – okienko nowego elementu według przełącznika.
   function klik(d, s, zasieg, h, ev) {
     if (!d || !d.id) { return; }
     var w = AMGW_EDYCJA.wegielPrzy(d, s, zasieg);
     if (w !== null) { okienkoWegla(d, ev, w); return; }
+    var kn = AMGW_KANALY.przy(d, s, zasieg);
+    if (kn !== null) { AMGW_KANALY.okienko(d, ev, kn, null); return; }
     var o = otworPrzy(d, s, h);
     if (o && o[6] !== null && o[6] !== undefined) { okienkoOtworu(d, ev, o[6], null); return; }
     if (stan.tryb === 'wegiel') { okienkoWegla(d, ev, null, s); return; }
+    if (stan.tryb === 'kanal') { AMGW_KANALY.okienko(d, ev, null, s); return; }
     okienkoOtworu(d, ev, null, s);
   }
 
@@ -221,5 +224,6 @@ var AMGW_KLIK = (function () {
     if (b && b.parentNode) { b.parentNode.removeChild(b); }
   }
 
-  return { init: init, klik: klik, ustawTryb: ustawTryb, zamknij: zamknij, tryb: function () { return stan.tryb; } };
+  return { init: init, klik: klik, ustawTryb: ustawTryb, zamknij: zamknij, tryb: function () { return stan.tryb; },
+           okienko: okienko, pole: pole, przyciski: przyciski };
 }());

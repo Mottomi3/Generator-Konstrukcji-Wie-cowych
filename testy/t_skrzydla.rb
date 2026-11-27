@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_skrzydla.rb
 # Zadanie: dom w kształcie L – dwa dachy dwuspadowe z koszem (runda 10): podział na skrzydła, oś kalenicy, szczyty (także na części ściany), ściany okapowe skrzydła bocznego, płatwie obu dachów, połacie dla aplikacji do dachów, węgły ścięte do dachu, wypust górnych wieńców tylko na zewnątrz.
-# Tematy: dom L w testach, dwa dachy z koszem w testach, skrzydło boczne w testach, szczyt na części ściany w testach, płatwie skrzydła bocznego w testach, połacie domu L w testach, wypust w narożniku wklęsłym, węgły domu L pod dachem
+# Tematy: dom L w testach, słupki pod płatwiami w koszu w testach, dwa dachy z koszem w testach, skrzydło boczne w testach, szczyt na części ściany w testach, płatwie skrzydła bocznego w testach, połacie domu L w testach, wypust w narożniku wklęsłym, węgły domu L pod dachem
 # Zależy od: testy/pomoc.rb, testy/kolizje_belek.rb, testy/losowe_domy.rb (sprawdzenie całego domu), rdzen/skrzydla.rb
 # Używają: testy/uruchom.sh
 #
@@ -59,9 +59,12 @@ Testy.grupa('Dom L – płatwie obu dachów')
 platwie = pl[:elementy].select { |e| e[:prefiks] == 'P' }
 wzdluz_x = platwie.select { |e| e[:polozenie][:x][0].abs > 0.5 }
 wzdluz_y = platwie.select { |e| e[:polozenie][:x][1].abs > 0.5 }
-Testy.sprawdz(wzdluz_x.length >= 3 && wzdluz_x.length == wzdluz_y.length, "płatwie dachu głównego i skrzydła bocznego (#{wzdluz_x.length} + #{wzdluz_y.length})")
+# Od rundy 18 płatwie dłuższe niż w magazynie (8 m) dzielone nad ścianami – linia płatwi z kawałków.
+linie_x = wzdluz_x.group_by { |e| e[:polozenie][:poczatek][1].round }
+Testy.sprawdz(linie_x.length >= 3 && linie_x.length == wzdluz_y.length, "płatwie dachu głównego i skrzydła bocznego (#{linie_x.length} + #{wzdluz_y.length})")
 wys = p['dach_okap_szczyt'].to_f
-Testy.sprawdz(wzdluz_x.all? { |e| (e[:dl] - 8000.0 - 2.0 * wys).abs < 0.01 }, 'płatwie dachu głównego na całą długość z wysunięciem za szczyty')
+Testy.sprawdz(linie_x.values.all? { |l| (l.inject(0.0) { |s, e| s + e[:dl] } - 8000.0 - 2.0 * wys).abs < 0.01 && l.all? { |e| e[:dl] <= 8000.0 + 1.0 } },
+              'płatwie dachu głównego na całą długość z wysunięciem za szczyty (kawałki do 8 m)')
 vk = 2000.0
 konce = wzdluz_y.map { |e| e[:polozenie][:poczatek][1] }
 Testy.sprawdz(konce.all? { |y| y >= vk - 0.01 && y < 4000.0 }, "płatwie skrzydła bocznego kończą się na tylnej połaci dachu głównego (#{konce.map(&:round).inspect})")
@@ -147,5 +150,39 @@ bez_problemow(wielokat(L1), { 'profil_bala' => 'pelny', 'wegly_wypust_okap' => '
                               'platwie_rozstaw_max' => 900, 'podloga' => 'nie' }, 'pełny profil, węgły wypuszczone pod okap (ustawienia użytkownika)')
 x = plan_pelny(wielokat(L1), 'dach_rodzaj' => 'jednospadowy')
 Testy.sprawdz(x[:ostrzezenia].any? { |s| s.include?('Dach jednospadowy: tylko dla domu prostokątnego') }, 'dach jednospadowy – nadal tylko dom prostokątny')
+
+Testy.grupa('Dom L – końce płatwi skrzydła bocznego: styk z płatwią główną albo słupek w koszu (runda 18, P2)')
+LK = [[0, 0], [7500, 0], [7500, 6500], [3000, 6500], [3000, 9500], [0, 9500]].freeze
+plk = bez_problemow(wielokat(LK), { 'dach_kat' => 35 }, 'dom L z wąskim skrzydłem, 35° – bez problemów (słupki bez kolizji)')
+rk = plk[:podpory_l]
+Testy.rowne([rk[:elementy].length, rk[:laczniki], rk[:bez_podpory]], [3, 2, 0], 'trzy płatwie skrzydła kończą się w koszu – słupki; dwie przy płatwi głównej – styk')
+gl = plk[:elementy].select { |e| e[:prefiks] == 'P' && e[:polozenie][:x][0].abs > 0.5 }
+bk = plk[:elementy].select { |e| e[:prefiks] == 'P' && e[:polozenie][:x][1].abs > 0.5 }
+ok_sl = rk[:elementy].all? do |e|
+  o = e[:polozenie][:poczatek]
+  sx = e[:b]
+  sy = e[:h]
+  cx = o[0] + sx / 2.0
+  cy = o[1] + sy / 2.0
+  na = gl.any? { |m| (m[:polozenie][:poczatek][1] + m[:b] / 2.0 - cy).abs < 0.5 && (m[:polozenie][:poczatek][2] + m[:h] - o[2]).abs < 0.5 }
+  pod = bk.any? { |m| (m[:polozenie][:poczatek][0] - m[:b] / 2.0 - cx).abs < 0.5 && (m[:polozenie][:poczatek][2] - o[2] - e[:dl]).abs < 0.5 }
+  na && pod && e[:rodzaj] == 'Słupek pod płatwią' && e[:tag] == :dach
+end
+Testy.sprawdz(ok_sl, 'słupek stoi na wierzchu płatwi dachu głównego i sięga do spodu płatwi skrzydła, w ich osiach')
+mat = plk[:materialy].map { |w| [w[:nazwa], w[:ilosc]] }
+Testy.sprawdz(mat.include?(['Wieszak płatwi (płatew skrzydła na płatwi głównej)', 2]) &&
+              mat.include?(['Kątownik ciesielski (słupek i płatew w koszu)', 6]), 'zestawienie: wieszaki styków i kątowniki słupków')
+db = plk[:dach][:boczne]
+pls = Dach.platwie(Dach.geo(db), plk[:parametry]).find { |x| x[:rodzaj] == 'kalenicowa' }
+u0, u3 = Skrzydla.zasieg_platwi(db, pls, plk[:parametry])
+z_slupkiem = StatykaDachu.przeslo(db, pls, u0, u3, plk[:parametry])
+bez_sl = StatykaDachu.przeslo(db.merge(podpory_kosz: []), pls, u0, u3, plk[:parametry])
+Testy.sprawdz(z_slupkiem > 0 && (z_slupkiem - bez_sl).abs > 1.0, format('statyka płatwi skrzydła liczy przęsło do słupka (%.0f zamiast %.0f mm)', z_slupkiem, bez_sl))
+pln = plan_pelny(wielokat(LK), 'dach_kat' => 35, 'platwie_kosz' => 'nie')
+Testy.sprawdz(pln[:podpory_l][:elementy].empty? && pln[:ostrzezenia].any? { |u| u.include?('w koszu bez podpory') },
+              'podparcie wyłączone – bez słupków, ostrzeżenie o końcach bez podpory')
+pl1 = plan_pelny(wielokat(L1))
+Testy.rowne([pl1[:podpory_l][:elementy].length, pl1[:podpory_l][:laczniki]], [0, 5], 'równe rozpiętości – wszystkie płatwie skrzydła przy płatwiach głównych (styki)')
+Testy.sprawdz(plan_pelny(prostokat(0, 0, 6000, 4000))[:podpory_l][:elementy].empty?, 'dom prostokątny – bez słupków')
 
 Testy.koniec

@@ -4,7 +4,7 @@
 # Plik: rdzen/widok.rb
 # Zadanie: widok ściany do okna – bale jako obrysy w płaszczyźnie ściany (s, z), otwory, styki, skrzyżowania, linia dachu.
 # Tematy: widok ściany, rozkład ściany, elewacja ściany, obrys bala w widoku, styki w widoku, skrzyżowania w widoku, linia dachu w widoku, ustawienia ściany w widoku, źródło węgła, ściany tarasu w widoku, słupy tarasu w widoku
-# Zależy od: rdzen/parametry.rb, rdzen/bryla.rb (profil bala), rdzen/szczyty.rb, rdzen/pod_dachem.rb (linia dachu), rdzen/ustawienia_scian.rb (stan ustawień), rdzen/wience.rb, rdzen/taras.rb (opis ściany tarasu)
+# Zależy od: rdzen/parametry.rb, rdzen/bryla.rb (profil bala), rdzen/szczyty.rb, rdzen/pod_dachem.rb (linia dachu), rdzen/ustawienia_scian.rb (stan ustawień), rdzen/wience.rb, rdzen/taras.rb (opis ściany tarasu), rdzen/kanaly.rb (kanały na przewody)
 # Używają: sketchup/sterowanie.rb (widok dla okna), html/sciana.js (rysunek)
 #
 # Widok jak rozkład ściany w projektach producenta: patrzymy na ścianę od strony lica, s – wzdłuż osi ściany (od jej
@@ -65,7 +65,8 @@ module ArteMadera
         bale = w[:bale].map { |b| bal(b, t) }
         { 'id' => w[:id], 'rodzaj' => w[:rodzaj].to_s, 'szczyt' => !w[:szczyt].nil?,
           'dl_osi' => r(w[:dl_osi]), 's_od' => r(w[:s_od]), 's_do' => r(w[:s_do]), 'ref' => r(w[:ref] || 0.0),
-          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'slupy' => slupy(plan, w), 'taras' => opis_tarasu(w),
+          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'kanaly' => Kanaly.do_widoku(w).map { |k| [r(k[0]), r(k[1]), k[2] ? r(k[2]) : nil, k[3], k[4]] },
+          'slupy' => slupy(plan, w), 'taras' => opis_tarasu(w),
           'skrzyzowania' => (w[:skrzyzowania] || []).map { |k| [r(k[:s]), k[:inna][:id].to_s, k[:inna][:rodzaj].to_s, k[:inna][:zrodlo].to_s] },
           'linia_dachu' => linia_dachu(w, p),
           'styki' => bale.select { |b| b['konce'].include?('styk') }.length,

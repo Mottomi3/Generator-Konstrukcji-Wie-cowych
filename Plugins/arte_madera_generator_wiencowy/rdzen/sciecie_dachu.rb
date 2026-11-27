@@ -25,7 +25,7 @@ require File.join(File.dirname(__FILE__), 'profil_bala') unless defined?(ArteMad
 module ArteMadera
   module GeneratorWiencowy
     module SciecieDachu
-      # Ścięcie płytsze niż tyle [mm] na wyższym licu pomijane (bal pod dachem z dokładnością obróbki).
+      # Najpłytsze ścięcie [mm] na niższym licu – płytsze pogłębiane do tej wartości (krawędź nie krótsza niż tolerancja SketchUpa).
       MIN = 0.2 unless const_defined?(:MIN)
 
       module_function
@@ -139,7 +139,14 @@ module ArteMadera
         dz = b[:sciana][:rodzaj] == :kontrfor ? Podbitka.obnizenie_wegla(b[:sciana], p) : 0.0
         z0 = Dach.linia_podparcia(geo, v0, p) - dz - b[:z0]
         z1 = Dach.linia_podparcia(geo, v1, p) - dz - b[:z0]
-        return nil if [z0, z1].min >= b[:h] - MIN
+        lo = [z0, z1].min
+        return nil if lo >= b[:h] - 1e-6
+        # Bal wystaje ponad dach mniej niż MIN (runda 18, P5 – ziarna 6110, 6269: 0,04–0,15 mm): ścięcie obniżone tak, że na
+        # niższym licu ma MIN – bal zawsze pod dachem, bez krawędzi krótszych niż tolerancja SketchUpa.
+        if lo > b[:h] - MIN
+          z0 -= lo - (b[:h] - MIN)
+          z1 -= lo - (b[:h] - MIN)
+        end
         { typ: 'sciecie_dachu', x0: 0.0, x1: b[:dl], z0: z0, z1: z1 }
       end
     end

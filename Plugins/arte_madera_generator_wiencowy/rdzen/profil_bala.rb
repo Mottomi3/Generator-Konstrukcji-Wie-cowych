@@ -9,7 +9,8 @@
 #
 # Profil pozycji (poz[:profil], gdy parametr profil_bala = 'pelny'): { pioro: wys. pióra, wpust: głęb. wpustu,
 # piora: [[y0, y1]], wpusty: [[y0, y1]] } – y od lica prawego bala (0 … t). Bryła bala = bal prosty (krycie) + pióra
-# nad wierzchem − wpusty od spodu; obróbki zamka, otworów i skosu tną wszystkie pasy (pióro w gnieździe zamka znika).
+# nad wierzchem − wpusty od spodu; obróbki zamka, otworów i skosu tną wszystkie pasy (pióro w gnieździe zamka znika);
+# kanał na przewody (rdzen/kanaly.rb) dzieli pasy na część przed otworem i za nim.
 # Cecha 'bez_piora' (poręcz balustrady) – wierzch bez piór. Zamki, kolizje, pozycje i listy liczone dla bala prostego – pełny profil zmienia tylko bryłę komponentu.
 # Wynik przedziały: [{ xa:, xb:, pasy: [{ y0:, y1:, zb_a:, zb_b:, zt_a:, zt_b: }] }] – pasy rosnąco po y.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -72,11 +73,13 @@ module ArteMadera
         ciecia_dol = []
         boki = []
         sciecia = []
+        kanaly = []
         bez_wpustu = false
         bez_piora = false
         cechy.each do |c|
           case c[:typ]
           when 'sciecie_dachu' then sciecia << c
+          when 'kanal' then kanaly << c
           when 'gniazdo_gora', 'wyciecie_gora' then ciecia_gora << [c[:x0], c[:x1], h - c[:gleb], h - c[:gleb]]
           when 'gniazdo_dol', 'wyciecie_dol' then ciecia_dol << [c[:x0], c[:x1], c[:gleb], c[:gleb]]
           when 'skos_gora' then ciecia_gora << [c[:x0], c[:x1], c[:z0], c[:z1]]
@@ -92,12 +95,16 @@ module ArteMadera
         end
         xs = [0.0, dl]
         (ciecia_gora + ciecia_dol).each { |c| xs << c[0] << c[1] }
-        (boki + sciecia).each { |c| xs << c[:x0] << c[:x1] }
+        (boki + sciecia + kanaly).each { |c| xs << c[:x0] << c[:x1] }
         linie = pasy.map { |pas| pas[2] + pas[3] }.flatten(1).uniq
         Bryla.punkty_podzialu(xs, dl, Bryla.przeciecia(linie)).each_cons(2).map do |xa, xb|
           q = przedzial(xa, xb, t, pasy, boki)
-          sc = q && sciecia.find { |c| c[:x0] < (xa + xb) / 2.0 && c[:x1] > (xa + xb) / 2.0 }
-          sc ? q.merge(pasy: Bryla.sciecie_pasow(q[:pasy], sc, t)) : q
+          xm = (xa + xb) / 2.0
+          sc = q && sciecia.find { |c| c[:x0] < xm && c[:x1] > xm }
+          q = q.merge(pasy: Bryla.sciecie_pasow(q[:pasy], sc, t)) if sc
+          kn = q && kanaly.find { |c| c[:x0] < xm && c[:x1] > xm }
+          q = q.merge(pasy: Bryla.kanal_pasow(q[:pasy], kn)) if kn
+          q && !q[:pasy].empty? ? q : nil
         end.compact
       end
 

@@ -270,6 +270,8 @@ module ArteMadera
             e = Elementy.pozioma('P', xy(d, u0, pl[:v]), xy(d, u3, pl[:v]), pl[:b], pl[:h], pl[:z_spod], :os, [],
                                  przekroj_platwi(d, pl))
             wreby_platwi!(e, d, pl, u0, p)
+            e[:podpory] = (d[:przejscia] || []).select { |x| (x[:v] - pl[:v]).abs < 0.5 }.map { |x| x[:u] - u0 }
+                                                .select { |x| x > 0.0 && x < e[:dl] }.uniq.sort
             wynik << e
           end
         end

@@ -105,6 +105,8 @@ body.tylko-standard .panel-standard-okno { max-width: none; box-shadow: none; }
 .sciezka { display: flex; gap: 3px; align-items: center; }
 .sciezka input[type="text"] { flex: 1 1 auto; min-width: 60px; }
 .sciezka-wybierz { flex: 0 0 auto; padding: 1px 6px; }
+.kanal-wiersz { gap: 6px; align-items: center; margin: 2px 0; }
+.kanal-wiersz button { padding: 0 6px; }
 /* Wycena materiału (html/wycena.js). */
 #tab-wycena tr.bez-ceny td { color: var(--szary); }
 #tab-wycena tr.suma td { font-weight: 600; border-top: 2px solid var(--linia); }

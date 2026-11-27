@@ -41,11 +41,11 @@ module ArteMadera
         [b - 2.0 * (bok || wrab(p)[:bok]), 1.0].max
       end
 
-      # Czy płatew w ścianie w ma zamek tylko od spodu (bez wrębów bocznych): front tarasu z podciągiem – szczyt albo
-      # wiązar nad tarasem – przy taras_platwa_zamek = spod.
+      # Czy płatew w ścianie w ma zamek tylko od spodu (bez wrębów bocznych): front tarasu z balami (typ 200, typ 300 ze
+      # szczytem frontu – w[:taras][:z_polbal]) – szczyt albo wiązar nad tarasem – przy taras_platwa_zamek = spod.
       def tylko_spod?(w, p)
         tr = w.nil? ? nil : w[:taras]
-        return false unless wlaczone?(p) && tr && tr[:rola] == :front && tr[:wariant] == 'podciag'
+        return false unless wlaczone?(p) && tr && tr[:rola] == :front && tr[:z_polbal]
         p['taras_platwa_zamek'] == 'spod'
       end
 

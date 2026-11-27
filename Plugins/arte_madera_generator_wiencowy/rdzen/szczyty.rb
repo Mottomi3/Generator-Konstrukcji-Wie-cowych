@@ -337,7 +337,13 @@ module ArteMadera
             # Z zamkiem bal dochodzi do dna wrębu z boków (bez luzu gniazda) – ściana zablokowana w płatwi.
             lz = ZamekPlatwi.wlaczone?(p) ? 0.0 : luz
             s = [(pl[:v] - b2 - lz - v0) * w[:kier][iv], (pl[:v] + b2 + lz - v0) * w[:kier][iv]].sort
-            next if s[1] <= w[:s_od] + 0.5 || s[0] >= w[:s_do] - 0.5
+            if s[1] <= w[:s_od] + 0.5 || s[0] >= w[:s_do] - 0.5
+              # Koniec ściany (np. węgła) tylko pod bokiem płatwi, poza jej wrębem (runda 18, P5 – ziarno 6444): gniazdo na
+              # pełnej szerokości płatwi od jej spodu, bez wrębu w płatwi.
+              pelne = [(pl[:v] - pl[:b] / 2.0 - luz - v0) * w[:kier][iv], (pl[:v] + pl[:b] / 2.0 + luz - v0) * w[:kier][iv]].sort
+              dodaj_gniazdo(w, pelne, pl) unless pelne[1] <= w[:s_od] + 0.01 || pelne[0] >= w[:s_do] - 0.01
+              next
+            end
             z0 = ZamekPlatwi.spod_w_scianie(pl[:z_spod], p)
             przejscie = { v: pl[:v], u: w[:a][1 - iv] }
             przejscie[:bok] = bok if ZamekPlatwi.tylko_spod?(w, p)

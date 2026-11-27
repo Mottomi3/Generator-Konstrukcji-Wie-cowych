@@ -4,7 +4,7 @@
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
 # Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
-# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb, rdzen/parametry_stolarka.rb (listy sekcji)
+# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb, rdzen/parametry_stolarka.rb, rdzen/parametry_kanaly.rb (listy sekcji)
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
 # Nowy parametr = jeden wpis w LISTA (okno samo doda pole w swojej sekcji, wartość trafi do zapisanych ustawień);
@@ -15,7 +15,7 @@
 # podstawowy: true – pole widoczne w trybie okna „Podstawowe” (pozostałe tylko w „Wszystkie” albo gdy zmienione).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-%w[parametry_dach parametry_taras parametry_zadaszenie parametry_podloga parametry_materialy parametry_stolarka].each do |plik|
+%w[parametry_dach parametry_taras parametry_zadaszenie parametry_podloga parametry_materialy parametry_stolarka parametry_kanaly].each do |plik|
   require File.join(File.dirname(__FILE__), plik)
 end
 
@@ -33,7 +33,7 @@ module ArteMadera
         ['taras', 'Taras', false],
 
         ['podloga', 'Podłoga i fundamenty', false],
-        ['otwory', 'Okna i drzwi – stolarka i luzy', false],
+        ['otwory', 'Okna i drzwi – stolarka i luzy, kanały na przewody', false],
         ['rysunek', 'Rozpoznanie rysunku i waga', false],
         ['materialy', 'Zestawienie materiałów', false],
         ['magazyn', 'Magazyn drewna, dobór przekrojów i ceny', false],
@@ -217,7 +217,7 @@ module ArteMadera
 
       # Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu, podłogi i materiałów.
       LISTA = (LISTA_SCIANY + ParametryDach::LISTA + ParametryTaras::LISTA + ParametryZadaszenie::LISTA + ParametryPodloga::LISTA +
-               LISTA_OTWORY + ParametryStolarka::LISTA + ParametryMaterialy::LISTA).freeze unless
+               LISTA_OTWORY + ParametryStolarka::LISTA + ParametryKanaly::LISTA + ParametryMaterialy::LISTA).freeze unless
         const_defined?(:LISTA)
 
       # Szablony wbudowane (okno – lista szablonów): nazwa => wartości różne od domyślnych.

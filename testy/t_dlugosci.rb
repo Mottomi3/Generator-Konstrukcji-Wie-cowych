@@ -3,13 +3,13 @@
 # ArteMadera – Generator Wieńcowy – testy
 # Plik: testy/t_dlugosci.rb
 # Zadanie: testy wykazu drewna z hurtowni i długości handlowych – odczyt list „przekrój:długości”, listy fabryczne, podpowiedź o belce dłuższej niż w hurtowni, dobór przekroju dostępnego w całej długości.
-# Tematy: testy wykazu drewna, test listy przekrojów z długościami, test długości handlowych, test doboru z długością
+# Tematy: test podziału płatwi nad ścianą, testy wykazu drewna, test listy przekrojów z długościami, test długości handlowych, test doboru z długością
 # Zależy od: testy/pomoc.rb
 # Używają: testy/uruchom.sh
 #
 # Uruchomienie: ruby -I testy/atrapa testy/t_dlugosci.rb – ostatnia linia „FAILURES: n”.
 
-require File.expand_path('pomoc', File.dirname(__FILE__))
+require File.expand_path('losowe_domy', File.dirname(__FILE__))
 include ArteMadera::GeneratorWiencowy
 
 # Plan domu prostokątnego w × d [mm] z parametrami.
@@ -102,5 +102,24 @@ dz = Parametry.dlugosci_katalogu(pl[:parametry], 'zadaszenie_katalog')[bz.sort]
 naj = pl[:elementy].select { |e| e[:prefiks] == 'P' && e[:tag] == :zadaszenie }.map { |e| e[:dl] }.max
 Testy.sprawdz(dz && dz.last + 1.0 >= naj, "wiata: dobrana płatew #{bz.inspect} jest w hurtowni w całej długości #{naj.round} mm")
 Testy.rowne(dlugie(pl).select { |x| x[:sekcja] == 'zadaszenie_przekroje' }, [], 'wiata: bez podpowiedzi o łączeniu')
+
+Testy.grupa('Płatwie dłuższe niż w magazynie – podział nad ścianą (runda 18, P3)')
+Testy.rowne(PodzialBelek.miejsca(12_000.0, [522.0, 5522.0, 7600.0, 11_478.0], 8000.0), [7600.0], 'styk na najdalszej ścianie w zasięgu 8 m')
+Testy.rowne(PodzialBelek.miejsca(20_000.0, [522.0, 6000.0, 12_000.0, 19_478.0], 8000.0), [6000.0, 12_000.0], 'dwa styki – każdy kawałek do 8 m')
+Testy.rowne(PodzialBelek.miejsca(12_000.0, [522.0, 11_478.0], 8000.0), [], 'bez ściany w zasięgu – bez podziału')
+Testy.rowne([PodzialBelek.opis(1)[/\d+ \S+/], PodzialBelek.opis(3)[/\d+ \S+/], PodzialBelek.opis(12)[/\d+ \S+/]], ['1 styk', '3 styki', '12 styków'],
+            'odmiana liczby styków')
+seg11 = prostokat(0, 0, 11_000, 4000) + [[[5000, 0], [5000, 4000]]]
+prob, pl = LosoweDomy.sprawdz(segmenty: seg11, parametry: {}, otwory: [], sciany: {})
+Testy.rowne(prob, [], 'dom 11 m z podzielonymi płatwiami – bez problemów (kolizje, bryły, połacie)')
+pp = pl[:elementy].select { |e| e[:prefiks] == 'P' }
+dzielone = pp.select { |e| e[:dl] < 11_999.0 }
+Testy.sprawdz(!dzielone.empty? && dzielone.all? { |e| e[:dl] <= 8000.0 + 1.0 }, 'kawałki płatwi nie dłuższe niż 8 m (magazyn 80 × 200)')
+Testy.rowne(dzielone.map { |e| e[:dl] }.inject(0.0, :+).round, (12_000.0 * dzielone.length / 2).round, 'kawałki dają razem całą długość płatwi')
+Testy.sprawdz(dzielone.all? { |e| (e[:wreby] || []).all? { |a, b| a >= -0.01 && b <= e[:dl] + 0.01 } }, 'wręby kawałków w ich długości')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('podzielone nad ścianami') }, 'w wynikach – zdanie o stykach płatwi')
+Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst] =~ /Płatwie 80 × 200: \d+ szt\. o długości do 12 m/ }, 'płatwie bez ściany w zasięgu – dalej podpowiedź o łączeniu')
+pl0 = plan_pelny(seg11, 'belki_podzial' => 'nie')
+Testy.sprawdz(pl0[:elementy].select { |e| e[:prefiks] == 'P' }.all? { |e| e[:dl] > 11_999.0 }, 'podział wyłączony – płatwie w całości jak do kompilacji 17')
 
 Testy.koniec

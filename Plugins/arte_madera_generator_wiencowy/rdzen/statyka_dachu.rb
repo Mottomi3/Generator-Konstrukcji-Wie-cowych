@@ -85,14 +85,16 @@ module ArteMadera
 
       # Przęsło obliczeniowe płatwi pl dachu d na zasięgu u0…u3 [mm]: największa odległość między podporami (ściany
       # w poprzek – d[:przejscia]; końce ścian wzdłuż płatwi – d[:podparcia], odcinek na takiej ścianie nie jest przęsłem;
-      # koniec płatwi skrzydła bocznego w dachu głównym) albo dwa wsporniki końca; bez podpór – cała długość.
+      # koniec płatwi skrzydła bocznego w dachu głównym albo – w koszu – jej słupek na płatwi głównej, d[:podpory_kosz]
+      # z rdzen/podpory_platwi_l.rb) albo dwa wsporniki końca; bez podpór – cała długość.
       def przeslo(d, pl, u0, u3, p)
         na_osi = lambda { |x| (x[:v] - pl[:v]).abs < 0.5 }
         ciagle = (d[:podparcia] || []).select(&na_osi).map { |x| x[:u] }
         pkt = (d[:przejscia] || []).select(&na_osi).map { |x| x[:u] } + ciagle.flatten
         if d[:rola] == :boczne
           wolny = d[:u_wolny] + d[:kier_u] * (p['dach_okap_szczyt'].to_f + Parametry.grubosc(p) / 2.0)
-          pkt << ((u0 - wolny).abs < 1.0 ? u3 : u0)
+          podp = (d[:podpory_kosz] || []).find { |x| (x[:v] - pl[:v]).abs < 0.5 }
+          pkt << (podp ? podp[:u] : ((u0 - wolny).abs < 1.0 ? u3 : u0))
         end
         pkt = pkt.map { |u| [[u, u0].max, u3].min }.sort.each_with_object([]) { |u, acc| acc << u if acc.empty? || u - acc.last > 0.5 }
         return u3 - u0 if pkt.empty?

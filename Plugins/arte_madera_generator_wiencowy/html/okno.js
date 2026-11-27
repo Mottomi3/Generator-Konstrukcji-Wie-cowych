@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, wymiary zamka, wynik podglądu, wywołania Ruby; typy, standard, kroki i układ w osobnych plikach.
   Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie, odświeżenie pól po zmianie, start okna
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/klik_sciana.js (AMGW_KLIK – okienko przy kliknięciu w widok ściany), html/dzialowe.js (AMGW_DZIALOWE – działowe domu z wymiarów), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js, html/tabela.js (pola-tabele), html/sciezka.js (pole ze ścieżką)
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/klik_sciana.js (AMGW_KLIK – okienko przy kliknięciu w widok ściany), html/kanaly.js (AMGW_KANALY – kanały na przewody), html/dzialowe.js (AMGW_DZIALOWE – działowe domu z wymiarów), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js, html/tabela.js (pola-tabele), html/sciezka.js (pole ze ścieżką)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.typy, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -261,9 +261,9 @@ var AMGW = (function () {
 
   // ---- wywołania ----
 
-  // Dane formularza jako JSON (parametry, otwory, węgły, ustawienia ścian z widoku, typ; dom z wymiarów – działowe).
+  // Dane formularza jako JSON (parametry, otwory, kanały, węgły, ustawienia ścian z widoku, typ; dom z wymiarów – działowe).
   function dane() {
-    var d = { parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), wegly: AMGW_WEGLY.zbierz(),
+    var d = { parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), kanaly: AMGW_KANALY.lista(), wegly: AMGW_WEGLY.zbierz(),
               sciany: AMGW_EDYCJA.dane(), typ: AMGW_TYPY.typ() };
     var dz = AMGW_DZIALOWE.zbierz();
     if (dz) { d.dzialowe = dz; }
@@ -296,6 +296,7 @@ var AMGW = (function () {
     AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
     AMGW_OTWORY.init(wartoscPola, zaplanujPodglad);
     AMGW_KLIK.init(wartoscPola, zaplanujPodglad);
+    AMGW_KANALY.init(d.kanaly || [], wartoscPola, zaplanujPodglad);
     AMGW_DZIALOWE.init(d.dzialowe || [], d.z_wymiarow, zaplanujPodglad);
     AMGW_WEGLY.init(zaplanujPodglad);
     AMGW_KROKI.zbuduj(d.kroki || []);

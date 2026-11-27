@@ -96,6 +96,8 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `platwie_na_wiencach` | Płatwie oparte na pełnym balu | standard | tak | `tak` – tak; `nie` – nie | Pod gniazdem płatwi nie zostaje pasek bala cieńszy niż „Najcieńszy pasek bala nad / pod otworem”: dach obniżony o kilkanaście mm (płatew ścienna i kalenicowa), płatwie pośrednie przesunięte o kilka cm – płatew leży na całym balu albo na grubszym pasku, bez przerwy pod spodem. |
 | `dach_obnizenie_max` | Dopasowanie płatwi – największe obniżenie dachu | standard | 60 mm | 0 … 139 |  |
 | `platwie_przesuniecie_max` | Dopasowanie płatwi – największe przesunięcie pośredniej | standard | 150 mm | 0 … 500 | W poziomie, w stronę okapu albo kalenicy; rozstaw płatwi zostaje nie większy niż największy. |
+| `belki_podzial` | Płatwie dłuższe niż w magazynie drewna | standard | podpora | `podpora` – dziel nad ścianą – styk w osi ściany, osobne kawałki; `nie` – jedna belka (podpowiedź o łączeniu) | Płatew dłuższa niż najdłuższa belka jej przekroju w magazynie drewna dzielona tam, gdzie przechodzi przez ścianę (szczyt, działową, węgieł) – każdy kawałek najdłuższy, jaki da się kupić. Bez ściany w zasięgu zostaje w całości z podpowiedzią. |
+| `platwie_kosz` | Dom L – koniec płatwi skrzydła w koszu | standard | slupek | `slupek` – słupek na niższej płatwi dachu głównego; `nie` – bez podpory (ostrzeżenie) | Płatew skrzydła bocznego, która kończy się w koszu (nie trafia na płatew dachu głównego), dostaje słupek na płatwi głównej, nad którą przechodzi najbliżej końca. Płatew kończąca się przy płatwi głównej – styk z łącznikiem (wieszakiem) w zestawieniu materiałów. |
 | `platwie_zamki` | Zamki w płatwiach (wręby w ścianach) | standard | tak | `tak` – tak; `nie` – nie | Płatew w każdej ścianie, przez którą przechodzi (szczyt, działowa, węgieł), zwężona z boków i podcięta od spodu – barki po obu stronach ściany trzymają szczyt na miejscu. |
 | `platwa_zamek_bok` | Zamek płatwi – wrąb z każdego boku | standard | 5 mm | 0 … 30 |  |
 | `platwa_zamek_dol` | Zamek płatwi – wrąb od spodu | standard | 8 mm | 0 … 40 | Zalecane 5–10 mm. |
@@ -140,7 +142,8 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `taras` | Taras przed ścianą szczytową | typ | nie | `nie` – bez tarasu; `podciag` – typ 200 – podciąg na słupach, balustrada; `sciany` – typ 300 – ściany pełne, front otwarty | Narysuj sam dom – taras dokłada generator: obrys dłuższy o głębokość tarasu, ściana domu zostaje (działowa ze szczytem), dach i płatwie idą nad taras. Typ 200: nad tarasem górne wieńce ścian na słupach, szczyt frontu, balustrada z bali; typ 300: ściany boczne na całą wysokość. Tylko obrys prostokątny. |
 | `taras_strona` | Taras – po stronie | dom | max | `max` – prawej albo górnej (rysunek z góry); `min` – lewej albo dolnej (rysunek z góry) | Na końcu wzdłuż kalenicy: kalenica wzdłuż X – prawa / lewa strona rysunku, wzdłuż Y – górna / dolna. |
 | `taras_glebokosc` | Taras – głębokość | dom | 2000 mm | 500 … 6000 | Od lica ściany domu do lica frontu tarasu (typ 300: 2000). |
-| `taras_wience_gorne` | Podciąg – górne wieńce ścian nad tarasem | typ | 2 | 1 … 6 | Typ 200: dwa górne bale ścian bocznych i front od wieńca, który zamyka się z nimi w narożniku. |
+| `taras_sciany_front` | Typ 300 – front tarasu | typ | szczyt | `szczyt` – podciąg z górnych wieńców i szczyt frontu – płatwie podparte od frontu; `otwarty` – otwarty – bez bali (płatwie nad tarasem bez podparcia od frontu) | Szczyt: front tarasu ma górne wieńce („Podciąg – górne wieńce”, w zamkach ścian bocznych) i szczyt jak w typie 200 (pełny, ażurowy albo pusty z trójkątem) – płatwie nad tarasem leżą na szczycie frontu. Otwarty – jak do kompilacji 17. |
+| `taras_wience_gorne` | Podciąg – górne wieńce ścian nad tarasem | typ | 2 | 1 … 6 | Typ 200: dwa górne bale ścian bocznych i front od wieńca, który zamyka się z nimi w narożniku; typ 300 (front ze szczytem): górne wieńce frontu nad otworem tarasu. |
 | `taras_ostatek` | Ostatek dolnych bali ścian bocznych przy tarasie | standard | 100 mm | 0 … 600 | Za licem ściany domu, pod podciągiem. |
 | `taras_slup_przekroj` | Słup tarasu (wzdłuż ściany × w poprzek) | typ | 120x120 mm | szer. × wys. | Projekty: 80 × 180, 120 × 120, 140 × 140. |
 | `taras_slupy_rozstaw_max` | Słupy – największy rozstaw (osiowo) | standard | 2000 mm | 800 … 5000 | Pod frontem i pod ścianami bocznymi nad tarasem; słupy zawsze w narożnikach frontu i przy wejściu. |
@@ -203,7 +206,7 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `ugiecie_zalecane` | Ugięcie zalecane L / | standard | 400 | 150 … 1000 | Sztywna podłoga bez drgań. |
 | `ugiecie_minimalne` | Ugięcie dopuszczalne L / | standard | 250 | 100 … 1000 | Granica – mniej sztywna podłoga już niedopuszczalna. |
 
-## Okna i drzwi – stolarka i luzy
+## Okna i drzwi – stolarka i luzy, kanały na przewody
 
 | Klucz | Parametr | Poziom | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|---|
@@ -220,6 +223,10 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `maskownica_szerokosc` | Prosty model – maskownica, szerokość | standard | 95 mm | 0 … 300 | Deski maskujące luz wokół stolarki od zewnątrz, przykręcone do ramy; 0 – bez maskownic. |
 | `maskownica_grubosc` | Prosty model – maskownica, grubość | standard | 20 mm | 5 … 60 |  |
 | `maskownica_zakladka` | Prosty model – maskownica zachodzi na ramę | standard | 15 mm | 0 … 100 |  |
+| `kanal_srednica` | Kanał na przewody – średnica | standard | 25 mm | 10 … 40 | Pionowy otwór przez wszystkie wieńce ściany (w modelu kwadrat o tym boku), wiercony w osi grubości bala. Kanał wstawiasz kliknięciem w widok ściany („Klik w widok wstawia: kanał”). |
+| `kanal_puszka_wysokosc` | Kanał – puszka, wysokość (nowy kanał) | standard | 300 mm | 0 … 3000 | Środek puszki od spodu pierwszego bala – podpowiedź w okienku (gniazdka 300, włączniki 1100). |
+| `kanal_puszka_srednica` | Kanał – puszka, średnica otworu | standard | 68 mm | 40 … 120 | Otwór puszki od strony wnętrza do kanału – na liście obróbek bala (wiercenie), bez wycięcia w modelu. |
+| `kanal_odstep_zamka` | Kanał – najmniejszy odstęp od lica ściany poprzecznej | standard | 60 mm | 0 … 500 | Kanał bliżej skrzyżowania ze ścianą albo węgłem trafiłby w zamek – pominięty z ostrzeżeniem. |
 
 ## Rozpoznanie rysunku i waga
 

@@ -43,7 +43,7 @@ module ArteMadera
             typ = TypyDomow.wybrany
             par = TypyDomow.nowy_dom(typ)
             @wejscie = { 'segmenty' => z[:pusto] ? DomZWymiarow.segmenty(par, []) : z[:segmenty], 'z0' => z[:pusto] ? 0.0 : z[:z0],
-                         'parametry' => par, 'otwory' => [], 'wegly' => [], 'sciany' => {}, 'typ' => typ }
+                         'parametry' => par, 'otwory' => [], 'kanaly' => [], 'wegly' => [], 'sciany' => {}, 'typ' => typ }
             @wejscie['z_wymiarow'] = true if z[:pusto]
             info = if z[:pusto]
                      'Nic nie zaznaczono – dom prostokątny z wymiarów (długość i szerokość w kroku „Ściany”).'
@@ -55,7 +55,8 @@ module ArteMadera
           plan = Log.time('obliczenia') { Projekt.oblicz(@wejscie) }
           @plan = plan
           okienko_awarii(plan, @wejscie)
-          Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'wegly' => @wejscie['wegly'] || [],
+          Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'kanaly' => @wejscie['kanaly'] || [],
+                     'wegly' => @wejscie['wegly'] || [],
                      'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan),
                      'typ' => @wejscie['typ'], 'z_wymiarow' => @wejscie['z_wymiarow'], 'dzialowe' => @wejscie['dzialowe'] || [])
         rescue => e
@@ -189,7 +190,7 @@ module ArteMadera
           par = dane['parametry'] || {}
           dz = dane['dzialowe'].is_a?(Array) ? dane['dzialowe'] : (baza['dzialowe'] || [])
           wej = { 'segmenty' => baza['z_wymiarow'] ? DomZWymiarow.segmenty(par, dz) : (baza['segmenty'] || []), 'z0' => baza['z0'].to_f,
-                  'parametry' => par, 'otwory' => dane['otwory'] || [], 'wegly' => dane['wegly'] || [],
+                  'parametry' => par, 'otwory' => dane['otwory'] || [], 'kanaly' => dane['kanaly'] || [], 'wegly' => dane['wegly'] || [],
                   'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}),
                   'typ' => (dane['typ'] || baza['typ']).to_s }
           if baza['z_wymiarow']

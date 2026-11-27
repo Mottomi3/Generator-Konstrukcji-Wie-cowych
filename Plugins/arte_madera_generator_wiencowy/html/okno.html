@@ -4,7 +4,7 @@
   Plik: html/okno.html
   Zadanie: okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby): pasek typu domu, kroki albo zakładki, karty rzutu, wyniku, widoku ściany, otworów, węgłów i zestawienia, panel standardu warsztatu.
   Tematy: okno, układ okna, sekcje formularza, pasek zakładek, pasek kroków, przyciski, pasek typu domu, podpowiedzi, karta widoku ściany, przełącznik pól, przełącznik układu okna, panel standardu warsztatu, karty kroków
-  Zależy od: html/okno.css, html/kroki.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/tabela.js, html/klik_sciana.js, html/dzialowe.js, html/wycena.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/typy.js, html/standard.js, html/kroki.js, html/uwagi.js, html/uklad.js, html/edycja.js, html/wyniki.js, html/okno.js
+  Zależy od: html/okno.css, html/kroki.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/tabela.js, html/klik_sciana.js, html/kanaly.js, html/dzialowe.js, html/wycena.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/typy.js, html/standard.js, html/kroki.js, html/uwagi.js, html/uklad.js, html/edycja.js, html/wyniki.js, html/okno.js
   Używają: sketchup/okno.rb
 -->
 <html lang="pl">
@@ -112,7 +112,8 @@
           <button type="button" id="btn-okno" title="Pierwsze okno z listy typowej stolarki">+ okno</button>
           <button type="button" id="btn-drzwi" title="Pierwsze drzwi z listy typowej stolarki">+ drzwi</button>
         </div>
-        <p class="drobny">Okno, drzwi albo węgieł wstawisz też kliknięciem w widok ściany (przełącznik nad widokiem).</p>
+        <p class="drobny">Okno, drzwi, węgieł albo kanał na przewody wstawisz też kliknięciem w widok ściany (przełącznik nad widokiem).</p>
+        <div id="lista-kanalow" class="lista-kanalow"></div>
       </div>
       <div class="karta" id="karta-dzialowe" data-krok="sciany">
         <h2>Ściany działowe (dom z wymiarów)</h2>
@@ -222,6 +223,7 @@
   <script src="otwory.js"></script>
   <script src="dzialowe.js"></script>
   <script src="klik_sciana.js"></script>
+  <script src="kanaly.js"></script>
   <script src="wegly.js"></script>
   <script src="wegly_przesun.js"></script>
   <script src="wycena.js"></script>

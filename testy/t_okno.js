@@ -450,6 +450,27 @@ dane.init.uklad = 'zakladki';
   await page.click('#k-usun');
   dp = await podgladDane();
   sprawdz(dp && dp.otwory.length === otwPrzed, 'usunięcie otworu z okienka (' + (dp ? dp.otwory.length : '') + ')');
+  // Kanał na przewody kliknięciem (runda 18, N3): czwarta pozycja przełącznika, okienko z „od”, średnicą i puszką.
+  await page.click('#klik-kanal');
+  await page.evaluate(function () { window.__wywolania = []; });
+  pk = await punkt('W-5', 900);
+  await page.mouse.click(pk[0], pk[1]);
+  var okn = await page.evaluate(function () {
+    var b = document.getElementById('klik-okienko');
+    return [b ? b.querySelector('h3').textContent : '', document.getElementById('k-od') ? document.getElementById('k-od').value : '',
+            document.getElementById('k-puszka') ? document.getElementById('k-puszka').value : ''];
+  });
+  sprawdz(/^Nowy kanał na przewody – ściana W-1/.test(okn[0]) && okn[1] !== '' && okn[2] === '300',
+          'klik w widok (tryb kanał): okienko kanału z „od” i puszką 300 (' + okn.join(' | ') + ')');
+  await page.click('#k-wstaw');
+  dp = await podgladDane();
+  var kn = dp && dp.kanaly ? dp.kanaly : [];
+  var lk = await page.evaluate(function () { return document.getElementById('lista-kanalow').textContent; });
+  sprawdz(kn.length === 1 && kn[0].sciana === 'W-1' && kn[0].od === okn[1] && kn[0].puszka === '300' && /K1 · W-1/.test(lk),
+          'kanał w danych podglądu i na liście pod tabelą okien (' + JSON.stringify(kn) + ' | ' + lk + ')');
+  await page.click('#lista-kanalow button');
+  dp = await podgladDane();
+  sprawdz(dp && dp.kanaly.length === 0, 'usunięcie kanału z listy');
   await page.click('#klik-wegiel');
   await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
   var st = await page.evaluate(function () { return document.querySelector('#widok-panel .wegly-stan').textContent; });

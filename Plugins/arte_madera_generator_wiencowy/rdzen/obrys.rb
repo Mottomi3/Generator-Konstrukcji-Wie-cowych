@@ -4,7 +4,7 @@
 # Plik: rdzen/obrys.rb
 # Zadanie: rozpoznanie narysowanych linii – zamknięty obrys (lico zewnętrzne), osie ścian działowych, znaczniki kontrforów.
 # Tematy: obrys, lico zewnętrzne, linie wejściowe, osie działowych, znacznik kontrforu, układ lokalny (obrót), scalanie linii
-# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb
+# Zależy od: rdzen/geometria.rb, rdzen/parametry.rb, rdzen/dzialowe_bliskie.rb (działowe bliżej niż grubość bala)
 # Używają: rdzen/projekt.rb
 #
 # Wejście: odcinki [[x1, y1], [x2, y2]] w mm (rzut na płaszczyznę XY modelu).
@@ -13,6 +13,7 @@
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
+require File.join(File.dirname(__FILE__), 'dzialowe_bliskie') unless defined?(ArteMadera::GeneratorWiencowy::DzialoweBliskie)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -50,6 +51,7 @@ module ArteMadera
         end
         wynik[:obrys] = obrys
         klasyfikuj(poziome + pionowe, obrys, p, tol, wynik)
+        wynik[:dzialowe] = DzialoweBliskie.scal(wynik[:dzialowe], Parametry.grubosc(p), wynik[:ostrzezenia])
         wynik
       end
 

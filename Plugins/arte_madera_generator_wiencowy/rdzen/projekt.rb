@@ -8,7 +8,7 @@
 # Używają: sketchup/sterowanie.rb, testy
 #
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
-# 'parametry' {…}, 'otwory' [{…}], 'wegly' [{…} – rdzen/wegly_tabela.rb], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
+# 'parametry' {…}, 'otwory' [{…}], 'kanaly' [{…} – rdzen/kanaly.rb], 'wegly' [{…} – rdzen/wegly_tabela.rb], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
 # podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), dach (opis dachu domu prostokątnego / L albo nil),
 # materialy (rdzen/materialy.rb), powierzchnie (rdzen/powierzchnie.rb), wycena (rdzen/wycena.rb), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -16,7 +16,7 @@
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
-  %w[geometria parametry skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada osiadanie taras_slupy taras_szczyt taras_wiazar otwory usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach zadaszenie szczyty polacie
+  %w[geometria parametry podzial_belek skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada osiadanie taras_slupy taras_szczyt taras_wiazar otwory kanaly usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach podpory_platwi_l zadaszenie szczyty polacie
      dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka dlugosci_handlowe kontrola_rownoleglych kontrola awaria].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
@@ -87,6 +87,7 @@ module ArteMadera
         sz = Szczyty.przygotuj(sciany, p, sc[:os_kalenicy])
         plan[:ostrzezenia].concat(sz[:uwagi])
         plan[:ostrzezenia].concat(Otwory.przypisz(wej['otwory'], sciany, p, lambda { |w| Wience.wysokosc(w, p) }))
+        plan[:ostrzezenia].concat(Kanaly.przypisz(wej['kanaly'], sciany, p))
         plan[:ostrzezenia].concat(WeglyTabela.dodaj(sciany, wej['wegly'], p, sc[:os_kalenicy]))
         plan[:ostrzezenia].concat(WeglyKonstrukcyjne.dodaj(sciany, p, sc[:os_kalenicy], sz[:dom]))
         plan[:ostrzezenia].concat(Taras.wegly_przy_slupach!(sciany, p))
@@ -107,6 +108,9 @@ module ArteMadera
         ProfilBala.oznacz(bale[:bale], p)
         SciecieDachu.wyrownaj!(bale[:bale], p)
         SciecieDachu.wyrownaj_skosy!(bale[:bale])
+        Kanaly.obrob!(bale[:bale], p)
+        k = Kanaly.opis(bale[:bale])
+        plan[:podpowiedzi] << { poziom: 'ok', sekcja: 'otwory', tekst: k } if k
         plan[:sciany] = sciany
         plan[:bale] = bale[:bale]
         plan[:ostrzezenia].concat(uwagi_o_stykach(plan))
@@ -127,6 +131,16 @@ module ArteMadera
         plan
       end
 
+      # Podpory końców płatwi skrzydła bocznego domu L (rdzen/podpory_platwi_l.rb): słupki w elementach, wynik w planie
+      # (łączniki do zestawienia), podpory w skrzydle (przęsło w statyce płatwi), ostrzeżenie o końcach bez podpory.
+      def podpory_l(plan, dom, p)
+        r = PodporyPlatwiL.oblicz(dom, p)
+        plan[:elementy].concat(r[:elementy])
+        plan[:podpory_l] = r
+        dom[:boczne][:podpory_kosz] = r[:podpory] if dom && dom[:boczne]
+        plan[:ostrzezenia].concat(PodporyPlatwiL.uwagi(r))
+      end
+
       # Belki dachu (dom prostokątny), podbitka i podłoga: elementy, pozycje (numery po balach), podpowiedzi z sekcją okna
       # (szczyty, podloga, taras – pokazywane przy parametrach); połacie dla aplikacji do dachów (plan[:polacie]);
       # sprawdzenie płatwi, krokwi, zadaszenia i trójkąta nad tarasem, przekroje dobrane do następnego przebiegu (plan[:dobor_przekrojow],
@@ -134,6 +148,7 @@ module ArteMadera
       def belki(plan, dom, p, tryb = :pierwszy)
         TarasWiazar.przejscia!(plan[:sciany], dom, p)
         plan[:elementy].concat(Dach.elementy(dom, p)) if dom
+        podpory_l(plan, dom, p)
         zad = Zadaszenie.elementy(dom, plan[:sciany], p)
         plan[:elementy].concat(zad)
         plan[:podpowiedzi].concat(Zadaszenie.podpowiedzi(dom, p, zad).map { |h| h.merge(sekcja: 'zadaszenie') })
@@ -163,6 +178,8 @@ module ArteMadera
         plan[:elementy].concat(pod[:elementy])
         plan[:podpowiedzi].concat(pod[:podpowiedzi].map { |h| h.merge(sekcja: 'podloga') })
         plan[:podloga] = { legar: pod[:legar], podpory: pod[:podpory] }
+        n = PodzialBelek.podziel!(plan[:elementy], p)
+        plan[:podpowiedzi] << { poziom: 'ok', sekcja: 'szczyty', tekst: PodzialBelek.opis(n) } if n > 0
         plan[:podpowiedzi].concat(DlugosciHandlowe.podpowiedzi(plan[:elementy], p))
         plan[:pozycje_elementow] = Elementy.numeruj(plan[:elementy], plan[:pozycje].length + 1)
       end

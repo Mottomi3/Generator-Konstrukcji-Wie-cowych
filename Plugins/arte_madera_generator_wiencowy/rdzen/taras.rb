@@ -16,8 +16,10 @@
 # bocznych) – bale ścian bocznych leżą na wyciętych połówkach bala frontu, naroże na jednym poziomie (wymóg
 # użytkownika, runda 7); pod nimi słupy (rdzen/taras_slupy.rb – narożniki frontu, wejście,
 # rozstaw najwyżej taras_slupy_rozstaw_max) i balustrada (rdzen/taras_balustrada.rb); dolne bale ścian bocznych kończą
-# się ostatkiem taras_ostatek za licem ściany domu. Wariant sciany (1200): ściany boczne pełne do frontu, front bez
-# bali – zostaje w planie dla obrysu dachu, płatwi i połaci.
+# się ostatkiem taras_ostatek za licem ściany domu. Wariant sciany (1200): ściany boczne pełne do frontu; front – przy
+# taras_sciany_front = szczyt (runda 18, P2) górne taras_wience_gorne wieńce nad otworem tarasu (półbalem jak w typie 200,
+# w zamkach ścian bocznych) i szczyt (pełny, ażurowy, pusty z wiązarem na balach), przy otwarty – bez bali (zostaje
+# w planie dla obrysu dachu, płatwi i połaci; płatwie nad tarasem bez podparcia od frontu).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -99,7 +101,7 @@ module ArteMadera
           next if w[:rodzaj] == :kontrfor || w[:os] == info[:os]
           if w[:rodzaj] == :zewnetrzna && (w[:a][iu] - u_front).abs < 1.0
             w[:taras] = dane.merge(rola: :front)
-            w[:taras][:z_polbal] = z_bok if info[:wariant] == 'podciag'
+            w[:taras][:z_polbal] = z_bok if front_z_balami?(w[:taras], p)
           end
           w[:taras] = dane.merge(rola: :dom) if w[:rodzaj] == :dzialowa && (w[:a][iu] - u_dom).abs < 1.0
         end
@@ -109,6 +111,13 @@ module ArteMadera
           w[:taras] = dane.merge(rola: :bok, kier: kier, s_dom: s_dom, s_front: (u_front - w[:a][iu]) * w[:kier][iu],
                                  s_dol: s_dom + kier * (t / 2.0 + p['taras_ostatek'].to_f))
         end
+      end
+
+      # Czy front tarasu ma bale (podciąg z górnych wieńców i szczyt): typ 200 zawsze, typ 300 – przy taras_sciany_front =
+      # szczyt (runda 18, P2: płatwie nad tarasem podparte od frontu); tr – w[:taras] albo opis tarasu z wariantem.
+      def front_z_balami?(tr, p)
+        return false if tr.nil?
+        tr[:wariant] == 'podciag' || (tr[:wariant] == 'sciany' && p['taras_sciany_front'].to_s != 'otwarty')
       end
 
       # Spód podciągu ścian bocznych – najniższy z górnych taras_wience_gorne wieńców ściany bocznej [mm].
@@ -145,7 +154,7 @@ module ArteMadera
       # Opis ściany tarasu do okna (nil – zwykła ściana).
       def opis(w)
         case rola(w)
-        when :front then w[:taras][:wariant] == 'sciany' ? 'front tarasu – otwarty' : 'front tarasu – podciąg i szczyt'
+        when :front then w[:taras][:z_polbal] ? 'front tarasu – podciąg i szczyt' : 'front tarasu – otwarty'
         when :dom then 'ściana domu przy tarasie (ze szczytem)'
         end
       end
@@ -161,7 +170,7 @@ module ArteMadera
         end
         case tr[:rola]
         when :front
-          return nil if tr[:wariant] == 'sciany'
+          return nil unless tr[:z_polbal]
           z0 < tr[:z_front] - 0.01 ? nil : zas
         when :bok
           return zas if tr[:wariant] == 'sciany' || z0 >= tr[:z_bok] - 0.01

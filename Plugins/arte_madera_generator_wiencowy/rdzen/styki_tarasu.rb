@@ -29,10 +29,11 @@ module ArteMadera
 
       module_function
 
-      # Czy bale ściany łączy się na styk bez węgła: front tarasu z podciągiem przy taras_styk = styk.
+      # Czy bale ściany łączy się na styk bez węgła: front tarasu z balami (typ 200; typ 300 ze szczytem frontu – runda 18)
+      # przy taras_styk = styk.
       def dotyczy?(w, p)
         tr = w[:taras]
-        !tr.nil? && tr[:rola] == :front && tr[:wariant] == 'podciag' && p['taras_styk'].to_s != 'wegly'
+        !tr.nil? && tr[:rola] == :front && Taras.front_z_balami?(tr, p) && p['taras_styk'].to_s != 'wegly'
       end
 
       # Czy ściana ma styki na styk (plan z tego pliku) – kontrola nie szuka w nich zamka.
@@ -47,7 +48,7 @@ module ArteMadera
         lmax = p['max_dlugosc'].to_f
         dl = w[:s_do] - w[:s_od]
         k0 = [(dl / lmax - 1e-9).ceil - 1, 1].max
-        slupy = (Taras.slupy_frontu(w, p)[:slupy][1..-2] || [])
+        slupy = w[:taras][:wariant] == 'podciag' ? (Taras.slupy_frontu(w, p)[:slupy][1..-2] || []) : []
         (k0..(k0 + ZAPAS)).each do |k|
           [slupy, []].each do |podpory|
             plan = proba(w, p, k, podpory)

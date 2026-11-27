@@ -187,6 +187,19 @@ module ArteMadera
         end
         n = oparcia_krokwi(el)
         wynik << wiersz('Okucia', 'Łącznik krokwi z płatwią', '', n, 'szt.', 'jeden na każde oparcie krokwi na płatwi') if n > 0
+        wynik.concat(laczniki_platwi_l(plan))
+        wynik
+      end
+
+      # Dom L: łączniki płatwi skrzydła bocznego z płatwią dachu głównego (styk – wieszak; oparcie na płatwi i słupek – kątownik
+      # z obu stron) – rdzen/podpory_platwi_l.rb.
+      def laczniki_platwi_l(plan)
+        r = plan[:podpory_l]
+        return [] if r.nil?
+        wynik = []
+        wynik << wiersz('Okucia', 'Wieszak płatwi (płatew skrzydła na płatwi głównej)', '', r[:laczniki], 'szt.', 'dom L – styk płatwi skrzydła z płatwią dachu głównego') if r[:laczniki] > 0
+        n = r[:elementy].length * 2 + r[:oparcia] * 2
+        wynik << wiersz('Okucia', 'Kątownik ciesielski (słupek i płatew w koszu)', '', n, 'szt.', 'dom L – po dwa na słupek albo oparcie płatwi skrzydła na płatwi głównej') if n > 0
         wynik
       end
 

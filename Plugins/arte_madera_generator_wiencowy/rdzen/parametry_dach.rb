@@ -148,6 +148,16 @@ module ArteMadera
         { klucz: 'platwie_przesuniecie_max', poziom: :standard, domyslna: 150.0, etykieta: 'Dopasowanie płatwi – największe przesunięcie pośredniej',
           jednostka: 'mm', min: 0.0, max: 500.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'platwie_na_wiencach' => ['tak'] },
           podpowiedz: 'W poziomie, w stronę okapu albo kalenicy; rozstaw płatwi zostaje nie większy niż największy.' },
+        { klucz: 'belki_podzial', poziom: :standard, domyslna: 'podpora', etykieta: 'Płatwie dłuższe niż w magazynie drewna', rodzaj: :wybor,
+          sekcja: 'szczyty', wybory: [['podpora', 'dziel nad ścianą – styk w osi ściany, osobne kawałki'], ['nie', 'jedna belka (podpowiedź o łączeniu)']],
+          podpowiedz: 'Płatew dłuższa niż najdłuższa belka jej przekroju w magazynie drewna dzielona tam, gdzie przechodzi przez ' \
+                      'ścianę (szczyt, działową, węgieł) – każdy kawałek najdłuższy, jaki da się kupić. Bez ściany w zasięgu ' \
+                      'zostaje w całości z podpowiedzią.' },
+        { klucz: 'platwie_kosz', poziom: :standard, domyslna: 'slupek', etykieta: 'Dom L – koniec płatwi skrzydła w koszu', rodzaj: :wybor,
+          sekcja: 'szczyty', wybory: [['slupek', 'słupek na niższej płatwi dachu głównego'], ['nie', 'bez podpory (ostrzeżenie)']],
+          podpowiedz: 'Płatew skrzydła bocznego, która kończy się w koszu (nie trafia na płatew dachu głównego), dostaje słupek ' \
+                      'na płatwi głównej, nad którą przechodzi najbliżej końca. Płatew kończąca się przy płatwi głównej – styk ' \
+                      'z łącznikiem (wieszakiem) w zestawieniu materiałów.' },
         { klucz: 'platwie_zamki', poziom: :standard, podstawowy: true, domyslna: 'tak', etykieta: 'Zamki w płatwiach (wręby w ścianach)',
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Płatew w każdej ścianie, przez którą przechodzi (szczyt, działowa, węgieł), zwężona z boków i podcięta od ' \

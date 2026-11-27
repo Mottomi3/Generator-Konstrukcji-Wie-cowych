@@ -45,6 +45,8 @@ DOMY = {
                                                           'zadaszenie_podloga' => 'nie', 'podciagi' => 'tak' }, [], true],
   'taras1100' => [prostokat(0, 0, 4000, 4000), { 'taras' => 'podciag', 'taras_glebokosc' => 2400, 'taras_wejscie' => 'lewa',
                                                  'liczba_wiencow' => 20, 'podloga' => 'nie' }, [], true],
+  'koszL' => [wielokat([[0, 0], [7500, 0], [7500, 6500], [3000, 6500], [3000, 9500], [0, 9500]]),
+              { 'dach_kat' => 35, 'podloga' => 'nie', 'liczba_wiencow' => 16 }, [], true],
   'taras1200' => [prostokat(0, 0, 7000, 4000), { 'taras' => 'sciany', 'liczba_wiencow' => 20, 'podloga' => 'nie',
                                                  'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, [], true]
 }.freeze

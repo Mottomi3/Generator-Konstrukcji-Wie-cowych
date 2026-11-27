@@ -140,7 +140,7 @@ Testy.sprawdz(pu.select { |b| b[:dl] <= 300.01 }.all? { |b| TarasSzczyt.osie_pla
 
 Testy.grupa('Taras jak 1200 – ściany boczne pełne, front otwarty, krokwie z aplikacji')
 seg = prostokat(0, 0, 7000, 4000)
-par = { 'taras' => 'sciany', 'dach_uklad' => 'krokwie', 'liczba_wiencow' => 20 }
+par = { 'taras' => 'sciany', 'dach_uklad' => 'krokwie', 'liczba_wiencow' => 20, 'taras_sciany_front' => 'otwarty' }
 pl = caly(seg, par, '1200')
 front = role(pl, :front).first
 Testy.rowne(front[:bale].length, 0, 'front bez bali')
@@ -151,6 +151,24 @@ Testy.sprawdz(boki.all? { |w| w[:bale].select { |b| b[:i] == 1 }.map { |b| b[:s1
 Testy.rowne(pl[:polacie][:punkty].map { |x, _y| x }.max, 9000.0, 'połacie nad tarasem (obrys do frontu)')
 Testy.sprawdz(role(pl, :dom).first[:szczyt], 'ściana domu ze szczytem')
 Testy.rowne(Sciany.opis_rodzaju(front), 'front tarasu – otwarty', 'opis frontu')
+
+Testy.grupa('Typ 300 – front ze szczytem: płatwie nad tarasem podparte od frontu (runda 18, P2)')
+Testy.rowne(Parametry.normalizuj({})[0]['taras_sciany_front'], 'szczyt', 'fabrycznie front typu 300 ze szczytem')
+pl = caly(seg, { 'taras' => 'sciany', 'liczba_wiencow' => 20 }, '1200 ze szczytem')
+front = role(pl, :front).first
+p300 = pl[:parametry]
+zf = front[:taras][:z_front]
+Testy.sprawdz(!front[:bale].empty? && front[:bale].map { |b| b[:z0] }.min >= zf - 0.01, 'front: bale od górnych wieńców ścian bocznych w górę (otwór tarasu pod nimi)')
+Testy.rowne(zf, Taras.z_podciagu(role(pl, :bok).first, p300), 'spód frontu = spód dwóch górnych wieńców ścian bocznych')
+Testy.sprawdz(front[:bale].any? { |b| (b[:z0] - zf).abs < 0.01 && b[:h] < Parametry.krycie(p300) - 1.0 }, 'front zaczyna się półbalem (jak w typie 200)')
+Testy.sprawdz(front[:szczyt] && front[:bale].map { |b| b[:z0] + b[:h] }.max > Wience.wysokosc(role(pl, :bok).first, p300) + 500.0,
+              'szczyt frontu z bali pod płatwiami')
+Testy.rowne(Sciany.opis_rodzaju(front), 'front tarasu – podciąg i szczyt', 'opis frontu')
+Testy.rowne(slupy(pl).length, 0, 'bez słupów (ściany boczne pełne)')
+pl = caly(seg, { 'taras' => 'sciany', 'liczba_wiencow' => 20, 'taras_szczyt' => 'pusty' }, '1200 – szczyt pusty z wiązarem')
+Testy.sprawdz(pl[:elementy].count { |e| e[:prefiks] == 'Wt' } >= 3, 'szczyt pusty – wiązar na balach frontu (Wt)')
+pl = caly(seg, { 'taras' => 'sciany', 'liczba_wiencow' => 25, 'strop' => 'tak', 'dach_uklad' => 'platwie_krokwie', 'taras_szczyt' => 'azurowy' },
+          'Typ 300 – ażurowy szczyt, płatwie i krokwie')
 
 Testy.grupa('Strona min, kalenica wzdłuż y, dach jednospadowy')
 pl = caly(prostokat(0, 0, 4000, 6000), { 'taras' => 'podciag', 'taras_strona' => 'min', 'taras_glebokosc' => 1500 }, 'min, y')
@@ -291,9 +309,13 @@ Testy.rowne([TarasWiazar.szerokosc_czlonu(pl6[:parametry], 'taras_wiazar_zastrza
             [200.0, 100.0], 'zastrzały: 200 jak płatew albo własne 100')
 # Zamek płatwi nad trójkątem tylko od spodu (domyślnie) – bez wrębów bocznych, gniazdo na pełną szerokość płatwi.
 pw = pl[:elementy].select { |e| e[:prefiks] == 'P' }
-nad = pw.map { |e| e[:wreby].find { |x| x[2] } || [] }
-Testy.sprawdz(nad.all? { |x0, x1, bok| bok == 0.0 && (x1 - x0 - 62.0).abs < 0.01 }, "płatwie nad trójkątem: wrąb tylko od spodu na grubości wiązara (#{nad.first.inspect})")
-Testy.sprawdz(pw.all? { |e| e[:wreby].count { |x| x[2].nil? } >= 2 }, 'w ścianach domu wręby z boków i od spodu – bez zmian')
+# Od rundy 18 płatwie dłuższe niż w magazynie są dzielone nad ścianami – wrąb wiązara ma kawałek przy froncie.
+nad = pw.map { |e| (e[:wreby] || []).find { |x| x[2] } || [] }.reject(&:empty?)
+linie = pw.map { |e| e[:polozenie][:poczatek][1].round }.uniq.length
+Testy.sprawdz(nad.length == linie && nad.all? { |x0, x1, bok| bok == 0.0 && (x1 - x0 - 62.0).abs < 0.01 },
+              "płatwie nad trójkątem: wrąb tylko od spodu na grubości wiązara (#{nad.first.inspect}, linie płatwi #{linie})")
+Testy.sprawdz(pw.group_by { |e| e[:polozenie][:poczatek][1].round }.values.all? { |l| l.inject(0) { |n, e| n + (e[:wreby] || []).count { |x| x[2].nil? } } >= 2 },
+              'w ścianach domu wręby z boków i od spodu – bez zmian (kawałki płatwi razem)')
 Testy.rowne(ZamekPlatwi.przekroj_wrebu([[0.0, 0.0], [60.0, 0.0], [60.0, 200.0], [0.0, 200.0]], 60.0, ZamekPlatwi.wrab_odcinka({ bok: 5.0, dol: 10.0 }, 0.0)),
             [[60.0, 10.0], [60.0, 200.0], [0.0, 200.0], [0.0, 10.0]], 'przekrój płatwi w wrębie tylko od spodu – pełna szerokość, 10 wyżej')
 gn = TarasWiazar.gniazda_platwi(TarasWiazar.uklad(front, pl[:parametry]), pl[:parametry])

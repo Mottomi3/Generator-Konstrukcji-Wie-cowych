@@ -4,7 +4,7 @@
 # Plik: rdzen/taras_szczyt.rb
 # Zadanie: szczyt nad tarasem z podciągiem – pełny (jak 1100), ażurowy (bale na przemian z rzędami przekładek, jak balustrada) albo pusty (kilka bali spinających nad podciągiem i wiązar z rdzen/taras_wiazar.rb albo słupki z przekładek pod płatwiami; wiązar na słupach – front bez bali).
 # Tematy: szczyt nad tarasem, szczyt ażurowy, szczyt pusty, przekładki w szczycie, bale spinające szczyt, słupek pod płatwią, front bez bali pod wiązarem
-# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/szczyty.rb (zasięg pod linią szczytu, s ↔ v), rdzen/dach.rb (płatwie)
+# Zależy od: rdzen/parametry.rb, rdzen/wience.rb (wysokość ścian okapowych), rdzen/szczyty.rb (zasięg pod linią szczytu, s ↔ v), rdzen/dach.rb (płatwie), rdzen/taras.rb (front z balami)
 # Używają: rdzen/bale.rb (kawałki wieńca frontu tarasu), rdzen/taras_wiazar.rb (czy wiązar, front bez bali)
 #
 # Wieńce szczytu frontu = wieńce nad pierwszym balem szczytu (ten zamyka się z górnymi balami ścian bocznych i zostaje
@@ -18,16 +18,17 @@ require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMader
 require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 require File.join(File.dirname(__FILE__), 'szczyty') unless defined?(ArteMadera::GeneratorWiencowy::Szczyty)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
+require File.join(File.dirname(__FILE__), 'taras') unless defined?(ArteMadera::GeneratorWiencowy::Taras)
 
 module ArteMadera
   module GeneratorWiencowy
     module TarasSzczyt
       module_function
 
-      # Czy ściana to front tarasu z podciągiem ze szczytem innym niż pełny.
+      # Czy ściana to front tarasu z balami (typ 200, typ 300 ze szczytem frontu) ze szczytem innym niż pełny.
       def dotyczy?(w, p)
         tr = w[:taras]
-        tr && tr[:rola] == :front && tr[:wariant] == 'podciag' && w[:szczyt] && %w[azurowy pusty].include?(p['taras_szczyt'])
+        tr && tr[:rola] == :front && Taras.front_z_balami?(tr, p) && w[:szczyt] && %w[azurowy pusty].include?(p['taras_szczyt'])
       end
 
       # Numer wieńca szczytu (0 – pierwszy nad balem zamykającym się ze ścianami bocznymi) albo nil (podciąg, balustrada).
@@ -75,7 +76,7 @@ module ArteMadera
 
       # Czy front tarasu jest bez bali od podciągu w górę (wiązar na słupach – z przodu sam trójkąt, runda 9).
       def bez_bali?(w, p)
-        dotyczy?(w, p) && wieniec?(p) && p['taras_wiazar_podparcie'] == 'slupy'
+        dotyczy?(w, p) && wieniec?(p) && p['taras_wiazar_podparcie'] == 'slupy' && w[:taras][:wariant] == 'podciag'
       end
 
       # Osie płatwi na froncie (s ściany).
