@@ -56,7 +56,7 @@ dane.init.uklad = 'zakladki';
   }, opisyOkna);
   sprawdz(wSekcjach, 'każde pole w swojej sekcji');
   var podp = await page.evaluate(function () { return document.querySelectorAll('#sekcje .podp').length; });
-  sprawdz(podp === opisyOkna.filter(function (o) { return o.podpowiedz; }).length, 'podpowiedzi pod polami (' + podp + ')');
+  sprawdz(podp === opisyOkna.filter(function (o) { return o.podpowiedz && o.rodzaj !== 'tabela'; }).length, 'podpowiedzi pod polami (' + podp + ')');
   var szab = await page.evaluate(function () { return document.querySelectorAll('#typ option').length; });
   sprawdz(szab === dane.init.typy.lista.length && szab >= 4, 'lista typów domów (' + szab + ')');
   var liczbaZamka = await page.evaluate(function () { return document.querySelectorAll('[data-zamek]').length; });
@@ -195,19 +195,27 @@ dane.init.uklad = 'zakladki';
   sprawdz(d.otwory.length === 1 && d.otwory[0].sciana === 'W-1' && d.otwory[0].szerokosc === '1020', 'otwór w danych podglądu');
   sprawdz(d.parametry.zamek && d.parametry.zamek.krycie === '139', 'wymiary zamka w danych');
   var opcje = await page.evaluate(function () {
-    return Array.prototype.map.call(document.querySelectorAll('#tab-otwory select option'), function (o) { return o.value; });
+    return Array.prototype.map.call(document.querySelectorAll('#tab-otwory select[data-o="sciana"] option'), function (o) { return o.value; });
   });
   sprawdz(opcje.indexOf('W-6') < 0 && opcje.indexOf('W-5') >= 0, 'lista ścian otworu bez kontrforów');
 
   await page.evaluate(function () { window.__wywolania = []; });
-  await page.evaluate(function () { document.getElementById('sekcja-otwory').open = true; });
-  await page.fill('#p-drzwi_szerokosc', '1000');
+  // Lista typowej stolarki (pole-tabela standardu, runda 17) – „+ drzwi” bierze pierwsze drzwi z listy.
+  await page.evaluate(function () {
+    document.getElementById('p-stolarka').value = JSON.stringify([{ symbol: 'O1', rodzaj: 'okno', szerokosc: 1020, wysokosc: 1010, spod: 900, model: '' },
+      { symbol: 'D7', rodzaj: 'drzwi', szerokosc: 1000, wysokosc: 2100, spod: 0, model: '' }]);
+  });
   await page.click('#btn-drzwi');
   await page.waitForTimeout(500);
   w = await page.evaluate(function () { return window.__wywolania; });
   pg = w.filter(function (x) { return x[0] === 'podglad'; });
   d = JSON.parse(pg[pg.length - 1][1]);
-  sprawdz(d.otwory.length === 2 && d.otwory[1].szerokosc === '1000' && d.otwory[1].wysokosc === '2100', 'nowe drzwi z wymiarów w parametrach');
+  sprawdz(d.otwory.length === 2 && d.otwory[1].szerokosc === '1000' && d.otwory[1].wysokosc === '2100' && d.otwory[1].typ === 'D7' &&
+          d.otwory[0].typ === 'O1', 'nowe drzwi z listy typowej stolarki, typ w danych (' + JSON.stringify(d.otwory[1]) + ')');
+  var nowyTyp = await page.evaluate(function () {
+    return Array.prototype.map.call(document.querySelectorAll('#nowy-typ option'), function (o) { return o.value; }).join(',');
+  });
+  sprawdz(nowyTyp === 'O1,D7', 'lista „+ dodaj z listy” odświeżona po zmianie listy stolarki (' + nowyTyp + ')');
 
   // Stolarka i luzy: otwór w balach = stolarka + 2 × luz boczny (10), wysokość + luz górny (pusty – podpowiedź 1,5 %).
   var stolarka = function () {
@@ -383,6 +391,13 @@ dane.init.uklad = 'zakladki';
   await page.evaluate(function () { window.__wywolania = []; });
   var pk = await punkt('W-5', 600);
   await page.mouse.click(pk[0], pk[1]);
+  var okk = await page.evaluate(function () {
+    var b = document.getElementById('klik-okienko');
+    return b ? [b.querySelector('h3').textContent, document.getElementById('k-od').value] : null;
+  });
+  sprawdz(okk && /Nowy węgieł/.test(okk[0]) && Math.abs(parseFloat(okk[1]) + dane.widok.ref - 4080) < 11,
+          'klik w widok (tryb węgieł): okienko nowego węgła z „od” (' + JSON.stringify(okk) + ')');
+  await page.click('#k-wstaw');
   dp = await podgladDane();
   var wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
   sprawdz(wl && wl.length === 2 && Math.abs(wl[0] - 1478) < 1 && Math.abs(wl[1] - 4080) < 11,
@@ -390,9 +405,46 @@ dane.init.uklad = 'zakladki';
   await page.evaluate(function () { window.__wywolania = []; });
   pk = await punkt('W-6', 20);
   await page.mouse.click(pk[0], pk[1]);
+  okk = await page.evaluate(function () { var b = document.getElementById('klik-okienko'); return b ? b.querySelector('h3').textContent : ''; });
+  sprawdz(/^Węgieł/.test(okk) && !!(await page.$('#k-usun')), 'klik przy węgle: okienko węgła z „Usuń” (' + okk + ')');
+  await page.click('#k-usun');
   dp = await podgladDane();
   wl = dp && dp.sciany['W-1'] ? dp.sciany['W-1'].wegly : null;
   sprawdz(wl && wl.length === 1 && Math.abs(wl[0] - 4080) < 11, 'klik przy węgle: węgieł usunięty (' + JSON.stringify(wl) + ')');
+
+  // Okno kliknięciem (runda 17): przełącznik „okno”, okienko z typem z listy, wstawienie; klik w otwór – poprawa i usunięcie.
+  await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
+  await page.click('#klik-okno');
+  var otwPrzed = (await page.evaluate(function () { return JSON.parse(AMGW._zbierz()).otwory; })).length;
+  await page.evaluate(function () { window.__wywolania = []; });
+  pk = await punkt('W-5', 900);
+  await page.mouse.click(pk[0], pk[1]);
+  var ok2 = await page.evaluate(function () {
+    return [document.getElementById('k-typ').value, document.getElementById('k-szerokosc').value, document.getElementById('k-parapet').value,
+            document.getElementById('k-od').value];
+  });
+  sprawdz(ok2[0] === 'O1' && ok2[1] === '1020' && ok2[2] === '900', 'klik w widok (tryb okno): okienko z pierwszym oknem listy (' + ok2.join(' | ') + ')');
+  await page.click('#k-wstaw');
+  dp = await podgladDane();
+  var nowe = dp ? dp.otwory[dp.otwory.length - 1] : null;
+  sprawdz(dp && dp.otwory.length === otwPrzed + 1 && nowe.sciana === 'W-1' && nowe.typ === 'O1' && nowe.od === ok2[3],
+          'okno z okienka w tabeli otworów i w podglądzie (' + JSON.stringify(nowe) + ')');
+  var srodekOtworu = await page.evaluate(function () {
+    var r = document.querySelector('#widok rect.otwor').getBoundingClientRect();
+    return [r.left + r.width / 2, r.top + r.height / 2];
+  });
+  await page.mouse.click(srodekOtworu[0], srodekOtworu[1]);
+  var ok3 = await page.evaluate(function () { var b = document.getElementById('klik-okienko'); return b ? b.querySelector('h3').textContent : ''; });
+  sprawdz(/^Otwór/.test(ok3) && !!(await page.$('#k-zapisz')), 'klik w otwór: okienko poprawy (' + ok3 + ')');
+  await page.fill('#k-szerokosc', '900');
+  await page.click('#k-zapisz');
+  dp = await podgladDane();
+  sprawdz(dp && dp.otwory[0].szerokosc === '900', 'poprawa otworu z okienka (' + (dp ? dp.otwory[0].szerokosc : '') + ')');
+  await page.mouse.click(srodekOtworu[0], srodekOtworu[1]);
+  await page.click('#k-usun');
+  dp = await podgladDane();
+  sprawdz(dp && dp.otwory.length === otwPrzed, 'usunięcie otworu z okienka (' + (dp ? dp.otwory.length : '') + ')');
+  await page.click('#klik-wegiel');
   await page.evaluate(function (d) { AMGW.widok(d); }, dane.widok);
   var st = await page.evaluate(function () { return document.querySelector('#widok-panel .wegly-stan').textContent; });
   sprawdz(st.indexOf('ręcznie (1)') >= 0, 'panel: węgły ręczne (' + st + ')');

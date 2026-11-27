@@ -16,7 +16,8 @@ var AMGW_UKLAD = (function () {
 
   var $ = AMGW_DOM.$;
   // Karty w kolejności układu dotychczasowego (prawa kolumna) i karty zawsze po prawej w układzie nowym.
-  var KARTY = ['karta-rzut', 'karta-widok', 'karta-otwory', 'karta-wegly-przesun', 'karta-wegly', 'karta-wynik', 'karta-zestawienie'];
+  var KARTY = ['karta-rzut', 'karta-widok', 'karta-otwory', 'karta-dzialowe', 'karta-wegly-przesun', 'karta-wegly', 'karta-wynik',
+               'karta-zestawienie'];
   var PRAWE = ['karta-rzut', 'karta-wynik'];
   var stan = { uklad: 'kroki', opisy: [], otwarte: null };
 
@@ -33,7 +34,7 @@ var AMGW_UKLAD = (function () {
         lewa.appendChild(k);
       } else {
         prawa.appendChild(k);
-        k.style.display = '';
+        k.style.display = k.getAttribute('data-krok') === 'brak' ? 'none' : '';
       }
     }
   }

@@ -28,7 +28,7 @@ Testy.grupa('Kroki okna w kolejności budowy')
 Testy.rowne(Poziomy::KROKI.map { |k| k[1] }, ['Ściany', 'Okna i drzwi', 'Dach', 'Taras i zadaszenie', 'Podłoga', 'Zestawienie'], 'sześć kroków')
 sekcje = L::SEKCJE.map { |s| s[0] }
 Testy.rowne(Poziomy::KROKI.flat_map { |k| k[2] }.sort, sekcje.sort, 'każda sekcja parametrów w dokładnie jednym kroku')
-Testy.rowne(%w[liczba_wiencow okno_szerokosc dach_kat taras zadaszenie legar_przekroj material_zapas limit_zabudowy].map { |k| Poziomy.krok(k) },
+Testy.rowne(%w[liczba_wiencow stolarka dach_kat taras zadaszenie legar_przekroj material_zapas limit_zabudowy].map { |k| Poziomy.krok(k) },
             %w[sciany otwory dach taras taras podloga zestawienie zestawienie], 'pola w swoich krokach')
 
 Testy.grupa('Parametry nowego domu: fabryczne ← standard ← typ; zmiany tylko w tym domu')

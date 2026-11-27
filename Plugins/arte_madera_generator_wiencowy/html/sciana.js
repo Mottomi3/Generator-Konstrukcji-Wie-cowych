@@ -64,8 +64,8 @@ var AMGW_SCIANA = (function () {
     return [smin, smax, zmin, zmax];
   }
 
-  // Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany); naKlik(s, zasieg) – kliknięcie
-  // w rysunek: miejsce s na osi ściany i zasięg trafienia w węgieł [mm] (8 px rysunku).
+  // Rysunek ściany w kontenerze; opis nad rysunkiem w elemencie opis (gdy podany); naKlik(s, zasieg, h, zdarzenie) –
+  // kliknięcie w rysunek: miejsce s na osi ściany, zasięg trafienia w węgieł [mm] (8 px rysunku) i wysokość h.
   function rysuj(box, d, opis, naKlik) {
     wyczysc(box);
     if (opis) { opis.textContent = ''; }
@@ -103,7 +103,8 @@ var AMGW_SCIANA = (function () {
     }
   }
 
-  // Kliknięcie w rysunek: miejsce na osi ściany (z odwróconego przekształcenia SVG) do funkcji naKlik.
+  // Kliknięcie w rysunek: miejsce na osi ściany s i wysokość h (z odwróconego przekształcenia SVG) do funkcji
+  // naKlik(s, zasięg trafienia [mm], h, zdarzenie).
   function klikanie(svg, d, z, m, k, naKlik) {
     svg.setAttribute('class', 'klikalny');
     svg.addEventListener('click', function (ev) {
@@ -112,8 +113,10 @@ var AMGW_SCIANA = (function () {
       var pt = svg.createSVGPoint();
       pt.x = ev.clientX;
       pt.y = ev.clientY;
-      var s = pt.matrixTransform(ctm.inverse()).x + z[0] - m;
-      if (s > d.s_od && s < d.s_do) { naKlik(s, 8 / k); }
+      var q = pt.matrixTransform(ctm.inverse());
+      var s = q.x + z[0] - m;
+      var h = z[3] + m - q.y;
+      if (s > d.s_od && s < d.s_do) { naKlik(s, 8 / k, h, ev); }
     });
   }
 

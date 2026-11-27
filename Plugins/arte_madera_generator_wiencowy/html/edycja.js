@@ -149,8 +149,8 @@ var AMGW_EDYCJA = (function () {
       wiersz.appendChild(el('span', null, 'Węgły tej ściany: automatycznie i z rysunku.'));
     }
     box.appendChild(wiersz);
-    box.appendChild(el('p', { 'class': 'drobny' }, 'Kliknij w widok ściany, żeby dodać węgieł; kliknij przy węgle (przerywana linia), ' +
-      'żeby go usunąć. Ostatek 200 – np. pod taras.'));
+    box.appendChild(el('p', { 'class': 'drobny' }, 'Kliknij w widok ściany – okienko wstawi węgieł, okno albo drzwi (przełącznik nad ' +
+      'widokiem); kliknięcie w otwór albo przy węgle (przerywana linia) – poprawa albo usunięcie. Ostatek 200 – np. pod taras.'));
   }
 
   // Pola działowej: co jest nad nią (strop, antresola, półka – tylko wtedy niższa) i góra działowej.

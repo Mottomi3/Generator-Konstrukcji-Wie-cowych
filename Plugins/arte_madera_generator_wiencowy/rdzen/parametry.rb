@@ -4,7 +4,7 @@
 # Plik: rdzen/parametry.rb
 # Zadanie: sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy.
 # Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów, długości handlowe z listy przekrojów, wymiary zamka, mijanka 300, tak/nie
-# Zależy od: rdzen/parametry_lista.rb, rdzen/wykaz_drewna.rb, log.rb
+# Zależy od: rdzen/parametry_lista.rb, rdzen/parametry_tabela.rb (pola tabel), rdzen/wykaz_drewna.rb, log.rb
 # Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), sketchup/okno.rb, sketchup/ustawienia.rb
 #
 # Definicje parametrów (domyślne, opisy, sekcje) są w rdzen/parametry_lista.rb – tu tylko sprawdzanie i odczyt.
@@ -12,6 +12,7 @@
 
 require File.join(File.dirname(File.dirname(__FILE__)), 'log') unless defined?(ArteMadera::GeneratorWiencowy::Log)
 require File.join(File.dirname(__FILE__), 'parametry_lista') unless defined?(ArteMadera::GeneratorWiencowy::ParametryLista)
+require File.join(File.dirname(__FILE__), 'parametry_tabela') unless defined?(ArteMadera::GeneratorWiencowy::ParametryTabela)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -27,6 +28,7 @@ module ArteMadera
       # Pełny zestaw parametrów z wartości użytkownika: [parametry, ostrzeżenia]. Zamek – z presetu lub własny.
       def normalizuj(wejscie)
         wej = ParametryDach.przenies_nadbitke(wejscie.is_a?(Hash) ? wejscie : {})
+        wej = ParametryTabela.przenies_stolarke(wej, L.wpis('stolarka')[:domyslna])
         p = {}
         uwagi = []
         L::LISTA.each do |w|
@@ -48,6 +50,7 @@ module ArteMadera
           uwagi << "#{w[:etykieta]}: niepoprawny przekrój „#{v}” (wpisz np. 50x150) – przyjęto #{w[:domyslna]}"
           w[:domyslna]
         when :tekst then v.to_s
+        when :tabela then ParametryTabela.wiersze(w, v, uwagi)
         else liczba_w_zakresie(w, v, uwagi)
         end
       end

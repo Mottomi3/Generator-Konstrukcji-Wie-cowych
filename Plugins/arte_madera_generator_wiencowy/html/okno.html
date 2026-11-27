@@ -4,7 +4,7 @@
   Plik: html/okno.html
   Zadanie: okno parametrów generatora – układ okna (sekcje formularza budowane przez okno.js z listy parametrów z Ruby): pasek typu domu, kroki albo zakładki, karty rzutu, wyniku, widoku ściany, otworów, węgłów i zestawienia, panel standardu warsztatu.
   Tematy: okno, układ okna, sekcje formularza, pasek zakładek, pasek kroków, przyciski, pasek typu domu, podpowiedzi, karta widoku ściany, przełącznik pól, przełącznik układu okna, panel standardu warsztatu, karty kroków
-  Zależy od: html/okno.css, html/kroki.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/typy.js, html/standard.js, html/kroki.js, html/uwagi.js, html/uklad.js, html/edycja.js, html/wyniki.js, html/okno.js
+  Zależy od: html/okno.css, html/kroki.css, html/wspolne.js, html/rzut.js, html/sciana.js, html/tabela.js, html/klik_sciana.js, html/dzialowe.js, html/zmiany.js, html/tryb.js, html/zakladki.js, html/typy.js, html/standard.js, html/kroki.js, html/uwagi.js, html/uklad.js, html/edycja.js, html/wyniki.js, html/okno.js
   Używają: sketchup/okno.rb
 -->
 <html lang="pl">
@@ -91,6 +91,7 @@
           <select id="widok-sciana" title="Ściana do pokazania"></select>
           <span id="widok-opis" class="drobny"></span>
         </div>
+        <div id="klik-tryb" class="klik-tryb" title="Co wstawia kliknięcie w wolne miejsce widoku; kliknięcie w otwór albo przy węgle otwiera jego okienko"></div>
         <div id="widok" class="widok"></div>
         <p class="drobny">Widok od lica: liczby na balach – numery pozycji, z lewej – numery wieńców, czerwona kreska – styk,
           przerywana – skrzyżowanie ze ścianą lub węgłem (pogrubiony opis – węgieł ręczny), brązowa przerywana – linia dachu.</p>
@@ -100,14 +101,30 @@
         <h2>Okna i drzwi</h2>
         <table class="tabela" id="tab-otwory">
           <thead>
-            <tr><th>Ściana</th><th title="Krawędź otworu w balach od narożnika (lica zewnętrznego) albo od początku osi działowej">Od [mm]</th><th title="Szerokość stolarki">Stolarka szer.</th><th title="Wysokość stolarki">Stolarka wys.</th><th title="Spód stolarki od wierzchu podwaliny (±0 – spód pierwszego bala)">Spód okna</th><th title="Luz nad stolarką na osiadanie; puste – podpowiedź">Luz górny</th><th>Nazwa</th><th title="Otwór w balach: stolarka + 2 × luz boczny, wysokość + luz górny">Otwór w balach</th><th></th></tr>
+            <tr><th>Ściana</th><th title="Typ z listy typowej stolarki (Standard warsztatu); model typu wstawiany w otwór przy generowaniu">Typ</th><th title="Krawędź otworu w balach od narożnika (lica zewnętrznego) albo od początku osi działowej">Od [mm]</th><th title="Szerokość stolarki">Stolarka szer.</th><th title="Wysokość stolarki">Stolarka wys.</th><th title="Spód stolarki od wierzchu podwaliny (±0 – spód pierwszego bala)">Spód okna</th><th title="Luz nad stolarką na osiadanie; puste – podpowiedź">Luz górny</th><th>Nazwa</th><th title="Otwór w balach: stolarka + 2 × luz boczny, wysokość + luz górny">Otwór w balach</th><th></th></tr>
           </thead>
           <tbody></tbody>
         </table>
         <div class="przyciski-male">
-          <button type="button" id="btn-okno">+ okno</button>
-          <button type="button" id="btn-drzwi">+ drzwi</button>
+          <select id="nowy-typ" title="Typowa stolarka – lista w Standardzie warsztatu"></select>
+          <button type="button" id="btn-dodaj-otwor">+ dodaj z listy</button>
+          <button type="button" id="btn-okno" title="Pierwsze okno z listy typowej stolarki">+ okno</button>
+          <button type="button" id="btn-drzwi" title="Pierwsze drzwi z listy typowej stolarki">+ drzwi</button>
         </div>
+        <p class="drobny">Okno, drzwi albo węgieł wstawisz też kliknięciem w widok ściany (przełącznik nad widokiem).</p>
+      </div>
+      <div class="karta" id="karta-dzialowe" data-krok="sciany">
+        <h2>Ściany działowe (dom z wymiarów)</h2>
+        <table class="tabela" id="tab-dzialowe">
+          <thead>
+            <tr><th>Kierunek</th><th title="Oś działowej od lica zewnętrznego: w poprzek – od lewego narożnika (wzdłuż długości), wzdłuż – od dolnej ściany">Od lica [mm]</th><th title="Początek działowej od lica ściany, na której się zaczyna; puste – od lica">Początek [mm]</th><th title="Puste – do lica ściany naprzeciw (pełna działowa)">Długość [mm]</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="przyciski-male">
+          <button type="button" id="btn-dzialowa">+ ściana działowa</button>
+        </div>
+        <p class="drobny">Działowa jak narysowana linia w środku obrysu: pełna – od lica do lica, krótsza – z wolnym końcem.</p>
       </div>
       <div class="karta" id="karta-wegly-przesun" data-krok="sciany">
         <h2>Węgły – przesuwanie</h2>
@@ -186,6 +203,7 @@
   <script src="wspolne.js"></script>
   <script src="rzut.js"></script>
   <script src="sciana.js"></script>
+  <script src="tabela.js"></script>
   <script src="zmiany.js"></script>
   <script src="zalezne.js"></script>
   <script src="pomoc.js"></script>
@@ -198,6 +216,8 @@
   <script src="uklad.js"></script>
   <script src="edycja.js"></script>
   <script src="otwory.js"></script>
+  <script src="dzialowe.js"></script>
+  <script src="klik_sciana.js"></script>
   <script src="wegly.js"></script>
   <script src="wegly_przesun.js"></script>
   <script src="wyniki.js"></script>

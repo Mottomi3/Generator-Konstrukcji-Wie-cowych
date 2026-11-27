@@ -541,6 +541,12 @@ module Sketchup
       true
     end
 
+    # Atrapa: wczytanie komponentu z pliku .skp – definicja o nazwie pliku (bez rozszerzenia); brak pliku – wyjątek jak w API.
+    def load(sciezka)
+      raise IOError, "Nie można wczytać pliku #{sciezka}" unless File.exist?(sciezka)
+      add(File.basename(sciezka, '.skp'))
+    end
+
     # Atrapa: przywrócenie listy po abort_operation.
     def przywroc(lista)
       @lista = lista.dup

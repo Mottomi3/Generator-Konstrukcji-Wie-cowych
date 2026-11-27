@@ -3,7 +3,7 @@
   Plik: html/okno.js
   Zadanie: logika okna parametrów – sekcje i pola z listy parametrów, podpowiedzi, wymiary zamka, wynik podglądu, wywołania Ruby; typy, standard, kroki i układ w osobnych plikach.
   Tematy: formularz parametrów, sekcje pól, sekcje w zakładkach, podpowiedzi pól, wymiary zamka w oknie, komunikaty w oknie, podgląd automatyczny, wybór ściany do widoku, przełącznik pól podstawowe / wszystkie, odświeżenie pól po zmianie, start okna
-  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js
+  Zależy od: html/okno.html, html/okno.css, html/wspolne.js (AMGW_DOM), html/wyniki.js (AMGW_WYNIKI.pokaz), html/sciana.js (AMGW_SCIANA), html/zmiany.js (AMGW_ZMIANY), html/tryb.js (AMGW_TRYB), html/typy.js (AMGW_TYPY), html/standard.js (AMGW_STANDARD), html/kroki.js (AMGW_KROKI), html/uwagi.js (AMGW_UWAGI), html/uklad.js (AMGW_UKLAD), html/edycja.js (AMGW_EDYCJA), html/otwory.js (AMGW_OTWORY – tabela okien i drzwi), html/klik_sciana.js (AMGW_KLIK – okienko przy kliknięciu w widok ściany), html/dzialowe.js (AMGW_DZIALOWE – działowe domu z wymiarów), html/wegly.js (AMGW_WEGLY), html/wegly_przesun.js, html/przeliczenia.js, html/zalezne.js, html/pomoc.js, html/zakladki.js, html/tabela.js (pola-tabele)
   Używają: sketchup/okno.rb (AMGW.init, AMGW.wynik, AMGW.typy, AMGW.widok, AMGW.komunikat)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -75,6 +75,7 @@ var AMGW = (function () {
   function dodajPole(opis, parametry) {
     var sekcja = $('pola-' + opis.sekcja) || $('pola-rysunek');
     var wartosc = parametry[opis.klucz] !== undefined && parametry[opis.klucz] !== null ? parametry[opis.klucz] : opis.domyslna;
+    if (opis.rodzaj === 'tabela') { poleTabeli(sekcja, opis, wartosc); return; }
     var etykieta = el('label', { 'for': 'p-' + opis.klucz, id: 'l-' + opis.klucz }, opis.etykieta);
     var pole;
     var lista;
@@ -120,6 +121,17 @@ var AMGW = (function () {
     sekcja.appendChild(pole);
     if (opis.podpowiedz) { sekcja.appendChild(el('div', { 'class': 'podp', id: 'h-' + opis.klucz }, opis.podpowiedz)); }
     AMGW_POMOC.dodaj(sekcja, etykieta, opis);
+  }
+
+  // Pole-tabela w formularzu domu (lista stolarki, magazyn drewna): wartość w ukrytym polu (tekst JSON), etykieta z liczbą
+  // wierszy – tabelę zmienia się w panelu „Standard warsztatu”.
+  function poleTabeli(sekcja, opis, wartosc) {
+    var etykieta = el('label', { 'for': 'p-' + opis.klucz, id: 'l-' + opis.klucz, 'class': 'pelny' },
+                      opis.etykieta + ' – wierszy: ' + AMGW_TABELA.kanon(opis, wartosc).length + ' (zmiana: Standard warsztatu)');
+    var pole = el('input', { id: 'p-' + opis.klucz, 'data-klucz': opis.klucz, type: 'hidden' });
+    pole.value = AMGW_TABELA.tekst(opis, wartosc);
+    sekcja.appendChild(etykieta);
+    sekcja.appendChild(pole);
   }
 
   // Wartość pola parametru z formularza (gdy brak pola – domyślna).
@@ -219,18 +231,20 @@ var AMGW = (function () {
   // węgieł; pod rysunkiem panel ustawień ściany.
   function widok(d) {
     if (d && d.id && stan.widok && d.id !== stan.widok) { return; }
-    AMGW_SCIANA.rysuj($('widok'), d, $('widok-opis'), function (s, zasieg) {
-      AMGW_EDYCJA.klik(d, s, AMGW_EDYCJA.wegielPrzy(d, s, zasieg));
-    });
+    AMGW_KLIK.zamknij();
+    AMGW_SCIANA.rysuj($('widok'), d, $('widok-opis'), function (s, zasieg, h, ev) { AMGW_KLIK.klik(d, s, zasieg, h, ev); });
     AMGW_EDYCJA.panel($('widok-panel'), d);
   }
 
   // ---- wywołania ----
 
-  // Dane formularza jako JSON (parametry, otwory i ustawienia ścian z widoku).
+  // Dane formularza jako JSON (parametry, otwory, węgły, ustawienia ścian z widoku, typ; dom z wymiarów – działowe).
   function dane() {
-    return JSON.stringify({ parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), wegly: AMGW_WEGLY.zbierz(),
-                            sciany: AMGW_EDYCJA.dane(), typ: AMGW_TYPY.typ() });
+    var d = { parametry: zbierzParametry(), otwory: AMGW_OTWORY.zbierz(), wegly: AMGW_WEGLY.zbierz(),
+              sciany: AMGW_EDYCJA.dane(), typ: AMGW_TYPY.typ() };
+    var dz = AMGW_DZIALOWE.zbierz();
+    if (dz) { d.dzialowe = dz; }
+    return JSON.stringify(d);
   }
 
   // Podgląd po zmianie pola (z opóźnieniem 350 ms – kilka zmian = jedno wywołanie); przeliczenie otworów w tabeli; okno
@@ -258,6 +272,8 @@ var AMGW = (function () {
     $('plik-ustawien').textContent = d.plik_ustawien ? 'Standard i typy zapisują się w: ' + d.plik_ustawien : '';
     AMGW_EDYCJA.init(d.sciany, zaplanujPodglad);
     AMGW_OTWORY.init(wartoscPola, zaplanujPodglad);
+    AMGW_KLIK.init(wartoscPola, zaplanujPodglad);
+    AMGW_DZIALOWE.init(d.dzialowe || [], d.z_wymiarow, zaplanujPodglad);
     AMGW_WEGLY.init(zaplanujPodglad);
     AMGW_KROKI.zbuduj(d.kroki || []);
     AMGW_TYPY.init(d.typy, stan.opisy, wywolaj, zbierzParametry, function () {
@@ -269,6 +285,7 @@ var AMGW = (function () {
     AMGW_STANDARD.init(stan.opisy, stan.sekcje, stan.opisyZamka, wywolaj);
     AMGW_TRYB.ustaw(d.tryb_pol, []);
     zbudujFormularz(d.parametry || {});
+    AMGW_OTWORY.przelicz();
     AMGW_UKLAD.ustaw(d.uklad, stan.opisy);
     if (d.podsumowanie) { pokazWynik(d.podsumowanie); }
     for (i = 0; i < (d.otwory || []).length; i++) { AMGW_OTWORY.dodaj(d.otwory[i]); }
@@ -295,13 +312,19 @@ var AMGW = (function () {
     } else if (d.zbudowano) {
       pokazKomunikat('Dom wygenerowany w modelu: ' + d.liczby.bale + ' bali, ' + d.liczby.pozycje + ' pozycji.' +
                      (d.bledne_sciany ? ' Uwaga: ' + d.bledne_sciany + ' ścian brył nie narysowano.' : '') +
-                     (d.dach ? ' ' + d.dach.tekst : ''), d.dach && !d.dach.ok ? 'blad' : 'ok');
+                     (d.dach ? ' ' + d.dach.tekst : '') + opisStolarki(d.stolarka), d.dach && !d.dach.ok ? 'blad' : 'ok');
       $('btn-generuj').textContent = 'Zastąp dom w modelu';
     } else if (d.anulowano) {
       pokazKomunikat('Anulowano – dom w modelu bez zmian.', 'blad');
     } else {
       ukryjKomunikat();
     }
+  }
+
+  // Zdanie o modelach okien i drzwi wstawionych w otwory (sketchup/stolarka_modele.rb); bez modeli – pusty tekst.
+  function opisStolarki(st) {
+    if (!st || (!st.wstawione && !(st.uwagi || []).length)) { return ''; }
+    return ' Modele stolarki: ' + st.wstawione + '.' + ((st.uwagi || []).length ? ' ' + st.uwagi.join(' ') : '');
   }
 
   // Podpięcie przycisków i zgłoszenie gotowości okna do Ruby.
@@ -313,18 +336,10 @@ var AMGW = (function () {
       wywolaj('generuj', dane());
     });
     $('btn-zamknij').addEventListener('click', function () { wywolaj('zamknij'); });
-    $('btn-okno').addEventListener('click', function () {
-      AMGW_OTWORY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'),
-                          szerokosc: wartoscPola('okno_szerokosc', '1020'), wysokosc: wartoscPola('okno_wysokosc', '1010'),
-                          parapet: wartoscPola('okno_parapet', '900'), luz_gorny: '', nazwa: '' });
-      zaplanujPodglad();
-    });
-    $('btn-drzwi').addEventListener('click', function () {
-      AMGW_OTWORY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), od: wartoscPola('nowy_otwor_od', '1000'),
-                          szerokosc: wartoscPola('drzwi_szerokosc', '930'), wysokosc: wartoscPola('drzwi_wysokosc', '2100'),
-                          parapet: '0', luz_gorny: '', nazwa: '' });
-      zaplanujPodglad();
-    });
+    $('btn-okno').addEventListener('click', function () { if (AMGW_OTWORY.dodajTyp('okno')) { zaplanujPodglad(); } });
+    $('btn-drzwi').addEventListener('click', function () { if (AMGW_OTWORY.dodajTyp('drzwi')) { zaplanujPodglad(); } });
+    $('btn-dzialowa').addEventListener('click', function () { AMGW_DZIALOWE.nowa(wartoscPola('dom_dlugosc', '6000')); });
+    $('btn-dodaj-otwor').addEventListener('click', function () { if (AMGW_OTWORY.dodajZListy($('nowy-typ').value)) { zaplanujPodglad(); } });
     $('btn-wegiel').addEventListener('click', function () {
       AMGW_WEGLY.dodaj({ sciana: AMGW_OTWORY.pierwszaSciana(), polozenie: 'od', od: '1500' });
       zaplanujPodglad();

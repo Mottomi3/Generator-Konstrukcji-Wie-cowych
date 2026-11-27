@@ -2,8 +2,8 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/standard.js
   Zadanie: panel „Standard warsztatu” – pola poziomu standard pogrupowane sekcjami z wymiarami zamka, wyszukiwanie pola, zapis standardu i powrót do wartości fabrycznych.
-  Tematy: standard warsztatu w oknie, panel standardu, pola standardu, szukanie pola standardu, zapisz standard, przywróć fabryczne, wymiary zamka w standardzie, standard warsztatu z menu – okno bez domu
-  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (porównanie z fabrycznymi), html/typy.js (baza – bieżący standard)
+  Tematy: standard warsztatu w oknie, panel standardu, pola standardu, szukanie pola standardu, zapisz standard, przywróć fabryczne, wymiary zamka w standardzie, standard warsztatu z menu – okno bez domu, tabela w standardzie warsztatu
+  Zależy od: html/wspolne.js (AMGW_DOM), html/zmiany.js (porównanie z fabrycznymi), html/typy.js (baza – bieżący standard), html/tabela.js (pola-tabele)
   Używają: html/okno.js (przycisk „Standard warsztatu…”, odpowiedź Ruby, okno otwarte z menu „Standard warsztatu…” – tryb 'standard')
 
   Panel ma własne pola (identyfikatory s-<klucz>, wymiary zamka sz-<klucz>) – pola okna głównego to wartości tego domu.
@@ -20,8 +20,24 @@ var AMGW_STANDARD = (function () {
   var fmt = AMGW_DOM.fmtPola;
   var stan = { opisy: [], sekcje: [], opisyZamka: [], wywolaj: null, samodzielny: false };
 
-  // Pole panelu dla opisu o z wartością v (lista wyboru albo pole tekstowe) i etykieta wyróżniona, gdy inne niż fabryczne.
+  // Pole-tabela panelu (lista stolarki, magazyn drewna): etykieta na całą szerokość, edytor tabeli (html/tabela.js) z ukrytym
+  // polem s-<klucz> trzymającym tekst JSON, podpowiedź pod tabelą.
+  function tabela(box, o, v) {
+    var lab = el('label', { 'for': 's-' + o.klucz, id: 'sl-' + o.klucz, 'class': 'pelny', title: o.podpowiedz || '' }, o.etykieta);
+    var miejsce = el('div', { 'class': 'pelny tabela-standardu', id: 'sm-' + o.klucz });
+    box.appendChild(lab);
+    box.appendChild(miejsce);
+    var ukryte = AMGW_TABELA.edytor(miejsce, o, v, function () { wyroznij(o); });
+    ukryte.id = 's-' + o.klucz;
+    ukryte.setAttribute('data-standard', o.klucz);
+    if (o.podpowiedz) { box.appendChild(el('div', { 'class': 'podp pelny', id: 'sp-' + o.klucz }, o.podpowiedz)); }
+    wyroznij(o);
+  }
+
+  // Pole panelu dla opisu o z wartością v (lista wyboru, pole tekstowe albo tabela) i etykieta wyróżniona, gdy inne niż
+  // fabryczne.
   function pole(box, o, v) {
+    if (o.rodzaj === 'tabela') { tabela(box, o, v); return; }
     var lab = el('label', { 'for': 's-' + o.klucz, id: 'sl-' + o.klucz, title: o.podpowiedz || '' }, o.etykieta);
     if (o.jednostka) { lab.appendChild(el('span', { 'class': 'jedn' }, '[' + o.jednostka + ']')); }
     var p;
@@ -50,7 +66,7 @@ var AMGW_STANDARD = (function () {
     var p = $('s-' + o.klucz);
     if (!lab || !p) { return; }
     var inne = AMGW_ZMIANY.inneNizFabryczne(o, p.value);
-    lab.className = inne ? 'zmieniony' : '';
+    lab.className = (o.rodzaj === 'tabela' ? 'pelny ' : '') + (inne ? 'zmieniony' : '');
   }
 
   // Zawartość panelu: sekcje z polami poziomu standard (wartości z bazy) i wymiary zamka.
@@ -119,6 +135,9 @@ var AMGW_STANDARD = (function () {
         etykiety[j].style.display = pasuje ? '' : 'none';
         var p = $(etykiety[j].getAttribute('for'));
         if (p) { p.style.display = pasuje ? '' : 'none'; }
+        var klucz = String(etykiety[j].getAttribute('for') || '').replace(/^s-/, '');
+        if ($('sm-' + klucz)) { $('sm-' + klucz).style.display = pasuje ? '' : 'none'; }
+        if ($('sp-' + klucz)) { $('sp-' + klucz).style.display = pasuje ? '' : 'none'; }
         if (pasuje) { widoczne++; }
       }
       grupy[i].style.display = widoczne ? '' : 'none';

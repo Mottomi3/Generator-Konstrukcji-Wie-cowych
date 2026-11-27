@@ -55,6 +55,7 @@ uruchom t_materialy ruby -I testy/atrapa testy/t_materialy.rb
 uruchom t_pol_zamka ruby -I testy/atrapa testy/t_pol_zamka.rb
 uruchom t_poziomy ruby -I testy/atrapa testy/t_poziomy.rb
 uruchom t_typy ruby -I testy/atrapa testy/t_typy.rb
+uruchom t_stolarka ruby -I testy/atrapa testy/t_stolarka.rb
 
 echo "Aplikacja do dachów (prawdziwa wtyczka na jej atrapie):"
 KD="${AM_GW_APLIKACJA_DACHOW:-../aplikacja-do-konstrukcji-dach-w}"

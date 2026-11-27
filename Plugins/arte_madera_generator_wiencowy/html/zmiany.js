@@ -16,6 +16,7 @@ var AMGW_ZMIANY = (function () {
 
   // Czy wartość pola różni się od wzorca (liczby – po wartości, reszta – tekst bez spacji i wielkości liter).
   function rozne(opis, wartosc, wzorzec) {
+    if (opis.rodzaj === 'tabela') { return AMGW_TABELA.rozne(opis, wartosc, wzorzec); }
     if (opis.rodzaj === 'wybor' || opis.rodzaj === 'przekroj' || opis.rodzaj === 'tekst') {
       var norm = function (v) { return String(v).replace(/\s+/g, '').replace(/[×*]/g, 'x').replace(',', '.').toLowerCase(); };
       return norm(wartosc) !== norm(wzorzec);
@@ -41,7 +42,7 @@ var AMGW_ZMIANY = (function () {
       if (!pole || !lab) { continue; }
       var inne = inneNizFabryczne(o, pole.value);
       lab.className = (lab.className.replace(/\s*zmieniony/g, '') + (inne ? ' zmieniony' : '')).replace(/^\s+/, '');
-      lab.title = inne ? 'Zmienione – fabrycznie: ' + (o.rodzaj === 'wybor' ? opisWyboru(o, o.domyslna) : AMGW_DOM.fmtPola(o.domyslna)) : '';
+      lab.title = inne ? 'Zmienione – fabrycznie: ' + opisWartosci(o, o.domyslna) : '';
       if (inne) { ile[o.sekcja] = (ile[o.sekcja] || 0) + 1; }
     }
     var sum = document.querySelectorAll('#sekcje summary');
@@ -49,6 +50,13 @@ var AMGW_ZMIANY = (function () {
       var klucz = sum[i].parentNode.getAttribute('data-sekcja');
       sum[i].textContent = sum[i].getAttribute('data-tytul') + (ile[klucz] ? ' · zmienione: ' + ile[klucz] : '');
     }
+  }
+
+  // Wartość pola do opisu w dymku: wybór – jego tekst, tabela – liczba wierszy, liczba – bez zbędnych zer.
+  function opisWartosci(opis, wartosc) {
+    if (opis.rodzaj === 'wybor') { return opisWyboru(opis, wartosc); }
+    if (opis.rodzaj === 'tabela') { return 'tabela, wierszy: ' + AMGW_TABELA.kanon(opis, wartosc).length; }
+    return AMGW_DOM.fmtPola(wartosc);
   }
 
   // Tekst wyboru (np. „wzdłuż dłuższego boku”) dla wartości pola wyboru.
@@ -61,5 +69,5 @@ var AMGW_ZMIANY = (function () {
     return String(wartosc);
   }
 
-  return { oznacz: oznacz, inneNizFabryczne: inneNizFabryczne, rozne: rozne, opisWyboru: opisWyboru };
+  return { oznacz: oznacz, inneNizFabryczne: inneNizFabryczne, rozne: rozne, opisWyboru: opisWyboru, opisWartosci: opisWartosci };
 }());

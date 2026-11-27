@@ -64,7 +64,7 @@ module ArteMadera
         t = Parametry.grubosc(p)
         bale = w[:bale].map { |b| bal(b, t) }
         { 'id' => w[:id], 'rodzaj' => w[:rodzaj].to_s, 'szczyt' => !w[:szczyt].nil?,
-          'dl_osi' => r(w[:dl_osi]), 's_od' => r(w[:s_od]), 's_do' => r(w[:s_do]),
+          'dl_osi' => r(w[:dl_osi]), 's_od' => r(w[:s_od]), 's_do' => r(w[:s_do]), 'ref' => r(w[:ref] || 0.0),
           'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'slupy' => slupy(plan, w), 'taras' => opis_tarasu(w),
           'skrzyzowania' => (w[:skrzyzowania] || []).map { |k| [r(k[:s]), k[:inna][:id].to_s, k[:inna][:rodzaj].to_s, k[:inna][:zrodlo].to_s] },
           'linia_dachu' => linia_dachu(w, p),
@@ -120,11 +120,12 @@ module ArteMadera
         w[:bale].map { |b| [b[:wieniec][:nr], r(b[:z0]), r(b[:h])] }.uniq.sort_by { |x| [x[1], x[0]] }
       end
 
-      # Otwory (bez gniazd płatwi): [[s0, s1, z0, z1, nazwa, stolarka [s0, s1, z0, z1] albo nil]].
+      # Otwory (bez gniazd płatwi): [[s0, s1, z0, z1, nazwa, stolarka [s0, s1, z0, z1] albo nil, wiersz tabeli otworów, typ]].
       def otwory(w)
         (w[:otwory] || []).reject { |o| o[:gniazdo] }.map do |o|
           st = o[:stolarka]
-          [r(o[:s0]), r(o[:s1]), r(o[:z0]), r(o[:z1]), o[:nazwa].to_s, st ? [r(st[:s0]), r(st[:s1]), r(st[:z0]), r(st[:z1])] : nil]
+          [r(o[:s0]), r(o[:s1]), r(o[:z0]), r(o[:z1]), o[:nazwa].to_s, st ? [r(st[:s0]), r(st[:s1]), r(st[:z0]), r(st[:z1])] : nil,
+           o[:nr], o[:typ].to_s]
         end
       end
 

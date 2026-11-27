@@ -9,9 +9,9 @@
 #
 # Otwór (wejście, klucze tekstowe): sciana ('W-1'), od (krawędź otworu od punktu odniesienia ściany: zewnętrzna –
 # narożnik lica zewnętrznego na początku ściany, działowa – początek narysowanej osi), szerokosc i wysokosc STOLARKI,
-# parapet (spód stolarki od ±0 = spód pierwszego bala), luz_gorny (pusty – podpowiedź), nazwa (opcjonalnie). Otwór
-# w balach = stolarka + luzy (rdzen/stolarka.rb). W ścianie: w[:otwory] = [{ s0:, s1:, z0:, z1:, nazwa:, stolarka:,
-# luz_gorny:, podpowiedz: }].
+# parapet (spód stolarki od ±0 = spód pierwszego bala), luz_gorny (pusty – podpowiedź), nazwa (opcjonalnie), typ (symbol
+# z listy typowej stolarki – model wstawiany w otwór, rdzen/stolarka.rb). Otwór w balach = stolarka + luzy. W ścianie:
+# w[:otwory] = [{ s0:, s1:, z0:, z1:, nazwa:, nr: (wiersz tabeli otworów), typ:, stolarka:, luz_gorny:, podpowiedz: }].
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'geometria') unless defined?(ArteMadera::GeneratorWiencowy::Geometria)
@@ -65,7 +65,7 @@ module ArteMadera
             uwagi << format('Otwór %s (%s) jest bliżej niż %.0f mm od lica ściany %s – kawałek bala przy otworze będzie za krótki.',
                             nazwa, w[:id], min_kaw, k[:inna][:id] || 'poprzecznej')
           end
-          w[:otwory] << otw.merge(nazwa: nazwa)
+          w[:otwory] << otw.merge(nazwa: nazwa, nr: i, typ: o['typ'].to_s.strip)
         end
         uwagi
       end

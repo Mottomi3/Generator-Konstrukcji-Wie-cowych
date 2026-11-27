@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: sketchup/budowa.rb
 # Zadanie: budowa domu w modelu – grupa domu > grupy ścian W-n > instancje komponentów bali, tagi, usuwanie poprzedniej wersji.
-# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, grupa i tag Taras (słupy, balustrada), belki w modelu, przebudowa, położenie domu przy przebudowie, przesunięty dom zostaje na miejscu, usuwanie starych definicji, operacja cofnij
-# Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, rdzen/obrys.rb (kąt układu), sketchup/konwersja.rb, sketchup/atrybuty.rb, log.rb
+# Tematy: budowa modelu, grupa domu, grupa ściany, komponent bala, definicja z siatki, ściana z otworem, tagi, tag Szczyty, grupa Podłoga, grupa Dach, grupa i tag Taras (słupy, balustrada), tag Stolarka, belki w modelu, przebudowa, położenie domu przy przebudowie, przesunięty dom zostaje na miejscu, usuwanie starych definicji, operacja cofnij
+# Zależy od: rdzen/projekt.rb (siatka pozycji), rdzen/siatka.rb, rdzen/obrys.rb (kąt układu), sketchup/konwersja.rb, sketchup/atrybuty.rb, sketchup/stolarka_modele.rb (modele okien i drzwi), log.rb
 # Używają: sketchup/sterowanie.rb
 #
 # Jedna definicja komponentu na pozycję (identyczne bale = jeden komponent). Bryła definicji w ułożeniu kanonicznym,
@@ -26,7 +26,8 @@ module ArteMadera
         podloga: 'Podłoga',
         dach: 'Dach',
         taras: 'Taras',
-        zadaszenie: 'Zadaszenie'
+        zadaszenie: 'Zadaszenie',
+        stolarka: 'Stolarka'
       }.freeze unless const_defined?(:TAGI)
       # Grupy belek w domu: tag => nazwa grupy.
       GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras', zadaszenie: 'Zadaszenie' }.freeze unless const_defined?(:GRUPY_BELEK)
@@ -78,9 +79,10 @@ module ArteMadera
           end
         end
         dodaj_belki(grupa, plan, defs, tagi)
+        stolarka = StolarkaModeleSU.wstaw(grupa, plan, model, tagi[:stolarka])
         Atrybuty.zapisz_dom(grupa, wejscie, dom_id, PLUGIN_BUILD)
         Atrybuty.zapisz_podpis(grupa)
-        { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian, defs: defs }
+        { grupa: grupa, definicje: defs.length, bledne_sciany: bledy_scian, defs: defs, stolarka: stolarka }
       end
 
       # Położenie grupy domu: z linii (obrót układu lokalnego, poziom z0); przy przebudowie – z przesunięciem i obrotem,

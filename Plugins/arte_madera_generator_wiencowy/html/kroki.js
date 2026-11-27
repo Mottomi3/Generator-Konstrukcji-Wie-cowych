@@ -74,7 +74,7 @@ var AMGW_KROKI = (function () {
       if (w) { widoczneWSekcji[o.sekcja] = true; }
       if (o.krok === stan.krok && AMGW_ZALEZNE.spelnione(o, stan.opisy)) {
         if (o.poziom === 'typ') { typ++; }
-        if (o.poziom === 'standard' && !w) { ukryteStandardu.push(o); }
+        if (o.poziom === 'standard' && !w && o.rodzaj !== 'tabela') { ukryteStandardu.push(o); }
       }
     }
     var zamek = stan.krok === (znajdzKrokSekcji('przekroj') || '') && (stan.przypiete.zamek || AMGW_TYPY.zamekZmieniony());

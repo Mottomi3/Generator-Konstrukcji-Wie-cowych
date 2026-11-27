@@ -2,7 +2,7 @@
   ArteMadera – Generator Wieńcowy
   Plik: html/kroki.css
   Zadanie: wygląd nowego układu okna – kroki w kolejności budowy, prawa kolumna z rzutem i uwagami zawsze na widoku, pasek typu domu, pola zmienione tylko w tym domu, panel standardu warsztatu, lista „Do poprawy / Sprawdzone”.
-  Tematy: wygląd kroków, układ okna – wygląd, prawa kolumna przyklejona, pasek typu – wygląd, pole zmienione w domu – wygląd, panel standardu – wygląd, lista uwag – wygląd, podpowiedź po wejściu w pole, opcja niedostępna dla obrysu – wygląd
+  Tematy: wygląd kroków, układ okna – wygląd, prawa kolumna przyklejona, pasek typu – wygląd, pole zmienione w domu – wygląd, panel standardu – wygląd, lista uwag – wygląd, podpowiedź po wejściu w pole, opcja niedostępna dla obrysu – wygląd, okienko kliknięcia – wygląd, tabela w standardzie – wygląd
   Zależy od: html/okno.css (kolory)
   Używają: html/okno.html
 */
@@ -84,3 +84,21 @@ body.tylko-standard .panel-standard-okno { max-width: none; box-shadow: none; }
 /* Powierzchnie w kroku „Zestawienie”. */
 .powierzchnie { margin: 4px 0 8px; }
 .powierzchnie td.liczba b { color: var(--akcent); }
+
+/* Okienko przy kliknięciu w widok ściany (html/klik_sciana.js) i przełącznik „klik wstawia”. */
+#karta-widok { position: relative; }
+.klik-tryb { display: flex; align-items: center; gap: 4px; margin: 6px 0 4px; color: var(--szary); }
+.klik-tryb button.wybrany { background: var(--akcent, #8a5a2b); color: #fff; border-color: var(--akcent, #8a5a2b); }
+.klik-okienko { position: absolute; z-index: 5; width: 320px; padding: 10px 12px; border: 1px solid var(--linia); border-radius: 6px;
+  background: var(--karta); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
+.klik-okienko h3 { margin: 0 0 6px; font-size: 13px; }
+.klik-pole { display: grid; grid-template-columns: 1fr 150px; gap: 4px; align-items: center; margin: 3px 0; }
+.klik-pole input, .klik-pole select { font: inherit; padding: 2px 4px; min-width: 0; }
+.klik-przyciski { margin-top: 8px; gap: 6px; }
+/* Pola-tabele (html/tabela.js) – lista stolarki, magazyn drewna w panelu standardu. */
+.tabela-przewijana { overflow-x: auto; max-width: 100%; }
+.tabela-pola input[type="text"] { width: 100%; min-width: 50px; box-sizing: border-box; font: inherit; padding: 1px 3px; }
+.tabela-pola select { font: inherit; min-width: 80px; }
+.tabela-pola th { white-space: normal; vertical-align: bottom; }
+.standard-pola .pola .pelny, .standard-pola .pola .tabela-standardu { grid-column: 1 / -1; }
+.dodaj-wiersz { margin: 4px 0 8px; }

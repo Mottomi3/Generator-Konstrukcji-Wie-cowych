@@ -61,7 +61,7 @@ module ArteMadera
             'otwory' => d['otwory'] || [], 'wegly' => d['wegly'] || [], 'sciany' => d['sciany'] || {}, 'info' => d['info'].to_s,
             'podsumowanie' => d['podsumowanie'], 'tryb_pol' => Ustawienia.tryb_pol, 'uklad' => Ustawienia.uklad,
             'kroki' => Poziomy::KROKI.map { |k, tytul, sekcje| { 'klucz' => k, 'tytul' => tytul, 'sekcje' => sekcje } },
-            'typy' => OknoTypy.dane(d['typ']), 'z_wymiarow' => d['z_wymiarow'] ? true : false }
+            'typy' => OknoTypy.dane(d['typ']), 'z_wymiarow' => d['z_wymiarow'] ? true : false, 'dzialowe' => d['dzialowe'] || [] }
         end
 
         # Opisy pól z ParametryLista::LISTA w postaci dla JavaScriptu (sekcja, wybory, podpowiedź).
@@ -72,8 +72,14 @@ module ArteMadera
               'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false,
               'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'zamienniki' => w[:zamienniki], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek],
               'poziom' => (w[:poziom] || :standard).to_s, 'krok' => Poziomy.krok_sekcji(w[:sekcja]), 'obrys' => w[:obrys],
-              'z_wymiarow' => w[:z_wymiarow] ? true : false }
+              'z_wymiarow' => w[:z_wymiarow] ? true : false, 'kolumny' => kolumny(w) }
           end
+        end
+
+        # Kolumny pola tabeli dla okna: [{ klucz, etykieta, rodzaj, wybory }]; inne pole – nil.
+        def kolumny(w)
+          return nil unless w[:rodzaj] == :tabela
+          w[:kolumny].map { |k, e, r, wy| { 'klucz' => k, 'etykieta' => e, 'rodzaj' => r.to_s, 'wybory' => wy || [] } }
         end
 
         # Typy domów i baza porównania do okna (po wyborze, zapisie, usunięciu typu albo zapisie standardu): AMGW.typy.

@@ -42,7 +42,7 @@ module ArteMadera
             @dom = nil
             typ = TypyDomow.wybrany
             par = TypyDomow.nowy_dom(typ)
-            @wejscie = { 'segmenty' => z[:pusto] ? DomZWymiarow.segmenty(par) : z[:segmenty], 'z0' => z[:pusto] ? 0.0 : z[:z0],
+            @wejscie = { 'segmenty' => z[:pusto] ? DomZWymiarow.segmenty(par, []) : z[:segmenty], 'z0' => z[:pusto] ? 0.0 : z[:z0],
                          'parametry' => par, 'otwory' => [], 'wegly' => [], 'sciany' => {}, 'typ' => typ }
             @wejscie['z_wymiarow'] = true if z[:pusto]
             info = if z[:pusto]
@@ -57,7 +57,7 @@ module ArteMadera
           okienko_awarii(plan, @wejscie)
           Okno.pokaz('tryb' => tryb, 'parametry' => @wejscie['parametry'], 'otwory' => @wejscie['otwory'], 'wegly' => @wejscie['wegly'] || [],
                      'sciany' => @wejscie['sciany'] || {}, 'info' => info, 'podsumowanie' => dla_okna(plan),
-                     'typ' => @wejscie['typ'], 'z_wymiarow' => @wejscie['z_wymiarow'])
+                     'typ' => @wejscie['typ'], 'z_wymiarow' => @wejscie['z_wymiarow'], 'dzialowe' => @wejscie['dzialowe'] || [])
         rescue => e
           Log.error('Sterowanie.start', e)
           UI.messagebox("Wystąpił błąd:\n#{e.class}: #{e.message}\n\nSzczegóły w Konsoli Ruby.")
@@ -139,7 +139,9 @@ module ArteMadera
                           plan[:pozycje].length))
           dach = DachAplikacja.po_budowie(model, @dom, plan, stary_id)
           DziennikPracy.generowanie(plan, wej, stary ? 'edycja' : 'nowy', ms_obliczen, ms_budowy, zb, dach, PLUGIN_BUILD)
-          wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany], 'dach' => dach)
+          st = zb[:stolarka] || { wstawione: 0, uwagi: [] }
+          wynik.merge('zbudowano' => true, 'definicje' => zb[:definicje], 'bledne_sciany' => zb[:bledne_sciany], 'dach' => dach,
+                      'stolarka' => { 'wstawione' => st[:wstawione], 'uwagi' => st[:uwagi] })
         end
 
         # Menu „Kontrola”: kolizje w zamkach, mijanka, długości dla zaznaczonego domu.
@@ -185,11 +187,15 @@ module ArteMadera
         def scal(dane)
           baza = @wejscie || {}
           par = dane['parametry'] || {}
-          wej = { 'segmenty' => baza['z_wymiarow'] ? DomZWymiarow.segmenty(par) : (baza['segmenty'] || []), 'z0' => baza['z0'].to_f,
+          dz = dane['dzialowe'].is_a?(Array) ? dane['dzialowe'] : (baza['dzialowe'] || [])
+          wej = { 'segmenty' => baza['z_wymiarow'] ? DomZWymiarow.segmenty(par, dz) : (baza['segmenty'] || []), 'z0' => baza['z0'].to_f,
                   'parametry' => par, 'otwory' => dane['otwory'] || [], 'wegly' => dane['wegly'] || [],
                   'sciany' => dane['sciany'].is_a?(Hash) ? dane['sciany'] : (baza['sciany'] || {}),
                   'typ' => (dane['typ'] || baza['typ']).to_s }
-          wej['z_wymiarow'] = true if baza['z_wymiarow']
+          if baza['z_wymiarow']
+            wej['z_wymiarow'] = true
+            wej['dzialowe'] = dz
+          end
           wej
         end
 

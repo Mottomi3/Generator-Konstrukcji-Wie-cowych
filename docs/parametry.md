@@ -215,11 +215,8 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `osiadanie_scian` | Osiadanie ścian – podpowiedź luzu górnego | standard | 1,5 % | 0 … 10 | Luz nad stolarką, gdy w tabeli puste pole „Luz górny”: wysokość stolarki × osiadanie, w górę do 5 mm. Bal suszony 44 mm ok. 1–2 % (montaż latem mniej, zimą więcej), drewno świeże 4–6 %. O tyle krótsze są też słupy tarasu („Słupy krótsze o osiadanie ścian”). |
 | `luz_gorny_min` | Luz górny – najmniejszy w podpowiedzi | standard | 10 mm | 0 … 200 |  |
 | `min_pasek_przy_otworze` | Najcieńszy pasek bala nad / pod otworem | standard | 20 mm | 1 … 100 | Cieńszy pasek – bal przecięty w całości (otwór sięga do krawędzi bala), z ostrzeżeniem. |
-| `okno_szerokosc` | Nowe okno – szerokość stolarki | standard | 1020 mm | 100 … 6000 | Wymiary stolarki wstawiane przyciskiem „+ okno” (typ 100: 1020 × 1010). |
-| `okno_wysokosc` | Nowe okno – wysokość stolarki | standard | 1010 mm | 100 … 4000 |  |
-| `okno_parapet` | Nowe okno – spód okna (od podwaliny) | standard | 900 mm | 0 … 4000 |  |
-| `drzwi_szerokosc` | Nowe drzwi – szerokość stolarki | standard | 930 mm | 300 … 6000 |  |
-| `drzwi_wysokosc` | Nowe drzwi – wysokość stolarki | standard | 2100 mm | 1000 … 4000 |  |
+| `stolarka` | Typowa stolarka – okna i drzwi | standard | [{"symbol"=>"O1", "rodzaj"=>"okno", "szerokosc"=>1020.0, "wysokosc"=>1010.0, "spod"=>900.0, "model"=>""}, {"symbol"=>"D1", "rodzaj"=>"drzwi", "szerokosc"=>930.0, "wysokosc"=>2100.0, "spod"=>0.0, "model"=>""}] |  | Okna i drzwi do wstawiania kliknięciem w widok ściany i z listy przy tabeli otworów. Model – plik .skp z folderu modeli stolarki (puste – plik o nazwie symbolu, np. O1.skp); bez pliku zostaje sam otwór. |
+| `stolarka_folder` | Folder modeli stolarki (.skp) | standard |  |  | Pełna ścieżka folderu z modelami okien i drzwi, np. C:\Users\…\Stolarka. Model: punkt 0 w dolnym lewym narożniku stolarki od zewnątrz, oś czerwona wzdłuż szerokości, zielona w głąb ściany, niebieska w górę. |
 | `nowy_otwor_od` | Nowy otwór – odległość od narożnika | standard | 1000 mm | 0 … 30000 |  |
 
 ## Rozpoznanie rysunku i waga

@@ -59,7 +59,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   }, widac.toString());
   sprawdz(/uklad-kroki/.test(st.klasa) && st.kroki === 6 && st.wybrany === 'sciany', 'sześć kroków, pierwszy wybrany (' + st.kroki + ', ' + st.wybrany + ')');
   sprawdz(st.prawa === 'karta-rzut,karta-wynik' && st.przyklejona === 'sticky', 'po prawej stale rzut i wynik, kolumna przyklejona (' + st.prawa + ', ' + st.przyklejona + ')');
-  sprawdz(st.lewa === 'karta-widok,karta-otwory,karta-wegly-przesun,karta-wegly,karta-zestawienie', 'pozostałe karty pod polami kroku (' + st.lewa + ')');
+  sprawdz(st.lewa === 'karta-widok,karta-otwory,karta-dzialowe,karta-wegly-przesun,karta-wegly,karta-zestawienie', 'pozostałe karty pod polami kroku (' + st.lewa + ')');
   sprawdz(st.stare === 'false,false,false', 'zakładki, tryb Podstawowe / Wszystkie i dawne listy uwag schowane (' + st.stare + ')');
   sprawdz(st.rzutGora < 200 && st.wynikGora < 860, 'rzut i wynik widoczne bez przewijania (rzut ' + Math.round(st.rzutGora) + ' px, wynik ' + Math.round(st.wynikGora) + ' px)');
   sprawdz(st.wysokosc < 3000, 'krok „Ściany” krótszy niż dawne 5239 px przewijania (' + st.wysokosc + ' px)');
@@ -189,12 +189,31 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.screenshot({ path: path.join(KAT, 'testy', 'wyniki', 'okno_standard.png') });
   await page.fill('#s-mijanka', '500');
   await page.dispatchEvent('#s-mijanka', 'change');
+  // Lista typowej stolarki – pole-tabela w panelu (runda 17): wiersze z listy, nowy wiersz, wartość w ukrytym polu.
+  await page.fill('#standard-szukaj', '');
+  var tw = await page.evaluate(function () {
+    var t = document.getElementById('t-stolarka');
+    return t ? t.querySelectorAll('tbody tr').length : -1;
+  });
+  sprawdz(tw === 2, 'lista typowej stolarki w panelu standardu – tabela z dwoma wierszami (' + tw + ')');
+  await page.click('#tw-stolarka');
+  await page.evaluate(function () {
+    var r = document.querySelectorAll('#t-stolarka tbody tr')[2];
+    var ustaw = function (k, v) { var p = r.querySelector('[data-kol="' + k + '"]'); p.value = v; p.dispatchEvent(new Event('change')); };
+    ustaw('symbol', 'O2'); ustaw('szerokosc', '600'); ustaw('wysokosc', '600'); ustaw('spod', '1300');
+  });
+  var tl = await page.evaluate(function () {
+    return [JSON.parse(document.getElementById('s-stolarka').value).length, document.getElementById('sl-stolarka').className];
+  });
+  sprawdz(tl[0] === 3 && /zmieniony/.test(tl[1]), 'nowy wiersz listy w ukrytym polu, pole oznaczone jako zmienione (' + tl.join(' | ') + ')');
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-standard-zapisz');
   var ws = await page.evaluate(function () { return window.__wywolania; });
   var zap = ws.length === 1 && ws[0][0] === 'standard_zapisz' ? JSON.parse(ws[0][1]) : {};
   sprawdz(zap.parametry && zap.parametry.mijanka === '500' && zap.parametry.zamek && zap.typ === dane.init.typy.typ && zap.parametry.liczba_wiencow === undefined,
           'zapis standardu: pola standardu z wymiarami zamka i nazwą typu, bez pól domu');
+  sprawdz(zap.parametry && JSON.parse(zap.parametry.stolarka).length === 3 && JSON.parse(zap.parametry.stolarka)[2].symbol === 'O2',
+          'zapis standardu z listą stolarki (tekst JSON)');
   // Odpowiedź Ruby: nowy standard (mijanka 500, najdłuższy bal 6500).
   var nowaBaza = JSON.parse(JSON.stringify(dane.init.typy.baza));
   nowaBaza.mijanka = 500;
@@ -251,11 +270,11 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [document.body.className, document.querySelectorAll('#prawa > .karta').length, widac('btn-tryb-podstawowe'), widac('kroki'), widac('uwagi'),
             widac('lista-ostrzezen') || widac('lista-podpowiedzi'), widac('karta-typy'), window.__wywolania.map(function (x) { return x.join(':'); }).join(',')];
   }, widac.toString());
-  sprawdz(/uklad-zakladki/.test(uk[0]) && uk[1] === 7 && uk[2] && !uk[3] && !uk[4] && uk[5] && uk[6] && uk[7] === 'uklad:zakladki',
+  sprawdz(/uklad-zakladki/.test(uk[0]) && uk[1] === 8 && uk[2] && !uk[3] && !uk[4] && uk[5] && uk[6] && uk[7] === 'uklad:zakladki',
           'układ dotychczasowy: wszystkie karty po prawej, tryb pól, dawne listy; typ domu zostaje; wybór zapamiętany (' + uk.join(' | ') + ')');
   await page.click('#btn-uklad-kroki');
   uk = await page.evaluate(function () { return [document.body.className, document.querySelectorAll('#prawa > .karta').length, document.querySelectorAll('#krok-karty > .karta').length]; });
-  sprawdz(/uklad-kroki/.test(uk[0]) && uk[1] === 2 && uk[2] === 5, 'powrót do układu nowego (' + uk.join(' | ') + ')');
+  sprawdz(/uklad-kroki/.test(uk[0]) && uk[1] === 2 && uk[2] === 6, 'powrót do układu nowego (' + uk.join(' | ') + ')');
 
   // ---- dom z wymiarów ----
   var initWym = JSON.parse(JSON.stringify(dane.init));
@@ -267,6 +286,16 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [widac('p-dom_dlugosc'), widac('p-dom_szerokosc'), document.getElementById('p-dom_dlugosc').value, JSON.parse(AMGW._zbierz()).parametry.dom_szerokosc];
   }, widac.toString());
   sprawdz(wym[0] && wym[1] && wym[2] === '6000' && wym[3] === '4000', 'dom z wymiarów: pola długości i szerokości w kroku „Ściany” (' + wym.join(' | ') + ')');
+  await page.click('#krok-sciany');
+  await page.click('#btn-dzialowa');
+  await page.waitForTimeout(500);
+  var dzw = await page.evaluate(function (widacTekst) {
+    var widac = eval('(' + widacTekst + ')');
+    var pg = window.__wywolania.filter(function (x) { return x[0] === 'podglad'; });
+    return [widac('karta-dzialowe'), pg.length ? JSON.stringify(JSON.parse(pg[pg.length - 1][1]).dzialowe) : ''];
+  }, widac.toString());
+  sprawdz(dzw[0] && dzw[1] === '[{"kierunek":"poprzek","od":"3000","poczatek":"","dlugosc":""}]',
+          'dom z wymiarów: tabela działowych w kroku „Ściany”, nowa działowa na środku w danych podglądu (' + dzw.join(' | ') + ')');
 
   // Kliknięcie w przycisk tuż po wpisaniu wartości: przebudowa okna czeka na puszczenie przycisku myszy – kliknięcie trafia.
   await page.evaluate(function () { window.__wywolania = []; });

@@ -70,6 +70,7 @@ var AMGW_TYPY = (function () {
   function wpisz(o, v) {
     var p = $('p-' + o.klucz);
     if (!p) { return; }
+    if (o.rodzaj === 'tabela') { p.value = AMGW_TABELA.tekst(o, v); return; }
     p.value = o.rodzaj === 'wybor' || o.rodzaj === 'przekroj' || o.rodzaj === 'tekst' ? String(v) : AMGW_DOM.fmtPola(v);
   }
 
@@ -106,7 +107,7 @@ var AMGW_TYPY = (function () {
       if (znak) {
         znak.textContent = NAZWY[o.poziom] + (zm ? ' – tylko w tym domu' : '');
         znak.title = zm ? 'W ' + (o.poziom === 'typ' ? 'typie' : 'standardzie') + ': ' +
-          (o.rodzaj === 'wybor' ? AMGW_ZMIANY.opisWyboru(o, bazowa(o)) : AMGW_DOM.fmtPola(bazowa(o))) : 'Pole poziomu „' + NAZWY[o.poziom] + '”';
+          AMGW_ZMIANY.opisWartosci(o, bazowa(o)) : 'Pole poziomu „' + NAZWY[o.poziom] + '”';
       }
       przyciskPowrotu(o, lab, zm && o.poziom !== 'dom');
     }
