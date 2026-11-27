@@ -3,7 +3,7 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/sciecie_dachu.rb
 # Zadanie: bale ścian wzdłuż kalenicy wystające nad płaszczyznę dachu ścięte w poprzek do tej płaszczyzny – górny bal ściany okapowej przy ścianie nośnej, ściana wysoka dachu jednospadowego, działowa wzdłużna pod dachem.
-# Tematy: ścięcie dachu, wyrównanie ścięcia do granic pasów, wyrównanie skosu do naroży gniazd, węgieł przy szczycie ścięty do dachu, górny bal ścięty do płaszczyzny dachu, ściana nośna, ściana okapowa pod dachem, ściana wysoka – ścięcie skośne, działowa wzdłużna pod połacią, bal skośny w poprzek
+# Tematy: ścięcie dachu, wyrównanie ścięcia do granic pasów, wyrównanie skosu do naroży gniazd, cienka resztka bala między wycięciami od góry i od dołu, węgieł przy szczycie ścięty do dachu, górny bal ścięty do płaszczyzny dachu, ściana nośna, ściana okapowa pod dachem, ściana wysoka – ścięcie skośne, działowa wzdłużna pod połacią, bal skośny w poprzek
 # Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia), rdzen/bale.rb (położenie bala), rdzen/podbitka.rb (obniżenie)
 # Używają: rdzen/projekt.rb (po balach, przed zamkami i pozycjami)
 #
@@ -86,26 +86,46 @@ module ArteMadera
       # Skosy wzdłuż bala (skos_gora – szczyty, bale pod dachem) przechodzące bliżej niż Bryla::SCAL od naroża obróbki (granica
       # x gniazda albo wycięcia na poziomie jego dna): nad narożem – skos obniżony do naroża, pod nim – obniżony do odstępu
       # Bryla::SCAL (krawędź krótsza niż tolerancja SketchUpa psuje bryłę; runda 12 – węgły pod połacią zadaszenia, gdzie
-      # łamana linia dachu trafia blisko dna gniazda zamka). Skos zawsze w dół – bal nie wychodzi ponad dach.
+      # łamana linia dachu trafia blisko dna gniazda zamka). Skos zawsze w dół – bal nie wychodzi ponad dach. Runda 19
+      # (ziarno 6305): także dolne naroża gniazda od spodu (x gniazda na spodzie bala) – szpic klina szczytu przed gniazdem
+      # niższy niż Bryla::SCAL znika (skos obniżony do naroża; pod narożem bal i tak jest pusty).
       def wyrownaj_skosy!(bale)
         bale.each do |b|
           skosy = b[:cechy].select { |c| c[:typ] == 'skos_gora' && c[:x1] - c[:x0] > 1e-6 }
           next if skosy.empty?
           naroza = b[:cechy].flat_map do |c|
-            poziom = case c[:typ]
-                     when 'gniazdo_gora', 'wyciecie_gora' then b[:h] - c[:gleb]
-                     when 'gniazdo_dol', 'wyciecie_dol' then c[:gleb]
-                     end
-            poziom ? [[c[:x0], poziom], [c[:x1], poziom]] : []
+            case c[:typ]
+            when 'gniazdo_gora', 'wyciecie_gora' then [[c[:x0], b[:h] - c[:gleb], true], [c[:x1], b[:h] - c[:gleb], true]]
+            when 'gniazdo_dol', 'wyciecie_dol'
+              [[c[:x0], c[:gleb], true], [c[:x1], c[:gleb], true], [c[:x0], 0.0, false], [c[:x1], 0.0, false]]
+            else []
+            end
           end
           skosy.each do |c|
-            naroza.each do |x, z|
+            naroza.each do |x, z, oba|
               next if x < c[:x0] - 1e-9 || x > c[:x1] + 1e-9
               d = c[:z0] + (c[:z1] - c[:z0]) * (x - c[:x0]) / (c[:x1] - c[:x0]) - z
-              next unless d.abs > 1e-6 && d.abs < Bryla::SCAL
+              next unless d.abs > 1e-6 && d.abs < Bryla::SCAL && (oba || d > 0.0)
               dz = d > 0.0 ? -d : -(Bryla::SCAL + d)
               c[:z0] += dz
               c[:z1] += dz
+            end
+          end
+        end
+      end
+
+      # Cienka resztka bala między wycięciem od góry (gniazdo płatwi, gniazdo zamka) a gniazdem od spodu w tym samym miejscu –
+      # grubsza od zera, cieńsza niż Bryla::SCAL: wycięcie od góry płytsze, tak by zostało Bryla::SCAL (runda 19, ziarno
+      # 6557 – płatew nad węgłem w balu szczytu zostawiała 0,008 mm; krawędź krótsza niż tolerancja SketchUpa psuje bryłę).
+      def wyrownaj_przeciwne!(bale)
+        bale.each do |b|
+          gora = b[:cechy].select { |c| %w[gniazdo_gora wyciecie_gora].include?(c[:typ]) }
+          dol = b[:cechy].select { |c| %w[gniazdo_dol wyciecie_dol].include?(c[:typ]) }
+          gora.each do |c|
+            dol.each do |d|
+              next unless [c[:x1], d[:x1]].min - [c[:x0], d[:x0]].max > 1e-6
+              r = b[:h] - c[:gleb] - d[:gleb]
+              c[:gleb] -= Bryla::SCAL - r if r > 1e-6 && r < Bryla::SCAL
             end
           end
         end

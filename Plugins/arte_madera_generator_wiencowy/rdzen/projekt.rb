@@ -108,6 +108,7 @@ module ArteMadera
         ProfilBala.oznacz(bale[:bale], p)
         SciecieDachu.wyrownaj!(bale[:bale], p)
         SciecieDachu.wyrownaj_skosy!(bale[:bale])
+        SciecieDachu.wyrownaj_przeciwne!(bale[:bale])
         Kanaly.obrob!(bale[:bale], p)
         k = Kanaly.opis(bale[:bale])
         plan[:podpowiedzi] << { poziom: 'ok', sekcja: 'otwory', tekst: k } if k

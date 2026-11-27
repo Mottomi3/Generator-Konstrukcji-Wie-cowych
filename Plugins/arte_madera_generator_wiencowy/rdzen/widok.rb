@@ -65,7 +65,7 @@ module ArteMadera
         bale = w[:bale].map { |b| bal(b, t) }
         { 'id' => w[:id], 'rodzaj' => w[:rodzaj].to_s, 'szczyt' => !w[:szczyt].nil?,
           'dl_osi' => r(w[:dl_osi]), 's_od' => r(w[:s_od]), 's_do' => r(w[:s_do]), 'ref' => r(w[:ref] || 0.0),
-          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'kanaly' => Kanaly.do_widoku(w).map { |k| [r(k[0]), r(k[1]), k[2] ? r(k[2]) : nil, k[3], k[4]] },
+          'wience' => wience(w), 'bale' => bale, 'otwory' => otwory(w), 'kanaly' => Kanaly.do_widoku(w).map { |k| [r(k[0]), r(k[1]), k[2] ? r(k[2]) : nil, k[3], k[4], k[5] ? r(k[5]) : nil] },
           'slupy' => slupy(plan, w), 'taras' => opis_tarasu(w),
           'skrzyzowania' => (w[:skrzyzowania] || []).map { |k| [r(k[:s]), k[:inna][:id].to_s, k[:inna][:rodzaj].to_s, k[:inna][:zrodlo].to_s] },
           'linia_dachu' => linia_dachu(w, p),

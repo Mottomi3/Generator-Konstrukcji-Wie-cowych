@@ -3,18 +3,21 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/kanaly.rb
 # Zadanie: kanały na przewody elektryczne (N3) – pionowy otwór przez wszystkie wieńce ściany w zadanym miejscu (obróbka „kanal” bali, bryła z otworem) i opcjonalnie otwór puszki na zadanej wysokości (obróbka „puszka” – na liście obróbek); sprawdzenie miejsca (ściana, zamki skrzyżowań).
-# Tematy: kanał na przewody, kanały elektryczne, otwór pionowy w balach, puszka elektryczna, obróbka kanal, obróbka puszka, wiercenie bali
+# Tematy: kanał na przewody, kanały elektryczne, otwór pionowy w balach, puszka elektryczna, obróbka kanal, obróbka puszka, wiercenie bali, strona puszki, kanał pod oknem
 # Zależy od: rdzen/parametry.rb, rdzen/bryla.rb (SCAL; profil z obróbką kanal – kanal_pasow)
 # Używają: rdzen/projekt.rb (przypisanie po otworach, obróbka po zamkach), rdzen/widok.rb (kanały w widoku ściany), html/klik_sciana.js (okienko kanału)
 #
 # Propozycja N3 z rundy 15 (przyjęta w poleceniu rundy 18): „w ścianie z bali przewodu nie da się poprowadzić później”.
 # Wejście domu 'kanaly' => [{ 'sciana' => 'W-1', 'od' => mm (oś kanału od punktu odniesienia ściany, jak „od” otworu),
-# 'srednica' => mm (puste – kanal_srednica), 'puszka' => mm (środek puszki od spodu pierwszego bala; puste – bez puszki) }].
-# Ściana: w[:kanaly] = [{ s:, r:, puszka:, nazwa: 'K1', nr: }]. Bal tej ściany, który zachodzi na kanał, dostaje obróbkę
-# { typ: 'kanal', x0:, x1:, y0:, y1: } – otwór kwadratowy o boku średnicy w osi grubości bala na całą wysokość (rdzen/bryla.rb
-# dzieli pasy przekroju); bal z puszką – { typ: 'puszka', x0:, x1:, z0:, z1:, strona: 1 } (otwór od strony wnętrza – lico
-# lewe ściany, +nor; tylko na liście obróbek, bryła bez zmian). Kanał bliżej lica ściany poprzecznej (skrzyżowanie, węgieł)
-# niż kanal_odstep_zamka – pominięty z ostrzeżeniem (trafiłby w zamek).
+# 'srednica' => mm (puste – kanal_srednica), 'puszka' => mm (środek puszki od spodu pierwszego bala; puste – bez puszki),
+# 'strona' => 'lewa' (puste – lico lewe ściany, +nor: wnętrze ściany zewnętrznej) albo 'prawa' (lico prawe, −nor) }].
+# Ściana: w[:kanaly] = [{ s:, r:, puszka:, strona: (1 – lewa, 0 – prawa), do: (z spodu otworu albo nil), nazwa: 'K1', nr: }].
+# Bal tej ściany, który zachodzi na kanał, dostaje obróbkę { typ: 'kanal', x0:, x1:, y0:, y1: } – otwór kwadratowy o boku
+# średnicy w osi grubości bala na całą wysokość (rdzen/bryla.rb dzieli pasy przekroju); bal z puszką – { typ: 'puszka',
+# x0:, x1:, z0:, z1:, strona: } (tylko na liście obróbek, bryła bez zmian). Kanał bliżej lica ściany poprzecznej
+# (skrzyżowanie, węgieł) niż kanal_odstep_zamka – pominięty z ostrzeżeniem (trafiłby w zamek). Kanał w miejscu okna albo
+# drzwi (runda 19, zadanie_r18 §2) – otwór tylko w balach pod otworem (od spodu ściany do parapetu), puszka nad parapetem
+# pominięta; uwaga w wynikach.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
@@ -56,7 +59,24 @@ module ArteMadera
                             p['kanal_odstep_zamka'].to_f, kol)
             next
           end
-          w[:kanaly] << { s: s, r: r, puszka: Parametry.liczba(k['puszka']), nazwa: nazwa, nr: i }
+          kk = { s: s, r: r, puszka: Parametry.liczba(k['puszka']), strona: k['strona'].to_s == 'prawa' ? 0 : 1, nazwa: nazwa, nr: i }
+          uwagi.concat(pod_otworem!(kk, w))
+          w[:kanaly] << kk
+        end
+        uwagi
+      end
+
+      # Kanał kk w miejscu okna albo drzwi ściany w: otwór w balach tylko pod nim (kk[:do] = spód otworu), puszka nad spodem
+      # otworu pominięta; zwraca uwagi.
+      def pod_otworem!(kk, w)
+        o = (w[:otwory] || []).reject { |x| x[:gniazdo] }.select { |x| x[:s0] < kk[:s] + kk[:r] && x[:s1] > kk[:s] - kk[:r] }.min_by { |x| x[:z0] }
+        return [] if o.nil?
+        kk[:do] = o[:z0]
+        uwagi = [format('Kanał %s (%s) trafia w otwór %s – otwór w balach tylko pod nim (do %.0f mm od spodu ściany).', kk[:nazwa],
+                        w[:id], o[:nazwa] || 'okna', o[:z0])]
+        if kk[:puszka] && kk[:puszka] >= o[:z0] - 0.01
+          uwagi << format('Kanał %s (%s): puszka %.0f mm jest w otworze %s – pominięta.', kk[:nazwa], w[:id], kk[:puszka], o[:nazwa] || 'okna')
+          kk[:puszka] = nil
         end
         uwagi
       end
@@ -76,6 +96,7 @@ module ArteMadera
           kanaly = b[:sciana][:kanaly]
           next if kanaly.nil? || kanaly.empty?
           kanaly.each do |k|
+            next if k[:do] && b[:z0] >= k[:do] - 0.01
             x0 = [k[:s] - k[:r] - b[:s0], 0.0].max
             x1 = [k[:s] + k[:r] - b[:s0], b[:dl]].min
             next if x1 - x0 <= Bryla::SCAL
@@ -83,7 +104,7 @@ module ArteMadera
             next if k[:puszka].nil? || k[:puszka] < b[:z0] - 0.01 || k[:puszka] >= b[:z0] + b[:h] - 0.01
             xs = k[:s] - b[:s0]
             zs = k[:puszka] - b[:z0]
-            b[:cechy] << { typ: 'puszka', x0: xs - sr, x1: xs + sr, z0: zs, z1: zs, strona: 1 }
+            b[:cechy] << { typ: 'puszka', x0: xs - sr, x1: xs + sr, z0: zs, z1: zs, strona: k[:strona] || 1 }
           end
         end
       end
@@ -97,9 +118,9 @@ module ArteMadera
         format('Kanały na przewody: %d – otwór pionowy w %d balach, otwór puszki w %d (wiercenie na liście obróbek bala).', kanaly, n_k, n_p)
       end
 
-      # Kanały ściany w do widoku: [[s, d, puszka albo nil, nazwa, nr]].
+      # Kanały ściany w do widoku: [[s, d, puszka albo nil, nazwa, nr, koniec u góry (spód otworu) albo nil]].
       def do_widoku(w)
-        (w[:kanaly] || []).map { |k| [k[:s], k[:r] * 2.0, k[:puszka], k[:nazwa], k[:nr]] }
+        (w[:kanaly] || []).map { |k| [k[:s], k[:r] * 2.0, k[:puszka], k[:nazwa], k[:nr], k[:do]] }
       end
     end
   end

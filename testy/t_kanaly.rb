@@ -65,8 +65,30 @@ Testy.rowne(prob, [], 'profil prosty')
 prob, = LosoweDomy.sprawdz(segmenty: SEG, parametry: { 'profil_bala' => 'pelny', 'dach_kat' => 35 }, otwory: [], sciany: {}, kanaly: KAN)
 Testy.rowne(prob, [], 'pełny profil, dach 35°')
 wv = Widok.sciana(pl, 'W-1')
-Testy.rowne(wv['kanaly'], [[1478.0, 25.0, 300.0, 'K1', 0]], 'widok ściany: kanał [s, średnica, puszka, nazwa, wiersz]')
+Testy.rowne(wv['kanaly'], [[1478.0, 25.0, 300.0, 'K1', 0, nil]], 'widok ściany: kanał [s, średnica, puszka, nazwa, wiersz, koniec pod oknem]')
 Testy.rowne(Widok.sciana(pl, 'W-3')['kanaly'], [], 'ściana bez kanałów – pusta lista')
+
+Testy.grupa('Kanały – strona puszki i kanał w miejscu okna (runda 19, zadanie_r18 §2)')
+Testy.rowne(pu.first[:cechy].find { |x| x[:typ] == 'puszka' }[:strona], 1, 'puszka fabrycznie od lica lewego (wnętrze ściany zewnętrznej)')
+KP = [{ 'sciana' => 'W-5', 'od' => '1500', 'puszka' => '300', 'strona' => 'prawa' }].freeze
+pp = Projekt.oblicz('segmenty' => SEG, 'parametry' => {}, 'otwory' => [], 'kanaly' => KP)
+w5 = pp[:sciany].find { |w| w[:id] == 'W-5' }
+pu5 = w5[:bale].map { |x| x[:cechy].find { |cc| cc[:typ] == 'puszka' } }.compact
+Testy.rowne([w5[:rodzaj], pu5.map { |x| x[:strona] }], [:dzialowa, [0]], 'działowa – puszka z prawej strony (−nor)')
+OKNO = [{ 'sciana' => 'W-1', 'od' => '1000', 'szerokosc' => '1000', 'wysokosc' => '1000', 'parapet' => '900' }].freeze
+KO = [{ 'sciana' => 'W-1', 'od' => '1500', 'puszka' => '300' }, { 'sciana' => 'W-1', 'od' => '1600', 'puszka' => '1200' }].freeze
+po = Projekt.oblicz('segmenty' => SEG, 'parametry' => {}, 'otwory' => OKNO, 'kanaly' => KO)
+w1o = po[:sciany].find { |w| w[:id] == 'W-1' }
+o1 = w1o[:otwory].reject { |x| x[:gniazdo] }.first
+zk = w1o[:bale].select { |x| x[:cechy].any? { |cc| cc[:typ] == 'kanal' } }
+Testy.sprawdz(!zk.empty? && zk.all? { |x| x[:z0] < o1[:z0] - 0.01 } && w1o[:bale].any? { |x| x[:z0] > o1[:z1] && x[:s0] < 1478 && x[:s0] + x[:dl] > 1478 },
+              format('kanał w miejscu okna – otwór tylko w balach pod oknem (do %.0f mm), bale nad oknem bez otworu', o1[:z0]))
+Testy.sprawdz(po[:ostrzezenia].any? { |u| u.start_with?('Kanał K1 (W-1) trafia w otwór') }, 'uwaga o kanale pod oknem')
+Testy.sprawdz(po[:ostrzezenia].any? { |u| u.start_with?('Kanał K2 (W-1): puszka 1200') } &&
+              w1o[:bale].none? { |x| x[:cechy].any? { |cc| cc[:typ] == 'puszka' && x[:z0] > 1000 } }, 'puszka w otworze okna – pominięta')
+Testy.rowne(Widok.sciana(po, 'W-1')['kanaly'].map { |k| k[5] && k[5].round }, [o1[:z0].round, o1[:z0].round], 'widok: kanał kończy się pod oknem')
+prob, = LosoweDomy.sprawdz(segmenty: SEG, parametry: {}, otwory: OKNO, sciany: {}, kanaly: KO)
+Testy.rowne(prob, [], 'dom z kanałem pod oknem – bez problemów')
 
 Testy.grupa('Kanały w domu w SketchUpie (atrapa)')
 Sketchup.model = Sketchup::Model.new

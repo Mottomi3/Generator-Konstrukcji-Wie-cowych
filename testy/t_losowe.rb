@@ -51,7 +51,9 @@ ZIARNA = {
   6430 => 'r18 (P5): dwie działowe 6 mm od siebie – połączone w jedną',
   6444 => 'r18 (P5): koniec węgła pod bokiem płatwi (4 mm) – gniazdo na pełnej szerokości płatwi',
   6495 => 'r18 (P5): dom L z podbitką na płatwiach – połacie wyżej o grubość deski',
-  7021 => 'r18 (P5): dom L z podbitką na płatwiach i tarasem – połacie wyżej o grubość deski'
+  7021 => 'r18 (P5): dom L z podbitką na płatwiach i tarasem – połacie wyżej o grubość deski',
+  6305 => 'r19 (P5): szpic klina szczytu 0,07 mm przed gniazdem zamka – skos obniżony do naroża gniazda na spodzie',
+  6557 => 'r19 (P5): gniazdo płatwi nad węgłem zostawiało 0,008 mm bala nad gniazdem zamka – zostaje 0,2 mm'
 }.freeze
 
 ZIARNA.each do |z, opis|

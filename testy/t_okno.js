@@ -458,15 +458,18 @@ dane.init.uklad = 'zakladki';
   var okn = await page.evaluate(function () {
     var b = document.getElementById('klik-okienko');
     return [b ? b.querySelector('h3').textContent : '', document.getElementById('k-od') ? document.getElementById('k-od').value : '',
-            document.getElementById('k-puszka') ? document.getElementById('k-puszka').value : ''];
+            document.getElementById('k-puszka') ? document.getElementById('k-puszka').value : '',
+            document.getElementById('k-strona') ? document.getElementById('k-strona').value : ''];
   });
-  sprawdz(/^Nowy kanał na przewody – ściana W-1/.test(okn[0]) && okn[1] !== '' && okn[2] === '300',
-          'klik w widok (tryb kanał): okienko kanału z „od” i puszką 300 (' + okn.join(' | ') + ')');
+  sprawdz(/^Nowy kanał na przewody – ściana W-1/.test(okn[0]) && okn[1] !== '' && okn[2] === '300' && okn[3] === 'lewa',
+          'klik w widok (tryb kanał): okienko kanału z „od”, puszką 300 i stroną puszki – lewa (' + okn.join(' | ') + ')');
+  await page.selectOption('#k-strona', 'prawa');
   await page.click('#k-wstaw');
   dp = await podgladDane();
   var kn = dp && dp.kanaly ? dp.kanaly : [];
   var lk = await page.evaluate(function () { return document.getElementById('lista-kanalow').textContent; });
-  sprawdz(kn.length === 1 && kn[0].sciana === 'W-1' && kn[0].od === okn[1] && kn[0].puszka === '300' && /K1 · W-1/.test(lk),
+  sprawdz(kn.length === 1 && kn[0].sciana === 'W-1' && kn[0].od === okn[1] && kn[0].puszka === '300' && kn[0].strona === 'prawa' &&
+          /K1 · W-1/.test(lk) && /z prawej/.test(lk),
           'kanał w danych podglądu i na liście pod tabelą okien (' + JSON.stringify(kn) + ' | ' + lk + ')');
   await page.click('#lista-kanalow button');
   dp = await podgladDane();

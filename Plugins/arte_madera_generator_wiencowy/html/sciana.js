@@ -194,12 +194,14 @@ var AMGW_SCIANA = (function () {
     }
   }
 
-  // Kanały na przewody (rdzen/kanaly.rb): pionowy pas na całą wysokość ściany, kółko puszki i nazwa.
+  // Kanały na przewody (rdzen/kanaly.rb): pionowy pas na całą wysokość ściany (w miejscu okna – do jego spodu), kółko
+  // puszki i nazwa.
   function kanaly(svg, d, z, X, Y, px) {
     var i;
     for (i = 0; i < (d.kanaly || []).length; i++) {
       var k = d.kanaly[i];
-      svg.appendChild(svgEl('rect', { x: X(k[0] - k[1] / 2), y: Y(z[3]), width: k[1].toFixed(1), height: (z[3] - z[2]).toFixed(1),
+      var gora = k[5] !== null && k[5] !== undefined ? k[5] : z[3];
+      svg.appendChild(svgEl('rect', { x: X(k[0] - k[1] / 2), y: Y(gora), width: k[1].toFixed(1), height: (gora - z[2]).toFixed(1),
                                       fill: '#e0a020', 'fill-opacity': '0.55', stroke: '#b07000', 'stroke-width': '1',
                                       'vector-effect': 'non-scaling-stroke', 'class': 'kanal' }));
       if (k[2] !== null && k[2] !== undefined) {

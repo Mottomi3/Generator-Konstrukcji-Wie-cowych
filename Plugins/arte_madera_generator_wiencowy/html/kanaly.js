@@ -7,8 +7,8 @@
   Używają: html/okno.js (dane domu – kanaly, start), html/klik_sciana.js (kliknięcie przy kanale albo w trybie „kanał”), html/sciana.js (rysunek kanałów z widoku)
 
   Kanał w wejściu domu: { sciana, od (oś kanału od punktu odniesienia ściany, jak „od” otworu), srednica (puste –
-  kanal_srednica), puszka (środek puszki od spodu pierwszego bala; puste – bez puszki) } – rdzen/kanaly.rb. Widok ściany
-  podaje kanały jako [s, średnica, puszka, nazwa, nr wiersza].
+  kanal_srednica), puszka (środek puszki od spodu pierwszego bala; puste – bez puszki), strona ('lewa' – puste, 'prawa') }
+  – rdzen/kanaly.rb. Widok ściany podaje kanały jako [s, średnica, puszka, nazwa, nr wiersza, koniec pod oknem albo null].
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
 */
 var AMGW_KANALY = (function () {
@@ -30,9 +30,12 @@ var AMGW_KANALY = (function () {
     pokaz();
   }
 
+  // Strony puszki do okienka: lico lewe ściany (wnętrze ściany zewnętrznej) albo prawe.
+  var STRONY = [['lewa', 'lewej – wnętrze ściany zewnętrznej'], ['prawa', 'prawej – od zewnątrz']];
+
   // Kopia kanału z polami tekstowymi.
   function kopia(k) {
-    return { sciana: String(k.sciana || ''), od: tekst(k.od), srednica: tekst(k.srednica), puszka: tekst(k.puszka) };
+    return { sciana: String(k.sciana || ''), od: tekst(k.od), srednica: tekst(k.srednica), puszka: tekst(k.puszka), strona: tekst(k.strona) };
   }
 
   // Wartość pola jako tekst (puste – '').
@@ -65,9 +68,12 @@ var AMGW_KANALY = (function () {
     var pSr = AMGW_KLIK.pole(box, 'srednica', 'Średnica [mm] (puste – ' + stan.parametr('kanal_srednica', '25') + ')', stary ? stary.srednica : '');
     var pPu = AMGW_KLIK.pole(box, 'puszka', 'Puszka – środek od spodu ściany [mm] (puste – bez puszki)',
                               stary ? stary.puszka : stan.parametr('kanal_puszka_wysokosc', '300'));
+    var pSt = AMGW_KLIK.pole(box, 'strona', 'Puszka – od strony', stary ? (stary.strona || 'lewa') : 'lewa', STRONY);
     box.appendChild(el('p', { 'class': 'drobny' }, 'Pionowy otwór przez wszystkie wieńce w osi grubości bala; nie bliżej zamka niż ' +
-                       stan.parametr('kanal_odstep_zamka', '60') + ' mm od lica ściany poprzecznej.'));
-    var dane = function () { return { sciana: stary ? stary.sciana : d.id, od: pOd.value, srednica: pSr.value, puszka: pPu.value }; };
+                       stan.parametr('kanal_odstep_zamka', '60') + ' mm od lica ściany poprzecznej. W miejscu okna – tylko pod nim.'));
+    var dane = function () {
+      return { sciana: stary ? stary.sciana : d.id, od: pOd.value, srednica: pSr.value, puszka: pPu.value, strona: pSt.value };
+    };
     if (stary) {
       AMGW_KLIK.przyciski(box, [['k-zapisz', 'Zapisz', function () { stan.lista[nr] = dane(); zmiana(); }, true],
                                 ['k-usun', 'Usuń', function () { usun(nr); }], ['k-anuluj', 'Anuluj', AMGW_KLIK.zamknij]]);
@@ -105,7 +111,7 @@ var AMGW_KANALY = (function () {
       var k = stan.lista[i];
       var w = el('div', { 'class': 'wiersz kanal-wiersz' });
       w.appendChild(el('span', null, 'K' + (i + 1) + ' · ' + k.sciana + ' · od ' + k.od + ' mm · Ø ' + (k.srednica || stan.parametr('kanal_srednica', '25')) +
-                       (k.puszka !== '' ? ' · puszka ' + k.puszka + ' mm' : '')));
+                       (k.puszka !== '' ? ' · puszka ' + k.puszka + ' mm' + (k.strona === 'prawa' ? ' z prawej' : '') : '')));
       var b = el('button', { type: 'button', title: 'Usuń kanał', 'data-nr': String(i) }, '×');
       b.addEventListener('click', function () { usun(Number(this.getAttribute('data-nr'))); });
       w.appendChild(b);
