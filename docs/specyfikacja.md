@@ -606,6 +606,47 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   „Materiał” w wyniku; CSV: blok „Wycena”. Bez robocizny i transportu.
 - **Standard warsztatu z menu i z paska**: okno z samym panelem standardu (bez domu i bez podglądu).
 
+## 8m. Runda 18 – ścieżka i prosty model stolarki, podparcie płatwi, płatwie dzielone, kanały na przewody
+
+- **Model stolarki – ścieżka** (`rdzen/stolarka_modele.rb#plik`): kolumna „Model” listy stolarki = pełna ścieżka pliku
+  `.skp` (działa bez folderu modeli) albo nazwa pliku w folderze `stolarka_folder`; puste – `<symbol>.skp`. Przy kolumnie
+  i przy polu folderu przycisk „…” (`UI.openpanel` / `UI.select_directory`). Wymóg użytkownika (2026-11-27): „ścieżka
+  dostępu da mi możliwość podmiany modeli”.
+- **Prosty model** (`rdzen/stolarka_prosta.rb`, `stolarka_prosta` = tak): otwór bez pliku (bez typu, bez folderu, plik
+  nie istnieje) dostaje komponent z części: rama `stolarka_rama` (68) na grubość ściany (okno – 4 boki, drzwi – bez progu),
+  szyba 4 mm w środku grubości (materiał przezroczysty) albo skrzydło drzwi 40 mm z luzem 3, maskownice
+  `maskownica_szerokosc` × `maskownica_grubosc` (95 × 20) na licu zewnętrznym, zachodzące na ramę o `maskownica_zakladka`
+  (15) – okno z 4 stron, drzwi z 3. Układ jak model użytkownika (punkt 0 – dolny lewy narożnik stolarki od zewnątrz).
+  Rola „skip” dla Dokumentacji 2D; test działania liczy modele stolarki osobno (nie drewno z listy).
+- **Przełącznik doboru w typie** (`przekroje_dobor`, poziom :typ): Typ 100, 200 – podaję sam; Typ 300, 400 – automatycznie
+  (odpowiedź użytkownika: „oba wybory, zależy jakie konstrukcje”).
+- **Dom L – koniec płatwi skrzydła** (`rdzen/podpory_platwi_l.rb`, P2): koniec przy licu płatwi dachu głównego (zachodzą
+  wysokością) – styk, w zestawieniu „Wieszak płatwi”; koniec w koszu (wierzch płatwi dochodzi do połaci dachu głównego,
+  płatwi głównej na tej wysokości brak) – słupek (S, „Słupek pod płatwią”, tag Dach) na wierzchu płatwi dachu głównego,
+  nad którą płatew skrzydła przechodzi najbliżej końca, do spodu płatwi skrzydła; przekrój = szerokość płatwi skrzydła ×
+  szerokość płatwi głównej; odstęp < 20 mm – płatew leży na płatwi głównej. Słupki i oparcia – po 2 kątowniki ciesielskie.
+  Statyka: przęsło płatwi skrzydła do słupka (wspornik do końca). `platwie_kosz` = nie – bez słupków, ostrzeżenie.
+- **Taras typu 300 – front ze szczytem** (`taras_sciany_front` = szczyt, fabrycznie; P2): front tarasu jak w typie 200 –
+  górne `taras_wience_gorne` wieńce nad otworem (od półbala, w zamkach ścian bocznych) i szczyt pełny / ażurowy / pusty
+  z trójkątem na balach; płatwie nad tarasem w zamku tylko od spodu; bale frontu na styk z mijanką w punktach równego
+  podziału (bez słupów). „otwarty” – front bez bali jak do kompilacji 17.
+- **Płatwie dzielone nad ścianą** (`rdzen/podzial_belek.rb`, `belki_podzial` = podpora; P3): płatew dachu dłuższa niż
+  najdłuższa belka jej przekroju w magazynie drewna – styk w osi ściany, przez którą przechodzi (szczyt, działowa, węgieł,
+  wiązar), wybieranej zachłannie (najdalsza w zasięgu, ≥ 300 od końców); kawałki z wrębami, osobne pozycje; bez ściany
+  w zasięgu – w całości z podpowiedzią o łączeniu.
+- **Drobne poprawki geometrii** (P5): ścięcie dachu płytsze niż 0,2 mm na niższym licu pogłębiane do 0,2 mm (bal nigdy
+  nad połacią); działowe narysowane bliżej niż grubość bala i zachodzące na siebie – jedna ściana w miejscu dłuższej
+  (`rdzen/dzialowe_bliskie.rb`, ostrzeżenie); ściana w poprzek płatwi, której koniec wchodzi tylko pod bok płatwi (poza
+  wrębem) – gniazdo na pełnej szerokości płatwi od jej spodu; połacie domu L dla aplikacji wyżej o deskę podbitki na
+  płatwiach (jak w domu prostokątnym).
+- **Kanały na przewody** (`rdzen/kanaly.rb`, N3): wejście domu `kanaly` (ściana, od – oś od punktu odniesienia ściany,
+  średnica – puste: `kanal_srednica` 25, puszka – środek od spodu ściany, puste: bez); kliknięcie w widok ściany w trybie
+  „kanał” (okienko, poprawa, usunięcie), lista pod tabelą okien. Każdy bal ściany w miejscu kanału – obróbka `kanal`:
+  otwór pionowy kwadratowy (bok = średnica, najwyżej grubość − 1,4) w osi grubości, na całą wysokość bala (także bale
+  szczytu, pełny profil); bal ze środkiem puszki – obróbka `puszka` (otwór Ø `kanal_puszka_srednica` 68 od strony +nor,
+  tylko na liście obróbek). Kanał bliżej niż `kanal_odstep_zamka` (60) od lica ściany poprzecznej albo poza ścianą –
+  pominięty z ostrzeżeniem. Bal z otworem albo z puszką – osobna pozycja.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):
@@ -622,7 +663,8 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   `taras_przekladka` (300) przy końcach przęsła i równo między nimi (prześwit ≤ `taras_przekladka_odstep` 600);
   najniższy wieniec zawsze bal (ściana z półbalem: półbal i bal – jak 1100 W-1); bale bez zamków. Tylko dach
   dwuspadowy.
-- **Jak 1200** (`sciany`): ściany boczne przedłużone na całą wysokość do frontu, front otwarty (bez bali – zostaje
+- **Jak 1200** (`sciany`): ściany boczne przedłużone na całą wysokość do frontu; od rundy 18 front ze szczytem (§8m), przy
+  `taras_sciany_front` = otwarty – front otwarty (bez bali – zostaje
   w planie dla dachu i płatwi), bez słupów i balustrady; działa też z dachem jednospadowym.
 
 ## 9. Podłoga

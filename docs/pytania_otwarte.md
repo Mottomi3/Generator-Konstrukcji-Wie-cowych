@@ -64,3 +64,15 @@ Uwaga: numer Z1 występuje dwa razy (drewno w zamku przy skosie – runda 5; lin
 | Z8 | Podłoga w przybudówce | domyślnie tak; bez podłogi – podwaliny i fundamenty pod ścianami przybudówki, legary do dawnej ściany okapowej |
 | Z9 | Podparcie płatwi zadaszenia w przybudówce | tylko ściany szczytowe – przęsło = długość domu (duże przekroje przy długich domach); słupki / węgły pod płatwiami w przybudówce albo jej działowe – do decyzji |
 
+
+## Runda 18 – przyjęte bez pytania (do potwierdzenia)
+
+| Nr | Temat | Przyjęte |
+|---|---|---|
+| R18-1 | Prosty model okna i drzwi | fabrycznie tak; rama 68 na grubość ściany, szyba 4 mm / skrzydło 40 mm, maskownice 95 × 20 od zewnątrz z zakładką 15 na ramę (okno z 4 stron, drzwi z 3); otwór bez typu: drzwi, gdy spód stolarki = 0 |
+| R18-2 | Przełącznik doboru w typach wbudowanych | Typ 100, 200 – podaję sam; Typ 300, 400 – automatycznie (płatwie i krokwie) |
+| R18-3 | Dom L – koniec płatwi skrzydła w koszu | słupek na najbliższej niższej płatwi dachu głównego (przekrój: szerokości obu płatwi); odstęp < 20 mm – płatew leży na płatwi głównej; styk z płatwią główną – wieszak; słupek i oparcie – 2 kątowniki |
+| R18-4 | Taras typu 300 | fabrycznie front ze szczytem (górne wieńce nad otworem, szczyt jak typ 200), bez słupów pod frontem |
+| R18-5 | Płatwie dłuższe niż w magazynie | fabrycznie dzielone nad ścianą na styk w osi ściany (bez zakładu); tylko płatwie dachu |
+| R18-6 | Działowe bliżej niż grubość bala | jedna ściana w miejscu dłuższej, z ostrzeżeniem (dwie ściany w tym miejscu są niewykonalne) |
+| R18-7 | Kanały na przewody | Ø 25 (w modelu kwadrat 25 × 25 w osi bala), puszka 300 od spodu ściany, otwór puszki Ø 68 tylko na liście (od strony wnętrza), odstęp od lica ściany poprzecznej ≥ 60 |

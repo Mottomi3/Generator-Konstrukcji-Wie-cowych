@@ -18,7 +18,7 @@ L = ParametryLista
 Testy.grupa('Poziom przy każdym polu (docs/podzial_pol_r16.md)')
 Testy.sprawdz(L::LISTA.all? { |w| %i[dom typ standard].include?(w[:poziom]) }, 'każde pole ma cechę poziom: dom, typ albo standard')
 ile = Hash[%w[dom typ standard].map { |k| [k, Poziomy.klucze(k).length] }]
-Testy.rowne([ile['dom'], ile['typ']], [18, 49], 'Ten dom: 16 pól z podziału + długość i szerokość domu z wymiarów; Typ domu: 49 (od rundy 18 także przełącznik doboru przekrojów)')
+Testy.rowne([ile['dom'], ile['typ']], [18, 50], 'Ten dom: 16 pól z podziału + długość i szerokość domu z wymiarów; Typ domu: 50 (od rundy 18 także przełącznik doboru przekrojów i front tarasu 300)')
 Testy.rowne(ile.values.inject(0) { |s, x| s + x }, L::LISTA.length, 'każde pole na dokładnie jednym poziomie')
 Testy.rowne(%w[liczba_wiencow dach_kat taras_glebokosc preset dach_uklad podbitka max_dlugosc mijanka polzamek nie_ma_takiego].map { |k| Poziomy.poziom(k) },
             %w[dom dom dom typ typ typ standard standard standard standard], 'przykłady: wieńce i kąt – dom; bal, układ dachu, deski – typ; łączenia i zamek – standard')

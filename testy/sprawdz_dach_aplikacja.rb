@@ -228,7 +228,14 @@ L_OBRYS = [[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000
   par2 = ROOF::FramingBuilder.prepare_parameters(ROOF::Config.load_settings(:framing).merge(Krok2.ustawienia(p)))
   ROOF::Supports.prepare!(model.active_entities, polacie_ap, par2)
   pod = polacie_ap.inject(0) { |s, f| s + f.supports.length }
-  Testy.sprawdz(pod >= ile_p, "każda płatew podpiera połać (#{pod} podparć, #{ile_p} płatwi)")
+  # Płatwie dłuższe niż w magazynie są od rundy 18 dzielone nad ścianami – aplikacja widzi kawałki jednej linii jako jedno
+  # podparcie, więc liczą się linie płatwi (kierunek, położenie w poprzek, wysokość).
+  linie_p = pl[:elementy].select { |e| e[:prefiks] == 'P' }.map do |e|
+    o = e[:polozenie][:poczatek]
+    x = e[:polozenie][:x]
+    [x.map { |v| v.round(3).abs }, (-o[0] * x[1] + o[1] * x[0]).round.abs, o[2].round]
+  end.uniq.length
+  Testy.sprawdz(pod >= linie_p, "każda płatew podpiera połać (#{pod} podparć, #{linie_p} linii płatwi, #{ile_p} kawałków)")
   if Krok2.bez_krokwi?(p)
     deski = czesci(wiezba, Krok2.nadbitka?(p) ? 'sheath_ceiling' : 'sheath_plank')
     Testy.sprawdz(deski.length > 8, "deski na płatwiach: #{deski.length} szt.")

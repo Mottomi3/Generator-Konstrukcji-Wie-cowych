@@ -4,8 +4,8 @@ Wydzielone z `docs/stan_prac.md` w rundzie 14 (2026-11-25), żeby stan bieżący
 najpierw opis nowości kolejnych kompilacji (od najnowszej), potem stan kompilacji 6, przebieg rund z prośbami użytkownika
 i lista modułów dodawanych w rundach. Bieżący stan, kolejka decyzji i plan – `docs/stan_prac.md`.
 
-Runda 17 (kompilacja 17) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r17.md`; przy następnej rundzie przenieść tutaj.
-Rundy 15 i 16 – na końcu tego pliku („Nowe w kompilacji 15”, „Nowe w kompilacji 16”) i w `docs/przekazanie_r15.md`, `docs/przekazanie_r16.md`.
+Runda 18 (kompilacja 18) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r18.md`; przy następnej rundzie przenieść tutaj.
+Rundy 15–17 – na końcu tego pliku („Nowe w kompilacji 15”, „16”, „17”) i w `docs/przekazanie_r15.md` … `docs/przekazanie_r17.md`.
 
 # Część A – nowości kompilacji 7–14
 
@@ -661,3 +661,58 @@ Zdecydowane zaległości (T8, deski, 45 × 120), propozycje P1 i W2, przygotowan
   drugi raz. Przebudowa po zmianie pola czeka teraz na puszczenie przycisku (`html/wspolne.js#poKliknieciu`).
 - Parametrów: 197 (nowe: `dom_dlugosc`, `dom_szerokosc`, `teren_pod_balem`, `limit_zabudowy`, `limit_wysokosci`; usunięte:
   `poszycie_nadbitka`, `nadbitka_grubosc`, `nadbitka_krycie`, `nadbitka_dlugosc`).
+
+## Nowe w kompilacji 17 (polecenie z 2026-11-27 18:59 – `docs/prompt_r17.md`; odpowiedzi na pytania rundy 16 nie przyszły)
+
+- **Odpowiedzi z rundy 16 – brak.** W poleceniu wszystkie pięć odpowiedzi zostało „…”; pytania zadane od razu (z rysunkiem
+  działowej i zrzutem obu układów okna `docs/uklady_okna_r17.png`), do końca rundy bez odpowiedzi. Przyjęte: oba układy okna
+  zostają (nic nie usunięte), działowa dochodzi wyżej (zasada „styk zawsze w zamku”), typy bez zmian, modele stolarki –
+  mechanizm gotowy pod format z pytania 4. Folderu `raporty\` na dysku nie było – kompilacja 16 nie była uruchamiana.
+- **„Standard warsztatu” z menu i paska** (`sketchup/sterowanie.rb#standard`, `sketchup/menu.rb`, `sketchup/pasek.rb`,
+  ikona `ikony/standard.*`, `html/standard.js#samodzielnie`): okno z samym panelem standardu – bez zaznaczania linii
+  ani domu, bez podglądu; „Zapisz standard” zostawia panel otwarty z komunikatem, „Zamknij” zamyka okno. Pasek ma cztery
+  przyciski.
+- **Styk bali zawsze w zamku – dwa pozostałe miejsca** (rysunek `docs/styk_w_zamku_r17.png`; 600 losowych domów
+  6001–6600: styki bez zamka 8 → 0):
+  - *Węgieł pod płatwią w gnieździe* (`rdzen/bale.rb#bez_platwi_nad`): w domu L płatew ścienna skrzydła bocznego leży
+    w gnieździe górnego bala ściany (niżej niż góra ściany), a płatew dachu głównego przechodzi czasem przez ścianę
+    w miejscu węgła – węgieł kończył się wieniec niżej. Teraz dochodzi do spodu płatwi (płatew leży na węgle), gdy bal
+    ściany nad nim zachowuje między gniazdem zamka a gniazdem płatwi co najmniej `zamek_min_drewno`. Rozpoznanie z rundy 16
+    („ściana szczytowa nad końcem węgła”) było nietrafne – to ściana okapowa skrzydła domu L (ziarna 6093, 6280, 6324, 6392).
+  - *Działowa pod podbitką „pod płatwiami”* (`rdzen/podbitka.rb#dzialowa_do_polaci!`, `#linia_dzialowej`,
+    `#dzialowe_do_polaci`; `rdzen/pod_dachem.rb#linia`): działowa, na której łączą się bale ściany okapowej, przy tej
+    ścianie sięga do wierzchu bala pod jej najwyższym wieńcem (nie wyżej niż połać), dalej kończy się pod deskami jak
+    dotąd; deski podbitki przerwane na działowej tylko na tym odcinku (ok. 30 cm). Ziarna 6057, 6134, 6492, 6541.
+- **Okna, drzwi i węgły kliknięciem w widok ściany** (`html/klik_sciana.js`, zrzut `docs/klik_okno_r17.png`): nad widokiem
+  przełącznik „Klik w widok wstawia: węgieł / okno / drzwi”; kliknięcie otwiera okienko przy miejscu kliknięcia – typ
+  z listy stolarki, szerokość, wysokość, spód, „od” (środek otworu w miejscu kliknięcia), luz górny, nazwa; „Wstaw” /
+  „Anuluj”. Kliknięcie w otwór – okienko poprawy („Zapisz” / „Usuń”), przy węgle – „od” węgła („Zapisz” przesuwa) i „Usuń”.
+  Węgieł ma pierwszeństwo przed otworem (wąski cel). Widok podaje punkt odniesienia `ref` i wiersz tabeli otworu.
+- **Lista typowej stolarki w standardzie** (`stolarka` – pierwsze pole-tabela, `rdzen/parametry_tabela.rb`, `html/tabela.js`):
+  symbol, rodzaj, szerokość, wysokość, spód, model; fabrycznie O1 1020 × 1010 (900) i D1 930 × 2100. Zastępuje sześć pól
+  „Nowe okno / nowe drzwi” (dawne wartości przechodzą do O1 i D1). Tabela otworów ma kolumnę „Typ” (wybór typu wpisuje
+  wymiary), pod nią „+ dodaj z listy”, „+ okno”, „+ drzwi” (pierwsze z listy).
+- **Modele okien i drzwi w otworach** (`rdzen/stolarka_modele.rb`, `sketchup/stolarka_modele.rb`): pole `stolarka_folder`
+  (folder modeli); otwór z typem dostaje przy generowaniu komponent z pliku `<model>.skp` albo `<symbol>.skp` – punkt 0
+  w dolnym lewym narożniku stolarki od zewnątrz, X wzdłuż szerokości, Y w głąb ściany, Z w górę; grupa i tag „Stolarka”;
+  brak pliku – sam otwór i zdanie w komunikacie, model innej wielkości niż stolarka – uwaga.
+- **Działowe w domu z wymiarów** (`html/dzialowe.js`, `rdzen/dom_z_wymiarow.rb#osie_dzialowych`): karta „Ściany działowe”
+  w kroku „Ściany” (tylko dom z wymiarów): kierunek, oś od lica, początek, długość (puste – od lica do lica); zapis w domu.
+- **Magazyn drewna – jedna tabela** (`rdzen/magazyn_drewna.rb`, pole `magazyn_drewna`, sekcja „Magazyn drewna, dobór
+  przekrojów i ceny” w kroku „Zestawienie”): przekrój, długości [m], rodzaj (C24, Nsi/KVH, DUO/TRIO, BSH, deska), znaczniki
+  „do czego” (legar/podciąg, płatew, krokiew, belka zadaszenia, słup, deska), cena za m³. Fabrycznie wykaz Drewno Partner
+  (33 wiersze z deską 14 × 115 × 4 m). Zastępuje pięć list tekstowych – dawne listy z ustawień i modeli przechodzą do
+  magazynu. Pola przekrojów w oknie podpowiadają przekroje z magazynu (lista przy polu).
+- **Jeden przełącznik doboru** (`przekroje_dobor`: podaję sam / dobieraj automatycznie; `Parametry.dobor`): pola doboru
+  płatwi, krokwi, legarów i zadaszenia mają fabrycznie „jak przełącznik”, inna wartość – wyjątek elementu. Fabrycznie
+  „podaję sam”. **Zmiana:** legary i zadaszenie do kompilacji 16 dobierały się same – teraz też „jak przełącznik”
+  (pytanie w §6). Okno rozwiązuje „jak przełącznik” przy polach zależnych (`html/zalezne.js#wartosc`).
+- **Dobór w całej długości** także dla krokwi (od okapu do kalenicy), legarów (najdłuższe przęsło) i podpowiedzi
+  podciągu (`DlugosciHandlowe.najpierw_w_calosci`, `#w_calosci?`).
+- **Wycena materiału – W3** (`rdzen/wycena.rb`, `html/wycena.js`): bale (`cena_bala` zł/m³), belki według przekroju
+  z magazynu (zł/m³), deski poszycia i podbitki ze sztuk × wiersz „deska” magazynu, reszta z cennika
+  (`cennik_materialow`: początek nazwy pozycji, jednostka, cena). W kroku „Zestawienie” tabela z sumą i pozycjami bez ceny,
+  w „Wynik” liczba „Materiał”, w CSV blok „Wycena”. Ceny fabrycznie puste. Fundamenty punktowe poza wyceną drewna.
+- Parametrów: 193 (nowe: `stolarka`, `stolarka_folder`, `przekroje_dobor`, `magazyn_drewna`, `cena_bala`, `cennik_materialow`;
+  usunięte: `okno_szerokosc`, `okno_wysokosc`, `okno_parapet`, `drzwi_szerokosc`, `drzwi_wysokosc`, `przekroje_katalog`,
+  `platwie_katalog`, `krokwie_katalog`, `zadaszenie_katalog`, `zadaszenie_slupy_katalog`).
