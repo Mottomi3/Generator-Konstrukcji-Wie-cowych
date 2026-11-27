@@ -140,6 +140,8 @@ dane.init.uklad = 'zakladki';
   // Sekcje rozwinięte jak przez użytkownika (zwinięte – pola niewidoczne, nie da się ich zmienić).
   await page.evaluate(function () { var d = document.querySelectorAll('#sekcje details'); for (var i = 0; i < d.length; i++) { d[i].open = true; } });
   var vis = function (id) { return page.evaluate(function (i) { var e = document.getElementById(i); return !!e && e.offsetParent !== null; }, id); };
+  sprawdz(await vis('p-legar_przekroj'), 'fabrycznie legar „jak przełącznik” (podaję sam) – przekrój legara widoczny (runda 17)');
+  await page.selectOption('#p-legary_dobor', 'zalecany');
   sprawdz(!(await vis('p-dach_spadek')) && !(await vis('p-legar_przekroj')), 'pola zależne ukryte przy dachu dwuspadowym i doborze zalecanym');
   await page.evaluate(function () { window.__wywolania = []; });
   await page.selectOption('#p-dach_rodzaj', 'jednospadowy');

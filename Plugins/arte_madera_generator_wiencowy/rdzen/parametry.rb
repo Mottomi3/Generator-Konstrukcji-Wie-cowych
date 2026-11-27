@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry.rb
 # Zadanie: sprawdzenie i uzupełnienie parametrów z okna / modelu / ustawień (zakresy, wybory, przekroje, zamek) i odczyt pomocniczy.
-# Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów, długości handlowe z listy przekrojów, wymiary zamka, mijanka 300, tak/nie
-# Zależy od: rdzen/parametry_lista.rb, rdzen/parametry_tabela.rb (pola tabel), rdzen/wykaz_drewna.rb, log.rb
+# Tematy: sprawdzanie parametrów, zakresy wartości, przekrój szer×wys, katalog przekrojów z magazynu, długości handlowe z magazynu, tryb doboru elementu, wymiary zamka, mijanka 300, tak/nie
+# Zależy od: rdzen/parametry_lista.rb, rdzen/parametry_tabela.rb (pola tabel), rdzen/magazyn_drewna.rb (przekroje, długości, dobór), log.rb
 # Używają: rdzen/projekt.rb (normalizacja), wszystkie pliki rdzen/ (odczyt), sketchup/okno.rb, sketchup/ustawienia.rb
 #
 # Definicje parametrów (domyślne, opisy, sekcje) są w rdzen/parametry_lista.rb – tu tylko sprawdzanie i odczyt.
@@ -27,8 +27,7 @@ module ArteMadera
 
       # Pełny zestaw parametrów z wartości użytkownika: [parametry, ostrzeżenia]. Zamek – z presetu lub własny.
       def normalizuj(wejscie)
-        wej = ParametryDach.przenies_nadbitke(wejscie.is_a?(Hash) ? wejscie : {})
-        wej = ParametryTabela.przenies_stolarke(wej, L.wpis('stolarka')[:domyslna])
+        wej = przenies_dawne(wejscie.is_a?(Hash) ? wejscie : {})
         p = {}
         uwagi = []
         L::LISTA.each do |w|
@@ -39,6 +38,14 @@ module ArteMadera
         p['podbitka'] = ParametryDach.polozenie_desek(p['podbitka'], p['dach_uklad'])
         p['zamek'] = zamek_z(wej['zamek'], p['preset'], uwagi)
         [p, uwagi]
+      end
+
+      # Dawne pola z modeli i ustawień wcześniejszych kompilacji w obecnej postaci: nadbitka → położenie desek (r16), nowe okno
+      # i drzwi → lista stolarki, pięć list przekrojów → magazyn drewna (r17).
+      def przenies_dawne(wej)
+        w = ParametryDach.przenies_nadbitke(wej)
+        w = ParametryTabela.przenies_stolarke(w, L.wpis('stolarka')[:domyslna])
+        MagazynDrewna.przenies_listy(w)
       end
 
       # Jedna wartość według rodzaju pola; wartość spoza zakresu – granica zakresu i ostrzeżenie.
@@ -137,15 +144,20 @@ module ArteMadera
         "#{fmt(bh[0])}x#{fmt(bh[1])}"
       end
 
-      # Katalog przekrojów (lista „szer×wys” albo „szer×wys:długości” po przecinku – rdzen/wykaz_drewna.rb) → [[b, h], …]
-      # bez niepoprawnych wpisów i powtórzeń.
+      # Przekroje z magazynu drewna dla zastosowania (dawny klucz listy, np. 'platwie_katalog', albo kolumna magazynu –
+      # rdzen/magazyn_drewna.rb) → [[b, h], …] bez powtórzeń.
       def katalog(p, klucz = 'przekroje_katalog')
-        WykazDrewna.wpisy(p[klucz]).map { |b, h, _dl| [b, h] }.uniq
+        MagazynDrewna.przekroje(p, klucz)
       end
 
-      # Długości handlowe przekrojów z listy: { [mniejszy, większy] => [mm rosnąco] } (tylko wpisy z długościami).
+      # Długości handlowe przekrojów z magazynu dla zastosowania: { [mniejszy, większy] => [mm rosnąco] } (tylko z długościami).
       def dlugosci_katalogu(p, klucz = 'przekroje_katalog')
-        WykazDrewna.dlugosci(p[klucz])
+        MagazynDrewna.dlugosci(p, klucz)
+      end
+
+      # Tryb doboru elementu (pole doboru z wartością „wspolny” – według przełącznika przekroje_dobor).
+      def dobor(p, klucz)
+        MagazynDrewna.dobor(p, klucz)
       end
 
       # Liczba z tekstu lub liczby (przecinek dziesiętny dozwolony); nil gdy się nie da.

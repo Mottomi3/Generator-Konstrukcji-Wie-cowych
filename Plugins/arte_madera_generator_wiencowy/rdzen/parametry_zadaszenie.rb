@@ -4,14 +4,13 @@
 # Plik: rdzen/parametry_zadaszenie.rb
 # Zadanie: parametry zakładki „Zadaszenie boczne / tylne” – wariant (słupy z oczepem albo przybudówka z bali), strona, szerokość, kąt mniejszy niż kąt dachu, okap, podłoga w przybudówce, dobór przekrojów (automatycznie albo z wyboru) płatwi, słupów i belek poprzecznych.
 # Tematy: boczne zadaszenie – parametry, wiata boczna – parametry, przybudówka – parametry, załamanie dachu – parametry, podłoga w przybudówce – parametr, dobór przekrojów zadaszenia – parametry
-# Zależy od: rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
+# Zależy od: rdzen/magazyn_drewna.rb (przekroje do doboru – pole magazyn_drewna, przełącznik przekroje_dobor)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -63,9 +62,10 @@ module ArteMadera
           podpowiedz: 'Podłogę domu (legary, podciągi, fundamenty) ustawiasz w zakładce Dom → „Podłoga i fundamenty”; tu tylko, ' \
                       'czy wchodzi do przybudówki. Bez podłogi w przybudówce zostają podwaliny pod jej ścianami na fundamentach.' },
 
-        { klucz: 'zadaszenie_dobor', poziom: :standard, podstawowy: true, domyslna: 'auto', etykieta: 'Przekroje zadaszenia – dobór', rodzaj: :wybor,
-          sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z },
-          wybory: [['auto', 'automatycznie – najmniejsze wystarczające z list'],
+        { klucz: 'zadaszenie_dobor', poziom: :standard, podstawowy: true, domyslna: 'wspolny', etykieta: 'Przekroje zadaszenia – dobór', rodzaj: :wybor,
+          sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z }, wspolny: 'przekroje_dobor',
+          wybory: [['wspolny', 'jak przełącznik „Przekroje konstrukcji” (Magazyn drewna)'],
+                   ['auto', 'automatycznie – najmniejsze wystarczające z magazynu'],
                    ['reczny', 'z wyboru – przekroje podane niżej (ze sprawdzeniem nośności)']],
           podpowiedz: 'Płatwie i oczep, belki poprzeczne i słupy zadaszenia: generator liczy śnieg i ciężar pokrycia (jak dach – ' \
                       'zakładka Dom → „Szczyty i dach”) i bierze najlżejszy przekrój z listy, który to przenosi. Krokwie zadaszenia ' \
@@ -76,24 +76,15 @@ module ArteMadera
                  'z wyboczeniem na całej wysokości (od fundamentu do belki), obciążenie z połowy szerokości zadaszenia i okapu ' \
                  'między sąsiednimi słupami. Bez wiatru – słupy wolnostojące wymagają stężeń (zastrzały, belka poprzeczna ' \
                  'przykręcona do ściany).' },
-        { klucz: 'zadaszenie_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:platwie),
-          etykieta: 'Dostępne przekroje belek zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
-          gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['auto'] },
-          podpowiedz: 'Płatwie, oczep i belki poprzeczne – lista z hurtowni „szer.×wys.:długości w metrach” po przecinku; ' \
-                      'dobór bierze najlżejszy wystarczający.' },
-        { klucz: 'zadaszenie_slupy_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:slupy),
-          etykieta: 'Dostępne przekroje słupów zadaszenia', rodzaj: :tekst, sekcja: 'zadaszenie_przekroje',
-          gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['auto'] },
-          podpowiedz: 'Lista z hurtowni „wzdłuż ściany×w poprzek:długości w metrach” po przecinku; dobór bierze najlżejszy wystarczający.' },
-        { klucz: 'zadaszenie_platwa_przekroj', poziom: :typ, domyslna: '80x160', etykieta: 'Płatew zadaszenia (szer. × wys.)', jednostka: 'mm',
+        { klucz: 'zadaszenie_platwa_przekroj', magazyn: 'zadaszenie', poziom: :typ, domyslna: '80x160', etykieta: 'Płatew zadaszenia (szer. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje', gdy: { 'zadaszenie' => Z, 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak ' \
                       'płatwie dachu. Wynik sprawdzenia – pod sekcją.' },
-        { klucz: 'zadaszenie_slup_przekroj', poziom: :typ, domyslna: '120x120', etykieta: 'Słup zadaszenia (wzdłuż ściany × w poprzek)',
+        { klucz: 'zadaszenie_slup_przekroj', magazyn: 'slup', poziom: :typ, domyslna: '120x120', etykieta: 'Słup zadaszenia (wzdłuż ściany × w poprzek)',
           jednostka: 'mm', rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory.' },
-        { klucz: 'zadaszenie_belka_przekroj', poziom: :typ, domyslna: '80x160', etykieta: 'Belka poprzeczna na słupie (szer. × wys.)',
+        { klucz: 'zadaszenie_belka_przekroj', magazyn: 'zadaszenie', poziom: :typ, domyslna: '80x160', etykieta: 'Belka poprzeczna na słupie (szer. × wys.)',
           jednostka: 'mm', rodzaj: :przekroj, sekcja: 'zadaszenie_przekroje',
           gdy: { 'zadaszenie' => ['slupy'], 'zadaszenie_dobor' => ['reczny'] },
           podpowiedz: 'Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, ' \

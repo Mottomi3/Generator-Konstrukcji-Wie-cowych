@@ -18,10 +18,19 @@ var AMGW_ZALEZNE = (function () {
   var $ = AMGW_DOM.$;
   var stan = { obrys: '' };
 
-  // Bieżąca wartość pola parametru (brak pola – null).
+  // Bieżąca wartość pola parametru (brak pola – null); pole doboru „jak przełącznik” (data-wspolny) – wartość przełącznika
+  // przekroje_dobor po przełożeniu (data-wspolny-mapa, np. auto → zalecany przy legarach).
   function wartosc(klucz) {
     var e = $('p-' + klucz);
-    return e ? String(e.value) : null;
+    if (!e) { return null; }
+    var v = String(e.value);
+    var w = e.getAttribute('data-wspolny');
+    if (v === 'wspolny' && w && w !== klucz) {
+      var s = wartosc(w);
+      var mapa = JSON.parse(e.getAttribute('data-wspolny-mapa') || '{}');
+      return mapa[s] || (s === 'auto' || s === 'reczny' ? s : v);
+    }
+    return v;
   }
 
   // Czy warunek { klucz: [wartości] } jest spełniony przez bieżące wartości pól.

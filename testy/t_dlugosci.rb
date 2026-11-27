@@ -28,16 +28,28 @@ Testy.rowne(w, [[45.0, 145.0, [4200.0, 5400.0, 6000.0]], [45.0, 170.0, [5400.0, 
             'przecinek, średnik i nowy wiersz między przekrojami; metry z kropką albo przecinkiem; milimetry')
 Testy.rowne(WykazDrewna.wpisy('45x95:6,45x120:5/5.4'), [[45.0, 95.0, [6000.0]], [45.0, 120.0, [5000.0, 5400.0]]], 'bez spacji po przecinku')
 Testy.rowne(WykazDrewna.wpisy('60x100, 60x120, tekst, 0x50'), [[60.0, 100.0, []], [60.0, 120.0, []]], 'lista ze starszej kompilacji – bez długości; śmieci pominięte')
-p = Parametry.normalizuj('przekroje_katalog' => '45x145:6, 195x45:7, 45x145:4.2')[0]
-Testy.rowne(Parametry.katalog(p), [[45.0, 145.0], [195.0, 45.0]], 'katalog – przekroje bez powtórzeń')
+mag = [{ 'przekroj' => '45x145', 'dlugosci' => '6', 'legar' => true }, { 'przekroj' => '195x45', 'dlugosci' => '7', 'legar' => true },
+       { 'przekroj' => '45x145', 'dlugosci' => '4.2', 'legar' => true }, { 'przekroj' => '60x200', 'dlugosci' => '5', 'platew' => true }]
+p = Parametry.normalizuj('magazyn_drewna' => mag)[0]
+Testy.rowne(Parametry.katalog(p), [[45.0, 145.0], [195.0, 45.0]], 'magazyn – przekroje legarów bez powtórzeń (płatew 60 × 200 nie)')
 Testy.rowne(Parametry.dlugosci_katalogu(p), { [45.0, 145.0] => [4200.0, 6000.0], [45.0, 195.0] => [7000.0] },
             'długości – klucz mniejszy × większy, powtórzony przekrój scalony')
+Testy.rowne(Parametry.katalog(p, 'platwie_katalog'), [[60.0, 200.0]], 'dawny klucz listy płatwi → kolumna „Płatew” magazynu')
+
+Testy.grupa('Dawne listy przekrojów (do kompilacji 16) → magazyn drewna (runda 17)')
+pd = Parametry.normalizuj('platwie_katalog' => '80x200:5/7, 100x100')[0]
+Testy.rowne(Parametry.katalog(pd, 'platwie_katalog'), [[80.0, 200.0], [100.0, 100.0]], 'własna lista płatwi zostaje listą płatwi')
+Testy.sprawdz(Parametry.katalog(pd).include?([45.0, 145.0]) && Parametry.katalog(pd, 'krokwie_katalog').include?([45.0, 170.0]),
+              'pozostałe listy – fabryczne')
+Testy.sprawdz(pd['magazyn_drewna'].last['deska'] && pd['magazyn_drewna'].last['przekroj'] == '14x115', 'deska 14 × 115 w magazynie')
+Testy.sprawdz(Parametry.normalizuj('magazyn_drewna' => mag, 'platwie_katalog' => '80x200')[0]['magazyn_drewna'].length == 4,
+              'magazyn już zapisany – dawne listy pominięte')
 
 Testy.grupa('Listy fabryczne z wykazu hurtowni (2026-11-14)')
 p0 = Parametry.normalizuj({})[0]
 leg = Parametry.katalog(p0)
-Testy.sprawdz(p0['przekroje_katalog'].include?('45x120:5.4/6') && !p0['przekroje_katalog'].include?('45x120:5/5.4'),
-              '45 × 120 w długościach 5,4 / 6 m (decyzja z 2026-11-25)')
+Testy.rowne(MagazynDrewna.wiersz(p0, [45, 120])['dlugosci'], '5.4/6', '45 × 120 w długościach 5,4 / 6 m (decyzja z 2026-11-25)')
+Testy.rowne(p0['magazyn_drewna'].length, 33, 'magazyn fabryczny: 10 konstrukcyjnych, 22 widoczne, deska')
 Testy.rowne(Parametry.dlugosci_katalogu(p0)[[45.0, 120.0]], [5400.0, 6000.0], 'długości 45 × 120 do doboru')
 Testy.sprawdz(leg.include?([45.0, 245.0]) && leg.include?([200.0, 200.0]) && !leg.include?([38.0, 58.0]), 'legary: od 45 × 95 w górę, z drewnem widocznym')
 %w[50x100 50x150 50x175 50x200 50x225 63x175 63x200 63x225 75x200 75x225 75x250 100x150].each do |t|
@@ -63,7 +75,8 @@ Testy.sprawdz(h[0][:tekst] =~ /Płatwie 80 × 200: \d+ szt\. o długości do 11 
               "ile, jak długie, jaka najdłuższa (#{h[0][:tekst]})")
 Testy.sprawdz(h[0][:tekst].include?('połącz je nad podporą') && h[0][:tekst].include?('żadna belka z listy nie ma takiej długości'), 'rada: łączyć nad podporą')
 Testy.rowne(dlugie(dom(6000, 4000)), [], 'dom 6 × 4 m: płatwie 7 m – 80 × 200 jest w 7 i 8 m, bez podpowiedzi')
-pl = dom(10_000, 8000, 'platwie_katalog' => '60x200, 80x200, 140x240')
+pl = dom(10_000, 8000, 'magazyn_drewna' => [{ 'przekroj' => '60x200', 'platew' => true }, { 'przekroj' => '80x200', 'platew' => true },
+                                              { 'przekroj' => '140x240', 'platew' => true }])
 Testy.rowne(dlugie(pl), [], 'lista bez długości (starsza kompilacja) – bez podpowiedzi')
 pl = dom(10_000, 8000, 'platwa_przekroj' => '90x210')
 Testy.rowne(dlugie(pl), [], 'przekrój spoza listy – bez podpowiedzi')
@@ -73,12 +86,14 @@ Testy.sprawdz(h.length == 1 && h[0][:tekst] =~ /w całej długości są: \d+ × 
 
 Testy.grupa('Dobór automatyczny – najpierw przekrój dostępny w całej długości')
 lista = [[60.0, 120.0], [60.0, 140.0], [80.0, 200.0]]
-pd = Parametry.normalizuj('platwie_katalog' => '60x120:5/6, 60x140:5/6/7, 80x200:5/7/8')[0]
+pd = Parametry.normalizuj('magazyn_drewna' => [{ 'przekroj' => '60x120', 'dlugosci' => '5/6', 'platew' => true },
+                                                { 'przekroj' => '60x140', 'dlugosci' => '5/6/7', 'platew' => true },
+                                                { 'przekroj' => '80x200', 'dlugosci' => '5/7/8', 'platew' => true }])[0]
 Testy.rowne(DlugosciHandlowe.najlzejszy(lista, 6800.0, pd, 'platwie_katalog'), [60.0, 140.0], '6,8 m: 60 × 120 kończy się na 6 m – bierze 60 × 140')
 Testy.rowne(DlugosciHandlowe.najlzejszy(lista, 5500.0, pd, 'platwie_katalog'), [60.0, 120.0], '5,5 m: najlżejszy')
 Testy.rowne(DlugosciHandlowe.najlzejszy(lista, 9000.0, pd, 'platwie_katalog'), [60.0, 120.0], '9 m: żadnej belki – najlżejszy (z podpowiedzią o łączeniu)')
 Testy.rowne(DlugosciHandlowe.najlzejszy([], 5000.0, pd, 'platwie_katalog'), nil, 'nic nie wystarcza – nil')
-pb = Parametry.normalizuj('platwie_katalog' => '60x120, 60x140')[0]
+pb = Parametry.normalizuj('magazyn_drewna' => [{ 'przekroj' => '60x120', 'platew' => true }, { 'przekroj' => '60x140', 'platew' => true }])[0]
 Testy.rowne(DlugosciHandlowe.najlzejszy(lista, 9000.0, pb, 'platwie_katalog'), [60.0, 120.0], 'lista bez długości – bez ograniczenia')
 # Wiata 2 m przy domu 6 × 4 m: płatwie zadaszenia 7 m – dobór nie bierze przekroju, który kończy się na 6 m.
 pl = dom(6000, 4000, 'zadaszenie' => 'slupy', 'dach_kat' => 30, 'liczba_wiencow' => 14)

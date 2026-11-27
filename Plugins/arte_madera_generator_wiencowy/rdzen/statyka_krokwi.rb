@@ -23,6 +23,7 @@ require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::Ge
 require File.join(File.dirname(__FILE__), 'dach_jednospadowy') unless defined?(ArteMadera::GeneratorWiencowy::DachJednospadowy)
 require File.join(File.dirname(__FILE__), 'zadaszenie') unless defined?(ArteMadera::GeneratorWiencowy::Zadaszenie)
 require File.join(File.dirname(__FILE__), 'skrzydla') unless defined?(ArteMadera::GeneratorWiencowy::Skrzydla)
+require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -34,7 +35,7 @@ module ArteMadera
 
       # Czy przekrój krokwi dobiera generator.
       def auto?(p)
-        p['krokwie_dobor'].to_s == 'auto'
+        Parametry.dobor(p, 'krokwie_dobor') == 'auto'
       end
 
       # Przęsło obliczeniowe krokwi w rzucie [mm] między jej końcami e0 i e1 (okap, kalenica, załamanie) przy podporach
@@ -60,7 +61,8 @@ module ArteMadera
             ve = c ? c[:v_k] : vs - kier * (t / 2.0 + p['dach_okap'].to_f)
             lin = pod + [vk]
             lin << vs + kier * t / 2.0 unless Parametry.tak?(p, 'platwa_na_scianie')
-            lista = [{ gdzie: :dach, l: przeslo(ve, vk, lin), kat: p['dach_kat'].to_f }]
+            lista = [{ gdzie: :dach, l: przeslo(ve, vk, lin), kat: p['dach_kat'].to_f,
+                       dl: (vk - ve).abs / Math.cos(p['dach_kat'].to_f * Math::PI / 180.0) }]
             lista << zadaszenia(geo, c, p) if c
             lista
           end
@@ -110,9 +112,11 @@ module ArteMadera
         Parametry.katalog(p, 'krokwie_katalog').sort_by { |b, h| [b * h, -h] }
       end
 
-      # Najlżejszy przekrój z listy wystarczający dla wszystkich krokwi; nil – żaden.
+      # Najlżejszy przekrój z magazynu wystarczający dla wszystkich krokwi, najpierw dostępny w całej długości krokwi
+      # (od okapu do kalenicy); nil – żaden.
       def dobierz(lista, p)
-        kandydaci(p).find { |b, h| ocena(lista, b, h, p)[:ok] }
+        dl = lista.map { |x| x[:dl] }.compact.max
+        DlugosciHandlowe.najpierw_w_calosci(kandydaci(p), dl, p, 'krokwie_katalog').find { |b, h| ocena(lista, b, h, p)[:ok] }
       end
 
       # Sprawdzenie i dobór krokwi domu: { podpowiedzi: [{ poziom:, tekst:, sekcja: }], nadpis: { POLE => 'b×h' } }; tryb jak

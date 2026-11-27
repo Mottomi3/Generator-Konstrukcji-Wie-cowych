@@ -39,7 +39,7 @@ def zakres(e, k)
 end
 
 DOM = prostokat(0, 0, 8000, 5000)
-WIATA = { 'zadaszenie' => 'slupy', 'dach_kat' => 30 }.freeze
+WIATA = { 'zadaszenie' => 'slupy', 'dach_kat' => 30, 'zadaszenie_dobor' => 'auto' }.freeze
 
 Testy.grupa('Słup – ściskanie z wyboczeniem')
 r = StatykaSlupa.sprawdz(2500.0, 100.0, 100.0, 5.0, 5.0, 'C24')
@@ -96,7 +96,7 @@ Testy.sprawdz(podp(pr, 'zadaszenie_przekroje').all? { |x| x[:poziom] == 'ok' && 
 Testy.rowne(Parametry.przekroj(pr[:parametry], 'zadaszenie_platwa_przekroj'), [80.0, 160.0], 'fabryczny przekrój płatwi zadaszenia')
 
 Testy.grupa('Przybudówka – płatwie między ścianami szczytowymi')
-pb = plan(DOM, { 'zadaszenie' => 'bale', 'dach_kat' => 30, 'zadaszenie_strona' => 'obie' })
+pb = plan(DOM, { 'zadaszenie' => 'bale', 'dach_kat' => 30, 'zadaszenie_strona' => 'obie', 'zadaszenie_dobor' => 'auto' })
 hb = podp(pb, 'zadaszenie_przekroje')
 Testy.rowne(hb.length, 1, 'tylko płatwie (bez słupów i belek)')
 Testy.rowne(liczba_po(hb[0][:tekst], 'przęsło'), 8.0, 'przęsło – długość domu między ścianami szczytowymi', 0.06)
@@ -132,7 +132,7 @@ Testy.sprawdz(podp(plan(DOM, {}), 'szczyty').none? { |x| x[:tekst].start_with?('
 
 Testy.grupa('Przybudówka – podłoga do wyboru')
 %w[krotszy dluzszy].each do |kier|
-  par = { 'zadaszenie' => 'bale', 'dach_kat' => 30, 'zadaszenie_strona' => 'obie', 'legary_kierunek' => kier, 'podciagi' => 'tak' }
+  par = { 'zadaszenie' => 'bale', 'dach_kat' => 30, 'zadaszenie_strona' => 'obie', 'legary_kierunek' => kier, 'podciagi' => 'tak', 'zadaszenie_dobor' => 'auto' }
   bez = plan(DOM, par.merge('zadaszenie_podloga' => 'nie'))
   z = plan(DOM, par)
   w_domu = lambda { |e| zakres(e, 1)[0] > -1.0 && zakres(e, 1)[1] < 5001.0 }
@@ -163,6 +163,6 @@ klucze = ParametryLista::LISTA.select { |w| w[:klucz].start_with?('zadaszenie') 
 Testy.sprawdz(klucze.all? { |w| zad.include?(w[:sekcja]) }, 'wszystkie parametry zadaszenia w jego zakładce')
 Testy.sprawdz(ParametryLista::LISTA.none? { |w| zad.include?(w[:sekcja]) && !w[:klucz].start_with?('zadaszenie') },
               'w zakładce zadaszenia tylko parametry zadaszenia')
-Testy.rowne(ParametryLista::LISTA.find { |w| w[:klucz] == 'zadaszenie_dobor' }[:domyslna], 'auto', 'dobór zadaszenia – domyślnie automatyczny')
+Testy.rowne(ParametryLista::LISTA.find { |w| w[:klucz] == 'zadaszenie_dobor' }[:domyslna], 'wspolny', 'dobór zadaszenia – fabrycznie jak przełącznik „Przekroje konstrukcji” (runda 17)')
 
 Testy.koniec

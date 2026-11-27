@@ -212,6 +212,7 @@ module ArteMadera
             'sciany' => s[:sciany].map { |w| klucze_tekstowe(w) },
             'lista' => s[:lista].map { |l| klucze_tekstowe(l) },
             'materialy' => (plan[:materialy] || []).map { |m| klucze_tekstowe(m) },
+            'wycena' => plan[:wycena] ? klucze_tekstowe(plan[:wycena].merge(wiersze: plan[:wycena][:wiersze].map { |w| klucze_tekstowe(w) })) : nil,
             'liczby' => { 'bale' => s[:liczba_bali], 'pozycje' => s[:liczba_pozycji], 'objetosc_m3' => s[:objetosc_m3],
                           'waga_kg' => s[:waga_kg], 'pary_zamkow' => s[:pary_zamkow], 'kontrfory_nowe' => s[:kontrfory_nowe],
                           'wegly_usztywniajace' => s[:wegly_usztywniajace], 'wegly_narysowane' => s[:wegly_narysowane],

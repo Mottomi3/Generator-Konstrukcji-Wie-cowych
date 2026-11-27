@@ -5,7 +5,7 @@
 # Zadanie: porównanie długości belek w modelu z długościami handlowymi z list przekrojów – podpowiedź, gdy belka jest dłuższa niż najdłuższa w hurtowni.
 # Tematy: długości handlowe – sprawdzenie, dobór przekroju dostępnego w całej długości, belka dłuższa niż w hurtowni, łączenie belki na długości, podpowiedź o długości płatwi, podpowiedź o długości legara i podciągu
 # Zależy od: rdzen/parametry.rb (dlugosci_katalogu)
-# Używają: rdzen/projekt.rb (belki), rdzen/statyka_dachu.rb i rdzen/statyka_zadaszenia.rb (dobór – przekrój dostępny w całej długości)
+# Używają: rdzen/projekt.rb (belki), rdzen/statyka_dachu.rb, rdzen/statyka_zadaszenia.rb, rdzen/statyka_krokwi.rb, rdzen/podloga.rb, rdzen/podciagi.rb (dobór – przekrój dostępny w całej długości)
 #
 # Rozstrzygnięcie użytkownika z 2026-11-14: dobór nie wiedział, że belki się kończą (najdłuższa w wykazie to 8 m,
 # większość 7 m) – ma to mówić wprost. Dobór płatwi i belek zadaszenia bierze najlżejszy wystarczający przekrój dostępny
@@ -63,6 +63,20 @@ module ArteMadera
           dl.nil? || dl.last + TOL >= potrzebna
         end
         w_calosci || wystarczajace.first
+      end
+
+      # Czy przekrój bh jest w magazynie w długości co najmniej potrzebna [mm] (wpis bez długości albo przekrój spoza magazynu
+      # – tak).
+      def w_calosci?(bh, potrzebna, p, klucz)
+        dl = Parametry.dlugosci_katalogu(p, klucz)[[bh[0], bh[1]].sort]
+        dl.nil? || potrzebna.nil? || dl.last + TOL >= potrzebna
+      end
+
+      # Lista przekrojów: najpierw dostępne w całej długości potrzebna (kolejność zachowana), potem pozostałe – dobór legarów,
+      # podciągów i krokwi bierze pierwszy wystarczający (runda 17: „dobór w całej długości także dla legarów, podciągów i krokwi”).
+      def najpierw_w_calosci(lista, potrzebna, p, klucz)
+        a, b = lista.partition { |bh| w_calosci?(bh, potrzebna, p, klucz) }
+        a + b
       end
 
       # Zdanie podpowiedzi: ile belek, jak długich, najdłuższa handlowa, co zrobić (przekrój z listy w całej długości).

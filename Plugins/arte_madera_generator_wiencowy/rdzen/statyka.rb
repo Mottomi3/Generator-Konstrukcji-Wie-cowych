@@ -85,7 +85,7 @@ module ArteMadera
       end
 
       # Granica ugięcia L/n dla trybu doboru ('minimalny' – dopuszczalna, inne – zalecana).
-      def granica(p, tryb = p['legary_dobor'])
+      def granica(p, tryb = Parametry.dobor(p, 'legary_dobor'))
         tryb == 'minimalny' ? p['ugiecie_minimalne'].to_f : p['ugiecie_zalecane'].to_f
       end
     end

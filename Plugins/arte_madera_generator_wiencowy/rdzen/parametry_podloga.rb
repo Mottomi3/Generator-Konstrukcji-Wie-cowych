@@ -4,14 +4,13 @@
 # Plik: rdzen/parametry_podloga.rb
 # Zadanie: parametry sekcji „Podłoga i fundamenty” – podwaliny (przekrój, łączenie), legary, podciągi, fundamenty punktowe, obciążenia.
 # Tematy: podłoga – parametry, podwalina – parametry, legar – parametry, podciąg – parametry, obciążenia, fundamenty punktowe – parametry
-# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
+# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/magazyn_drewna.rb (przekroje do doboru – pole magazyn_drewna, przełącznik przekroje_dobor)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -37,14 +36,16 @@ module ArteMadera
           max: 1200.0, rodzaj: :liczba, sekcja: 'podloga', gdy: { 'podloga' => ['tak'] }, podpowiedz: 'Projekt 900: 550–610.' },
         { klucz: 'izolacja_podlogi', poziom: :typ, podstawowy: true, domyslna: 100.0, etykieta: 'Izolacja między legarami', jednostka: 'mm', min: 0.0,
           max: 400.0, rodzaj: :liczba, sekcja: 'podloga', gdy: { 'podloga' => ['tak'] }, podpowiedz: 'Legar nie niższy niż izolacja (0 – bez izolacji).' },
-        { klucz: 'legary_dobor', poziom: :standard, podstawowy: true, domyslna: 'zalecany', etykieta: 'Dobór przekroju legara', rodzaj: :wybor, sekcja: 'podloga', gdy: { 'podloga' => ['tak'] },
+        { klucz: 'legary_dobor', poziom: :standard, podstawowy: true, domyslna: 'wspolny', etykieta: 'Dobór przekroju legara', rodzaj: :wybor, sekcja: 'podloga', gdy: { 'podloga' => ['tak'] },
+          wspolny: 'przekroje_dobor', wspolny_mapa: { 'auto' => 'zalecany' },
           rysunek: 'ugiecie',
           pomoc: 'Zalecany – najlżejszy przekrój z katalogu, który ugina się nie więcej niż L/zalecane (sztywna podłoga). ' \
                  'Minimalny – wystarczy ugięcie dopuszczalne (taniej, podłoga bardziej sprężysta). Ręczny – wpisujesz swój ' \
                  'przekrój, generator tylko go sprawdza.',
-          wybory: [['zalecany', 'zalecany (ugięcie ≤ L/zalecane)'], ['minimalny', 'minimalny (ugięcie ≤ L/minimalne)'],
+          wybory: [['wspolny', 'jak przełącznik „Przekroje konstrukcji” (automatycznie – zalecany)'],
+                   ['zalecany', 'zalecany (ugięcie ≤ L/zalecane)'], ['minimalny', 'minimalny (ugięcie ≤ L/minimalne)'],
                    ['reczny', 'ręczny – podany niżej (tylko sprawdzenie)']] },
-        { klucz: 'legar_przekroj', poziom: :typ, podstawowy: true, domyslna: '50x100', etykieta: 'Legar – przekrój do sprawdzenia', jednostka: 'mm',
+        { klucz: 'legar_przekroj', magazyn: 'legar', poziom: :typ, podstawowy: true, domyslna: '50x100', etykieta: 'Legar – przekrój do sprawdzenia', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'legary_dobor' => ['reczny'] },
           podpowiedz: 'Wpisz przekrój „szer. x wys.”, np. 50x150 – wynik sprawdzenia pod polem i w podpowiedziach. Typ 100: 50 × 100.' },
         { klucz: 'podciagi', poziom: :typ, podstawowy: true, domyslna: 'auto', etykieta: 'Podciągi pod legarami', rodzaj: :wybor, sekcja: 'podloga',
@@ -58,7 +59,7 @@ module ArteMadera
           min: 0.0, max: 8000.0, rodzaj: :liczba, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] },
           podpowiedz: '0 – automatycznie: tylko tam, gdzie wymaga ich przekrój legara. Z fundamentami punktowymi podciągi leżą ' \
                       'w ich liniach.' },
-        { klucz: 'podpora_przekroj', poziom: :typ, domyslna: '100x150', etykieta: 'Podciąg pod legarami (podpora pośrednia)', jednostka: 'mm',
+        { klucz: 'podpora_przekroj', magazyn: 'legar', poziom: :typ, domyslna: '100x150', etykieta: 'Podciąg pod legarami (podpora pośrednia)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'podloga', gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] } },
         { klucz: 'podciag_poziom', poziom: :standard, domyslna: 'rowno', etykieta: 'Podciąg – poziom', rodzaj: :wybor, sekcja: 'podloga',
           gdy: { 'podloga' => ['tak'], 'podciagi' => %w[auto tak] },
@@ -104,10 +105,6 @@ module ArteMadera
                  '„sprężynuje”, szklanki w kredensie dzwonią). Im większa liczba, tym sztywniej.' },
         { klucz: 'ugiecie_minimalne', poziom: :standard, domyslna: 250.0, etykieta: 'Ugięcie dopuszczalne L /', jednostka: '', min: 100.0,
           max: 1000.0, rodzaj: :liczba, sekcja: 'podloga', podpowiedz: 'Granica – mniej sztywna podłoga już niedopuszczalna.' },
-        { klucz: 'przekroje_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:legary),
-          etykieta: 'Dostępne przekroje legarów i podciągów', rodzaj: :tekst, sekcja: 'podloga',
-          podpowiedz: 'Lista z hurtowni: „szer.×wys.:długości w metrach”, np. 45x145:4.2/5.4/6 – po przecinku. Dobór bierze ' \
-                      'najlżejszy spełniający warunki; belka dłuższa niż najdłuższa z listy – uwaga w wynikach.' }
       ].freeze unless const_defined?(:LISTA)
     end
   end

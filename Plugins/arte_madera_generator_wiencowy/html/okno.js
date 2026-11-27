@@ -59,9 +59,27 @@ var AMGW = (function () {
     odswiezPola();
   }
 
-  // Po zmianie wartości pól: wybory zależne, wyróżnienie zmienionych (względem fabrycznych i względem typu ze standardem),
-  // nazwy zakładek i widoczność pól w bieżącym układzie.
+  // Podpowiedzi przekrojów z magazynu drewna (datalist magazyn-<zastosowanie>) dla pól przekrojów z cechą „magazyn”.
+  function listyMagazynu() {
+    var box = $('listy-magazynu');
+    var wiersze = AMGW_TABELA.wiersze(wartoscPola('magazyn_drewna', '[]'));
+    var zast = ['legar', 'platew', 'krokiew', 'zadaszenie', 'slup', 'deska'];
+    var i;
+    var j;
+    wyczysc(box);
+    for (i = 0; i < zast.length; i++) {
+      var dl = el('datalist', { id: 'magazyn-' + zast[i] });
+      for (j = 0; j < wiersze.length; j++) {
+        if (wiersze[j][zast[i]]) { dl.appendChild(el('option', { value: String(wiersze[j].przekroj) })); }
+      }
+      box.appendChild(dl);
+    }
+  }
+
+  // Po zmianie wartości pól: podpowiedzi przekrojów z magazynu, wybory zależne, wyróżnienie zmienionych (względem fabrycznych
+  // i względem typu ze standardem), nazwy zakładek i widoczność pól w bieżącym układzie.
   function odswiezPola() {
+    listyMagazynu();
     var zmiana = AMGW_ZALEZNE.wszystkieWybory(stan.opisy);
     AMGW_ZMIANY.oznacz(stan.opisy);
     AMGW_TYPY.oznacz(stan.opisy);
@@ -93,6 +111,10 @@ var AMGW = (function () {
       if (opis.klucz === 'preset') {
         pole.addEventListener('change', function () { zbudujZamek({ preset: this.value }); zaplanujPodglad(); });
       }
+      if (opis.wspolny) {
+        pole.setAttribute('data-wspolny', opis.wspolny);
+        if (opis.wspolny_mapa) { pole.setAttribute('data-wspolny-mapa', JSON.stringify(opis.wspolny_mapa)); }
+      }
     } else {
       if (opis.jednostka) { etykieta.appendChild(el('span', { 'class': 'jedn' }, '[' + opis.jednostka + ']')); }
       if (opis.rodzaj === 'tekst') { etykieta.className = 'pelny'; }
@@ -103,7 +125,8 @@ var AMGW = (function () {
         pole.value = String(wartosc);
       } else if (opis.rodzaj === 'przekroj') {
         pole.value = String(wartosc);
-        pole.title = 'szerokość × wysokość, np. 50x150';
+        pole.title = 'szerokość × wysokość, np. 50x150' + (opis.magazyn ? ' – podpowiedzi z magazynu drewna' : '');
+        if (opis.magazyn) { pole.setAttribute('list', 'magazyn-' + opis.magazyn); }
       } else {
         pole.setAttribute('inputmode', 'decimal');
         pole.value = AMGW_DOM.fmtPola(wartosc);

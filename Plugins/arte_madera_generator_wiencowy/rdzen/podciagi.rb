@@ -21,6 +21,7 @@ require File.join(File.dirname(__FILE__), 'statyka') unless defined?(ArteMadera:
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
 require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMadera::GeneratorWiencowy::Fundamenty)
 require File.join(File.dirname(__FILE__), 'podloga_przybudowki') unless defined?(ArteMadera::GeneratorWiencowy::PodlogaPrzybudowki)
+require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -152,7 +153,7 @@ module ArteMadera
         nazwa = Parametry.tekst_przekroju([bp, hp])
         txt = format('Podciąg %s między fundamentami co %s m (zbiera %s m podłogi): nośność %d %%, ugięcie L/%d', nazwa,
                      format('%.2f', l / 1000.0), format('%.2f', szer / 1000.0), ([s[:wyk_m], s[:wyk_v]].max * 100).round, s[:l_przez_u].round)
-        lista = Parametry.katalog(p).sort_by { |b, h| [b * h, -h] }
+        lista = DlugosciHandlowe.najpierw_w_calosci(Parametry.katalog(p).sort_by { |b, h| [b * h, -h] }, l, p, 'przekroje_katalog')
         if s[:ok]
           return { poziom: 'ok', tekst: txt + ' – wystarczy.' } unless na_styk?(s)
           # Wystarcza bez zapasu (uwaga użytkownika z 2026-11-14: „nośność 99 % – wystarczy” na zielono wprowadzało w błąd).

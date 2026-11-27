@@ -4,14 +4,13 @@
 # Plik: rdzen/parametry_dach.rb
 # Zadanie: parametry sekcji „Szczyty i dach” i „Poszycie dachu” – szczyty, dach, płatwie (dobór przekroju, śnieg, ciężar pokrycia), krokwie (dobór przekroju), oparcie dachu, poszycie, położenie desek nadbitki / podbitki (jedno pole) i przeniesienie dawnych pól nadbitki.
 # Tematy: parametry dachu, parametry szczytów, parametry płatwi, dobór przekroju płatwi – parametry, śnieg – parametr, poszycie dachu – parametry, dach jednospadowy – parametry, krokwie z aplikacji do dachów – parametr, dobór przekroju krokwi – parametry, podbitka – parametry, nadbitka – parametry, położenie desek nadbitki i podbitki, zamiennik położenia desek, dawne pola nadbitki
-# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/wykaz_drewna.rb (listy przekrojów z hurtowni)
+# Zależy od: rdzen/parametry_lista.rb (TAK_NIE), rdzen/magazyn_drewna.rb (przekroje do doboru – pole magazyn_drewna, przełącznik przekroje_dobor)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-require File.join(File.dirname(__FILE__), 'wykaz_drewna') unless defined?(ArteMadera::GeneratorWiencowy::WykazDrewna)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -77,26 +76,23 @@ module ArteMadera
                    ['na_szczycie', 'na szczycie (krokiew oparta na balach)']],
           podpowiedz: 'Krokwie z generatora: obok szczytu – szczyt dochodzi do wierzchu krokwi; na szczycie – szczyt kończy się pod ' \
                       'nią. Krokwie z aplikacji do dachów – szczyt zawsze pod krokwiami.' },
-        { klucz: 'krokwie_dobor', poziom: :standard, podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój krokwi – dobór', rodzaj: :wybor,
-          sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] },
-          wybory: [['reczny', 'z wyboru – przekrój podany niżej (ze sprawdzeniem nośności)'],
+        { klucz: 'krokwie_dobor', poziom: :standard, podstawowy: true, domyslna: 'wspolny', etykieta: 'Przekrój krokwi – dobór', rodzaj: :wybor,
+          sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, wspolny: 'przekroje_dobor',
+          wybory: [['wspolny', 'jak przełącznik „Przekroje konstrukcji” (Magazyn drewna)'],
+                   ['reczny', 'z wyboru – przekrój podany niżej (ze sprawdzeniem nośności)'],
                    ['auto', 'automatycznie – najmniejszy wystarczający z listy']],
           podpowiedz: 'Jeden przekrój krokwi całego dachu – także krokwi bocznego zadaszenia. Automatycznie: generator liczy śnieg ' \
                       'i ciężar pokrycia na krokiew (rozstaw krokwi, przęsło między płatwiami, okap jako wspornik) i bierze ' \
-                      'najlżejszy przekrój z listy. Z aplikacją do dachów – wartość na start KROKU 2 (tam pełna kontrola).' },
-        { klucz: 'krokiew_przekroj', poziom: :typ, domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
+                      'najlżejszy przekrój z magazynu drewna. Z aplikacją do dachów – wartość na start KROKU 2 (tam pełna kontrola).' },
+        { klucz: 'krokiew_przekroj', magazyn: 'krokiew', poziom: :typ, domyslna: '50x150', etykieta: 'Krokiew (szer. × wys.)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['reczny'] },
           podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2. Wynik sprawdzenia – pod sekcją.' },
-        { klucz: 'krokwie_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:krokwie),
-          etykieta: 'Dostępne przekroje krokwi', rodzaj: :tekst, sekcja: 'szczyty',
-          gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie], 'krokwie_dobor' => ['auto'] },
-          podpowiedz: 'Lista z hurtowni: „szer.×wys.:długości w metrach”, np. 45x195:4.2/5.4/6/7 – po przecinku; dobór bierze ' \
-                      'najlżejszy wystarczający.' },
         { klucz: 'krokwie_rozstaw', poziom: :standard, domyslna: 900.0, etykieta: 'Rozstaw krokwi – największy', jednostka: 'mm', min: 300.0,
           max: 2000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[krokwie platwie_krokwie] }, podpowiedz: 'Z aplikacją do dachów – wartość na start KROKU 2.' },
-        { klucz: 'platwie_dobor', poziom: :standard, podstawowy: true, domyslna: 'reczny', etykieta: 'Przekrój płatwi – dobór', rodzaj: :wybor,
-          sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
-          wybory: [['reczny', 'ręcznie – przekroje podane niżej (ze sprawdzeniem nośności)'],
+        { klucz: 'platwie_dobor', poziom: :standard, podstawowy: true, domyslna: 'wspolny', etykieta: 'Przekrój płatwi – dobór', rodzaj: :wybor,
+          sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] }, wspolny: 'przekroje_dobor',
+          wybory: [['wspolny', 'jak przełącznik „Przekroje konstrukcji” (Magazyn drewna)'],
+                   ['reczny', 'ręcznie – przekroje podane niżej (ze sprawdzeniem nośności)'],
                    ['auto', 'automatycznie – najmniejszy wystarczający z listy']],
           podpowiedz: 'Automatycznie: generator liczy śnieg i ciężar pokrycia na każdą płatew (pas dachu, największe przęsło ' \
                       'między ścianami) i bierze najlżejszy przekrój z listy, który to przenosi. Mały, wąski domek dostaje ' \
@@ -105,10 +101,6 @@ module ArteMadera
           pomoc: 'Przęsło płatwi to odległość między ścianami, które ją podpierają: szczyty, działowe ze szczytem, ściana domu ' \
                  'przy tarasie, trójkąt nad tarasem. Im dłuższe przęsło i większy rozstaw płatwi, tym większy przekrój. Ręcznie – ' \
                  'przy polach przekroju pojawia się wynik sprawdzenia i najmniejszy wystarczający przekrój z listy.' },
-        { klucz: 'platwie_katalog', poziom: :standard, domyslna: WykazDrewna.lista(:platwie),
-          etykieta: 'Dostępne przekroje płatwi', rodzaj: :tekst, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
-          podpowiedz: 'Lista z hurtowni (drewno widoczne Nsi / DUO / BSH): „szer.×wys.:długości w metrach”, np. 80x200:5/7/8 – ' \
-                      'po przecinku. Dobór bierze najlżejszy wystarczający; płatew dłuższa niż najdłuższa belka z listy – uwaga w wynikach.' },
         { klucz: 'dach_snieg', poziom: :standard, domyslna: 0.9, etykieta: 'Śnieg – obciążenie gruntu', jednostka: 'kN/m²', min: 0.0, max: 6.0,
           rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'szczyty' => ['tak'] },
           podpowiedz: 'Strefy śniegowe Polski: 1 – 0,7; 2 – 0,9 (większość kraju); 3 – 1,2; 4 – 1,6; 5 (góry) – 2,0 i więcej.',
@@ -125,11 +117,11 @@ module ArteMadera
           rodzaj: :wybor, sekcja: 'szczyty', wybory: TAK_NIE,
           podpowiedz: 'Tak – ścienna, pośrednie i kalenicowa z przekroju „Płatew” (wszystkie tej samej wysokości). Nie – osobne ' \
                       'przekroje płatwi ściennej i kalenicowej.' },
-        { klucz: 'platwa_przekroj', poziom: :typ, podstawowy: true, domyslna: '80x200', etykieta: 'Płatew (pośrednia)', jednostka: 'mm',
+        { klucz: 'platwa_przekroj', magazyn: 'platew', poziom: :typ, podstawowy: true, domyslna: '80x200', etykieta: 'Płatew (pośrednia)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_dobor' => ['reczny'] },
           podpowiedz: 'Wysokość płatwi zostaje w całości po wyższej stronie; wierzch ścięty pod dach tylko od strony okapu ' \
                       '(typ 100: 80 × 200).' },
-        { klucz: 'platwa_kalenicowa_przekroj', poziom: :typ, domyslna: '80x200', etykieta: 'Płatew kalenicowa', jednostka: 'mm',
+        { klucz: 'platwa_kalenicowa_przekroj', magazyn: 'platew', poziom: :typ, domyslna: '80x200', etykieta: 'Płatew kalenicowa', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', gdy: { 'platwie_jeden_przekroj' => ['nie'], 'platwie_dobor' => ['reczny'] } },
         { klucz: 'platwie_rozstaw_max', poziom: :standard, domyslna: 1000.0, etykieta: 'Największy rozstaw płatwi (w poziomie)',
           jednostka: 'mm', min: 300.0, max: 4000.0, rodzaj: :liczba, sekcja: 'szczyty', gdy: { 'dach_uklad' => %w[platwie platwie_krokwie] }, podpowiedz: 'Typ 100: ok. 990.' },
@@ -143,7 +135,7 @@ module ArteMadera
           sekcja: 'szczyty', rysunek: 'platwa_scienna', wybory: [['przy_licu', 'przy licu wewnętrznym, wierzchem na linii dachu (typ 100)'],
                                       ['na_scianie', 'stoi na ścianie okapowej, w osi – ścięta pod dach']],
           gdy: { 'platwa_na_scianie' => ['tak'] } },
-        { klucz: 'platwa_scienna_przekroj', poziom: :typ, domyslna: '80x200', etykieta: 'Płatew ścienna', jednostka: 'mm',
+        { klucz: 'platwa_scienna_przekroj', magazyn: 'platew', poziom: :typ, domyslna: '80x200', etykieta: 'Płatew ścienna', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'szczyty', podpowiedz: 'Typ 100: 60 × 200.',
           gdy: { 'platwa_na_scianie' => ['tak'], 'platwie_jeden_przekroj' => ['nie'], 'platwie_dobor' => ['reczny'] } },
         { klucz: 'platwie_na_wiencach', poziom: :standard, domyslna: 'tak', etykieta: 'Płatwie oparte na pełnym balu', rodzaj: :wybor,

@@ -266,6 +266,9 @@ module LosoweDomy
     p['zadaszenie_slup_przekroj'] = wybierz(r, %w[120x120 100x100 140x140])
     p['zadaszenie_belka_przekroj'] = wybierz(r, %w[80x160 60x140 100x200])
     p['zadaszenie_slupy_rozstaw'] = wybierz(r, %w[1500 2500 3500])
+    # Do kompilacji 16 zadaszenie fabrycznie dobierało przekroje samo; od 17 – „jak przełącznik” (fabrycznie podaję sam).
+    # Domy z ziaren rundy 12 bez zmian: dobór automatyczny jawnie (ziarna od rundy 13 losują go w dodatki_r13).
+    p['zadaszenie_dobor'] = 'auto'
     opis << "r12: zadaszenie #{p['zadaszenie']} #{p['zadaszenie_strona']} #{p['zadaszenie_szerokosc']} mm, " \
             "#{p['zadaszenie_kat']}° (dach #{p['dach_kat']}°), okap #{p['zadaszenie_okap']}"
   end

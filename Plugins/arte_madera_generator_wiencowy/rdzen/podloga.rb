@@ -19,6 +19,7 @@ require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera
 require File.join(File.dirname(__FILE__), 'podciagi') unless defined?(ArteMadera::GeneratorWiencowy::Podciagi)
 require File.join(File.dirname(__FILE__), 'fundamenty') unless defined?(ArteMadera::GeneratorWiencowy::Fundamenty)
 require File.join(File.dirname(__FILE__), 'podloga_przybudowki') unless defined?(ArteMadera::GeneratorWiencowy::PodlogaPrzybudowki)
+require File.join(File.dirname(__FILE__), 'dlugosci_handlowe') unless defined?(ArteMadera::GeneratorWiencowy::DlugosciHandlowe)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -202,7 +203,7 @@ module ArteMadera
           return [nil, nil]
         end
         zakresy = przesla(u)
-        reczny = p['legary_dobor'] == 'reczny'
+        reczny = Parametry.dobor(p, 'legary_dobor') == 'reczny'
         sekcje = reczny ? [Parametry.przekroj(p, 'legar_przekroj')] : Statyka.kandydaci(p)
         if sekcje.empty?
           podp << { poziom: 'blad', tekst: format('Podłoga: żaden przekrój z katalogu nie ma wysokości izolacji %s mm – dopisz wyższe przekroje.',
@@ -228,7 +229,9 @@ module ArteMadera
           poz = Podciagi.polozenia(u, p, zakresy, lmax)
           next if poz.nil?
           n = poz.map(&:length)
-          ocena = [objetosc(u, p, [b, h], przes, n), n.inject(0) { |s, x| s + x }]
+          # Najpierw przekroje z magazynu w całej długości legara (najdłuższe przęsło), potem najmniej drewna i podciągów.
+          caly = DlugosciHandlowe.w_calosci?([b, h], przes.max, p, 'przekroje_katalog') ? 0 : 1
+          ocena = [caly, objetosc(u, p, [b, h], przes, n), n.inject(0) { |s, x| s + x }]
           najl = [[b, h], poz, ocena] if najl.nil? || (ocena <=> najl[2]) < 0
         end
         najl

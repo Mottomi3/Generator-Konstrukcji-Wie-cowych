@@ -109,8 +109,15 @@ Testy.rowne([Ustawienia.standard, TypyDomow.parametry(Ustawienia::TYP_OSTATNIE)]
 stara_lista = '45x95:6, 45x120:5/5.4, 45x145:4.2/5.4/6'
 plik_ustawien('wersja' => 3, 'ostatnie' => { 'podbitka_grubosc' => '19', 'przekroje_katalog' => stara_lista, 'platwie_katalog' => '60x100:6' },
               'szablony' => { 'A' => { 'przekroje_katalog' => stara_lista, 'dach_kat' => '35' } })
-Testy.rowne([Ustawienia.standard, TypyDomow.parametry('A'), TypyDomow.typ(Ustawienia::TYP_OSTATNIE)], [{ 'platwie_katalog' => '60x100:6' }, { 'dach_kat' => '35' }, nil],
-            'plik wersji 3: deski 19 i stara lista legarów pominięte, własna lista płatwi w standardzie; bez pól typu – bez typu „Ostatnie”')
+st3 = Parametry.normalizuj(Ustawienia.standard)[0]
+Testy.rowne([Ustawienia.standard.keys, Parametry.katalog(st3, 'platwie_katalog'), Parametry.katalog(st3) == Parametry.katalog(Parametry.normalizuj({})[0]),
+             TypyDomow.parametry('A'), TypyDomow.typ(Ustawienia::TYP_OSTATNIE)],
+            [['magazyn_drewna'], [[60.0, 100.0]], true, { 'dach_kat' => '35' }, nil],
+            'plik wersji 3: deski 19 i stara lista legarów pominięte, własna lista płatwi w magazynie drewna standardu; bez pól typu – bez typu „Ostatnie”')
+plik_ustawien('wersja' => 5, 'standard' => { 'krokwie_katalog' => '45x170:6', 'okno_szerokosc' => 1200.0, 'mijanka' => 500.0 })
+st5 = Parametry.normalizuj(Ustawienia.standard)[0]
+Testy.rowne([Parametry.katalog(st5, 'krokwie_katalog'), st5['stolarka'][0]['szerokosc'], st5['mijanka']], [[[45.0, 170.0]], 1200.0, 500.0],
+            'plik wersji 5 (kompilacja 16): lista krokwi i nowe okno z standardu → magazyn drewna i lista stolarki (runda 17)')
 plik_ustawien('{uszkodzony')
 Testy.rowne([Ustawienia.wczytaj, TypyDomow.wybrany], [Ustawienia.pusty, wb[0]['nazwa']], 'uszkodzony plik – puste ustawienia, bez błędu')
 

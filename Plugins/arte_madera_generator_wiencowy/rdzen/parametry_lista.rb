@@ -35,6 +35,7 @@ module ArteMadera
         ['otwory', 'Okna i drzwi – stolarka i luzy', false],
         ['rysunek', 'Rozpoznanie rysunku i waga', false],
         ['materialy', 'Zestawienie materiałów', false],
+        ['magazyn', 'Magazyn drewna, dobór przekrojów i ceny', false],
         ['powierzchnie', 'Powierzchnie i limity', false],
         ['zadaszenie', 'Zadaszenie – rodzaj i wymiary', true, 'zadaszenie'],
         ['zadaszenie_przekroje', 'Zadaszenie – przekroje (dobór)', true, 'zadaszenie']

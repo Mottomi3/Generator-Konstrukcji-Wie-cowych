@@ -72,7 +72,8 @@ module ArteMadera
               'wybory' => ParametryLista.wybory(w), 'podpowiedz' => w[:podpowiedz].to_s, 'podstawowy' => w[:podstawowy] ? true : false,
               'gdy' => w[:gdy], 'wybory_gdy' => w[:wybory_gdy], 'zamienniki' => w[:zamienniki], 'pomoc' => w[:pomoc], 'rysunek' => w[:rysunek],
               'poziom' => (w[:poziom] || :standard).to_s, 'krok' => Poziomy.krok_sekcji(w[:sekcja]), 'obrys' => w[:obrys],
-              'z_wymiarow' => w[:z_wymiarow] ? true : false, 'kolumny' => kolumny(w) }
+              'z_wymiarow' => w[:z_wymiarow] ? true : false, 'kolumny' => kolumny(w), 'wspolny' => w[:wspolny], 'wspolny_mapa' => w[:wspolny_mapa],
+              'magazyn' => w[:magazyn] }
           end
         end
 

@@ -34,7 +34,7 @@ module ArteMadera
                                                           'i front od wieńca, który zamyka się z nimi w narożniku.' },
         { klucz: 'taras_ostatek', poziom: :standard, domyslna: 100.0, etykieta: 'Ostatek dolnych bali ścian bocznych przy tarasie', jednostka: 'mm',
           min: 0.0, max: 600.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'] }, podpowiedz: 'Za licem ściany domu, pod podciągiem.' },
-        { klucz: 'taras_slup_przekroj', poziom: :typ, domyslna: '120x120', etykieta: 'Słup tarasu (wzdłuż ściany × w poprzek)', jednostka: 'mm',
+        { klucz: 'taras_slup_przekroj', magazyn: 'slup', poziom: :typ, domyslna: '120x120', etykieta: 'Słup tarasu (wzdłuż ściany × w poprzek)', jednostka: 'mm',
           rodzaj: :przekroj, sekcja: 'taras', gdy: { 'taras' => ['podciag'] }, podpowiedz: 'Projekty: 80 × 180, 120 × 120, 140 × 140.' },
         { klucz: 'taras_slupy_rozstaw_max', poziom: :standard, domyslna: 2000.0, etykieta: 'Słupy – największy rozstaw (osiowo)', jednostka: 'mm',
           min: 800.0, max: 5000.0, rodzaj: :liczba, sekcja: 'taras', gdy: { 'taras' => ['podciag'] },

@@ -85,10 +85,20 @@ module ArteMadera
           zapisz(nowe)
           return nowe
         end
-        pusty.merge('standard' => hash(d['standard']), 'typy' => hash(d['typy']), 'typ' => d['typ'].to_s, 'okno' => hash(d['okno']))
+        pusty.merge('standard' => standard_biezacy(hash(d['standard'])), 'typy' => hash(d['typy']), 'typ' => d['typ'].to_s, 'okno' => hash(d['okno']))
       rescue => e
         Log.warn("Ustawienia: nie można odczytać #{sciezka} (#{e.class}: #{e.message}) – przyjęto domyślne.")
         pusty
+      end
+
+      # Standard z pliku w obecnej postaci: dawne pola (listy przekrojów, nowe okno i drzwi – do kompilacji 16) przeniesione
+      # do magazynu drewna i listy stolarki; bez dawnych pól – bez zmian.
+      def standard_biezacy(st)
+        nowy = Parametry.przenies_dawne(st)
+        return st if nowy.equal?(st) || nowy == st
+        wynik = Poziomy.wybierz(nowy, :standard)
+        wynik['zamek'] = st['zamek'] if st['zamek']
+        wynik
       end
 
       # Hash albo pusty hash, gdy to coś innego.
@@ -103,7 +113,7 @@ module ArteMadera
         wersja = d['wersja'].to_i
         ostatnie = hash(d['ostatnie']).dup
         DO_FABRYCZNYCH.each { |w, klucze| klucze.each { |k| ostatnie.delete(k) } if wersja < w }
-        ostatnie = ParametryDach.przenies_nadbitke(ostatnie)
+        ostatnie = Parametry.przenies_dawne(ostatnie)
         typy = {}
         wlasne = Poziomy.wybierz(tylko_inne(ostatnie), :typ, :dom)
         typy[TYP_OSTATNIE] = { 'opis' => 'Pola domu i typu z ostatniego podglądu przed kompilacją 16.', 'parametry' => wlasne } unless wlasne.empty?
@@ -112,7 +122,7 @@ module ArteMadera
           par = sz.dup
           DO_FABRYCZNYCH_W_SZABLONACH.each { |w, klucze| klucze.each { |k| par.delete(k) } if wersja < w }
           typy[nazwa.to_s] = { 'opis' => 'Własny szablon sprzed kompilacji 16.',
-                               'parametry' => Poziomy.wybierz(ParametryDach.przenies_nadbitke(par), :typ, :dom) }
+                               'parametry' => Poziomy.wybierz(Parametry.przenies_dawne(par), :typ, :dom) }
         end
         standard = Poziomy.wybierz(tylko_inne(ostatnie), :standard)
         standard['zamek'] = ostatnie['zamek'] if inny_zamek?(ostatnie)

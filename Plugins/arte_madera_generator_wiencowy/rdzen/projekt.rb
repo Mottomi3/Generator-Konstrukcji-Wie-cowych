@@ -10,7 +10,7 @@
 # Wejście (Hash, klucze tekstowe – tak samo zapisane w modelu do przebudowy): 'segmenty' [[[x, y], [x, y]], …] w mm,
 # 'parametry' {…}, 'otwory' [{…}], 'wegly' [{…} – rdzen/wegly_tabela.rb], 'sciany' { 'W-n' => ustawienia ściany z widoku – rdzen/ustawienia_scian.rb }. Wynik – plan (Hash): parametry, kat, obrys, sciany, bale, pozycje, elementy (belki
 # podłogi i dachu), pozycje_elementow, polacie (dla aplikacji do dachów albo nil), dach (opis dachu domu prostokątnego / L albo nil),
-# materialy (rdzen/materialy.rb), powierzchnie (rdzen/powierzchnie.rb), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
+# materialy (rdzen/materialy.rb), powierzchnie (rdzen/powierzchnie.rb), wycena (rdzen/wycena.rb), pary_zamkow, ostrzezenia, bledy, podpowiedzi, podsumowanie.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::GeneratorWiencowy::Siatka) &&
@@ -23,6 +23,7 @@ unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::
 end
 require File.join(File.dirname(__FILE__), 'materialy') unless defined?(ArteMadera::GeneratorWiencowy::Materialy)
 require File.join(File.dirname(__FILE__), 'powierzchnie') unless defined?(ArteMadera::GeneratorWiencowy::Powierzchnie)
+require File.join(File.dirname(__FILE__), 'wycena') unless defined?(ArteMadera::GeneratorWiencowy::Wycena)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -120,6 +121,8 @@ module ArteMadera
         plan[:ostrzezenia].concat(limity[:ostrzezenia])
         plan[:podpowiedzi].concat(limity[:podpowiedzi])
         plan[:podsumowanie] = podsumowanie(plan)
+        # Wycena materiału (W3, rdzen/wycena.rb): bale, belki i deski z magazynu drewna, reszta z cennika.
+        plan[:wycena] = Wycena.licz(plan)
         plan[:ostrzezenia].uniq!
         plan
       end

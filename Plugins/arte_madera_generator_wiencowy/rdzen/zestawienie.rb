@@ -4,7 +4,7 @@
 # Plik: rdzen/zestawienie.rb
 # Zadanie: zestawienie bali i belek do pliku CSV (Excel) – pozycje z długością, ilością i objętością, sumy grup i całości, pod nimi blok materiałów.
 # Tematy: zestawienie CSV, lista do zamówienia w pliku, sumy grup, objętość, Excel, przecinek dziesiętny
-# Zależy od: rdzen/parametry.rb, rdzen/projekt.rb (podsumowanie), rdzen/materialy.rb (blok materiałów)
+# Zależy od: rdzen/parametry.rb, rdzen/projekt.rb (podsumowanie), rdzen/materialy.rb (blok materiałów), rdzen/wycena.rb (blok wyceny)
 # Używają: sketchup/eksport.rb (zapis pliku)
 #
 # Format dla polskiego Excela: średnik między kolumnami, przecinek dziesiętny, nagłówek w pierwszym wierszu.
@@ -14,6 +14,7 @@
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'materialy') unless defined?(ArteMadera::GeneratorWiencowy::Materialy)
 require File.join(File.dirname(__FILE__), 'powierzchnie') unless defined?(ArteMadera::GeneratorWiencowy::Powierzchnie)
+require File.join(File.dirname(__FILE__), 'wycena') unless defined?(ArteMadera::GeneratorWiencowy::Wycena)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -42,6 +43,10 @@ module ArteMadera
         mat = Materialy.wiersze_csv(plan[:materialy])
         wiersze << [] unless mat.empty?
         wiersze.concat(mat)
+        # Wycena materiału (W3, rdzen/wycena.rb) – gdy jest choć jedna cena.
+        wy = plan[:wycena] && plan[:wycena][:wiersze].any? { |x| x[:cena] } ? Wycena.wiersze_csv(plan[:wycena]) : []
+        wiersze << [] unless wy.empty?
+        wiersze.concat(wy)
         # Trzeci blok – powierzchnie i wysokość (rdzen/powierzchnie.rb).
         pw = Powierzchnie.wiersze(plan[:powierzchnie])
         unless pw.empty?

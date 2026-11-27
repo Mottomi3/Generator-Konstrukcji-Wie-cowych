@@ -47,7 +47,7 @@ module ArteMadera
 
       # Czy przekroje zadaszenia dobiera generator.
       def auto?(p)
-        p['zadaszenie_dobor'].to_s == 'auto'
+        Parametry.dobor(p, 'zadaszenie_dobor') == 'auto'
       end
 
       # Kąt zadaszenia [°].

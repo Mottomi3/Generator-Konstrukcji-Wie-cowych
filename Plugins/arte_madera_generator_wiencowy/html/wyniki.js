@@ -3,7 +3,7 @@
   Plik: html/wyniki.js
   Zadanie: wyniki w oknie – liczby, wysokości, błędy, ostrzeżenia, podpowiedzi, tabela ścian ze stykami, lista bali i belek, tabela materiałów, rzut.
   Tematy: wyniki w oknie, podpowiedzi podłogi, tabela ścian, lista bali, tabela materiałów w oknie, liczby wyniku, wysokości ścian
-  Zależy od: html/wspolne.js (AMGW_DOM), html/rzut.js (AMGW_RZUT)
+  Zależy od: html/wycena.js (AMGW_WYCENA), html/wspolne.js (AMGW_DOM), html/rzut.js (AMGW_RZUT)
   Używają: html/okno.js (pokazWynik)
 
   Zgodność: ES5 (var, function; bez let/const, =>, szablonów, class).
@@ -100,6 +100,7 @@ var AMGW_WYNIKI = (function () {
                  ['Węgły usztywniające', n.wegly_usztywniajace], ['Limit światła', n.limit_swiatla + ' mm'],
                  ['Szczyty', n.szczyty], ['Belki podłogi i dachu', n.belki],
                  ['Objętość belek', Number(n.objetosc_belek_m3 || 0).toFixed(2) + ' m³']];
+    if (AMGW_WYCENA.suma(d.wycena)) { wpisy.push(['Materiał', AMGW_WYCENA.suma(d.wycena)]); }
     // Powierzchnie i wysokość (rdzen/powierzchnie.rb) – na początku liczb, pomieszczenia osobno w tabeli zestawienia.
     var pw = d.powierzchnie || [];
     var glowne = [];
@@ -135,6 +136,7 @@ var AMGW_WYNIKI = (function () {
       var m = mat[i];
       wiersz(tbM, [m.grupa, m.nazwa, m.wymiar, String(m.ilosc).replace('.', ','), m.jednostka, m.uwagi], [false, false, false, true, false, false]);
     }
+    AMGW_WYCENA.pokaz(d.wycena);
   }
 
   return { pokaz: pokaz };

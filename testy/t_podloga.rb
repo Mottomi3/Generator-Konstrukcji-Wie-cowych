@@ -9,6 +9,12 @@
 
 require File.expand_path('pomoc', File.dirname(__FILE__))
 require File.expand_path('kolizje_belek', File.dirname(__FILE__))
+
+# Runda 17: dobór legara fabrycznie „jak przełącznik Przekroje konstrukcji” (podaję sam); testy podłogi sprawdzają dobór
+# automatyczny (zalecany), jak fabrycznie do kompilacji 16 – chyba że test podaje inny.
+def plan_pelny_auto(segmenty, parametry = {}, otwory = [])
+  plan_pelny(segmenty, { 'legary_dobor' => 'zalecany' }.merge(parametry), otwory)
+end
 include ArteMadera::GeneratorWiencowy
 
 # Elementy planu o prefiksie.
@@ -61,7 +67,7 @@ Testy.sprawdz(Statyka.kandydaci(iz).all? { |b, h| h >= 150 }, 'izolacja 150 – 
 Testy.sprawdz(Statyka.dobierz(1000.0, iz, 600.0, 400.0)[1] >= 150, 'krótki legar i tak ≥ izolacji')
 
 Testy.grupa('Podłoga domu 4000 × 3000 (jak 900), podciąg obniżony')
-pl = plan_pelny(prostokat(0, 0, 4000, 3000), 'podciag_poziom' => 'pod')
+pl = plan_pelny_auto(prostokat(0, 0, 4000, 3000), 'podciag_poziom' => 'pod')
 pw = el(pl, 'Pw')
 Testy.rowne(pw.map { |e| e[:dl] }.sort, [3000.0, 3000.0, 4000.0, 4000.0], 'podwaliny zewnętrzne: długości lica (na zakład)')
 Testy.sprawdz(pw.all? { |e| e[:cechy].length == 2 && e[:cechy].all? { |c| (c[:gleb] - 50.0).abs < 0.01 } }, 'zakład na pół wysokości w narożnikach')
@@ -77,16 +83,16 @@ Testy.sprawdz(pl[:podpowiedzi].none? { |h| h[:poziom] == 'blad' }, 'dobrany prze
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('najmniejszy wystarczający') }, 'podpowiedź o przekroju najmniejszym i zalecanym')
 
 Testy.grupa('Ręczny przekrój za słaby – podpory i podpowiedź')
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'podciag_poziom' => 'pod')
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'podciag_poziom' => 'pod')
 Testy.rowne(pl[:podloga][:legar], [50.0, 100.0], 'zostaje przekrój ręczny')
 Testy.sprawdz(pl[:podloga][:podpory] >= 1 && el(pl, 'Pd').length == pl[:podloga][:podpory], "dodane podpory (#{pl[:podloga][:podpory]})")
 pd = el(pl, 'Pd')
 Testy.rowne(pd.map { |e| e[:polozenie][:poczatek][2] + e[:h] }.uniq, [-100.0], 'podpory pod legarami')
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'izolacja_podlogi' => 150)
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'izolacja_podlogi' => 150)
 Testy.sprawdz(podp?(pl, 'blad', 'niższy niż izolacja'), 'błąd: legar niższy niż izolacja')
 
 Testy.grupa('Podciąg domyślnie na wysokości podwalin – legary dzielone (uwaga użytkownika, runda 10)')
-pl = plan_pelny(prostokat(0, 0, 4000, 3000))
+pl = plan_pelny_auto(prostokat(0, 0, 4000, 3000))
 Testy.rowne(pl[:parametry]['podciag_poziom'], 'rowno', 'wartość fabryczna: na wysokości podwalin')
 pd = el(pl, 'Pd')
 Testy.sprawdz(!pd.empty? && pd.all? { |e| (e[:polozenie][:poczatek][2] + e[:h]).abs < 0.01 }, 'wierzch podciągu równo z wierzchem podwalin')
@@ -97,14 +103,14 @@ Testy.sprawdz(!lg.empty? && lg.all? { |e| e[:dl] < 1400.01 } && lg.all? { |e| (e
 Testy.rowne(kolizje_elementow(pl, %w[L Pd Pw]), 0, 'legary, podciąg i podwaliny nie wchodzą w siebie')
 
 Testy.grupa('Rozstaw podpór z parametru')
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'podpory_rozstaw_max' => 1500, 'fundamenty' => 'nie')
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 5000), 'podpory_rozstaw_max' => 1500, 'fundamenty' => 'nie')
 pr = Podloga.przesla(Podloga.uklad(pl[:sciany], pl[:parametry]))
 oczek = pr.map { |a, c| ((c - a) / 1500.0 - 1e-9).ceil - 1 }.inject(0) { |s2, n| s2 + n }
 Testy.rowne(pl[:podloga][:podpory], oczek, 'podpory co ≤ 1500')
 
 Testy.grupa('Działowe – podwaliny i legary dzielone')
 seg = prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]], [[0, 2000], [3000, 2000]]]
-pl = plan_pelny(seg, 'legary_kierunek' => 'x')
+pl = plan_pelny_auto(seg, 'legary_kierunek' => 'x')
 pw = el(pl, 'Pw')
 Testy.rowne(pw.length, 4 + 2, 'podwaliny: 4 zewnętrzne + 2 działowe')
 lg = el(pl, 'L')
@@ -116,15 +122,15 @@ Testy.sprawdz(lg.none? { |e| e[:polozenie][:poczatek][0] < 3000 && (e[:polozenie
 Testy.sprawdz(Podloga.przesla(Podloga.uklad(pl[:sciany], pl[:parametry])).length == 2, 'dwa przęsła (działowa na całą szerokość)')
 
 Testy.grupa('Kierunek legarów i wyłączenie podłogi')
-pl = plan_pelny(prostokat(0, 0, 4000, 3000), 'legary_kierunek' => 'dluzszy')
+pl = plan_pelny_auto(prostokat(0, 0, 4000, 3000), 'legary_kierunek' => 'dluzszy')
 Testy.sprawdz(el(pl, 'L').all? { |e| e[:polozenie][:x][0].abs > 0.99 }, 'wzdłuż dłuższego boku (X)')
-pl = plan_pelny(prostokat(0, 0, 4000, 3000), 'podloga' => 'nie')
+pl = plan_pelny_auto(prostokat(0, 0, 4000, 3000), 'podloga' => 'nie')
 Testy.rowne(pl[:elementy].count { |e| %w[Pw L Pd].include?(e[:prefiks]) }, 0, 'podłoga wyłączona')
-pl = plan_pelny(wielokat([[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]]))
+pl = plan_pelny_auto(wielokat([[0, 0], [8000, 0], [8000, 4000], [4000, 4000], [4000, 7000], [0, 7000]]))
 Testy.sprawdz(podp?(pl, 'uwaga', 'tylko dla obrysu prostokątnego'), 'obrys L – podpowiedź, bez podłogi')
 
 Testy.grupa('Pozycje belek i siatki')
-pl = plan_pelny(prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]])
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 4000) + [[[3000, 0], [3000, 4000]]])
 pe = pl[:pozycje_elementow]
 Testy.rowne(pe.first[:nr], pl[:pozycje].length + 1, 'numery belek po balach')
 Testy.rowne(pe.map { |x| x[:nazwa] }.uniq.length, pe.length, 'nazwy pozycji jednoznaczne')
@@ -138,7 +144,7 @@ Testy.rowne(zle, 0, 'siatki belek zamknięte (podwaliny z zakładem, płatwie ś
 Testy.sprawdz(pl[:podsumowanie][:lista].any? { |x| x[:prefiks] == 'L' }, 'legary na liście zamówienia')
 
 Testy.grupa('Fundamenty punktowe, podciągi do lica podwalin, podwaliny na śruby (runda 7)')
-pl = plan_pelny(prostokat(0, 0, 7000, 5000), 'izolacja_podlogi' => 100, 'podciag_poziom' => 'pod')
+pl = plan_pelny_auto(prostokat(0, 0, 7000, 5000), 'izolacja_podlogi' => 100, 'podciag_poziom' => 'pod')
 f = el(pl, 'F')
 rogi = lambda { |e| o = e[:polozenie][:poczatek]; [o[0], o[1], o[0] + e[:b], o[1] + e[:h]] }
 Testy.rowne(f.length, 12, 'dom 5 × 7 m: 3 × 4 rzędy fundamentów')
@@ -159,19 +165,19 @@ m = h[:tekst].match(/podciąg (\d+)x(\d+) albo/)
 Testy.sprawdz(m && m[1].to_f * m[2].to_f**2 > 100.0 * 150.0**2, 'radzony podciąg mocniejszy od obecnego 100 × 150')
 Testy.sprawdz(podp?(pl, 'ok', 'Bez podciągów trzeba by legara'), 'zdanie o legarze bez podciągów w trybie przypuszczającym')
 Testy.sprawdz(pl[:podpowiedzi].none? { |x| x[:tekst].start_with?('Bez podciągów (') }, 'bez dawnego „Bez podciągów (rozpiętość…)”')
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), {})
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 5000), {})
 Testy.sprawdz(podp?(pl, 'ok', 'między fundamentami') && podp?(pl, 'ok', '– wystarczy.'), 'nośność 70 % – nadal „wystarczy” (ok)')
-pl = plan_pelny(prostokat(0, 0, 12_000, 9000), {})
+pl = plan_pelny_auto(prostokat(0, 0, 12_000, 9000), {})
 Testy.sprawdz(podp?(pl, 'ok', 'Bez podciągów się nie da'), 'dom 12 × 9 m: bez podciągów się nie da – powiedziane wprost')
-pl = plan_pelny(prostokat(0, 0, 12_000, 9000), 'fundamenty_rozstaw_max' => 3000)
+pl = plan_pelny_auto(prostokat(0, 0, 12_000, 9000), 'fundamenty_rozstaw_max' => 3000)
 h = pl[:podpowiedzi].find { |x| x[:tekst].include?('między fundamentami') }
 Testy.sprawdz(h[:poziom] == 'blad' && h[:tekst] =~ /za słaby: weź podciąg \d+x\d+ albo zmniejsz rozstaw/, "za słaby podciąg – zdanie bez literówki (#{h[:tekst]})")
-pl = plan_pelny(prostokat(0, 0, 6000, 4000), 'fundamenty' => 'nie', 'podciagi' => 'nie', 'legary_dobor' => 'minimalny')
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 4000), 'fundamenty' => 'nie', 'podciagi' => 'nie', 'legary_dobor' => 'minimalny')
 Testy.rowne([el(pl, 'Pd').length, el(pl, 'F').length], [0, 0], 'bez podciągów i fundamentów')
 Testy.sprawdz(pl[:podloga][:legar] && pl[:podloga][:legar][1] >= 150.0, "bez podciągów – wyższy legar (#{pl[:podloga][:legar].inspect})")
-pl = plan_pelny(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'fundamenty_rozstaw_max' => 3000)
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 5000), 'legary_dobor' => 'reczny', 'legar_przekroj' => '50x100', 'fundamenty_rozstaw_max' => 3000)
 Testy.sprawdz(podp?(pl, 'uwaga', 'dodano rząd'), 'legar ręczny za słaby na rozstaw fundamentów – dodatkowy rząd z podpowiedzią')
-pl = plan_pelny(prostokat(0, 0, 6000, 4000), 'podwalina_przekroj' => '50x150', 'podwalina_laczenie' => 'sruby', 'legary_dobor' => 'reczny',
+pl = plan_pelny_auto(prostokat(0, 0, 6000, 4000), 'podwalina_przekroj' => '50x150', 'podwalina_laczenie' => 'sruby', 'legary_dobor' => 'reczny',
                 'legar_przekroj' => '50x150')
 pw = el(pl, 'Pw')
 Testy.sprawdz(pw.all? { |e| e[:cechy].empty? }, 'podwaliny na śruby – bez zamków')
@@ -179,7 +185,7 @@ Testy.rowne(pw.map { |e| e[:dl].round }.sort, [3900, 3900, 6000, 6000], 'dwie na
 
 
 Testy.grupa('Fundament okrągły, podciąg na równo z podwaliną, fundamenty w osi działowych (runda 8)')
-pl = plan_pelny(prostokat(0, 0, 4000, 4000), 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20,
+pl = plan_pelny_auto(prostokat(0, 0, 4000, 4000), 'taras' => 'podciag', 'taras_glebokosc' => 2000, 'liczba_wiencow' => 20,
                 'fundament_ksztalt' => 'okragly', 'fundament_srednica' => 300, 'podciag_poziom' => 'rowno', 'podciagi' => 'tak')
 f = el(pl, 'F')
 Testy.sprawdz(f.all? { |e| e[:przekroj] && e[:przekroj].length == 24 && e[:b] == 300.0 }, 'stopy okrągłe ⌀ 300 (wielokąt 24 boki)')
@@ -193,7 +199,7 @@ l = el(pl, 'L')
 Testy.sprawdz(l.all? { |e| e[:dl] < 1900.0 }, "legary dzielone na podciągu (najdłuższy #{l.map { |e| e[:dl].round }.max})")
 Testy.rowne(kolizje_elementow(pl, %w[L Pd Pw]), 0, 'legary, podciągi, podwaliny bez kolizji')
 Testy.sprawdz(pl[:podpowiedzi].any? { |h| h[:tekst].include?('⌀ 300') }, 'podpowiedź z średnicą')
-pl = plan_pelny(prostokat(0, 0, 7000, 5000) + [[[3500, 0], [3500, 5000]]])
+pl = plan_pelny_auto(prostokat(0, 0, 7000, 5000) + [[[3500, 0], [3500, 5000]]])
 f = el(pl, 'F')
 Testy.sprawdz(f.map { |e| (e[:polozenie][:poczatek][0] + e[:b] / 2.0).round }.include?(3500), 'działowa w środku domu – stopy w jej osi')
 

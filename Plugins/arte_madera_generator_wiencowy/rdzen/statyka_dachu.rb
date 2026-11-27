@@ -46,7 +46,7 @@ module ArteMadera
 
       # Czy przekrój płatwi dobiera generator.
       def auto?(p)
-        p['platwie_dobor'].to_s == 'auto'
+        Parametry.dobor(p, 'platwie_dobor') == 'auto'
       end
 
       # Współczynnik kształtu dachu dla śniegu μ (kąt w stopniach): 0,8 do 30°, liniowo do 0 przy 60°.

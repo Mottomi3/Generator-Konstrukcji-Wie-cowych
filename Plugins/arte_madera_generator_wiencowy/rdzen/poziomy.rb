@@ -32,7 +32,7 @@ module ArteMadera
         ['dach', 'Dach', %w[szczyty poszycie]],
         ['taras', 'Taras i zadaszenie', %w[taras zadaszenie zadaszenie_przekroje]],
         ['podloga', 'Podłoga', %w[podloga]],
-        ['zestawienie', 'Zestawienie', %w[materialy powierzchnie]]
+        ['zestawienie', 'Zestawienie', %w[materialy magazyn powierzchnie]]
       ].freeze unless const_defined?(:KROKI)
 
       module_function

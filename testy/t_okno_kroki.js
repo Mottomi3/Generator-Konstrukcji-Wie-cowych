@@ -44,7 +44,7 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
 
   // ---- start w układzie nowym ----
   sprawdz(dane.init.uklad === 'kroki', 'układ nowy fabrycznie (' + dane.init.uklad + ')');
-  await page.evaluate(function (d) { AMGW.init(d); }, dane.init);
+  await page.evaluate(function (d) { AMGW.init(d); window.__opisy = d.opisy; }, dane.init);
   var st = await page.evaluate(function (widacTekst) {
     var widac = eval('(' + widacTekst + ')');
     return { klasa: document.body.className, kroki: document.querySelectorAll('#kroki button').length,
@@ -206,6 +206,12 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
     return [JSON.parse(document.getElementById('s-stolarka').value).length, document.getElementById('sl-stolarka').className];
   });
   sprawdz(tl[0] === 3 && /zmieniony/.test(tl[1]), 'nowy wiersz listy w ukrytym polu, pole oznaczone jako zmienione (' + tl.join(' | ') + ')');
+  var mg = await page.evaluate(function () {
+    var t = document.getElementById('t-magazyn_drewna');
+    var deska = Array.prototype.filter.call(t.querySelectorAll('tbody tr'), function (r) { return r.querySelector('[data-kol="przekroj"]').value === '14x115'; })[0];
+    return [t.querySelectorAll('tbody tr').length, t.querySelectorAll('thead th').length, deska ? deska.querySelector('[data-kol="deska"]').checked : null];
+  });
+  sprawdz(mg[0] === 33 && mg[1] === 11 && mg[2] === true, 'magazyn drewna w panelu standardu: 33 wiersze, kolumny ze znacznikami, deska 14 × 115 (' + mg.join(' | ') + ')');
   await page.evaluate(function () { window.__wywolania = []; });
   await page.click('#btn-standard-zapisz');
   var ws = await page.evaluate(function () { return window.__wywolania; });
@@ -275,6 +281,39 @@ var dane = JSON.parse(cp.execSync('ruby -I ' + path.join(KAT, 'testy', 'atrapa')
   await page.click('#btn-uklad-kroki');
   uk = await page.evaluate(function () { return [document.body.className, document.querySelectorAll('#prawa > .karta').length, document.querySelectorAll('#krok-karty > .karta').length]; });
   sprawdz(/uklad-kroki/.test(uk[0]) && uk[1] === 2 && uk[2] === 6, 'powrót do układu nowego (' + uk.join(' | ') + ')');
+
+  // ---- jeden przełącznik doboru przekrojów (runda 17) ----
+  var przel = await page.evaluate(function () {
+    var opisy = window.__opisy;
+    var o = opisy.filter(function (x) { return x.klucz === 'platwa_przekroj'; })[0];
+    var przed = AMGW_ZALEZNE.spelnione(o, opisy);
+    document.getElementById('p-przekroje_dobor').value = 'auto';
+    var auto = AMGW_ZALEZNE.spelnione(o, opisy);
+    document.getElementById('p-platwie_dobor').value = 'reczny';
+    var wyjatek = AMGW_ZALEZNE.spelnione(o, opisy);
+    document.getElementById('p-przekroje_dobor').value = 'reczny';
+    document.getElementById('p-platwie_dobor').value = 'wspolny';
+    return [przed, auto, wyjatek, document.querySelectorAll('#listy-magazynu datalist').length,
+            document.getElementById('p-platwa_przekroj').getAttribute('list'),
+            document.querySelectorAll('#magazyn-platew option').length];
+  });
+  sprawdz(przel[0] === true && przel[1] === false && przel[2] === true,
+          'przekrój płatwi widoczny przy „podaję sam”, schowany przy „automatycznie”, widoczny przy wyjątku płatwi (' + przel.slice(0, 3).join(' | ') + ')');
+  sprawdz(przel[3] === 6 && przel[4] === 'magazyn-platew' && przel[5] > 10, 'podpowiedzi przekrojów z magazynu przy polach przekrojów (' + przel.slice(3).join(' | ') + ')');
+  // Wycena (W3): bez cen – zdanie, gdzie je wpisać; z cenami – tabela z sumą i liczba „Materiał” w wyniku.
+  var wyc = JSON.parse(JSON.stringify(dane.wynik));
+  wyc.wycena = { wiersze: [{ grupa: 'Drewno', nazwa: 'Bale', ilosc: 3.5, jednostka: 'm³', cena: 2500, wartosc: 8750 },
+                           { grupa: 'Okucia', nazwa: 'Kotwa podwaliny', ilosc: 20, jednostka: 'szt.', cena: null, wartosc: null }],
+                 suma: 8750, bez_ceny: ['Kotwa podwaliny'], kompletna: false };
+  await page.evaluate(function (d) { AMGW.wynik(d); }, wyc);
+  var wy = await page.evaluate(function () {
+    return [document.querySelectorAll('#tab-wycena tbody tr').length, document.querySelector('#tab-wycena tr.suma').textContent,
+            document.getElementById('liczby').textContent.indexOf('Materiał: 8 750,00 zł') >= 0];
+  });
+  sprawdz(wy[0] === 3 && /Razem – bez 1 pozycji bez ceny8 750,00 zł/.test(wy[1]) && wy[2], 'wycena: tabela z sumą, liczba „Materiał” w wyniku (' + wy.join(' | ') + ')');
+  await page.evaluate(function (d) { AMGW.wynik(d); }, dane.wynik);
+  var bezCen = await page.evaluate(function () { return document.getElementById('wycena').textContent; });
+  sprawdz(/Standardzie warsztatu/.test(bezCen), 'wycena bez cen – gdzie je wpisać (' + bezCen.slice(0, 40) + ')');
 
   // ---- dom z wymiarów ----
   var initWym = JSON.parse(JSON.stringify(dane.init));
