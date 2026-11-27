@@ -161,7 +161,8 @@ module ArteMadera
         sasiedzi = Wience.wlasne(gosp, p).select { |g| (g[:lvl] - wn[:lvl]).abs == 1 }
         return false if sasiedzi.empty?
         return pod.call(zmin) && pod_platwia?(kf, wn, gosp, s, sasiedzi, p) if kf[:pod_platwia]
-        return false if sasiedzi.any? { |g| Otwory.w_otworze?(gosp, s, g[:z0], g[:z0] + g[:h]) }
+        bez_platwi = bez_platwi_nad(gosp, wn, sasiedzi, p)
+        return false if sasiedzi.any? { |g| Otwory.w_otworze?(bez_platwi, s, g[:z0], g[:z0] + g[:h]) }
         ostatni = ostatni_bal_wegla?(gosp, wn, sasiedzi, s, t, p)
         return false unless ostatni || pod.call(zmin)
         (ostatni ? sasiedzi.select { |g| g[:lvl] < wn[:lvl] } : sasiedzi).all? do |g|
@@ -170,6 +171,17 @@ module ArteMadera
           # Szczyt ażurowy / pusty nad tarasem – wieniec przekładek albo bez bali: węgieł nie ma oparcia.
           TarasSzczyt.przedzialy(gosp, g, z, p).any? { |a, c| a < s - t / 2.0 + 0.01 && c > s + t / 2.0 - 0.01 }
         end
+      end
+
+      # Ściana gosp bez gniazd płatwi nad balem węgła wn: płatew leży w górnym wieńcu ściany (dom L – płatew ścienna skrzydła
+      # bocznego niżej niż góra ściany, płatew dachu głównego przechodząca przez ścianę w miejscu węgła), węgieł dochodzi do
+      # jej spodu i trzyma zamkiem styk najwyższego wieńca (zasada „styk zawsze w zamku”, runda 17). Warunek: bal ściany nad
+      # węgłem zachowuje między gniazdem zamka od spodu a gniazdem płatwi co najmniej zamek_min_drewno.
+      def bez_platwi_nad(gosp, wn, sasiedzi, p)
+        gora = wn[:z0] + wn[:h]
+        dno = sasiedzi.select { |g| g[:lvl] > wn[:lvl] }.map { |g| g[:z0] + p['zamek']['gniazdo_gleb'].to_f + p['zamek_min_drewno'].to_f }.max || gora
+        otw = (gosp[:otwory] || []).reject { |o| o[:gniazdo] && o[:z0] >= gora - 0.01 && o[:z0] >= dno - 0.01 }
+        otw.length == (gosp[:otwory] || []).length ? gosp : gosp.merge(otwory: otw)
       end
 
       # Czy bal węgła w wieńcu wn byłby ostatnim połączeniem pod dachem: ściana ma bal pod nim, a nad nim żadnego –

@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/podbitka.rb
 # Zadanie: podbitka – boazeria widoczna od spodu pod albo na płatwiach (deski wzdłuż spadku), pod albo na krokwiach (deski równolegle do okapu); wybór zależny od układu dachu; co robi aplikacja do dachów (nadbitka KROKU 2); obniżenie linii, pod którą kończą się ściany pod połacią.
-# Tematy: podbitka, podbitka pod płatwiami, podbitka na płatwiach, podbitka pod krokwiami, podbitka na krokwiach, boazeria od spodu, deska podbitki, obniżenie ścian pod podbitką, wybór podbitki a układ dachu, podbitka z aplikacji do dachów
-# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, płatwie, kąt, jednospadowy), rdzen/elementy.rb
+# Tematy: podbitka, podbitka pod płatwiami, podbitka na płatwiach, podbitka pod krokwiami, podbitka na krokwiach, boazeria od spodu, deska podbitki, obniżenie ścian pod podbitką, wybór podbitki a układ dachu, podbitka z aplikacji do dachów, działowa do połaci przy styku ściany okapowej, deski przerwane na działowej
+# Zależy od: rdzen/parametry.rb, rdzen/dach.rb (linia podparcia, płatwie, kąt, jednospadowy), rdzen/elementy.rb, rdzen/wience.rb (góra ściany okapowej)
 # Używają: rdzen/projekt.rb (belki – elementy Pb), rdzen/pod_dachem.rb i rdzen/szczyty.rb (obniżenie linii pod podbitką), rdzen/krok2.rb (podbitka jako nadbitka KROKU 2)
 #
 # Dom prostokątny (dom = Szczyty.dom_prostokatny: os, v_a, v_b, u1, u2, wewn). Pola wzdłuż kalenicy (u) – między licami
@@ -16,12 +16,15 @@
 # między płatwiami (płatwie wystają pod krokwie). Na płatwiach: deski wzdłuż spadku spodem na linii podparcia (krokwie
 # leżą na nich – Dach.uniesienie_krokwi). Na krokwiach: deski wzdłuż okapu spodem na wierzchu krokwi. Na krokwiach
 # i na samych płatwiach z aplikacją do dachów – nadbitka KROKU 2 (przez_aplikacje?), generator jej nie rysuje.
-# Ściany pod połacią (działowe w poprzek kalenicy, węgły) kończą się pod podbitką „pod”: linia o obnizenie niżej.
+# Ściany pod połacią (działowe w poprzek kalenicy, węgły) kończą się pod podbitką „pod”: linia o obnizenie niżej. Wyjątki
+# (zasada „styk zawsze w zamku”): węgieł, w którym łączą się bale ściany (runda 16), i koniec działowej, na którym łączą się
+# bale ściany okapowej (runda 17) – sięgają wyżej, deski podbitki są na nich przerwane.
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
 require File.join(File.dirname(__FILE__), 'parametry') unless defined?(ArteMadera::GeneratorWiencowy::Parametry)
 require File.join(File.dirname(__FILE__), 'dach') unless defined?(ArteMadera::GeneratorWiencowy::Dach)
 require File.join(File.dirname(__FILE__), 'elementy') unless defined?(ArteMadera::GeneratorWiencowy::Elementy)
+require File.join(File.dirname(__FILE__), 'wience') unless defined?(ArteMadera::GeneratorWiencowy::Wience)
 
 module ArteMadera
   module GeneratorWiencowy
@@ -79,6 +82,71 @@ module ArteMadera
         ((g[:styki][:parzyste] || []) + (g[:styki][:nieparzyste] || [])).any? { |x| (x - s).abs < 1.0 }
       end
 
+      # Działowa w poprzek kalenicy pod podbitką pod płatwiami, na której łączą się bale ściany okapowej (styk ściany
+      # okapowej w osi działowej): przy tej ścianie działowa sięga do wierzchu bala pod najwyższym wieńcem ściany okapowej
+      # (pół wieńca pod jej górą), żeby styk najwyższego wieńca też był w zamku (zasada „styk zawsze w zamku”, runda 17;
+      # wcześniej działowa kończyła się pod deskami, wieniec lub dwa niżej). Ustawia w[:do_polaci] = [{ s:, z: }]
+      # (s – miejsce ściany okapowej na osi działowej, z – wysokość, do której działowa sięga przy tej ścianie).
+      def dzialowa_do_polaci!(w, p)
+        w.delete(:do_polaci)
+        return unless rodzaj(p) == 'pod_platwiami' && w[:rodzaj] == :dzialowa && w[:pod_dachem]
+        iv = w[:pod_dachem][:iv]
+        h = Parametry.krycie(p)
+        lista = w[:skrzyzowania].map do |k|
+          o = k[:inna]
+          next unless o[:rodzaj] == :zewnetrzna && o[:kier][iv].abs < 0.5 && o[:styki]
+          k2 = o[:skrzyzowania].find { |x| x[:inna].equal?(w) }
+          next unless k2 && ((o[:styki][:parzyste] || []) + (o[:styki][:nieparzyste] || [])).any? { |x| (x - k2[:s]).abs < 1.0 }
+          gora = Wience.pelna_lista(o[:kierunek], true, p).last
+          { s: k[:s], z: gora[:z0] + gora[:h] - h / 2.0 }
+        end
+        lista.compact!
+        w[:do_polaci] = lista unless lista.empty?
+      end
+
+      # Linia, pod którą kończy się działowa pod połacią, w miejscu s [mm]: spód podbitki (linia podparcia pod − obnizenie),
+      # a przy ścianie okapowej ze stykiem na działowej (w[:do_polaci]) – nie niżej niż z tej ściany, ale nie wyżej niż
+      # połać. Strona kalenicy: zal – załomy linii dachu nad działową (puste – najbliższa ściana).
+      def linia_dzialowej(w, s, pod, zal, p)
+        dol = pod - obnizenie(p)
+        lista = w[:do_polaci]
+        return dol if lista.nil? || lista.empty?
+        e = if zal.empty?
+              lista.min_by { |x| (x[:s] - s).abs }
+            else
+              r = zal.max
+              lista.select { |x| (x[:s] < r) == (s < r) }.max_by { |x| x[:z] }
+            end
+        e ? [pod, [dol, e[:z]].max].min : dol
+      end
+
+      # Działowe sięgające przy ścianie okapowej ponad podbitkę (w[:do_polaci]): obrys w rzucie jak węgieł –
+      # [{ u: [lo, hi], v: [lo, hi] }] od końca działowej do miejsca, w którym spód podbitki dochodzi do jej wierzchu.
+      def dzialowe_do_polaci(dom, sciany, p)
+        return [] unless rodzaj(p) == 'pod_platwiami'
+        iu, iv = dom[:os] == :x ? [0, 1] : [1, 0]
+        t2 = Parametry.grubosc(p) / 2.0
+        geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
+        wynik = []
+        sciany.each do |w|
+          next unless w[:rodzaj] == :dzialowa && w[:do_polaci] && w[:kier][iv].abs > 0.5
+          u = w[:a][iu]
+          w[:do_polaci].each do |e|
+            koniec = (e[:s] - w[:s_od]).abs < (e[:s] - w[:s_do]).abs ? w[:s_od] : w[:s_do]
+            krok = koniec == w[:s_od] ? 10.0 : -10.0
+            s = e[:s]
+            n = 0
+            while n < 1000 && Dach.linia_podparcia(geo, w[:a][iv] + s * w[:kier][iv], p) - obnizenie(p) < e[:z]
+              s += krok
+              n += 1
+            end
+            vs = [koniec, s].map { |x| w[:a][iv] + x * w[:kier][iv] }.sort
+            wynik << { u: [u - t2, u + t2], v: vs }
+          end
+        end
+        wynik
+      end
+
       # Grubość podbitki w pionie pod spodem płatwi [mm] (podbitka pod płatwiami; inaczej 0) – węgły pod płatwią kończą się
       # pod deskami (rdzen/wegly_konstrukcyjne.rb).
       def pod_spodem_platwi(p)
@@ -97,7 +165,7 @@ module ArteMadera
         return [] if dom.nil? || dom[:boczne] || r == 'nie' || przez_aplikacje?(p)
         geo = { v_a: dom[:v_a], v_b: dom[:v_b] }
         przerwy = dzialowe_wzdluz(dom, sciany, p)
-        wegly = wegly_do_polaci(dom, sciany, p)
+        wegly = wegly_do_polaci(dom, sciany, p) + dzialowe_do_polaci(dom, sciany, p)
         wynik = []
         pola_u(dom, p).each do |u0, u1|
           spadki(geo, p).each do |v0, v1|

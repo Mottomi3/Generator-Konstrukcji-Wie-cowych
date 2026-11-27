@@ -127,4 +127,19 @@ Testy.rowne(Parametry.normalizuj('poszycie_nadbitka' => 'tak', 'podbitka' => 'po
             ['pod_platwiami', 14.0], 'wybrana podbitka zostaje ze swoją deską')
 Testy.sprawdz(Parametry.normalizuj('poszycie_nadbitka' => 'tak')[1].empty? && !Parametry.normalizuj({})[0].key?('poszycie_nadbitka'), 'dawne klucze bez ostrzeżeń, w parametrach ich nie ma')
 
+Testy.grupa('Działowa ze stykiem ściany okapowej sięga ponad podbitkę pod płatwiami (runda 17)')
+seg_dz = prostokat(0, 0, 7800, 5600) + [[[1760, 0], [1760, 5600]]]
+par_dz = { 'podbitka' => 'pod_platwiami', 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'liczba_wiencow' => 11,
+           'max_dlugosc' => 4000, 'styk_na_dzialowej' => 'wspolny', 'kalenica' => 'x' }
+pl_dz = Projekt.oblicz('segmenty' => seg_dz, 'parametry' => par_dz, 'otwory' => [])
+dz = pl_dz[:sciany].find { |w| w[:rodzaj] == :dzialowa }
+Testy.sprawdz(dz && dz[:do_polaci] && dz[:do_polaci].length == 2, 'działowa ze stykami obu ścian okapowych – wysokość przy obu (' + (dz ? dz[:do_polaci].inspect : '') + ')')
+h = Parametry.krycie(pl_dz[:parametry])
+gora = Wience.pelna_lista(:A, true, pl_dz[:parametry]).last
+Testy.rowne(dz[:do_polaci][0][:z], gora[:z0] + gora[:h] - h / 2.0, 'wysokość: wierzch bala pod najwyższym wieńcem ściany okapowej')
+Testy.rowne(Kontrola.styki_bez_zamka(pl_dz), [], 'styki ścian okapowych na działowej – w zamku')
+deski = pl_dz[:elementy].select { |e| e[:prefiks] == 'Pb' }
+Testy.sprawdz(!deski.empty?, 'deski podbitki pod płatwiami są')
+Testy.rowne(kolizje_belek(pl_dz, 'Pb'), 0, 'deski podbitki przerwane na działowej – bez kolizji z jej balami')
+
 Testy.koniec

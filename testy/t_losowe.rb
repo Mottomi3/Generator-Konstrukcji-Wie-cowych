@@ -40,7 +40,11 @@ ZIARNA = {
   13 => 'r10: dom L – dwa dachy z koszem, połacie dla aplikacji',
   204 => 'r10: dom L – płatew skrzydła bocznego kończy się w koszu w swojej osi (podpora w granicy aplikacji)',
   77 => 'r10: dom L – płatew ścienna skrzydła bocznego na ścianie wyższej o pół bala',
-  6201 => 'r16: pełny profil – klin szczytu 7 mm nad węgłem bez półzamka (podcięcia na klinie cieńszym niż wpust – bryła niezamknięta)'
+  6201 => 'r16: pełny profil – klin szczytu 7 mm nad węgłem bez półzamka (podcięcia na klinie cieńszym niż wpust – bryła niezamknięta)',
+  6093 => 'r17: dom L – styk ściany okapowej skrzydła w najwyższym wieńcu, płatew ścienna w gnieździe – węgieł do spodu płatwi',
+  6324 => 'r17: dom L – węgieł pod stykiem w miejscu płatwi przechodzącej przez ścianę – węgieł do spodu płatwi',
+  6134 => 'r17: podbitka pod płatwiami – działowe ze stykiem ściany okapowej sięgają przy niej do wierzchu bala pod górnym wieńcem',
+  6492 => 'r17: podbitka pod płatwiami, sama płatew – działowa ze stykiem ściany okapowej, deski przerwane na działowej'
 }.freeze
 
 ZIARNA.each do |z, opis|

@@ -41,6 +41,7 @@ module ArteMadera
           next if w[:szczyt] || w[:kier][iv].abs < 0.5
           next if w[:rodzaj] == :zewnetrzna
           w[:pod_dachem] = g
+          Podbitka.dzialowa_do_polaci!(w, p)
         end
         geo = Dach.geo(dom)
         z_lico = Dach.linia_podparcia(geo, Dach.lico_okapu_v(geo, p), p)
@@ -59,10 +60,13 @@ module ArteMadera
       end
 
       # Linia podparcia nad punktem s ściany [mm] (z podbitką – jej spód, rdzen/podbitka.rb; węgieł ze stykami ściany
-      # wysokiej – połać, Podbitka.obnizenie_wegla); ściana nie pod dachem – nil.
+      # – połać, Podbitka.obnizenie_wegla; koniec działowej ze stykiem ściany okapowej – Podbitka.linia_dzialowej); ściana
+      # nie pod dachem – nil.
       def linia(w, s, p)
         return nil if w[:pod_dachem].nil?
-        Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p) - (w[:rodzaj] == :kontrfor ? Podbitka.obnizenie_wegla(w, p) : Podbitka.obnizenie(p))
+        pod = Dach.linia_podparcia(w[:pod_dachem], v_z_s(w, s), p)
+        return pod - Podbitka.obnizenie_wegla(w, p) if w[:rodzaj] == :kontrfor
+        w[:do_polaci] ? Podbitka.linia_dzialowej(w, s, pod, zalom(w, p), p) : pod - Podbitka.obnizenie(p)
       end
 
       # Załomy linii dachu nad ścianą – s: kalenica i linie załamania bocznego zadaszenia; dach jednospadowy – [].
