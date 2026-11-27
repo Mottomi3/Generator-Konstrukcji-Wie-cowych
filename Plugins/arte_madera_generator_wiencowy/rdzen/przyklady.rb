@@ -61,7 +61,10 @@ module ArteMadera
           dom('Przybudówki z bali po obu stronach bez podłogi, krokwie dobrane, z generatora', prostokat(0, 0, 6000, 4500),
               { 'zadaszenie' => 'bale', 'zadaszenie_strona' => 'obie', 'dach_kat' => 35, 'zadaszenie_kat' => 15,
                 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator', 'krokwie_dobor' => 'auto',
-                'zadaszenie_podloga' => 'nie' }, [])
+                'zadaszenie_podloga' => 'nie' }, []),
+          dom('Drewutnia z tyłu, taras typu 300 z przodu (dodatki, runda 19)', prostokat(0, 0, 7000, 5000),
+              { 'drewutnia' => 'slupy', 'taras' => 'sciany', 'dach_kat' => 30, 'liczba_wiencow' => 16 },
+              [otwor('W-1', 1500, 1020, 1010, 900, 'O1')])
         ]
       end
 

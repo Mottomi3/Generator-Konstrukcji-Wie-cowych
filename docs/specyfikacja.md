@@ -658,6 +658,37 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
   tylko na liście obróbek). Kanał bliżej niż `kanal_odstep_zamka` (60) od lica ściany poprzecznej albo poza ścianą –
   pominięty z ostrzeżeniem. Bal z otworem albo z puszką – osobna pozycja.
 
+## 8n. Runda 19 – kosz domu L według normy, drewutnia (dodatki), P5 reszta, kanały
+
+- **Kosz domu L** – patrz „Dom L – koniec płatwi skrzydła” w 8m (sprawdzenie z wytycznymi, `rdzen/statyka_kosza.rb`).
+- **Typ + dodatki** (odpowiedź „tak”): typ = bryła domu (100–400), dodatki osobnymi przełącznikami w kroku „Dodatki”
+  (dawniej „Taras i zadaszenie”). Przełączniki `zadaszenie` i `drewutnia` są polami „Ten dom”; `taras` zostaje w typie
+  (Typ 200 i 300).
+- **Drewutnia przy ścianie szczytowej** (`rdzen/drewutnia.rb`, `drewutnia` = slupy): wiata z dachem jednospadowym od
+  ściany szczytowej, strona `drewutnia_strona` (z tyłu = naprzeciw tarasu; bez tarasu – szczyt o mniejszym u, bo taras
+  stoi fabrycznie po stronie większego). Szerokość wzdłuż ściany: między ostatkami ścian okapowych z odstępem
+  `drewutnia_odstep` (30) albo `drewutnia_szerokosc` na środku. W przekroju (s – odległość od lica ściany szczytowej):
+  krokwie od s_k = wystawanie węgłów i działowych przed lico w pasie drewutni + odstęp do okapu s_e = głębokość +
+  `drewutnia_okap`; rząd słupów przy ścianie w s_a – za krokwiami (pół szerszego z słupa i belki) i za podwalinami
+  i fundamentami domu (z miejscem na fundament słupa) + odstęp; rząd zewnętrzny – lico zewnętrzne słupów na głębokości.
+  Słupy (`drewutnia_slup_przekroj`, wzdłuż ściany × w poprzek) na końcach i równo co najwyżej `drewutnia_slupy_rozstaw`,
+  od podstawy (spód podwaliny przy podłodze, inaczej 0) do spodu płatwi / oczepu (`drewutnia_belka_przekroj`); wierzch
+  belki = spód krokwi przy jej krawędzi zewnętrznej. Krokwie – przekrój i rozstaw krokwi dachu, czoła prostopadłe do
+  osi. Wierzch krokwi przy ścianie (`drewutnia_wysokosc`, 0 – najwyżej): najniżej z linii podparcia dachu domu przy
+  brzegach pasa i punktów krawędzi belek dachu nad drewutnią, każdy minus osiadanie ścian pod nim (`osiadanie_scian`)
+  i `drewutnia_odstep_dachu` (50) – dach domu siada razem ze ścianami, drewutnia nie; wyższa wartość z parametru –
+  obniżona z uwagą. Za płytka (odstęp rzędów < 400) albo słupy < 300 – pominięta z uwagą. Fundamenty jak pod podłogą.
+  Statyka (`rdzen/statyka_drewutni.rb`): krokiew na dwóch podporach (wsporniki jak przęsło 2a), płatew i oczep na
+  rozstawie słupów z pasem dachu (połowa odstępu rzędów + wspornik krokwi), słup – ściskanie z wyboczeniem; śnieg
+  μ(kąt drewutni) i ciężar pokrycia jak dach; podpowiedź z najmniejszym wystarczającym przekrojem z magazynu.
+  Tag i grupa „Drewutnia”; płatew i oczep drewutni nie są podporami połaci domu dla aplikacji do dachów.
+- **P5 – reszta**: skos bala (szczyt) przechodzący mniej niż 0,2 mm nad dolnym narożem gniazda od spodu – obniżony do
+  naroża (szpic klina przed gniazdem znika); gniazdo / wycięcie od góry i gniazdo od dołu w tym samym miejscu zostawiające
+  0–0,2 mm drewna – wycięcie od góry płytsze, tak by zostało 0,2 mm.
+- **Kanały**: strona puszki (`strona` w wejściu kanału: lewa – +nor, wnętrze ściany zewnętrznej; prawa – −nor); kanał
+  w miejscu okna albo drzwi – obróbka `kanal` tylko w balach poniżej spodu otworu, puszka w otworze pominięta (uwaga),
+  w widoku ściany pas do spodu otworu.
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

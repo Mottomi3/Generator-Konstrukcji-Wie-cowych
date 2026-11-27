@@ -48,7 +48,7 @@ def ostatni_skrypt(dlg, poczatek)
 end
 
 Testy.grupa('Ładowanie wtyczki')
-Testy.rowne(PLUGIN_BUILD, '18', 'numer kompilacji')
+Testy.rowne(PLUGIN_BUILD, '19', 'numer kompilacji')
 Testy.sprawdz(defined?(ArteMadera::GeneratorWiencowy::Menu) ? true : false, 'moduły załadowane')
 Testy.rowne(MODULE_FILES.length, Dir.glob(File.join(KATALOG_WTYCZKI, '{rdzen,sketchup}', '*.rb')).length, 'liczba modułów = pliki rdzen/ i sketchup/')
 Testy.rowne([Ustawienia.standard, TypyDomow.wlasne], [{}, {}], 'bez zapisanego standardu i własnych typów na starcie testu')

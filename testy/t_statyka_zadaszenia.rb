@@ -158,11 +158,11 @@ Testy.grupa('Zakładka zadaszenia w oknie')
 sekcje = ParametryLista::SEKCJE
 Testy.rowne(ParametryLista::ZAKLADKI.map(&:first), %w[dom zadaszenie], 'zakładki: dom i zadaszenie')
 zad = sekcje.select { |s| s[3] == 'zadaszenie' }.map(&:first)
-Testy.rowne(zad, %w[zadaszenie zadaszenie_przekroje], 'sekcje zakładki zadaszenia')
-klucze = ParametryLista::LISTA.select { |w| w[:klucz].start_with?('zadaszenie') }
-Testy.sprawdz(klucze.all? { |w| zad.include?(w[:sekcja]) }, 'wszystkie parametry zadaszenia w jego zakładce')
-Testy.sprawdz(ParametryLista::LISTA.none? { |w| zad.include?(w[:sekcja]) && !w[:klucz].start_with?('zadaszenie') },
-              'w zakładce zadaszenia tylko parametry zadaszenia')
+Testy.rowne(zad, %w[zadaszenie zadaszenie_przekroje drewutnia], 'sekcje zakładki zadaszenia (od rundy 19 także drewutnia – zadaszenie tylne)')
+klucze = ParametryLista::LISTA.select { |w| w[:klucz].start_with?('zadaszenie') || w[:klucz].start_with?('drewutnia') }
+Testy.sprawdz(klucze.all? { |w| zad.include?(w[:sekcja]) }, 'wszystkie parametry zadaszenia i drewutni w jego zakładce')
+Testy.sprawdz(ParametryLista::LISTA.none? { |w| zad.include?(w[:sekcja]) && !w[:klucz].start_with?('zadaszenie') && !w[:klucz].start_with?('drewutnia') },
+              'w zakładce zadaszenia tylko parametry zadaszenia i drewutni')
 Testy.rowne(ParametryLista::LISTA.find { |w| w[:klucz] == 'zadaszenie_dobor' }[:domyslna], 'wspolny', 'dobór zadaszenia – fabrycznie jak przełącznik „Przekroje konstrukcji” (runda 17)')
 
 Testy.koniec

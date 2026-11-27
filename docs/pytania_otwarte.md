@@ -76,3 +76,10 @@ Uwaga: numer Z1 występuje dwa razy (drewno w zamku przy skosie – runda 5; lin
 | R18-5 | Płatwie dłuższe niż w magazynie | fabrycznie dzielone nad ścianą na styk w osi ściany (bez zakładu); tylko płatwie dachu |
 | R18-6 | Działowe bliżej niż grubość bala | jedna ściana w miejscu dłuższej, z ostrzeżeniem (dwie ściany w tym miejscu są niewykonalne) |
 | R18-7 | Kanały na przewody | Ø 25 (w modelu kwadrat 25 × 25 w osi bala), puszka 300 od spodu ściany, otwór puszki Ø 68 tylko na liście (od strony wnętrza), odstęp od lica ściany poprzecznej ≥ 60 |
+| R19-1 | Kosz domu L – wytyczne | słupek zostaje (praktyka ciesielska); siła ze słupka w środku największego przęsła płatwi głównej (zastępczo 2R / L), docisk kc,90 = 1,0 (bez podwyższenia), fc,90,k z PN-EN 338 (C24 – 2,5 MPa) |
+| R19-2 | Drewutnia – konstrukcja | na słupach w dwóch rzędach (przy ścianie i zewnętrzny), bez mocowania do ściany (ściana osiada); płatew i oczep 100 × 160, słupy 120 × 120, krokwie jak dachu |
+| R19-3 | Drewutnia – wymiary fabryczne | głębokość 1500, pełna szerokość między ostatkami, dach 10°, okap 300, rozstaw słupów do 2500, odstęp od ściany 30, od dachu domu 50 + osiadanie ścian |
+| R19-4 | Drewutnia – strona | „z tyłu” = naprzeciw tarasu; bez tarasu – szczyt lewy albo dolny na rysunku (taras fabrycznie stoi po prawej / górnej) |
+| R19-5 | Dodatki w „Ten dom” | przełączniki zadaszenia bocznego i drewutni – pola „Ten dom”; taras zostaje w typie (Typ 200, 300) – pytanie w `docs/stan_prac.md` §6 |
+| R19-6 | Kanał w miejscu okna | otwór tylko w balach pod oknem (kanał od dołu do parapetu), puszka nad parapetem pominięta |
+| R19-7 | Cienka resztka bala (P5) | resztka < 0,2 mm między gniazdem płatwi a gniazdem zamka – zostaje 0,2 mm (płatew wchodzi w nią do 0,2 mm) |

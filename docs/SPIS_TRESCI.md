@@ -1505,7 +1505,7 @@ Szukanie: najpierw tabela tematów (1), potem lista elementów pliku (3) – num
 | `rdzen/profil_bala.rb` | 153 | pełny profil bala do wizualizacji – pióra na wierzchu i wpust od spodu (pierwszy wieniec bez wpustu); przekrój pasami wzdłuż grubości, objętość. |
 | `rdzen/projekt.rb` | 276 | przebieg obliczeń domu od linii do listy bali i belek (kolejność kroków) i podsumowanie do okna – bez API SketchUpa. |
 | `rdzen/pryzmat.rb` | 69 | belka o przekroju wielokątnym (graniastosłup) – siatka ścian, objętość, podpis i postać kanoniczna przekroju (np. płatew ścięta do płaszczyzny dachu). |
-| `rdzen/przyklady.rb` | 75 | przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory. |
+| `rdzen/przyklady.rb` | 78 | przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory. |
 | `rdzen/sciana_w_linii.rb` | 84 | działowa narysowana w linii ściany obrysu (np. wzdłuż uskoku domu L) – wspólna oś ze ścianą obrysu i połączenie obu w zamku ściany poprzecznej, bez ostatków wchodzących w siebie. |
 | `rdzen/sciany.rb` | 293 | ściany z rozpoznanego obrysu – osie, zasięgi bali z ostatkami, skrzyżowania, kontrfory, kierunek względem kalenicy, numeracja W-n. |
 | `rdzen/sciecie_dachu.rb` | 174 | bale ścian wzdłuż kalenicy wystające nad płaszczyznę dachu ścięte w poprzek do tej płaszczyzny – górny bal ściany okapowej przy ścianie nośnej, ściana wysoka dachu jednospadowego, działowa wzdłużna pod dachem. |
@@ -2750,7 +2750,7 @@ Używają: rdzen/elementy.rb (pozycje belek z przekrojem), rdzen/projekt.rb (sia
 | 54 | `podpis(przekroj)` | Podpis przekroju (punkty zaokrąglone do 0,1 mm) – do rozpoznania identycznych belek. |
 | 60 | `kanoniczny(przekroj, b)` | Postać kanoniczna: przekrój albo jego odbicie (y → b − y, belka obrócona o 180° wokół pionu) – mniejszy podpis; [przekrój, czy_obrócony]. |
 
-### rdzen/przyklady.rb (75 wierszy)
+### rdzen/przyklady.rb (78 wierszy)
 
 przykładowe domy do testu działania w SketchUpie (i w testach) – linie, parametry i otwory.
 
@@ -2764,7 +2764,7 @@ Używają: sketchup/raport.rb (test działania), testy/t_raport.rb
 | 25 | `wielokat(punkty)` | Odcinki wielokąta zamkniętego. |
 | 30 | `otwor(sciana, od, szer, wys, parapet, nazwa)` | Otwór w tabeli otworów (jak z okna). |
 | 35 | `lista` | Lista przykładów: [{ 'nazwa' =>, 'wejscie' => { 'segmenty', 'z0', 'parametry', 'otwory', 'sciany' } }]. |
-| 69 | `dom(nazwa, segmenty, parametry, otwory, sciany = {})` | Przykład: nazwa i wejście domu (sciany – ustawienia ścian z widoku ściany). |
+| 72 | `dom(nazwa, segmenty, parametry, otwory, sciany = {})` | Przykład: nazwa i wejście domu (sciany – ustawienia ścian z widoku ściany). |
 
 ### rdzen/sciana_w_linii.rb (84 wierszy)
 

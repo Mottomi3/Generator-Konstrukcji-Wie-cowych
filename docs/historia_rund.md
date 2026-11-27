@@ -4,8 +4,8 @@ Wydzielone z `docs/stan_prac.md` w rundzie 14 (2026-11-25), żeby stan bieżący
 najpierw opis nowości kolejnych kompilacji (od najnowszej), potem stan kompilacji 6, przebieg rund z prośbami użytkownika
 i lista modułów dodawanych w rundach. Bieżący stan, kolejka decyzji i plan – `docs/stan_prac.md`.
 
-Runda 18 (kompilacja 18) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r18.md`; przy następnej rundzie przenieść tutaj.
-Rundy 15–17 – na końcu tego pliku („Nowe w kompilacji 15”, „16”, „17”) i w `docs/przekazanie_r15.md` … `docs/przekazanie_r17.md`.
+Runda 19 (kompilacja 19) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r19.md`; przy następnej rundzie przenieść tutaj.
+Rundy 15–18 – na końcu tego pliku („Nowe w kompilacji 15” … „18”) i w `docs/przekazanie_r15.md` … `docs/przekazanie_r18.md`.
 
 # Część A – nowości kompilacji 7–14
 
@@ -716,3 +716,52 @@ Zdecydowane zaległości (T8, deski, 45 × 120), propozycje P1 i W2, przygotowan
 - Parametrów: 193 (nowe: `stolarka`, `stolarka_folder`, `przekroje_dobor`, `magazyn_drewna`, `cena_bala`, `cennik_materialow`;
   usunięte: `okno_szerokosc`, `okno_wysokosc`, `okno_parapet`, `drzwi_szerokosc`, `drzwi_wysokosc`, `przekroje_katalog`,
   `platwie_katalog`, `krokwie_katalog`, `zadaszenie_katalog`, `zadaszenie_slupy_katalog`).
+
+## Nowe w kompilacji 18 (polecenie z 2026-11-27 20:20 – `docs/prompt_r18.md`)
+
+- **Odpowiedzi z rundy 17**: 1 (układ okna) – „nie sprawdzałem” → pytanie zadane od razu z zrzutem, do końca rundy bez
+  odpowiedzi: **oba układy zostają**; 2 – działowa z rysunku `docs/styk_w_zamku_r17.png` **potwierdzona**; 3 – typy
+  100–400 zostają (pomysł „typ + dodatki” – pytanie w §6); 4 – modeli okien i drzwi nie ma, „daj ścieżkę dostępu, to
+  da mi możliwość podmiany modeli”; 5 – kompilacja 17 nie była uruchamiana; 6 – przełącznik doboru „oba, zależy od
+  konstrukcji”. Folderu `raporty\` na dysku nie było.
+- **Ścieżka modelu stolarki i prosty model z generatora** (`rdzen/stolarka_prosta.rb`, `rdzen/parametry_stolarka.rb`,
+  `sketchup/okno_sciezki.rb`, `html/sciezka.js`, rysunek `docs/stolarka_prosta_r18.png`): kolumna „Model” listy
+  stolarki przyjmuje pełną ścieżkę pliku `.skp` (bez folderu modeli), przy niej i przy „Folder modeli stolarki” przycisk
+  „…” (okno wyboru SketchUpa). Otwór bez pliku dostaje prosty model: rama 68 na grubość ściany, szyba (okno) albo
+  skrzydło (drzwi), maskownice 95 × 20 od zewnątrz z zakładką 15 na ramę; komponent „Okno 1020 × 1010 (prosty model)”
+  w grupie „Stolarka”, rola „skip” dla Dokumentacji 2D, test działania nie liczy go jako drewna. Brak pliku wskazanego
+  w liście – prosty model i uwaga. Parametry: `stolarka_prosta` (tak / sam otwór), `stolarka_rama`, `maskownica_*`.
+- **Przełącznik „Przekroje konstrukcji – dobór” w typie domu** (`przekroje_dobor`, poziom :typ): Typ 100 i 200 – podaję
+  sam, Typ 300 i 400 – automatycznie; własne typy zapamiętują swój wybór.
+- **P2 – podparcie końców płatwi**:
+  - *Dom L* (`rdzen/podpory_platwi_l.rb`, rysunek `docs/kosz_slupek_r18.png`): płatew skrzydła bocznego, która kończy
+    się w koszu (nie trafia na płatew dachu głównego), dostaje słupek (prefiks S, „Słupek pod płatwią”, tag Dach) na
+    wierzchu płatwi dachu głównego, nad którą przechodzi najbliżej końca; odstęp < 20 mm – płatew leży na płatwi głównej.
+    Płatew kończąca się przy licu płatwi głównej – styk, w zestawieniu „Wieszak płatwi”; słupki i oparcia – „Kątownik
+    ciesielski” (po dwa). Statyka płatwi skrzydła liczy przęsło do słupka. Parametr `platwie_kosz` (słupek / bez podpory
+    z ostrzeżeniem). W 200 domach L o różnych proporcjach ok. 1/3 końców płatwi skrzydła wypadało w koszu.
+  - *Taras typu 300* (`rdzen/taras.rb#front_z_balami?`, `rdzen/taras_szczyt.rb`, `rdzen/styki_tarasu.rb`): front ma górne
+    wieńce nad otworem tarasu (jak podciąg typu 200, w zamkach ścian bocznych, od półbala) i szczyt – pełny, ażurowy albo
+    pusty z trójkątem na balach; płatwie nad tarasem leżą na szczycie frontu (zamek tylko od spodu jak w typie 200),
+    bale frontu łączone na styk z mijanką. Parametr `taras_sciany_front` (szczyt / otwarty – jak do k17).
+- **P3 – płatwie dłuższe niż w magazynie dzielone nad ścianą** (`rdzen/podzial_belek.rb`, parametr `belki_podzial`):
+  płatew dachu dłuższa niż najdłuższa belka jej przekroju w magazynie drewna dzielona zachłannie na ścianach, przez które
+  przechodzi (szczyt, działowa, węgieł) – styk w osi ściany, wręby przeniesione na kawałki, osobne pozycje; bez ściany
+  w zasięgu – w całości z podpowiedzią jak dotąd. Zdanie w wynikach („Płatwie … podzielone nad ścianami: 2 styki …”).
+- **P5 – drobne błędy geometrii** (regresja w `testy/t_losowe.rb`): 6110, 6269 – bal 0,04–0,15 mm nad połacią
+  (`rdzen/sciecie_dachu.rb#sciecie` – ścięcie płytsze niż 0,2 mm pogłębiane do 0,2); 6311, 6410, 6430 – dwie działowe
+  narysowane bliżej niż grubość bala łączone w jedną z ostrzeżeniem (`rdzen/dzialowe_bliskie.rb`); 6444 – koniec węgła
+  pod bokiem płatwi (4 mm) – gniazdo na pełnej szerokości płatwi (`rdzen/szczyty.rb#gniazda_sciany`); 6495, 6528, 7004,
+  7021 – dom L z podbitką na płatwiach: połacie dla aplikacji wyżej o deskę (`rdzen/polacie.rb#dla_domu_l`).
+  Zostają 6305, 6557 – krawędzie 0,008–0,07 mm w balach szczytu (§8).
+- **N3 – kanały na przewody** (`rdzen/kanaly.rb`, `rdzen/parametry_kanaly.rb`, `html/kanaly.js`; obróbka `kanal`
+  w `rdzen/bryla.rb#kanal_pasow` i `rdzen/profil_bala.rb`): czwarta pozycja przełącznika „Klik w widok wstawia: kanał”,
+  okienko z „od”, średnicą (puste – 25) i puszką (środek od spodu ściany; fabrycznie 300, puste – bez); kliknięcie przy
+  kanale – „Zapisz” / „Usuń”; lista kanałów pod tabelą okien. Każdy bal ściany w miejscu kanału ma pionowy otwór
+  (w modelu kwadrat o boku średnicy) w osi grubości – także bale szczytu i pełny profil; bal z puszką ma obróbkę
+  „puszka” (otwór Ø68 od wnętrza – tylko na liście, bryła bez zmian). Kanał bliżej niż 60 mm od lica ściany poprzecznej
+  (zamek) – pominięty z ostrzeżeniem. Kanały zapisane w domu, w widoku ściany (pomarańczowy pas, kółko puszki),
+  w losowych domach od ziarna 6001.
+- Parametrów: 205 (nowe: `stolarka_prosta`, `stolarka_rama`, `maskownica_szerokosc`, `maskownica_grubosc`,
+  `maskownica_zakladka`, `taras_sciany_front`, `platwie_kosz`, `belki_podzial`, `kanal_srednica`,
+  `kanal_puszka_wysokosc`, `kanal_puszka_srednica`, `kanal_odstep_zamka`; `przekroje_dobor` – z standardu do typu).

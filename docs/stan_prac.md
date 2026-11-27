@@ -1,66 +1,51 @@
 # Stan prac – ArteMadera Generator Wieńcowy
 
-Stan na: runda 18, kompilacja 18 (2026-11-27), wersja 1.0.0. Poprzednio: runda 17, kompilacja 17 (2026-11-27).
-Testy: `bash testy/uruchom.sh` – 38 zestawów (nowy `t_kanaly`), ok. 2470 sprawdzeń, FAILURES 0; zestaw „Ruby 2.7.8”
-pominięty (brak Rubiego 2.7 w sesji – kontrola zasad Ruby 2.2 przechodzi). Poza zestawem: 600 losowych domów (6001–6600,
-od rundy 18 co trzeci z kanałami na przewody) – problemy 10 → 2 (zostały 6305, 6557: krawędź bryły bala szczytu < 0,1 mm),
-300 złożonych (10001–10300) – 0. Spoza zakresu znane: 94, 153, 8068, 9015, 9087. Aplikacja do dachów bez zmian (3.12.0).
+Stan na: runda 19, kompilacja 19 (2026-11-27), wersja 1.0.0. Poprzednio: runda 18, kompilacja 18 (2026-11-27).
+Testy: `bash testy/uruchom.sh` – 39 zestawów (nowy `t_drewutnia`), ok. 2270 sprawdzeń, FAILURES 0; pominięte: „Ruby 2.7.8”
+(brak Rubiego 2.7 w sesji – kontrola zasad Ruby 2.2 przechodzi) i „dach_aplikacja” (dostęp do repozytorium aplikacji do dachów
+odmówiony w tej sesji). Poza zestawem: 600 losowych domów (6001–6600, co trzeci z kanałami, co trzeci prostokątny
+z drewutnią) – 0 problemów (k18: 2), 300 złożonych (10001–10300) – 0. Spoza zakresu znane: 94, 153, 8068, 9015, 9087.
+Aplikacja do dachów bez zmian (3.12.0).
 
-Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–18).
+Repozytorium: `Mottomi3/Generator-Konstrukcji-Wie-cowych` (gałąź `main`, historia rund 1–19).
 Dysk użytkownika: `C:\Users\Mottomi\Documents\ArteMadera Generator Konstrukcji Wieńcowych\` (kod, dokumenty, paczka `.rbz`,
 od rundy 14 także `raporty\` – raporty z testu działania i dziennik pracy zapisywane przez wtyczkę).
 
 Ten plik to stan bieżący. Historia (nowości kompilacji 7–13, przebieg rund 1–13, moduły) – `docs/historia_rund.md`;
 wartości przyjęte bez pytania – `docs/pytania_otwarte.md`; zasady konstrukcji – `docs/specyfikacja.md`.
 
-## 1. Nowe w kompilacji 18 (polecenie z 2026-11-27 20:20 – `docs/prompt_r18.md`)
+## 1. Nowe w kompilacji 19 (polecenie z 2026-11-27 22:08 – `docs/prompt_r19.md`)
 
-- **Odpowiedzi z rundy 17**: 1 (układ okna) – „nie sprawdzałem” → pytanie zadane od razu z zrzutem, do końca rundy bez
-  odpowiedzi: **oba układy zostają**; 2 – działowa z rysunku `docs/styk_w_zamku_r17.png` **potwierdzona**; 3 – typy
-  100–400 zostają (pomysł „typ + dodatki” – pytanie w §6); 4 – modeli okien i drzwi nie ma, „daj ścieżkę dostępu, to
-  da mi możliwość podmiany modeli”; 5 – kompilacja 17 nie była uruchamiana; 6 – przełącznik doboru „oba, zależy od
-  konstrukcji”. Folderu `raporty\` na dysku nie było.
-- **Ścieżka modelu stolarki i prosty model z generatora** (`rdzen/stolarka_prosta.rb`, `rdzen/parametry_stolarka.rb`,
-  `sketchup/okno_sciezki.rb`, `html/sciezka.js`, rysunek `docs/stolarka_prosta_r18.png`): kolumna „Model” listy
-  stolarki przyjmuje pełną ścieżkę pliku `.skp` (bez folderu modeli), przy niej i przy „Folder modeli stolarki” przycisk
-  „…” (okno wyboru SketchUpa). Otwór bez pliku dostaje prosty model: rama 68 na grubość ściany, szyba (okno) albo
-  skrzydło (drzwi), maskownice 95 × 20 od zewnątrz z zakładką 15 na ramę; komponent „Okno 1020 × 1010 (prosty model)”
-  w grupie „Stolarka”, rola „skip” dla Dokumentacji 2D, test działania nie liczy go jako drewna. Brak pliku wskazanego
-  w liście – prosty model i uwaga. Parametry: `stolarka_prosta` (tak / sam otwór), `stolarka_rama`, `maskownica_*`.
-- **Przełącznik „Przekroje konstrukcji – dobór” w typie domu** (`przekroje_dobor`, poziom :typ): Typ 100 i 200 – podaję
-  sam, Typ 300 i 400 – automatycznie; własne typy zapamiętują swój wybór.
-- **P2 – podparcie końców płatwi**:
-  - *Dom L* (`rdzen/podpory_platwi_l.rb`, rysunek `docs/kosz_slupek_r18.png`): płatew skrzydła bocznego, która kończy
-    się w koszu (nie trafia na płatew dachu głównego), dostaje słupek (prefiks S, „Słupek pod płatwią”, tag Dach) na
-    wierzchu płatwi dachu głównego, nad którą przechodzi najbliżej końca; odstęp < 20 mm – płatew leży na płatwi głównej.
-    Płatew kończąca się przy licu płatwi głównej – styk, w zestawieniu „Wieszak płatwi”; słupki i oparcia – „Kątownik
-    ciesielski” (po dwa). Statyka płatwi skrzydła liczy przęsło do słupka. Parametr `platwie_kosz` (słupek / bez podpory
-    z ostrzeżeniem). W 200 domach L o różnych proporcjach ok. 1/3 końców płatwi skrzydła wypadało w koszu.
-  - *Taras typu 300* (`rdzen/taras.rb#front_z_balami?`, `rdzen/taras_szczyt.rb`, `rdzen/styki_tarasu.rb`): front ma górne
-    wieńce nad otworem tarasu (jak podciąg typu 200, w zamkach ścian bocznych, od półbala) i szczyt – pełny, ażurowy albo
-    pusty z trójkątem na balach; płatwie nad tarasem leżą na szczycie frontu (zamek tylko od spodu jak w typie 200),
-    bale frontu łączone na styk z mijanką. Parametr `taras_sciany_front` (szczyt / otwarty – jak do k17).
-- **P3 – płatwie dłuższe niż w magazynie dzielone nad ścianą** (`rdzen/podzial_belek.rb`, parametr `belki_podzial`):
-  płatew dachu dłuższa niż najdłuższa belka jej przekroju w magazynie drewna dzielona zachłannie na ścianach, przez które
-  przechodzi (szczyt, działowa, węgieł) – styk w osi ściany, wręby przeniesione na kawałki, osobne pozycje; bez ściany
-  w zasięgu – w całości z podpowiedzią jak dotąd. Zdanie w wynikach („Płatwie … podzielone nad ścianami: 2 styki …”).
-- **P5 – drobne błędy geometrii** (regresja w `testy/t_losowe.rb`): 6110, 6269 – bal 0,04–0,15 mm nad połacią
-  (`rdzen/sciecie_dachu.rb#sciecie` – ścięcie płytsze niż 0,2 mm pogłębiane do 0,2); 6311, 6410, 6430 – dwie działowe
-  narysowane bliżej niż grubość bala łączone w jedną z ostrzeżeniem (`rdzen/dzialowe_bliskie.rb`); 6444 – koniec węgła
-  pod bokiem płatwi (4 mm) – gniazdo na pełnej szerokości płatwi (`rdzen/szczyty.rb#gniazda_sciany`); 6495, 6528, 7004,
-  7021 – dom L z podbitką na płatwiach: połacie dla aplikacji wyżej o deskę (`rdzen/polacie.rb#dla_domu_l`).
-  Zostają 6305, 6557 – krawędzie 0,008–0,07 mm w balach szczytu (§8).
-- **N3 – kanały na przewody** (`rdzen/kanaly.rb`, `rdzen/parametry_kanaly.rb`, `html/kanaly.js`; obróbka `kanal`
-  w `rdzen/bryla.rb#kanal_pasow` i `rdzen/profil_bala.rb`): czwarta pozycja przełącznika „Klik w widok wstawia: kanał”,
-  okienko z „od”, średnicą (puste – 25) i puszką (środek od spodu ściany; fabrycznie 300, puste – bez); kliknięcie przy
-  kanale – „Zapisz” / „Usuń”; lista kanałów pod tabelą okien. Każdy bal ściany w miejscu kanału ma pionowy otwór
-  (w modelu kwadrat o boku średnicy) w osi grubości – także bale szczytu i pełny profil; bal z puszką ma obróbkę
-  „puszka” (otwór Ø68 od wnętrza – tylko na liście, bryła bez zmian). Kanał bliżej niż 60 mm od lica ściany poprzecznej
-  (zamek) – pominięty z ostrzeżeniem. Kanały zapisane w domu, w widoku ściany (pomarańczowy pas, kółko puszki),
-  w losowych domach od ziarna 6001.
-- Parametrów: 205 (nowe: `stolarka_prosta`, `stolarka_rama`, `maskownica_szerokosc`, `maskownica_grubosc`,
-  `maskownica_zakladka`, `taras_sciany_front`, `platwie_kosz`, `belki_podzial`, `kanal_srednica`,
-  `kanal_puszka_wysokosc`, `kanal_puszka_srednica`, `kanal_odstep_zamka`; `przekroje_dobor` – z standardu do typu).
+- **Odpowiedzi z rundy 18** (w poleceniu same „…” – pytania zadane od razu z rysunkami, odpowiedź w oknie pytań):
+  1 (układ okna) – „oba”: **oba układy zostają** (wybór później); 2 (kosz domu L) – „nie wiem, sprawdź w wytycznych dla
+  konstruktorów / architektów / prawie budowlanym / normach”; 3 (front tarasu 300) – „może być, ma być wybór”: szczyt
+  fabrycznie, wybór `taras_sciany_front` (był od k18); 4 (typ + dodatki) – „tak”; 5 – brak uwag (folderu `raporty\` na
+  dysku nadal nie ma – kompilacje 14–18 nie były uruchamiane w SketchUpie).
+- **Kosz domu L według wytycznych** (`rdzen/statyka_kosza.rb`, `docs/specyfikacja.md` „Dom L – koniec płatwi skrzydła”):
+  oparcie płatwi dobudówki na płatwi pośredniej dachu głównego krótkimi słupkami to zwykłe rozwiązanie ciesielskie
+  (lukarny – Dietrich's) – **słupek zostaje**. Dodane dwa sprawdzenia wymagane przez PN-EN 1995-1-1: siła skupiona ze
+  słupka (reakcja płatwi skrzydła R = q (L + a)² / 2L) doliczona do statyki i doboru płatwi dachu głównego (zastępczo
+  2R / L) i docisk w poprzek włókien pod słupkiem (p. 6.1.5, fc,90,k z PN-EN 338 – nowa wartość w klasach drewna).
+  Podpowiedź w „Szczyty i dach”: siła i docisk; docisk > 100 % – uwaga.
+- **Dodatki: drewutnia / zadaszenie przy ścianie szczytowej** (`rdzen/drewutnia.rb`, `rdzen/statyka_drewutni.rb`,
+  `rdzen/parametry_drewutnia.rb`, rysunek `docs/drewutnia_r19.png`): wiata na słupach z dachem jednospadowym od ściany
+  szczytowej – fabrycznie z tyłu (naprzeciw tarasu). Dwa rzędy słupów (przy ścianie – nie dotyka ściany, która osiada –
+  i zewnętrzny) z fundamentami, płatew przy ścianie i oczep, krokwie (przekrój i rozstaw krokwi dachu). Wierzch krokwi
+  najwyżej pod dachem domu: pod płatwiami i krokwiami wysuniętymi za szczyt o odstęp 50 i osiadanie ścian; słupy
+  i krokwie omijają węgły, działowe, podwaliny i fundamenty domu. Statyka krokwi, płatwi i oczepu, słupów z podpowiedzią
+  najmniejszego przekroju z magazynu. Tag i grupa „Drewutnia”; płatew i oczep drewutni nie są podporami połaci dla
+  aplikacji do dachów. 12 parametrów (`drewutnia*`); dwunasty przykład testu działania.
+- **Krok „Dodatki”** (dawniej „Taras i zadaszenie”): przełączniki zadaszenia bocznego i drewutni są polami „Ten dom”
+  (widoczne od razu, nie w typie); taras zostaje w typie (Typ 200 i 300 go mają – pytanie w §6).
+- **P5 – reszta** (regresja w `testy/t_losowe.rb`): 6305 – szpic klina szczytu 0,07 mm przed gniazdem zamka – skos
+  obniżony do dolnego naroża gniazda (`rdzen/sciecie_dachu.rb#wyrownaj_skosy!`); 6557 – 0,008 mm bala między gniazdem
+  płatwi a gniazdem zamka nad węgłem – zostaje 0,2 mm (`#wyrownaj_przeciwne!`). W 600 losowych domach – 0 problemów.
+- **Kanały** (`rdzen/kanaly.rb`, `html/kanaly.js`, `html/sciana.js`): strona puszki w okienku (lewa – wnętrze ściany
+  zewnętrznej, prawa – od zewnątrz / druga strona działowej); kanał w miejscu okna albo drzwi – otwór tylko w balach pod
+  otworem, puszka w otworze pominięta (uwaga), w widoku ściany pas do spodu otworu.
+- Losowe domy: od ziarna 6001 co trzeci (prostokątny) z drewutnią (osobne losowanie). Parametrów: 217.
+- Aplikacja do dachów: w tej sesji dostęp do jej repozytorium odmówiony – zestaw „dach_aplikacja” pominięty (UWAGA);
+  zmiany rundy nie dotykają połaci domu (drewutnia ma własny dach i nie trafia do aplikacji).
 
 ## 2. Co potrafi generator (skrót)
 
@@ -71,13 +56,16 @@ wartości przyjęte bez pytania – `docs/pytania_otwarte.md`; zasady konstrukcj
   kalenicy; łączenie bali (na przemian / para / jeden węgieł, mijanka ≥ 300, styk wspólny w zamku działowej); węgły
   usztywniające, narysowane, z tabeli, ręczne w widoku ściany, pod płatwiami, na wolnym końcu, symetryczne; działowa
   niższa pod stropem z dopełnieniem zamka; pełny profil bala do wizualizacji; okna i drzwi ze stolarką i luzami (model
-  z pliku .skp albo prosty z generatora); kanały na przewody (otwór pionowy przez wieńce, puszka).
+  z pliku .skp albo prosty z generatora); kanały na przewody (otwór pionowy przez wieńce, w miejscu okna – pod nim; puszka
+  z wybraną stroną).
 - **Szczyty i dach**: dwuspadowy, jednospadowy, dom L (dwa dachy z koszem); płatwie ścięte do dachu, na pełnym balu,
-  z zamkami, dłuższe niż w magazynie dzielone nad ścianą; dom L – słupki pod końcami płatwi skrzydła w koszu; ściana nośna
+  z zamkami, dłuższe niż w magazynie dzielone nad ścianą; dom L – słupki pod końcami płatwi skrzydła w koszu (siła na
+  płatwi głównej i docisk w statyce); ściana nośna
   zamiast płatwi ściennej; krokwie z generatora albo krokwie i poszycie z aplikacji do dachów
   (połacie, podpory, KROK 2); podbitka; wypusty okapu.
-- **Taras** (typ 200 na słupach z balustradą, typ 300 ściany pełne z frontem ze szczytem) z trójkątem nad tarasem; **boczne zadaszenie**
-  (wiata na słupach albo przybudówka z bali) z załamaniem dachu.
+- **Dodatki**: **taras** (typ 200 na słupach z balustradą, typ 300 ściany pełne z frontem ze szczytem albo otwartym)
+  z trójkątem nad tarasem; **boczne zadaszenie** (wiata na słupach albo przybudówka z bali) z załamaniem dachu;
+  **drewutnia** przy ścianie szczytowej (wiata na słupach z dachem jednospadowym pod okapem domu).
 - **Podłoga**: podwaliny, legary, podciągi, fundamenty punktowe; statyka podłogi, płatwi, krokwi, zadaszenia i trójkąta
   z podpowiedziami; dobór przekrojów z list hurtowni z długościami; słupy tarasu krótsze o osiadanie ścian.
 - **Okno**: kroki w kolejności budowy z rzutem i uwagami na widoku (obok – dawny układ z zakładkami, do wyboru), typy
@@ -120,48 +108,48 @@ z `rdzen/krok2.rb`) i wpis do dziennika pracy.
 
 | Decyzja | Kiedy | Stan | Runda |
 |---|---|---|---|
-| Układ okna: nowy (kroki) albo dotychczasowy (zakładki) – „chcę mieć możliwość porównania obu, a w późniejszym czasie zostaniemy przy jednym” | 2026-11-25 | oba w kompilacjach 16–18; **czeka na wybór** (w rundzie 18 „nie sprawdzałem”, pytanie bez odpowiedzi) – potem drugi układ, `html/tryb.js` i cecha `podstawowy` do usunięcia, `t_okno.js` na układ wybrany | 19 |
-| Modele okien i drzwi użytkownika – „daj ścieżkę dostępu, to da mi możliwość podmiany modeli” | 2026-11-27 | zrobione w r18: pełna ścieżka w kolumnie „Model”, przycisk „…”, prosty model z generatora; **czeka na pliki** użytkownika (sprawdzenie punktu wstawienia) | 19+ |
-| Przełącznik doboru – „oba wybory, zależy jakie konstrukcje” | 2026-11-27 | zrobione w r18: przełącznik w typie domu (100, 200 – podaję sam; 300, 400 – automatycznie) | – |
-| Działowa pod stykiem (rysunek `styk_w_zamku_r17.png`) | 2026-11-27 | **potwierdzona** | – |
-| Typy domów: „zostaw albo opracujmy typy, do których można dołożyć taras, boczne zadaszenie, drewutnię z tyłu, podnieść o pół piętra, poddasze użytkowe” | 2026-11-27 | typy 100–400 zostają; propozycja „typ + dodatki” – **pytanie** w §6 | 19+ |
-| Propozycje po rundzie 14: N1, N4, N5, W4, W5 | 2026-11-25 21:42 | P2, P3, P5 (10 z 12 ziaren), N3 zrobione w r18; dalej według §9 | 19+ |
-| Dom T, U, krzyż: kalenica z dachu o większej powierzchni, skrzydeł dowolnie wiele | 2026-11-14 | osobna runda, razem ze wzorem dobudówki (N4) | po 19 |
+| Układ okna: nowy (kroki) albo dotychczasowy (zakładki) – „chcę mieć możliwość porównania obu, a w późniejszym czasie zostaniemy przy jednym”; w r19 – „oba” | 2026-11-27 | **oba zostają** (decyzja z r19); usunięcie jednego – gdy użytkownik wybierze (`html/tryb.js`, cecha `podstawowy`, `t_okno.js`) | – |
+| Kosz domu L – „sprawdź w wytycznych / normach” | 2026-11-27 | zrobione w r19: słupek zostaje (praktyka ciesielska), siła na płatwi głównej i docisk wg PN-EN 1995-1-1 | – |
+| Front tarasu 300 – „może być, ma być wybór” | 2026-11-27 | zrobione (szczyt fabrycznie, `taras_sciany_front`) | – |
+| Typ + dodatki – „tak” | 2026-11-27 | r19: krok „Dodatki”, drewutnia przy szczycie, przełączniki zadaszenia i drewutni w „Ten dom”; dalej: taras w „Ten dom”? (pytanie §6), poddasze użytkowe (N1), ścianka o pół piętra (liczba wieńców – jest) | 20+ |
+| Modele okien i drzwi użytkownika – „daj ścieżkę dostępu, to da mi możliwość podmiany modeli” | 2026-11-27 | zrobione w r18 (ścieżka, „…”, prosty model); **czeka na pliki** użytkownika (sprawdzenie punktu wstawienia) | 20+ |
+| Przełącznik doboru – „oba wybory, zależy jakie konstrukcje” | 2026-11-27 | zrobione w r18 | – |
+| Propozycje po rundzie 14: N1, N4, N5, W4, W5 | 2026-11-25 21:42 | P2, P3, P5, N3 zrobione (r18–r19), N4 – drewutnia (r19); dalej według §9 | 20+ |
+| Dom T, U, krzyż: kalenica z dachu o większej powierzchni, skrzydeł dowolnie wiele | 2026-11-14 | osobna runda, razem ze wzorem dobudówki (N4) | po 20 |
 | Repozytorium prywatne | 2026-11-25 | do zrobienia przez użytkownika w ustawieniach GitHuba (`docs/przekazanie_r14.md` §5) | – |
 
+Wykonane w rundzie 19: kosz domu L wg PN-EN 1995-1-1, drewutnia i krok „Dodatki”, P5 reszta (6305, 6557), kanały (strona
+puszki, kanał pod oknem), dwunasty przykład testu działania.
 Wykonane w rundzie 18: ścieżka i przycisk „…” dla modeli stolarki, prosty model okna i drzwi, przełącznik doboru w typie,
 P2 (słupki w koszu domu L, front ze szczytem w tarasie 300), P3 (płatwie dzielone nad ścianą), P5 (10 z 12 ziaren), N3
 (kanały na przewody).
 Wykonane w rundzie 17: menu i przycisk „Standard warsztatu”, styk zawsze w zamku, okna / drzwi / węgły kliknięciem,
 lista stolarki, modele w otworach, działowe w domu z wymiarów, magazyn drewna, jeden przełącznik doboru, wycena (W3).
-Wykonane w rundzie 16: pół zamka, węgieł ze stykami do połaci, poziomy ustawień z typami i standardem, okno z krokami, S1, W1.
 
 ## 6. Pytania do użytkownika (krótka lista)
 
 Pełna tabela wartości przyjętych bez pytania – `docs/pytania_otwarte.md`.
 
-1. **Układ okna**: zostajemy przy nowym (kroki) czy dotychczasowym (zakładki)? Zrzut obu: `docs/uklady_okna_r17.png`.
-2. **Dom L – koniec płatwi skrzydła w koszu** (rysunek `docs/kosz_slupek_r18.png`): słupek na niższej płatwi dachu
-   głównego – dobrze? Czy wolisz przedłużać płatew skrzydła do płatwi głównej (styk) ze ściętym wierzchem końca?
-3. **Taras typu 300**: front ze szczytem (górne wieńce nad otworem i szczyt jak w typie 200) zamiast otwartego – dobrze
-   jako fabryczny?
-4. **Typy + dodatki**: typ = bryła domu (100–400), a dodatki osobnymi przełącznikami w kroku „Taras i zadaszenie”: taras,
-   zadaszenie boczne (są), drewutnia / zadaszenie przy ścianie szczytowej z tyłu (nowe – N4), wyższa ścianka o pół
-   piętra (liczba wieńców – jest), poddasze użytkowe (strop – N1). Robimy to tak?
-5. **Uwagi z SketchUpa** do kompilacji 18 (prosty model okna, kanał na przewody, słupki w koszu, front tarasu 300).
-6. Starsze: Z9 (przybudówka – podparcie płatwi), D1a (strefy śniegowe), H21 (co dostaje CNC), nazwy okuć do zestawienia.
+1. **Drewutnia** (rysunek `docs/drewutnia_r19.png`): rząd słupów przy ścianie (wiata nie dotyka ściany, bo ściana
+   osiada) – dobrze, czy płatew przykręcona do ściany na łącznikach przesuwnych (bez słupów przy ścianie)? Ściany
+   drewutni (boki i tył z desek ażurowych) – potrzebne?
+2. **Taras jako dodatek**: przełącznik tarasu też w „Ten dom” (widoczny od razu w kroku „Dodatki”; Typ 200 i 300 dalej
+   z tarasem w szablonie)?
+3. **Kolejny dodatek**: poddasze użytkowe (strop z belek – N1) czy ścianka o pół piętra wyżej jako osobny przełącznik?
+4. **Test w SketchUpie**: kompilacje 14–19 nie były uruchamiane – jeden „Test działania” (12 domów) i raport sam się
+   zapisze w `raporty\`.
+5. Starsze: Z9 (przybudówka – podparcie płatwi), D1a (strefy śniegowe), H21 (co dostaje CNC), nazwy okuć do zestawienia.
 
 ## 7. Odbiór
 
 `docs/scenariusz_odbioru.md` – trzy kroki: instalacja, przycisk „Test działania”, zwykła praca. Raport i dziennik pracy
-zapisują się same w `raporty\`. Na starcie rund 16–18 folderu `raporty\` nie było – **kompilacje 14–17 nie były
+zapisują się same w `raporty\`. Na starcie rund 16–19 folderu `raporty\` nie było – **kompilacje 14–18 nie były
 uruchamiane w SketchUpie**; wszystko od rundy 14 (pasek, menu pod prawym przyciskiem, raport, szczyty na styk, zestawienie,
 pół zamka, typy, okno krokami, okienko kliknięcia, modele stolarki, magazyn, wycena, prosty model okna, kanały, wybór
-ścieżki) jest sprawdzone tylko na atrapie API
-i w Chromium.
+ścieżki, drewutnia) jest sprawdzone tylko na atrapie API i w Chromium.
 Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
 
-## 8. Ograniczenia (kompilacja 18)
+## 8. Ograniczenia (kompilacja 19)
 
 - Styk bez zamka: w 600 losowych domach nie ma żadnego (ostrzeżenie zostaje na nieprzewidziane przypadki). Działowa
   pod stykiem przy podbitce pod płatwiami sięga wyżej przy ścianie okapowej; deski przerwane tylko przy domu prostokątnym
@@ -176,7 +164,7 @@ Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
   (ostatnie parametry stały się standardem); przy dwóch przekrojach bala (dziś jeden) wymiary zamka w standardzie byłyby
   wspólne. Dom zapisany przed rundą 16 nie ma typu – okno porównuje go z ostatnio wybranym typem. Standard warsztatu
   otwiera się z okna generatora, z menu i z paska.
-- Okno: dwa układy naraz (nowy i dotychczasowy) do czasu wyboru użytkownika; w nowym uwaga bez rozpoznanego pola prowadzi
+- Okno: dwa układy naraz (nowy i dotychczasowy) – decyzja z rundy 19 („oba”); w nowym uwaga bez rozpoznanego pola prowadzi
   tylko do kroku (tabela wzorców `rdzen/uwagi_pola.rb`); ostrzeżenia o otworach prowadzą do kroku „Okna i drzwi”, nie do
   wiersza tabeli. Układ nowy sprawdzony w Chromium 1060 × 860 – w prawdziwym oknie SketchUpa jeszcze nie.
 - Okienko kliknięcia: wstawia w ścianę widoczną w widoku; „od” węgła liczone jak „od” otworu (od narożnika lica
@@ -186,8 +174,9 @@ Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
   `UI.openpanel` / `UI.select_directory`). Prosty model: rama na grubość ściany bez skrzydła okna i okuć, maskownice tylko
   od zewnątrz, w działowej po stronie −nor.
 - Kanały na przewody: otwór w modelu kwadratowy (bok = średnica), w osi grubości bala, przez wszystkie bale ściany
-  w tym miejscu (także szczytu); puszka tylko jako obróbka na liście (bryła bez otworu puszki), zawsze po stronie +nor
-  (wnętrze ściany zewnętrznej); kanał w działowej – bez wyboru strony puszki; kanał nie omija otworów okien.
+  w tym miejscu (także szczytu); w miejscu okna albo drzwi – tylko pod otworem (kanału nad oknem, np. do lampy, nie ma);
+  puszka tylko jako obróbka na liście (bryła bez otworu puszki), strona: lewa (+nor, wnętrze ściany zewnętrznej) albo
+  prawa.
 - Magazyn drewna: przekroje fabryczne pól typów spoza magazynu (legar 50 × 100, krokiew 50 × 150, podciąg 100 × 150) zostają
   – przy „podaję sam” dostają podpowiedź najmniejszego wystarczającego z magazynu; w wycenie są „bez ceny”. Rodzaj drewna
   w magazynie to opis (do obliczeń jedna klasa – „Klasa drewna konstrukcyjnego”).
@@ -224,13 +213,22 @@ Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
   zadaszenie i krokwie z generatora – tylko dom prostokątny (dom L: krokwie i poszycie z aplikacji do dachów); okno
   wyszarza te opcje z powodem (taras, zadaszenie, podłoga, dach jednospadowy, krokwie z generatora).
 - Dom L: koniec płatwi skrzydła bocznego w koszu – słupek na niższej płatwi dachu głównego (wspornik od słupka do końca,
-  zwykle do 1 m); bez płatwi pod spodem – ostrzeżenie; belki koszowej generator nie rysuje. Gdy
+  zwykle do 1 m); bez płatwi pod spodem – ostrzeżenie; belki koszowej generator nie rysuje. Statyka kosza (r19): siła
+  ze słupka w środku największego przęsła płatwi głównej (zastępczo 2R / L, z zapasem), docisk z kc,90 = 1,0; słupek bez
+  sprawdzenia ściskania (krótki). Gdy
   wysunięcie za szczyt jest mniejsze niż okap, na ścianie wspólnej połać wystaje za szczyt o okap; ściana przez oba
   skrzydła bierze dach tego skrzydła, w którym leży jej środek. Dom L z podbitką na płatwiach: połacie dla aplikacji wyżej
   o grubość deski (od rundy 18, jak w domu prostokątnym).
-- Losowe domy – drobiazgi (poza zestawem stałym): ziarna 75, 318, 472 (sprzed rundy 10), 6305, 6557 (krawędź bryły
-  bala szczytu 0,07 / 0,008 mm – wycięcie gniazda płatwi kończy się tuż nad gniazdem zamka; SketchUp może scalić
-  wierzchołki bliższe niż 0,025 mm).
+- Losowe domy – drobiazgi (poza zestawem stałym): ziarna 75, 318, 472 (sprzed rundy 10). Bal szczytu w miejscu, gdzie
+  gniazdo płatwi i gniazdo zamka prawie się spotykają, ma 0,2 mm drewna (płatew wchodzi w nie do 0,2 mm); szpic klina
+  przed gniazdem zamka znika (bal zaczyna się za gniazdem, długość na liście bez zmian).
+- Drewutnia: tylko dom prostokątny, dach z generatora; na słupach (bez ścian z desek, bez wariantu z bali); na całej
+  szerokości między ostatkami ścian okapowych albo węższa na środku (bez odcinka od–do); krokwie z generatora (przekrój
+  i rozstaw krokwi dachu, czoła prostopadłe do osi, bez wrębu na belkach) – bez łat, deskowania i pokrycia, aplikacja
+  do dachów jej nie dostaje; dach drewutni nie wchodzi do powierzchni dachu w zestawieniu; rzut w oknie jej nie
+  pokazuje; obok tarasu po tej samej stronie – nie; statyka bez wiatru (słupy wolnostojące wymagają stężeń), słup przy
+  ścianie liczony jak zewnętrzny; fundamenty tylko przy podłodze z fundamentami (jak pod domem), mogą stykać się
+  z fundamentami domu.
 - Krokwie z generatora z czołami prostopadłymi do osi, bez poszycia; pełne krokwie i poszycie robi aplikacja do dachów
   (3.7.0 lub nowsza; szczyt zawsze pod krokwiami; dach jednospadowy – okap za ścianą wysoką liczony jak przęsło).
 - Taras: przed jedną ścianą szczytową; bez schodów, desek tarasu i osłony z listew; w typie 300 front ze szczytem
@@ -250,7 +248,7 @@ Dawny scenariusz z 59 krokami – `docs/scenariusz_archiwum.md`.
 
 | Runda | Zakres |
 |---|---|
-| 19 | Odpowiedzi z §6: wybór układu okna i usunięcie drugiego, poprawki z prawdziwego SketchUpa (raport z testu działania), modele stolarki użytkownika (gdy będą), ewentualne zmiany słupków w koszu i frontu tarasu 300; potem P5 reszta (6305, 6557) i wzór dobudówki (N4) z drewutnią / zadaszeniem przy ścianie szczytowej – jeśli „typ + dodatki” dostanie zgodę. Polecenie: `docs/prompt_r19.md`, zakres: `docs/zadanie_r18.md` |
+| 20 | Odpowiedzi z §6 (drewutnia – słupy przy ścianie czy łączniki przesuwne, ściany drewutni; taras w „Ten dom”; kolejny dodatek), poprawki z prawdziwego SketchUpa (raport z testu działania), modele stolarki użytkownika (gdy będą); potem kolejny dodatek (poddasze użytkowe – strop z belek N1 albo ścianka o pół piętra), dach drewutni w zestawieniu i dla aplikacji do dachów. Polecenie: `docs/prompt_r20.md`, zakres: `docs/zadanie_r19.md` |
 | dalej | Strop i antresola z belek (N1), obrysy T i U (N4), okna dopasowane do wieńców (N2), grubszy bal (N5); Dokumentacja 2D (grupy bali, obróbki kanałów i puszek, plan montażu); „buduj do wysokości”; podgląd na żywo po pomiarze |
 
 Na starcie każdej rundy: `raporty\` z dysku (§4), potem kolejka z §5.
