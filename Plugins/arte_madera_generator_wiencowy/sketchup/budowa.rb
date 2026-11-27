@@ -27,10 +27,11 @@ module ArteMadera
         dach: 'Dach',
         taras: 'Taras',
         zadaszenie: 'Zadaszenie',
+        drewutnia: 'Drewutnia',
         stolarka: 'Stolarka'
       }.freeze unless const_defined?(:TAGI)
       # Grupy belek w domu: tag => nazwa grupy.
-      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras', zadaszenie: 'Zadaszenie' }.freeze unless const_defined?(:GRUPY_BELEK)
+      GRUPY_BELEK = { podloga: 'Podłoga', dach: 'Dach', taras: 'Taras', zadaszenie: 'Zadaszenie', drewutnia: 'Drewutnia' }.freeze unless const_defined?(:GRUPY_BELEK)
 
       module_function
 

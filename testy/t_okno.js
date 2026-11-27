@@ -86,8 +86,8 @@ dane.init.uklad = 'zakladki';
   sprawdz(zk[0] === dane.init.zakladki.length && zk[0] === 2, 'dwie zakładki (' + zk[0] + ')');
   sprawdz(zk[1], 'każda sekcja w pojemniku swojej zakładki');
   sprawdz(zk[2] && !zk[3] && zk[4] === 'wybrany', 'na starcie zakładka Dom, zadaszenie ukryte (' + zk.join(',') + ')');
-  sprawdz(dane.init.sekcje.filter(function (s) { return s.zakladka === 'zadaszenie'; }).length === 2,
-          'sekcje zadaszenia w zakładce zadaszenia');
+  sprawdz(dane.init.sekcje.filter(function (s) { return s.zakladka === 'zadaszenie'; }).length === 3,
+          'sekcje zadaszenia i drewutni (r19) w zakładce zadaszenia');
   var domPrzed = await page.evaluate(function () { return document.getElementById('zakl-dom').textContent; });
   await page.click('#zakl-zadaszenie');
   zk = await page.evaluate(function () {

@@ -17,7 +17,7 @@ unless defined?(ArteMadera::GeneratorWiencowy::Pozycje) && defined?(ArteMadera::
        defined?(ArteMadera::GeneratorWiencowy::Zamek) && defined?(ArteMadera::GeneratorWiencowy::Bale) &&
        defined?(ArteMadera::GeneratorWiencowy::Obrys) && defined?(ArteMadera::GeneratorWiencowy::Podloga)
   %w[geometria parametry podzial_belek skrzydla obrys sciany ustawienia_scian wience taras_sciany taras taras_balustrada osiadanie taras_slupy taras_szczyt taras_wiazar otwory kanaly usztywnienie wegly_tabela wegly_konstrukcyjne symetria_wegly wypusty_okapu styki_dzialowe styki_tarasu styki elementy dach_jednospadowy dach podpory_platwi_l zadaszenie szczyty polacie
-     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka dlugosci_handlowe kontrola_rownoleglych kontrola awaria].each do |plik|
+     dopelnienie pod_dachem bale skos_przy_narozniku sciecie_dachu zamek_platwi zamek bryla profil_bala siatka pozycje statyka statyka_dachu statyka_wiazara statyka_slupa statyka_zadaszenia statyka_krokwi podloga_przybudowki fundamenty podciagi podloga podbitka drewutnia statyka_drewutni dlugosci_handlowe kontrola_rownoleglych kontrola awaria].each do |plik|
     require File.join(File.dirname(__FILE__), plik)
   end
 end
@@ -179,10 +179,20 @@ module ArteMadera
         plan[:elementy].concat(pod[:elementy])
         plan[:podpowiedzi].concat(pod[:podpowiedzi].map { |h| h.merge(sekcja: 'podloga') })
         plan[:podloga] = { legar: pod[:legar], podpory: pod[:podpory] }
+        drewutnia(plan, dom, p)
         n = PodzialBelek.podziel!(plan[:elementy], p)
         plan[:podpowiedzi] << { poziom: 'ok', sekcja: 'szczyty', tekst: PodzialBelek.opis(n) } if n > 0
         plan[:podpowiedzi].concat(DlugosciHandlowe.podpowiedzi(plan[:elementy], p))
         plan[:pozycje_elementow] = Elementy.numeruj(plan[:elementy], plan[:pozycje].length + 1)
+      end
+
+      # Drewutnia przy ścianie szczytowej (rdzen/drewutnia.rb, dodatek z rundy 19): elementy pod dachem domu (liczone po
+      # dachu, podbitce i podłodze – podwaliny i fundamenty przy ścianie), podpowiedzi z wymiarami i statyką w sekcji „drewutnia”.
+      def drewutnia(plan, dom, p)
+        plan[:elementy].concat(Drewutnia.elementy(dom, plan[:sciany], plan[:elementy], p))
+        lista = Drewutnia.podpowiedzi(dom, plan[:sciany], plan[:elementy], p) +
+                StatykaDrewutni.podpowiedzi(dom, plan[:sciany], plan[:elementy], p)
+        plan[:podpowiedzi].concat(lista.map { |h| h.merge(sekcja: 'drewutnia') })
       end
 
       # Ostrzeżenia o stykach, których nie trzyma zamek (wieńce szczytu nad węgłem, który kończy się pod połacią).

@@ -8,7 +8,7 @@
 # Używają: rdzen/dach.rb, rdzen/podloga.rb, rdzen/taras.rb, rdzen/projekt.rb, sketchup/budowa.rb
 #
 # Element (Hash): prefiks (grupa w Dokumentacji 2D: Pw podwaliny, L legary, Pd podciągi, P płatwie, K krokwie, S słupy, Bp belki
-# poprzeczne zadaszenia), rodzaj (tekst do nazwy komponentu), tag (:podloga | :dach | :taras | :zadaszenie), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
+# poprzeczne zadaszenia), rodzaj (tekst do nazwy komponentu), tag (:podloga | :dach | :taras | :zadaszenie | :drewutnia), dl, b (szerokość = oś y belki), h (wysokość = oś z belki),
 # cechy (obróbki jak u bali), przekroj (opcjonalnie – wielokąt [[y, z]], np. płatew ścięta; rdzen/pryzmat.rb), wreby i wrab
 # (zamki płatwi – rdzen/zamek_platwi.rb),
 # polozenie { poczatek: [x, y, z], x:, y:, z: } – osie belki w układzie domu (mm).

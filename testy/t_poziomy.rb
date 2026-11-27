@@ -18,14 +18,14 @@ L = ParametryLista
 Testy.grupa('Poziom przy każdym polu (docs/podzial_pol_r16.md)')
 Testy.sprawdz(L::LISTA.all? { |w| %i[dom typ standard].include?(w[:poziom]) }, 'każde pole ma cechę poziom: dom, typ albo standard')
 ile = Hash[%w[dom typ standard].map { |k| [k, Poziomy.klucze(k).length] }]
-Testy.rowne([ile['dom'], ile['typ']], [18, 50], 'Ten dom: 16 pól z podziału + długość i szerokość domu z wymiarów; Typ domu: 50 (od rundy 18 także przełącznik doboru przekrojów i front tarasu 300)')
+Testy.rowne([ile['dom'], ile['typ']], [25, 51], 'Ten dom: 16 pól z podziału + długość i szerokość domu z wymiarów + przełączniki dodatków (zadaszenie, drewutnia) i 5 pól drewutni (r19); Typ domu: 50 (od rundy 18 także przełącznik doboru przekrojów i front tarasu 300) − przełącznik zadaszenia + belka i słup drewutni (r19)')
 Testy.rowne(ile.values.inject(0) { |s, x| s + x }, L::LISTA.length, 'każde pole na dokładnie jednym poziomie')
 Testy.rowne(%w[liczba_wiencow dach_kat taras_glebokosc preset dach_uklad podbitka max_dlugosc mijanka polzamek nie_ma_takiego].map { |k| Poziomy.poziom(k) },
             %w[dom dom dom typ typ typ standard standard standard standard], 'przykłady: wieńce i kąt – dom; bal, układ dachu, deski – typ; łączenia i zamek – standard')
 Testy.sprawdz(L::LISTA.select { |w| w[:z_wymiarow] }.map { |w| w[:klucz] } == %w[dom_dlugosc dom_szerokosc], 'pola domu z wymiarów oznaczone')
 
 Testy.grupa('Kroki okna w kolejności budowy')
-Testy.rowne(Poziomy::KROKI.map { |k| k[1] }, ['Ściany', 'Okna i drzwi', 'Dach', 'Taras i zadaszenie', 'Podłoga', 'Zestawienie'], 'sześć kroków')
+Testy.rowne(Poziomy::KROKI.map { |k| k[1] }, ['Ściany', 'Okna i drzwi', 'Dach', 'Dodatki', 'Podłoga', 'Zestawienie'], 'sześć kroków (krok 4 – dodatki: taras, zadaszenie, drewutnia)')
 sekcje = L::SEKCJE.map { |s| s[0] }
 Testy.rowne(Poziomy::KROKI.flat_map { |k| k[2] }.sort, sekcje.sort, 'każda sekcja parametrów w dokładnie jednym kroku')
 Testy.rowne(%w[liczba_wiencow stolarka dach_kat taras zadaszenie legar_przekroj material_zapas limit_zabudowy].map { |k| Poziomy.krok(k) },

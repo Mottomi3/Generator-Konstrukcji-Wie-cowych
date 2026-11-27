@@ -267,7 +267,7 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 
 | Klucz | Parametr | Poziom | Domyślnie | Zakres / wybory | Podpowiedź |
 |---|---|---|---|---|---|
-| `zadaszenie` | Zadaszenie przy ścianie okapowej (boczne / tylne) | typ | nie | `nie` – bez zadaszenia; `slupy` – na słupach z oczepem (wiata, drewutnia); `bale` – ściany z bali (przybudówka) | Połać dachu za ścianą okapową schodzi dalej pod mniejszym kątem – załamanie nad licem zewnętrznym ściany. Narysuj sam dom: słupy, belki i płatwie zadaszenia albo ściany przybudówki dokłada generator. Aplikacja do dachów dostaje połacie z załamaniem (łaty przy załamaniu, pełne moduły pod nim). Dom prostokątny, dach dwuspadowy, bez tarasu. |
+| `zadaszenie` | Zadaszenie przy ścianie okapowej (boczne / tylne) | dom | nie | `nie` – bez zadaszenia; `slupy` – na słupach z oczepem (wiata, drewutnia); `bale` – ściany z bali (przybudówka) | Połać dachu za ścianą okapową schodzi dalej pod mniejszym kątem – załamanie nad licem zewnętrznym ściany. Narysuj sam dom: słupy, belki i płatwie zadaszenia albo ściany przybudówki dokłada generator. Aplikacja do dachów dostaje połacie z załamaniem (łaty przy załamaniu, pełne moduły pod nim). Dom prostokątny, dach dwuspadowy, bez tarasu. |
 | `zadaszenie_strona` | Zadaszenie – przy ścianie okapowej | dom | min | `min` – dolnej albo lewej (rysunek z góry); `max` – górnej albo prawej (rysunek z góry); `obie` – po obu stronach | Kalenica wzdłuż X – ściana dolna / górna rysunku, wzdłuż Y – lewa / prawa. |
 | `zadaszenie_szerokosc` | Zadaszenie – szerokość | dom | 2000 mm | 600 … 6000 | Od lica zewnętrznego ściany domu do lica zewnętrznego podpory (słupów albo ściany przybudówki), w poziomie. |
 | `zadaszenie_kat` | Zadaszenie – kąt (mniejszy niż kąt dachu) | dom | 12 ° | 3 … 50 | Musi być mniejszy niż kąt dachu (załamanie). Blachodachówka zwykle od 9–12°, blacha na rąbek od 3–5° – sprawdź kartę pokrycia. |
@@ -283,6 +283,23 @@ Standard warsztatu i własne typy domów zapisują się na komputerze (`sketchup
 | `zadaszenie_platwa_przekroj` | Płatew zadaszenia (szer. × wys.) | typ | 80x160 mm | szer. × wys. | Wszystkie płatwie zadaszenia (przy ścianie, pośrednie, oczep nad słupami); wierzch ścięty do połaci jak płatwie dachu. Wynik sprawdzenia – pod sekcją. |
 | `zadaszenie_slup_przekroj` | Słup zadaszenia (wzdłuż ściany × w poprzek) | typ | 120x120 mm | szer. × wys. | Słupy na fundamentach punktowych (wymiary fundamentu jak pod podłogą), lico zewnętrzne w linii podpory. |
 | `zadaszenie_belka_przekroj` | Belka poprzeczna na słupie (szer. × wys.) | typ | 80x160 mm | szer. × wys. | Na każdym słupie od lica podpory do ściany domu (przy szczycie – do końca ostatków); na niej oczep, na słupkach płatwie zadaszenia. Ściana domu osiada (bale) – belka tylko oparta o ścianę. |
+
+## Drewutnia / zadaszenie przy ścianie szczytowej
+
+| Klucz | Parametr | Poziom | Domyślnie | Zakres / wybory | Podpowiedź |
+|---|---|---|---|---|---|
+| `drewutnia` | Drewutnia / zadaszenie przy ścianie szczytowej | dom | nie | `nie` – bez drewutni; `slupy` – na słupach – dach jednospadowy od ściany szczytowej | Wiata z dachem jednospadowym przy ścianie szczytowej: słupy przy ścianie i na zewnątrz, na nich płatew i oczep, krokwie ze spadkiem od ściany. Stoi obok ściany (ściana z bali osiada, drewutnia nie) i pod okapem dachu domu z zapasem na osiadanie. Dom prostokątny. |
+| `drewutnia_strona` | Drewutnia – przy ścianie | dom | tyl | `tyl` – z tyłu – naprzeciw tarasu (bez tarasu: lewa albo dolna); `min` – lewej albo dolnej (rysunek z góry); `max` – prawej albo górnej (rysunek z góry) | Ściana szczytowa: kalenica wzdłuż X – lewa / prawa strona rysunku, wzdłuż Y – dolna / górna. |
+| `drewutnia_glebokosc` | Drewutnia – głębokość | dom | 1500 mm | 600 … 4000 | Od lica ściany szczytowej do lica zewnętrznego słupów, w poziomie. |
+| `drewutnia_szerokosc` | Drewutnia – szerokość (0 – pełna) | dom | 0 mm | 0 … 30000 | Wzdłuż ściany szczytowej, na jej środku; 0 albo więcej niż się mieści – między ostatkami ścian okapowych. |
+| `drewutnia_kat` | Drewutnia – kąt dachu | dom | 10 ° | 3 … 30 | Spadek od ściany na zewnątrz. Sprawdź najmniejszy kąt w karcie pokrycia (blacha na rąbek od 3–5°). |
+| `drewutnia_wysokosc` | Drewutnia – wysokość przy ścianie (0 – najwyżej) | dom | 0 mm | 0 … 10000 | Wierzch krokwi przy ścianie od spodu ścian. 0 albo więcej niż się mieści – tuż pod dachem domu. |
+| `drewutnia_okap` | Drewutnia – okap za słupami | standard | 300 mm | 0 … 1000 | W poziomie, od lica zewnętrznego słupów. |
+| `drewutnia_slupy_rozstaw` | Drewutnia – największy rozstaw słupów | standard | 2500 mm | 800 … 6000 | Słupy na końcach i równo pomiędzy, w dwóch rzędach: przy ścianie i na zewnątrz. Rozstaw = przęsło płatwi i oczepu. |
+| `drewutnia_odstep` | Drewutnia – odstęp od ściany domu | standard | 30 mm | 5 … 300 | Słupy, płatew i krokwie nie dotykają ściany z bali (osiada); tyle samo od ostatków ścian okapowych, węgłów i działowych wychodzących przed ścianę. |
+| `drewutnia_odstep_dachu` | Drewutnia – odstęp od dachu domu | standard | 50 mm | 0 … 500 | Pod płatwiami i krokwiami dachu domu wysuniętymi za szczyt – do tego osiadanie ścian pod nimi. |
+| `drewutnia_belka_przekroj` | Drewutnia – płatew i oczep (szer. × wys.) | typ | 100x160 mm | szer. × wys. | Płatew przy ścianie i oczep na słupach zewnętrznych; sprawdzenie nośności pod sekcją. |
+| `drewutnia_slup_przekroj` | Drewutnia – słup (wzdłuż ściany × w poprzek) | typ | 120x120 mm | szer. × wys. | Słupy na fundamentach punktowych (jak pod podłogą); słup wolnostojący wymaga stężenia (zastrzały). |
 
 ## Typy wbudowane (i zestawy wartości do testów)
 

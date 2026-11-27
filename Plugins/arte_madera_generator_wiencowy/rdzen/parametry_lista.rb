@@ -3,8 +3,8 @@
 # ArteMadera – Generator Wieńcowy
 # Plik: rdzen/parametry_lista.rb
 # Zadanie: lista wszystkich parametrów – wartość domyślna, etykieta, jednostka, zakres, rodzaj pola, sekcja okna, podpowiedź; presety przekroju bala.
-# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry
-# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb, rdzen/parametry_stolarka.rb, rdzen/parametry_kanaly.rb (listy sekcji)
+# Tematy: lista parametrów, nowy parametr, wartości domyślne, sekcje okna, zakładki okna, podpowiedzi pól, presety, przekrój bala, wymiary zamka, stare wartości, pola podstawowe, profil bala – parametry, działowa niższa – parametry, krokwie z aplikacji do dachów – parametr, dach jednospadowy – parametry, taras – parametry, poszycie dachu – parametry, boczne zadaszenie – parametry, drewutnia – sekcja okna
+# Zależy od: rdzen/parametry_dach.rb, rdzen/parametry_taras.rb, rdzen/parametry_zadaszenie.rb, rdzen/parametry_drewutnia.rb, rdzen/parametry_podloga.rb, rdzen/parametry_materialy.rb, rdzen/parametry_stolarka.rb, rdzen/parametry_kanaly.rb (listy sekcji)
 # Używają: rdzen/parametry.rb (sprawdzanie), sketchup/okno.rb (formularz), sketchup/ustawienia.rb
 #
 # Nowy parametr = jeden wpis w LISTA (okno samo doda pole w swojej sekcji, wartość trafi do zapisanych ustawień);
@@ -15,7 +15,7 @@
 # podstawowy: true – pole widoczne w trybie okna „Podstawowe” (pozostałe tylko w „Wszystkie” albo gdy zmienione).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
 
-%w[parametry_dach parametry_taras parametry_zadaszenie parametry_podloga parametry_materialy parametry_stolarka parametry_kanaly].each do |plik|
+%w[parametry_dach parametry_taras parametry_zadaszenie parametry_drewutnia parametry_podloga parametry_materialy parametry_stolarka parametry_kanaly].each do |plik|
   require File.join(File.dirname(__FILE__), plik)
 end
 
@@ -39,7 +39,8 @@ module ArteMadera
         ['magazyn', 'Magazyn drewna, dobór przekrojów i ceny', false],
         ['powierzchnie', 'Powierzchnie i limity', false],
         ['zadaszenie', 'Zadaszenie – rodzaj i wymiary', true, 'zadaszenie'],
-        ['zadaszenie_przekroje', 'Zadaszenie – przekroje (dobór)', true, 'zadaszenie']
+        ['zadaszenie_przekroje', 'Zadaszenie – przekroje (dobór)', true, 'zadaszenie'],
+        ['drewutnia', 'Drewutnia / zadaszenie przy ścianie szczytowej', true, 'zadaszenie']
       ].freeze unless const_defined?(:SEKCJE)
 
       # Zakładki okna: [klucz, tytuł]; sekcja bez czwartego elementu w SEKCJE należy do pierwszej zakładki. Wymóg użytkownika
@@ -216,7 +217,7 @@ module ArteMadera
       ].freeze unless const_defined?(:LISTA_OTWORY)
 
       # Wszystkie parametry w kolejności okna: listy sekcji z tego pliku i z plików parametrów dachu, tarasu, podłogi i materiałów.
-      LISTA = (LISTA_SCIANY + ParametryDach::LISTA + ParametryTaras::LISTA + ParametryZadaszenie::LISTA + ParametryPodloga::LISTA +
+      LISTA = (LISTA_SCIANY + ParametryDach::LISTA + ParametryTaras::LISTA + ParametryZadaszenie::LISTA + ParametryDrewutnia::LISTA + ParametryPodloga::LISTA +
                LISTA_OTWORY + ParametryStolarka::LISTA + ParametryKanaly::LISTA + ParametryMaterialy::LISTA).freeze unless
         const_defined?(:LISTA)
 

@@ -7,6 +7,7 @@
 # Zależy od: rdzen/magazyn_drewna.rb (przekroje do doboru – pole magazyn_drewna, przełącznik przekroje_dobor)
 # Używają: rdzen/parametry_lista.rb (LISTA – sklejona z list sekcji)
 #
+# Przełącznik „zadaszenie” to pole „Ten dom” (od rundy 19 – „typ + dodatki”: dodatek widoczny od razu w kroku „Dodatki”).
 # Wpis jak w rdzen/parametry_lista.rb (klucz, domyślna, etykieta, jednostka, zakres, rodzaj, sekcja, wybory, podpowiedź;
 # gdy – pole widoczne tylko przy wybranych wartościach innych pól, pomoc – dłuższe objaśnienie pod znakiem zapytania).
 # Zgodność: Ruby 2.2+ (bez &., bez Array#sum, bez <<~).
@@ -20,7 +21,7 @@ module ArteMadera
 
       # Parametry sekcji (kolejność = kolejność w oknie).
       LISTA = [
-        { klucz: 'zadaszenie', poziom: :typ, obrys: { tylko: %w[prostokat], zostaje: %w[nie], powod: 'Zadaszenie boczne tylko przy obrysie prostokątnym.' }, podstawowy: true, domyslna: 'nie', etykieta: 'Zadaszenie przy ścianie okapowej (boczne / tylne)',
+        { klucz: 'zadaszenie', poziom: :dom, obrys: { tylko: %w[prostokat], zostaje: %w[nie], powod: 'Zadaszenie boczne tylko przy obrysie prostokątnym.' }, podstawowy: true, domyslna: 'nie', etykieta: 'Zadaszenie przy ścianie okapowej (boczne / tylne)',
           rodzaj: :wybor, sekcja: 'zadaszenie',
           wybory: [['nie', 'bez zadaszenia'], ['slupy', 'na słupach z oczepem (wiata, drewutnia)'],
                    ['bale', 'ściany z bali (przybudówka)']],

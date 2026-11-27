@@ -30,7 +30,7 @@ module ArteMadera
         ['sciany', 'Ściany', %w[przekroj sciany laczenia wegly rysunek]],
         ['otwory', 'Okna i drzwi', %w[otwory]],
         ['dach', 'Dach', %w[szczyty poszycie]],
-        ['taras', 'Taras i zadaszenie', %w[taras zadaszenie zadaszenie_przekroje]],
+        ['taras', 'Dodatki', %w[taras zadaszenie zadaszenie_przekroje drewutnia]],
         ['podloga', 'Podłoga', %w[podloga]],
         ['zestawienie', 'Zestawienie', %w[materialy magazyn powierzchnie]]
       ].freeze unless const_defined?(:KROKI)

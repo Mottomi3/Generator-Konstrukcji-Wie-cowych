@@ -84,7 +84,8 @@ module ArteMadera
       # końcach, mm układu domu), szerokosc:, wysokosc:, nazwa: }].
       def podpory(plan)
         dz = Dach.uniesienie_krokwi(plan[:parametry])
-        platwie = (plan[:elementy] || []).select { |e| e[:prefiks] == 'P' }.map { |e| podpora(e) }
+        # Drewutnia ma własny dach (krokwie z generatora) – jej płatew i oczep nie są podporami połaci domu.
+        platwie = (plan[:elementy] || []).select { |e| e[:prefiks] == 'P' && e[:tag] != :drewutnia }.map { |e| podpora(e) }
         (platwie + sciany_wysokie(plan[:sciany] || [], plan[:parametry])).map do |q|
           # Podbitka na płatwiach – krokwie leżą na deskach: podpora na wierzchu desek.
           dz.zero? ? q : q.merge(od: [q[:od][0], q[:od][1], q[:od][2] + dz], do: [q[:do][0], q[:do][1], q[:do][2] + dz])

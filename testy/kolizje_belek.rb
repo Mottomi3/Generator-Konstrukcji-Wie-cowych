@@ -202,10 +202,11 @@ def wzgledem_polaci(pl)
       end.max
     end.max
   end.compact.max
-  platwie = pl[:elementy].select { |e| e[:prefiks] == 'P' }.map do |e|
+  # Drewutnia (runda 19) ma własny dach jednospadowy pod okapem domu – jej belki nie podpierają połaci domu.
+  platwie = pl[:elementy].select { |e| e[:prefiks] == 'P' && e[:tag] != :drewutnia }.map do |e|
     pe = e[:polozenie]
     przekroj = e[:przekroj] || [[0.0, 0.0], [e[:b], 0.0], [e[:b], e[:h]], [0.0, e[:h]]]
     przekroj.product([0.0, e[:dl]]).map { |(y, z), x| nad.call(punkt.call(pe[:poczatek], [pe[:x], pe[:y], pe[:z]], x, y, z)) }.max
   end
-  { bale: bale, platwie: platwie.max, dotyk: platwie.min, krokwie: pl[:elementy].count { |e| e[:prefiks] == 'K' } }
+  { bale: bale, platwie: platwie.max, dotyk: platwie.min, krokwie: pl[:elementy].count { |e| e[:prefiks] == 'K' && e[:tag] != :drewutnia } }
 end

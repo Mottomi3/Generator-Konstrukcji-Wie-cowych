@@ -48,6 +48,8 @@ DOMY = {
   'koszL' => [wielokat([[0, 0], [7500, 0], [7500, 6500], [3000, 6500], [3000, 9500], [0, 9500]]),
               { 'dach_kat' => 35, 'podloga' => 'nie', 'liczba_wiencow' => 16 }, [], true],
   'taras1200' => [prostokat(0, 0, 7000, 4000), { 'taras' => 'sciany', 'liczba_wiencow' => 20, 'podloga' => 'nie',
+                                                 'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, [], true],
+  'drewutnia' => [prostokat(0, 0, 7000, 5000), { 'drewutnia' => 'slupy', 'dach_kat' => 30, 'liczba_wiencow' => 16, 'taras' => 'podciag',
                                                  'dach_uklad' => 'platwie_krokwie', 'dach_wiezba' => 'generator' }, [], true]
 }.freeze
 

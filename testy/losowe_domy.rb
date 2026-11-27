@@ -39,6 +39,8 @@ module LosoweDomy
   ZIARNA_R15 = 9000 unless const_defined?(:ZIARNA_R15)
   # Od tego ziarna dom dostaje kanały na przewody (runda 18, N3).
   ZIARNA_R18 = 6001 unless const_defined?(:ZIARNA_R18)
+  # Od tego ziarna dom może dostać drewutnię przy ścianie szczytowej (runda 19, osobne losowanie).
+  ZIARNA_R19 = 6001 unless const_defined?(:ZIARNA_R19)
 
   module_function
 
@@ -101,6 +103,7 @@ module LosoweDomy
     dodatki_r12(Random.new(ziarno * 7_368_791 + 29), p, opis) if ziarno >= ZIARNA_R12
     dodatki_r13(Random.new(ziarno * 8_191_207 + 31), p, opis) if ziarno >= ZIARNA_R13
     dodatki_r15(Random.new(ziarno * 9_999_991 + 37), p, opis) if ziarno >= ZIARNA_R15
+    drewutnia_r19(Random.new(ziarno * 12_345_701 + 43), p, opis) if ziarno >= ZIARNA_R19
     kanaly = ziarno >= ZIARNA_R18 ? kanaly_r18(Random.new(ziarno * 11_111_117 + 41), prostokat_dom ? [w, d] : [w - cw, d - cd], opis) : []
     { ziarno: ziarno, opis: opis.join(', '), segmenty: seg, parametry: p, otwory: otw, sciany: sciany, kanaly: kanaly }
   end
@@ -310,6 +313,24 @@ module LosoweDomy
     lista
   end
 
+  # Drewutnia rundy 19 (osobne losowanie): w co trzecim domu drewutnia przy ścianie szczytowej – strona, głębokość,
+  # szerokość, kąt, wysokość (także za wysoka – obniżana), okap, rozstaw słupów, przekroje; dom L – pominięta.
+  def drewutnia_r19(r, p, opis)
+    return if r.rand >= 0.33
+    p['drewutnia'] = 'slupy'
+    p['drewutnia_strona'] = wybierz(r, %w[tyl tyl min max])
+    p['drewutnia_glebokosc'] = wybierz(r, %w[900 1500 1500 2500])
+    p['drewutnia_szerokosc'] = wybierz(r, %w[0 0 2500])
+    p['drewutnia_kat'] = wybierz(r, %w[5 10 10 20])
+    p['drewutnia_wysokosc'] = wybierz(r, %w[0 0 1800 9000])
+    p['drewutnia_okap'] = wybierz(r, %w[0 300 600])
+    p['drewutnia_slupy_rozstaw'] = wybierz(r, %w[1500 2500])
+    p['drewutnia_belka_przekroj'] = wybierz(r, %w[100x160 80x120])
+    p['drewutnia_slup_przekroj'] = wybierz(r, %w[120x120 100x100])
+    opis << "r19: drewutnia #{p['drewutnia_strona']} #{p['drewutnia_glebokosc']} × #{p['drewutnia_szerokosc']}, #{p['drewutnia_kat']}°, " \
+            "wysokość #{p['drewutnia_wysokosc']}"
+  end
+
   # Losowe parametry (wartości tekstowe jak z okna); krokwie z generatora (aplikacja – w dodatkach rundy 5).
   def parametry(r)
     {
@@ -389,7 +410,10 @@ module LosoweDomy
       end
       # Boczne zadaszenie (runda 12): belki poprzeczne, słupy i słupki zadaszenia, płatwie i oczep (słupy tarasu z płatwiami –
       # osobno, §8 stanu prac); słupki pod płatwiami domu L (runda 18) z płatwiami i deskami podbitki.
-      [%w[Wt P], %w[Wt S], %w[Wt Wt], %w[Bp P], %w[Bp S], ['S', 'P', :zadaszenie], %w[P P], ['S', 'P', :dach], ['S', 'Pb', :dach]].each do |a, b, tag|
+      # Drewutnia (runda 19): słupy z płatwią, podwalinami i fundamentami domu, krokwie z dachem domu.
+      [%w[Wt P], %w[Wt S], %w[Wt Wt], %w[Bp P], %w[Bp S], ['S', 'P', :zadaszenie], %w[P P], ['S', 'P', :dach], ['S', 'Pb', :dach],
+       ['S', 'P', :drewutnia], ['S', 'Pw', :drewutnia], ['F', 'F', :drewutnia], ['K', 'P', :drewutnia], ['K', 'K', :drewutnia],
+       ['K', 'Pb', :drewutnia], ['P', 'Pb', :drewutnia]].each do |a, b, tag|
         n = kolizje_elementow(pl, a, b, 4, tag)
         problemy << "#{a} z #{b}: kolizje (#{n} punktów)" if n > 0
       end

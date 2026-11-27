@@ -29,7 +29,9 @@ module ArteMadera
         ['Wt', nil, 'platwie_katalog', 'Belki trójkąta nad tarasem', 'taras'],
         ['P', :zadaszenie, 'zadaszenie_katalog', 'Płatwie zadaszenia', 'zadaszenie_przekroje'],
         ['Bp', nil, 'zadaszenie_katalog', 'Belki poprzeczne zadaszenia', 'zadaszenie_przekroje'],
-        ['S', :zadaszenie, 'zadaszenie_slupy_katalog', 'Słupy zadaszenia', 'zadaszenie_przekroje']
+        ['S', :zadaszenie, 'zadaszenie_slupy_katalog', 'Słupy zadaszenia', 'zadaszenie_przekroje'],
+        ['P', :drewutnia, 'zadaszenie_katalog', 'Płatew i oczep drewutni', 'drewutnia'],
+        ['S', :drewutnia, 'zadaszenie_slupy_katalog', 'Słupy drewutni', 'drewutnia']
       ].freeze unless const_defined?(:GRUPY)
 
       module_function
