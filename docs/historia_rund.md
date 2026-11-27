@@ -4,8 +4,8 @@ Wydzielone z `docs/stan_prac.md` w rundzie 14 (2026-11-25), żeby stan bieżący
 najpierw opis nowości kolejnych kompilacji (od najnowszej), potem stan kompilacji 6, przebieg rund z prośbami użytkownika
 i lista modułów dodawanych w rundach. Bieżący stan, kolejka decyzji i plan – `docs/stan_prac.md`.
 
-Runda 16 (kompilacja 16) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r16.md`; przy następnej rundzie przenieść tutaj.
-Runda 15 (kompilacja 15) – na końcu tego pliku („Nowe w kompilacji 15”) i w `docs/przekazanie_r15.md`.
+Runda 17 (kompilacja 17) – opis w `docs/stan_prac.md` §1 i `docs/przekazanie_r17.md`; przy następnej rundzie przenieść tutaj.
+Rundy 15 i 16 – na końcu tego pliku („Nowe w kompilacji 15”, „Nowe w kompilacji 16”) i w `docs/przekazanie_r15.md`, `docs/przekazanie_r16.md`.
 
 # Część A – nowości kompilacji 7–14
 
@@ -609,3 +609,55 @@ Zdecydowane zaległości (T8, deski, 45 × 120), propozycje P1 i W2, przygotowan
 - Parametrów: 194 (nowe: `szczyt_styk`, `polzamek`, `polzamek_gleb`, `slup_osiadanie`, `slup_regulacja`,
   `slup_regulacja_wysokosc`, `material_zapas`, `tasma_pasy`, `kotwy_podwalin_rozstaw`, `impregnat_wydajnosc`,
   `impregnat_warstwy`).
+
+## Nowe w kompilacji 16 (polecenie z 2026-11-25 23:27 – `docs/prompt_r16.md`, odpowiedzi użytkownika w `docs/zadanie_r16.md` §0)
+
+- **Pół zamka fabrycznie i w każdym ostatnim połączeniu pod dachem** (`rdzen/pol_zamka.rb#ostatnie?`, `rdzen/zamek.rb`,
+  `rdzen/bale.rb#kontrfor_obecny?`): akceptacja z 2026-11-25 („dobry pomysł … i tak trzeba podfrezować gniazda na bokach
+  górnego elementu”). `polzamek` = tak; bal górny bez gniazda od spodu **z podcięciami bocznymi jak w zwykłym zamku**
+  (rysunek `docs/ostatnie_polaczenie_r16.png`). Poza narożnikiem szczytu: górny bal ściany ścięty płaszczyzną dachu,
+  ostatni bal węgła (od 20 mm pod dachem zamiast 56), bal ściany nad ostatnim balem węgła, bal nad działową pod połacią.
+  Pomiar: w 240 losowych domach kompilacji 15 było 268 gniazd od spodu, nad którymi pod dachem zostawało mniej niż 20 mm
+  drewna (79 bali przeciętych gniazdem na wylot) – teraz 49, wszystkie w klinach, które same mają w zamku mniej niż 20 mm
+  (drzazga między gniazdem płatwi a skosem – zwykłe gniazdo jak dotąd); półzamków 497 w 300 domach (ziarna 1–300). W węźle ścian w jednej
+  linii oba bale stykające się czołami są balami półzamka (`Zamek.wspolne_polzamki!`).
+- **Styk w najwyższym wieńcu zostaje w zamku** (odpowiedź z 2026-11-26 02:40: „jak dotąd były tam zamki … bez zamka będzie
+  to uciekać przy montażu i skręcać się”): węgieł, w którym łączą się bale ściany, dochodzi do połaci także przy podbitce
+  pod płatwiami (`rdzen/podbitka.rb#obnizenie_wegla`), deski podbitki są przerwane na węźle (`#bez_wegla`). Domy ze stykiem
+  bez zamka na 600 losowych: 23 → 8; ostrzeżenie zostaje ostrzeżeniem (propozycja „podpowiedź zamiast ostrzeżenia” odrzucona).
+- **Nadbitka / podbitka – jedno pole położenia desek** (`podbitka`: na płatwiach, na krokwiach, pod krokwiami, pod płatwiami,
+  bez; odpowiedź z 2026-11-25). Pola `poszycie_nadbitka` i `nadbitka_*` zniknęły – stare wartości z modeli i ustawień
+  przenosi `ParametryDach.przenies_nadbitke`; położenie niepasujące do układu dachu zamieniane na odpowiednik
+  (same płatwie: „na krokwiach” = „na płatwiach”). Jedna deska `podbitka_grubosc / _krycie / _dlugosc`.
+- **Trzy poziomy ustawień** (`rdzen/poziomy.rb`; cecha `poziom:` przy każdym polu): Ten dom 18 pól (16 + długość i szerokość
+  domu z wymiarów), Typ domu 48, Standard warsztatu 131. Plik ustawień w wersji 5 (`sketchup/ustawienia.rb`): `standard`
+  (tylko pola inne niż fabryczne), `typy`, `typ`, `okno`; plik starszy – ostatnie parametry stają się standardem i typem
+  „Ostatnie ustawienia (do kompilacji 15)”, własne szablony – typami, stary plik zostaje jako `ustawienia_przed_r16.json`.
+  **Podgląd niczego już nie zapisuje** – nowy dom zaczyna od wybranego typu i standardu.
+- **Typy domów** (`sketchup/typy_domow.rb`, `sketchup/okno_typy.rb`, `html/typy.js`): Typ 100–400 wbudowane (do powielenia),
+  własne: „Zapisz jako typ…” (nazwa + zdanie opisu), „Zapisz zmiany w typie”, „Powiel…”, „Usuń” (drugie kliknięcie),
+  „Przywróć typ”. Pole typu albo standardu o innej wartości jest oznaczone „tylko w tym domu” z przyciskiem powrotu ↺.
+  **Standard warsztatu** – panel z przycisku w nagłówku okna (`html/standard.js`): 131 pól i wymiary zamka, szukanie,
+  „Zapisz standard”, „Przywróć fabryczne”.
+- **Okno – układ nowy** (`html/kroki.js`, `html/uklad.js`, `html/uwagi.js`, `html/kroki.css`): sześć kroków w kolejności
+  budowy ze znacznikiem stanu (✓ albo liczba uwag), po prawej stale rzut, liczby i lista „Do poprawy / Sprawdzone”
+  (kliknięcie uwagi przenosi do pola – `rdzen/uwagi_pola.rb`), podpowiedź po wejściu w pole, lista bali, materiały
+  i powierzchnie w kroku „Zestawienie”, opcje niedostępne dla obrysu wyszarzone z powodem (cecha `obrys:` pola).
+  W kroku widać pola „Ten dom”; pola typu – po „Pola typu domu w tym kroku”, pole standardu – z listy „Zmień pole
+  standardu tylko w tym domu…”. Pomiar (okno 1060 × 860, dom testowy): krok „Ściany” 999 px przewijania zamiast 3 694 px
+  w układzie dotychczasowym, karta „Wynik” 446 px od góry (było 1 202 px), 3 pola zamiast 45.
+  **Przełącznik „Układ: nowy / dotychczasowy”** w nagłówku (użytkownik chce porównać oba i zostać przy jednym) – w układzie
+  dotychczasowym zostały zakładki i tryb „Podstawowe / Wszystkie”.
+- **Dom prostokątny z wymiarów** (S1 – `rdzen/dom_z_wymiarow.rb`): nic nie zaznaczone → okno z polami „Długość domu”
+  i „Szerokość domu” (fabrycznie 6000 × 4000), obrys w punkcie 0,0 modelu.
+- **Powierzchnie i limity** (W1 – `rdzen/powierzchnie.rb`, sekcja „Powierzchnie i limity”): zabudowa, taras, każde
+  pomieszczenie po licach wewnętrznych, dach, wysokość konstrukcji nad terenem; limity `limit_zabudowy`,
+  `limit_wysokosci` (0 = bez limitu) z ostrzeżeniem, `teren_pod_balem` 300 mm. W wyniku, w kroku „Zestawienie” i w CSV.
+- **Błąd znaleziony przy okazji**: okno pokazywało i odsyłało „Ciężar pokrycia z poszyciem” 0,35 kN/m² jako 0,3 (każda
+  wartość z dwoma miejscami po przecinku była zaokrąglana do jednego) – płatwie liczone z mniejszym obciążeniem. Poprawione
+  (`html/wspolne.js#fmtPola`).
+- **Drugi błąd znaleziony testem okna**: po wpisaniu wartości i kliknięciu od razu w przycisk (np. „+ drzwi”, krok, „Generuj”)
+  okno przebudowywało się między naciśnięciem a puszczeniem przycisku myszy i kliknięcie trafiało obok – trzeba było klikać
+  drugi raz. Przebudowa po zmianie pola czeka teraz na puszczenie przycisku (`html/wspolne.js#poKliknieciu`).
+- Parametrów: 197 (nowe: `dom_dlugosc`, `dom_szerokosc`, `teren_pod_balem`, `limit_zabudowy`, `limit_wysokosci`; usunięte:
+  `poszycie_nadbitka`, `nadbitka_grubosc`, `nadbitka_krycie`, `nadbitka_dlugosc`).

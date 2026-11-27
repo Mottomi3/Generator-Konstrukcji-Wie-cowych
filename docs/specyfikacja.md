@@ -568,6 +568,44 @@ użytkownika; podłoga w przybudówce w opcjach; cała część bocznego (tylneg
 - **Opcje zależne od obrysu** (cecha `obrys:` pola: `tylko`, `zostaje`, `powod`): rodzaj obrysu (prostokąt, L, inny)
   z podglądu; wybory niedostępne są wyszarzone, pod polem powód, wartość niedostępna wraca do dozwolonej.
 
+## 8l. Runda 17 – styk zawsze w zamku, stolarka z listy i kliknięciem, magazyn drewna, wycena
+
+- **Styk zawsze w zamku** (zasada użytkownika z 2026-11-26: „jak dotąd były tam zamki … bez zamka będzie to uciekać przy
+  montażu i skręcać się”). Oprócz węgłów ze stykami do połaci (runda 16):
+  - węgieł dochodzi do spodu płatwi leżącej w gnieździe ściany (płatew ścienna skrzydła domu L niżej niż góra ściany,
+    płatew dachu przechodząca przez ścianę w miejscu węgła), gdy bal ściany nad nim zachowuje między gniazdem zamka od
+    spodu a gniazdem płatwi co najmniej „Najmniej drewna w zamku” (`rdzen/bale.rb#bez_platwi_nad`);
+  - przy podbitce pod płatwiami działowa, na której łączą się bale ściany okapowej, sięga przy tej ścianie do wierzchu bala
+    pod jej najwyższym wieńcem (pół wieńca pod górą ściany, nie wyżej niż połać); dalej kończy się pod deskami; deski
+    podbitki przerwane na działowej na odcinku, na którym działowa wystaje nad nie (`rdzen/podbitka.rb`).
+- **Typowa stolarka** (pole-tabela standardu `stolarka`): symbol, rodzaj (okno / drzwi), szerokość i wysokość stolarki,
+  spód od podwaliny, model (plik .skp). Otwór ma kolumnę „Typ” – wybór typu wpisuje wymiary; otwór z typem dostaje przy
+  generowaniu model z folderu „Folder modeli stolarki” (`<model>.skp` albo `<symbol>.skp`; punkt 0 w dolnym lewym narożniku
+  stolarki widzianej od zewnątrz, X wzdłuż szerokości, Y w głąb ściany, Z w górę; grupa i tag „Stolarka”). Brak pliku – sam
+  otwór i uwaga w komunikacie; model innej wielkości niż stolarka – uwaga, bez skalowania.
+- **Kliknięcie w widok ściany** (`html/klik_sciana.js`): przełącznik „węgieł / okno / drzwi”; okienko z parametrami przy
+  miejscu kliknięcia (środek nowego otworu w miejscu kliknięcia); kliknięcie w otwór – poprawa albo usunięcie wiersza
+  tabeli; przy węgle (do 80 mm albo 8 px) – przesunięcie („od”) albo usunięcie; pierwsza zmiana węgła przepisuje węgły
+  ściany na ręczne (jak dotąd).
+- **Dom z wymiarów – działowe z tabeli okna**: kierunek (w poprzek – równoległa do szerokości, wzdłuż), oś od lica ściany
+  początkowej, początek i długość (puste – od lica do lica); jak linia narysowana w środku obrysu.
+- **Magazyn drewna** (pole-tabela standardu `magazyn_drewna`, `rdzen/magazyn_drewna.rb`): wiersz = przekrój „szer.x wys.”,
+  długości handlowe w metrach (puste – bez ograniczenia), rodzaj, znaczniki „do czego” (legar / podciąg, płatew, krokiew,
+  belka zadaszenia, słup, deska), cena za m³. Dobór przekrojów bierze przekroje ze znacznikiem swojego elementu; fabrycznie
+  wykaz Drewno Partner (konstrukcyjne C24 i widoczne Nsi / DUO / BSH) i deska 14 × 115 × 4 m. Dawne listy tekstowe
+  przechodzą do magazynu same. Pola przekrojów w oknie podpowiadają przekroje z magazynu.
+- **Jeden przełącznik doboru** „Przekroje konstrukcji”: podaję sam (fabrycznie – sprawdzenie i podpowiedź najmniejszego
+  wystarczającego) / dobieraj automatycznie (najlżejszy wystarczający z magazynu). Pola doboru płatwi, krokwi, legarów
+  i zadaszenia: „jak przełącznik” (fabrycznie) albo wyjątek elementu. Dobór automatyczny bierze najpierw przekroje dostępne
+  w całej długości: płatwie, belki zadaszenia, krokwie (od okapu do kalenicy), legary (najdłuższe przęsło); podpowiedź
+  podciągu – tak samo.
+- **Wycena materiału** (`rdzen/wycena.rb`): bale – objętość × „Cena bala”; belki – objętość według przekroju × cena wiersza
+  magazynu o tym przekroju; deski poszycia i podbitki – objętość sztuk o długości handlowej (z zapasem) × cena wiersza
+  „deska” tej grubości; reszta – cennik materiałów (wiersz, którego nazwa jest początkiem nazwy pozycji, ta sama jednostka).
+  Fundamenty punktowe poza wyceną. Pozycja bez ceny – na liście, poza sumą. Okno: tabela w kroku „Zestawienie”, liczba
+  „Materiał” w wyniku; CSV: blok „Wycena”. Bez robocizny i transportu.
+- **Standard warsztatu z menu i z paska**: okno z samym panelem standardu (bez domu i bez podglądu).
+
 ## 8a. Taras (`rdzen/taras.rb`, `rdzen/taras_balustrada.rb`, runda 5)
 
 - Rysujesz sam dom; taras (`taras`) dokłada generator przed ścianą szczytową po stronie `taras_strona` (wzdłuż kalenicy):

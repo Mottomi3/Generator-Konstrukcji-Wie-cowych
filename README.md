@@ -8,8 +8,10 @@ Krokwie i dalszą więźbę z kontrolą nośności buduje aplikacja do dachów A
 krokwie uproszczone – w generatorze (opcja).
 Każdy bal i belka to komponent z wycięciami i atrybutami dla wtyczki ArteMadera Dokumentacja 2D. Wszystkie ustawienia
 są parametrami w oknie (`docs/parametry.md`) na trzech poziomach: ten dom, typ domu (wbudowane i własne), standard warsztatu.
-W widoku ściany: ostatek każdego końca, węgły kliknięciem, działowa niższa pod stropem / antresolą / półką (zamek
-dopełniony odcinkami); bal prosty albo pełny profil (pióra i wpust) do wizualizacji.
+W widoku ściany: ostatek każdego końca, okna, drzwi i węgły kliknięciem (okienko z parametrami, typowa stolarka z listy,
+modele okien i drzwi z folderu wstawiane w otwory), działowa niższa pod stropem / antresolą / półką (zamek dopełniony
+odcinkami); bal prosty albo pełny profil (pióra i wpust) do wizualizacji. Magazyn drewna (przekroje, długości handlowe,
+ceny) z jednym przełącznikiem doboru przekrojów i wyceną materiału w zestawieniu.
 
 - Instalacja: Rozszerzenia → Menedżer rozszerzeń → Zainstaluj rozszerzenie → `arte_madera_generator_wiencowy_1.0.0.rbz`.
 - Użycie: zaznacz linie → pierwszy przycisk paska „ArteMadera Generator Wieńcowy” (albo prawy przycisk myszy →
